@@ -1,0 +1,442 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02A39F1B2C6B8B5C00C1FB4B /* WSAdminApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1A2C6B8B5C00C1FB4B /* WSAdminApp.swift */; };
+		02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */; };
+		02A39F1F2C6B8B6200C1FB4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */; };
+		02A39F222C6B8B6200C1FB4B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F212C6B8B6200C1FB4B /* Preview Assets.xcassets */; };
+		02AC9BB32C855BF8007391A7 /* UserAuthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */; };
+		02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB42C855C7B007391A7 /* SignInView.swift */; };
+		02AC9BB92C8614B1007391A7 /* DataMgmtView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */; };
+		EA36FC5F1C7DD375009FAD78 /* Pods_WSAdmin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		02A39F172C6B8B5C00C1FB4B /* WSAdmin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WSAdmin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		02A39F1A2C6B8B5C00C1FB4B /* WSAdminApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSAdminApp.swift; sourceTree = "<group>"; };
+		02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		02A39F212C6B8B6200C1FB4B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		02A39F232C6B8B6200C1FB4B /* WSAdmin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WSAdmin.entitlements; sourceTree = "<group>"; };
+		02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthModel.swift; sourceTree = "<group>"; };
+		02AC9BB42C855C7B007391A7 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		02AC9BB62C855CB9007391A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMgmtView.swift; sourceTree = "<group>"; };
+		155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WSAdmin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		60A449B919D5EA4EE3D8FA59 /* Pods-WSAdmin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WSAdmin.release.xcconfig"; path = "Target Support Files/Pods-WSAdmin/Pods-WSAdmin.release.xcconfig"; sourceTree = "<group>"; };
+		99CA4DE900057EDDC4591E5B /* Pods-WSAdmin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WSAdmin.debug.xcconfig"; path = "Target Support Files/Pods-WSAdmin/Pods-WSAdmin.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		02A39F142C6B8B5C00C1FB4B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EA36FC5F1C7DD375009FAD78 /* Pods_WSAdmin.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		02A39F0E2C6B8B5C00C1FB4B = {
+			isa = PBXGroup;
+			children = (
+				02A39F192C6B8B5C00C1FB4B /* WSAdmin */,
+				02A39F182C6B8B5C00C1FB4B /* Products */,
+				573D9734A32E6C70B06B4CC6 /* Pods */,
+				3769CA9B5C405B6720DC40E2 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		02A39F182C6B8B5C00C1FB4B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				02A39F172C6B8B5C00C1FB4B /* WSAdmin.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		02A39F192C6B8B5C00C1FB4B /* WSAdmin */ = {
+			isa = PBXGroup;
+			children = (
+				02AC9BB62C855CB9007391A7 /* Info.plist */,
+				02A39F1A2C6B8B5C00C1FB4B /* WSAdminApp.swift */,
+				02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */,
+				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
+				02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */,
+				02AC9BB42C855C7B007391A7 /* SignInView.swift */,
+				02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */,
+				02A39F232C6B8B6200C1FB4B /* WSAdmin.entitlements */,
+				02A39F202C6B8B6200C1FB4B /* Preview Content */,
+			);
+			path = WSAdmin;
+			sourceTree = "<group>";
+		};
+		02A39F202C6B8B6200C1FB4B /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				02A39F212C6B8B6200C1FB4B /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3769CA9B5C405B6720DC40E2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		573D9734A32E6C70B06B4CC6 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				99CA4DE900057EDDC4591E5B /* Pods-WSAdmin.debug.xcconfig */,
+				60A449B919D5EA4EE3D8FA59 /* Pods-WSAdmin.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		02A39F162C6B8B5C00C1FB4B /* WSAdmin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 02A39F262C6B8B6200C1FB4B /* Build configuration list for PBXNativeTarget "WSAdmin" */;
+			buildPhases = (
+				3CEBD8EDD0E6EE50A406E927 /* [CP] Check Pods Manifest.lock */,
+				02A39F132C6B8B5C00C1FB4B /* Sources */,
+				02A39F142C6B8B5C00C1FB4B /* Frameworks */,
+				02A39F152C6B8B5C00C1FB4B /* Resources */,
+				505EE347AD1E2F08E788E731 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WSAdmin;
+			productName = WSAdmin;
+			productReference = 02A39F172C6B8B5C00C1FB4B /* WSAdmin.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		02A39F0F2C6B8B5C00C1FB4B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1510;
+				LastUpgradeCheck = 1510;
+				TargetAttributes = {
+					02A39F162C6B8B5C00C1FB4B = {
+						CreatedOnToolsVersion = 15.1;
+					};
+				};
+			};
+			buildConfigurationList = 02A39F122C6B8B5C00C1FB4B /* Build configuration list for PBXProject "WSAdmin" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 02A39F0E2C6B8B5C00C1FB4B;
+			productRefGroup = 02A39F182C6B8B5C00C1FB4B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				02A39F162C6B8B5C00C1FB4B /* WSAdmin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		02A39F152C6B8B5C00C1FB4B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				02A39F222C6B8B6200C1FB4B /* Preview Assets.xcassets in Resources */,
+				02A39F1F2C6B8B6200C1FB4B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3CEBD8EDD0E6EE50A406E927 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-WSAdmin-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		505EE347AD1E2F08E788E731 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WSAdmin/Pods-WSAdmin-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WSAdmin/Pods-WSAdmin-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WSAdmin/Pods-WSAdmin-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		02A39F132C6B8B5C00C1FB4B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				02AC9BB32C855BF8007391A7 /* UserAuthModel.swift in Sources */,
+				02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */,
+				02AC9BB92C8614B1007391A7 /* DataMgmtView.swift in Sources */,
+				02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */,
+				02A39F1B2C6B8B5C00C1FB4B /* WSAdminApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		02A39F242C6B8B6200C1FB4B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		02A39F252C6B8B6200C1FB4B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		02A39F272C6B8B6200C1FB4B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 99CA4DE900057EDDC4591E5B /* Pods-WSAdmin.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WSAdmin/WSAdmin.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WSAdmin/Preview Content\"";
+				DEVELOPMENT_TEAM = F56U572VFS;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WSAdmin/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.writeseattle.WSAdmin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		02A39F282C6B8B6200C1FB4B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 60A449B919D5EA4EE3D8FA59 /* Pods-WSAdmin.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WSAdmin/WSAdmin.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WSAdmin/Preview Content\"";
+				DEVELOPMENT_TEAM = F56U572VFS;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WSAdmin/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.writeseattle.WSAdmin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		02A39F122C6B8B5C00C1FB4B /* Build configuration list for PBXProject "WSAdmin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				02A39F242C6B8B6200C1FB4B /* Debug */,
+				02A39F252C6B8B6200C1FB4B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		02A39F262C6B8B6200C1FB4B /* Build configuration list for PBXNativeTarget "WSAdmin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				02A39F272C6B8B6200C1FB4B /* Debug */,
+				02A39F282C6B8B6200C1FB4B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 02A39F0F2C6B8B5C00C1FB4B /* Project object */;
+}
