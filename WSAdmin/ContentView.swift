@@ -11,7 +11,7 @@ import GoogleSignIn
 struct ContentView: View {
 
     let vm = UserAuthModel()
-//    let ts = TimesheetModel()
+    let refVM = RefDataModel()
     
     fileprivate func SignInButton() -> Button<Text> {
         Button(action: {
@@ -43,7 +43,7 @@ struct ContentView: View {
             Text(vm.errorMessage)
         }
         .navigationTitle("Login")
- //       .environment(ts)
+        .environment(refVM)
         .environment(vm)
     }
 }
