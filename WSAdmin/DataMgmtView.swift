@@ -41,17 +41,17 @@ class StudentData {
     var studentEmail: String
     var studentType: String
     var studentStartDate: Date
-    var studentEndData: Date
+    var studentEndData: Date?
     var studentStatus: String
-    var studentTutorKey: String
-    var studentTutorName: String
+    var studentTutorKey: String?
+    var studentTutorName: String?
     var studentCity: String
     var studentSessions: Int
     var studentTotalCost: Float
     var studentTotalPrice: Float
     var studentTotalProfit: Float
     
-    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: Date, studentEndData: Date, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentCity: String, studentSessions: Int, studentTotalCost: Float, studentTotalPrice: Float, studentTotalProfit: Float) {
+    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: Date, studentEndData: Date?, studentStatus: String, studentTutorKey: String?, studentTutorName: String?, studentCity: String, studentSessions: Int, studentTotalCost: Float, studentTotalPrice: Float, studentTotalProfit: Float) {
         self.studentKey = studentKey
         self.studentName = studentName
         self.studentGuardian = studentGuardian
@@ -78,7 +78,7 @@ class TutorData {
     var tutorPhone: String
     var tutorStatus: String
     var tutorStartDate: Date
-    var tutorEndDate: Date
+    var tutorEndDate: Date?
     var tutorStudentCount: Int
     var tutorServiceCount: Int
     var tutorTotalSessions: Int
@@ -86,7 +86,7 @@ class TutorData {
     var tutorTotalPrice: Float
     var tutorTotalProfit: Float
     
-    init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: Date, tutorEndDate: Date, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalPrice: Float, tutorTotalProfit: Float) {
+    init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: Date, tutorEndDate: Date?, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalPrice: Float, tutorTotalProfit: Float) {
         self.tutorKey = tutorKey
         self.tutorName = tutorName
         self.tutorEmail = tutorEmail
@@ -104,12 +104,12 @@ class TutorData {
 }
 
 enum ServiceTypes {
-    case base
-    case special
+    case Base
+    case Special
 }
 
 enum BillingTypes {
-    case fixed
+    case Fixed
     case Variable
 }
 
@@ -117,8 +117,8 @@ class ServiceData {
     var serviceKey: String
     var serviceTimesheetName: String
     var serviceInvoiceName: String
-    var serviceType: ServiceTypes
-    var serviceBillingType: BillingTypes
+    var serviceType: String
+    var serviceBillingType: String
     var serviceStatus: String
     var serviceCost1: Float
     var serviceCost2: Float
@@ -127,7 +127,7 @@ class ServiceData {
     var servicePrice2: Float
     var servicePrice3: Float
     
-    init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypes, serviceBillingType: BillingTypes, serviceStatus: String, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
+    init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: String, serviceBillingType: String, serviceStatus: String, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
         self.serviceKey = serviceKey
         self.serviceTimesheetName = serviceTimesheetName
         self.serviceInvoiceName = serviceInvoiceName

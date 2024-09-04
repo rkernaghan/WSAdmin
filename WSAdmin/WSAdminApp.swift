@@ -8,12 +8,37 @@
 import SwiftUI
 
 struct PgmConstants {
-    static let dataCountRange = "Master!A2:B12"
-    static let tutorRange = "Master!D2:P"
-    static let studentRange = "Master!R3:AG"
-    static let serviceRange = "Master!AI3:AT"
-    static let cityRange = "Master!AV3:AY"
     
+    static let dataCountTotalStudentsRow = 0
+    static let dataCountTotalStudentsCol = 1
+    static let dataCountActiveStudentsRow = 1
+    static let dataCountActiveStudentsCol = 1
+    static let dataCountHighestStudentKeyRow = 2
+    static let dataCountHighestStudentKeyCol = 1
+    static let dataCountTotalTutorsRow = 3
+    static let dataCountTotalTutorsCol = 1
+    static let dataCountActiveTutorsRow = 4
+    static let dataCountActiveTutorsCol = 1
+    static let dataCountHighestTutorKeyRow = 5
+    static let dataCountHighestTutorKeyCol = 1
+    static let dataCountTotalServicesRow = 6
+    static let dataCountTotalServicesCol = 1
+    static let dataCountActiveServicesRow = 7
+    static let dataCountActiveServicesCol = 1
+    static let dataCountHighestServiceKeyRow = 8
+    static let dataCountHighestServiceKeyCol = 1
+    static let dataCountTotalCitiesRow = 9
+    static let dataCountTotalCitiesCol = 1
+    static let dataCountHighestCityKeyRow = 10
+    static let dataCountHighestCityKeyCol = 1
+    
+    static let dataCountRange = "Master!A2:B12"
+    static let tutorRange = "Master!D2:Q"
+    static let studentRange = "Master!T3:AI"
+    static let serviceRange = "Master!AL3:AW"
+    static let cityRange = "Master!AZ3:BC"
+    
+    static let tutorStartingRowNumber = 2
     static let tutorKeyPosition = 0
     static let tutorNamePosition = 1
     static let tutorEmailPosition = 2
@@ -29,6 +54,7 @@ struct PgmConstants {
     static let tutorTotalRevenuePosition = 12
     static let tutorTotalProfitPosition = 13
     
+    static let studentStartingRowNumber = 3
     static let studentKeyPosition = 0
     static let studentNamePosition = 1
     static let studentGuardianPosition = 2
@@ -46,9 +72,10 @@ struct PgmConstants {
     static let studentTotalRevenuePosition = 14
     static let studentTotalProfitPosition = 15
     
-    static let serviceKeyPosiiton = 0
+    static let serviceStartingRowNumber = 3
+    static let serviceKeyPosition = 0
     static let serviceTimesheetNamePosition = 1
-    static let serviceInvoiveNamePosition = 2
+    static let serviceInvoiceNamePosition = 2
     static let serviceTypePosition = 3
     static let serviceBillingTypePosition = 4
     static let serviceStatusPosition = 5
@@ -59,6 +86,7 @@ struct PgmConstants {
     static let servicePrice2Position = 10
     static let servicePrice3Position = 11
     
+    static let cityStartingRowNumber = 3
     static let cityKeyPosition = 0
     static let cityNamePosition = 1
     static let cityMonthRevenuePosition = 2

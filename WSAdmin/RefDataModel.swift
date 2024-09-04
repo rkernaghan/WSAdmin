@@ -114,26 +114,62 @@ import GoogleAPIClientForREST
             print("Total Student count is '\(rows[0][1])")
             print("Active Student count is '\(rows[1][1])")
             print("Highest STudent Key is '\(rows[2][1])")
-            
             print("Number of rows in sheet: \(rows.count)")
-            dataCounts.totalStudents = Int(stringRows[0][1])! ?? 0
-            dataCounts.activeStudents = Int(stringRows[1][1])! ?? 0
-            dataCounts.highestStudentKey = Int(stringRows[2][1])! ?? 0
-            dataCounts.totalTutors = Int(stringRows[3][1])! ?? 0
-            dataCounts.activeTutors = Int(stringRows[4][1])! ?? 0
-            dataCounts.highestTutorKey = Int(stringRows[6][1])! ?? 0
-            dataCounts.totalServices = Int(stringRows[7][1])! ?? 0
-            dataCounts.activeServices = Int(stringRows[8][1])! ?? 0
-            dataCounts.highestServiceKey = Int(stringRows[9][1])! ?? 0
-            dataCounts.totalCities = Int(stringRows[10][1])! ?? 0
-            dataCounts.highestCityKey = Int(stringRows[11][1])! ?? 0
+            dataCounts.totalStudents = Int(stringRows[PgmConstants.dataCountTotalStudentsRow][PgmConstants.dataCountTotalStudentsCol])! ?? 0
+            dataCounts.activeStudents = Int(stringRows[PgmConstants.dataCountActiveStudentsRow][PgmConstants.dataCountActiveStudentsCol])! ?? 0
+            dataCounts.highestStudentKey = Int(stringRows[PgmConstants.dataCountHighestStudentKeyRow][PgmConstants.dataCountHighestStudentKeyCol])! ?? 0
+            dataCounts.totalTutors = Int(stringRows[PgmConstants.dataCountTotalTutorsRow][PgmConstants.dataCountTotalTutorsCol])! ?? 0
+            dataCounts.activeTutors = Int(stringRows[PgmConstants.dataCountActiveTutorsRow][PgmConstants.dataCountActiveTutorsCol])! ?? 0
+            dataCounts.highestTutorKey = Int(stringRows[PgmConstants.dataCountHighestTutorKeyRow][PgmConstants.dataCountHighestTutorKeyCol])! ?? 0
+            dataCounts.totalServices = Int(stringRows[PgmConstants.dataCountTotalServicesRow][PgmConstants.dataCountTotalServicesCol])! ?? 0
+            dataCounts.activeServices = Int(stringRows[PgmConstants.dataCountActiveServicesRow][PgmConstants.dataCountActiveServicesCol])! ?? 0
+            dataCounts.highestServiceKey = Int(stringRows[PgmConstants.dataCountHighestServiceKeyRow][PgmConstants.dataCountHighestServiceKeyCol])! ?? 0
+            dataCounts.totalCities = Int(stringRows[PgmConstants.dataCountTotalCitiesRow][PgmConstants.dataCountTotalCitiesCol])! ?? 0
+            dataCounts.highestCityKey = Int(stringRows[PgmConstants.dataCountHighestCityKeyRow][PgmConstants.dataCountHighestCityKeyCol])! ?? 0
             
+            self.loadTutorData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadStudentData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadServiceData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadCityData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             
+        }
+    }
+    
+    func loadTutorData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        let range = PgmConstants.tutorRange + String(dataCounts.totalTutors + PgmConstants.tutorStartingRowNumber - 1)
+    print("range is \(range)")
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+// Load Tutors from ReferenceData spreadsheet
+        sheetService.executeQuery(query) { (ticket, result, error) in
+            if let error = error {
+                print(error)
+                print("Failed to read data:\(error.localizedDescription)")
+                return
+            }
+            guard let result = result as? GTLRSheets_ValueRange else {
+                return
+            }
+            
+            let rows = result.values!
+            var stringRows = rows as! [[String]]
+            
+            for row in stringRows {
+                stringRows.append(row)
+                //               print(row)
+            }
+            
+            if rows.isEmpty {
+                print("No data found.")
+                return
+            }
+        
             // Load the Tutors
             referenceData.tutorList.removeAll()          // empty the array before loading as this could be a refresh
             
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd-MM-yyyy"
+            dateFormatter.dateFormat = "yyyy-MM-dd"
             
             var tutorIndex = 0
             var rowNumber = 0
@@ -141,28 +177,212 @@ import GoogleAPIClientForREST
                 
                 var newTutorKey = stringRows[rowNumber][PgmConstants.tutorKeyPosition]
                 var newTutorName = stringRows[rowNumber][PgmConstants.tutorNamePosition]
+        print(newTutorName)
                 var newTutorEmail = stringRows[rowNumber][PgmConstants.tutorEmailPosition]
                 var newTutorPhone = stringRows[rowNumber][PgmConstants.tutorPhonePosition]
                 var newTutorStatus = stringRows[rowNumber][PgmConstants.tutorStatusPosition]
                 var newTutorStartDateString = stringRows[rowNumber][PgmConstants.tutorStartDatePosition]
                 var newTutorStartDate = dateFormatter.date(from: newTutorStartDateString)
                 var newTutorEndDateString = stringRows[rowNumber][PgmConstants.tutorEndDatePosition]
-                var newTutorEndDate = dateFormatter.date(from: newTutorEndDateString)
+                var newTutorEndDate: Date? = dateFormatter.date(from: newTutorEndDateString)
+                if let newTutorEndDate = newTutorEndDate {} else {
+                    newTutorEndDate = nil
+                }
                 var newTutorMaxStudents = Int(stringRows[rowNumber][PgmConstants.tutorMaxStudentPosition])! ?? 0
                 var newTutorStudentCount = Int(stringRows[rowNumber][PgmConstants.tutorStudentCountPosition])! ?? 0
                 var newTutorServiceCount = Int(stringRows[rowNumber][PgmConstants.tutorServiceCountPosition])! ?? 0
                 var newTutorTotalSessions = Int(stringRows[rowNumber][PgmConstants.tutorSessionCountPosition])! ?? 0
                 var newTutorCost = Float(stringRows[rowNumber][PgmConstants.tutorTotalCostPosition])! ?? 0.0
                 var newTutorRevenue = Float(stringRows[rowNumber][PgmConstants.tutorTotalRevenuePosition])! ?? 0.0
-                var newTutorProfit = Float(stringRows[rowNumber][PgmConstants.tutorTotalProfitPosition])! ?? 0
+                var newTutorProfit = Float(stringRows[rowNumber][PgmConstants.tutorTotalProfitPosition])! ?? 0.0
                 
-                var newTutor = TutorData(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDate!, tutorEndDate: newTutorEndDate!, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalPrice: newTutorRevenue, tutorTotalProfit: newTutorProfit)
+                var newTutor = TutorData(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDate!, tutorEndDate: newTutorEndDate, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalPrice: newTutorRevenue, tutorTotalProfit: newTutorProfit)
                 referenceData.tutorList.insert(newTutor, at: tutorIndex)
                 tutorIndex += 1
                 rowNumber += 1
             }
+        }
+    }
+
+    
+    func loadStudentData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        let range = PgmConstants.studentRange + String(dataCounts.totalStudents + PgmConstants.studentStartingRowNumber - 1)
+        print("range is \(range)")
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+// Load Students from ReferenceData spreadsheet
+        sheetService.executeQuery(query) { (ticket, result, error) in
+            if let error = error {
+                print(error)
+                print("Failed to read data:\(error.localizedDescription)")
+                return
+            }
+            guard let result = result as? GTLRSheets_ValueRange else {
+                return
+            }
             
+            let rows = result.values!
+            var stringRows = rows as! [[String]]
+            
+            for row in stringRows {
+                stringRows.append(row)
+                //               print(row)
+            }
+            
+            if rows.isEmpty {
+                print("No data found.")
+                return
+            }
+            
+            // Load the Students
+            referenceData.studentList.removeAll()          // empty the array before loading as this could be a refresh
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            
+            var studentIndex = 0
+            var rowNumber = 0
+            while studentIndex < dataCounts.totalStudents {
+                
+                var newStudentKey = stringRows[rowNumber][PgmConstants.studentKeyPosition]
+                var newStudentName = stringRows[rowNumber][PgmConstants.studentNamePosition]
+            print(newStudentName)
+                var newGuardianName = stringRows[rowNumber][PgmConstants.studentGuardianPosition]
+                var newStudentPhone = stringRows[rowNumber][PgmConstants.studentPhonePosition]
+                var newStudentEmail = stringRows[rowNumber][PgmConstants.studentEmailPosition]
+                var newStudentType = stringRows[rowNumber][PgmConstants.studentTypePosition]
+                var newStudentStartDateString = stringRows[rowNumber][PgmConstants.studentStartDatePosition]
+                var newStudentStartDate = dateFormatter.date(from: newStudentStartDateString)
+                var newStudentEndDateString = stringRows[rowNumber][PgmConstants.studentEndDatePosition]
+                var newStudentEndDate = dateFormatter.date(from: newStudentEndDateString)
+                var newStudentStatus = stringRows[rowNumber][PgmConstants.studentStatusPosition]
+                var newStudentTutorKey = stringRows[rowNumber][PgmConstants.studentTutorKeyPosition]
+                var newStudentTutorName = stringRows[rowNumber][PgmConstants.studentTutorNamePosition]
+                var newStudentLocation = stringRows[rowNumber][PgmConstants.studentLocationPosition]
+                var newStudentTotalSessions = Int(stringRows[rowNumber][PgmConstants.studentSessionsPosition])! ?? 0
+                var newStudentCost = Float(stringRows[rowNumber][PgmConstants.studentTotalCostPosition])! ?? 0.0
+                var newStudentRevenue = Float(stringRows[rowNumber][PgmConstants.studentTotalRevenuePosition])! ?? 0.0
+                var newStudentProfit = Float(stringRows[rowNumber][PgmConstants.studentTotalProfitPosition])! ?? 0.0
+                
+                var newStudent = StudentData(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDate!, studentEndData: newStudentEndDate, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentCity: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalPrice: newStudentRevenue, studentTotalProfit: newStudentProfit)
+                
+                referenceData.studentList.insert(newStudent, at: studentIndex)
+                studentIndex += 1
+                rowNumber += 1
+            }
+        }
+    }
+    
+    func loadServiceData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        let range = PgmConstants.serviceRange + String(dataCounts.totalServices + PgmConstants.serviceStartingRowNumber - 1)
+        print("range is \(range)")
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+// Load Services from ReferenceData spreadsheet
+        sheetService.executeQuery(query) { (ticket, result, error) in
+            if let error = error {
+                print(error)
+                print("Failed to read data:\(error.localizedDescription)")
+                return
+            }
+            guard let result = result as? GTLRSheets_ValueRange else {
+                return
+            }
+            
+            let rows = result.values!
+            var stringRows = rows as! [[String]]
+            
+            for row in stringRows {
+                stringRows.append(row)
+                //               print(row)
+            }
+            
+            if rows.isEmpty {
+                print("No data found.")
+                return
+            }
+            
+// Load the Services
+            referenceData.serviceList.removeAll()          // empty the array before loading as this could be a refresh
+
+            var serviceIndex = 0
+            var rowNumber = 0
+            while serviceIndex < dataCounts.totalServices {
+                
+                var newServiceKey = stringRows[rowNumber][PgmConstants.serviceKeyPosition]
+                var newServiceTimesheetName = stringRows[rowNumber][PgmConstants.serviceTimesheetNamePosition]
+                var newServiceInvoiceName = stringRows[rowNumber][PgmConstants.serviceInvoiceNamePosition]
+            print(newServiceTimesheetName)
+                var newServiceType = stringRows[rowNumber][PgmConstants.serviceTypePosition]
+                var newServiceBillingType = stringRows[rowNumber][PgmConstants.serviceBillingTypePosition]
+                var newServiceStatus = stringRows[rowNumber][PgmConstants.serviceStatusPosition]
+                var newServiceCost1 = Float(stringRows[rowNumber][PgmConstants.serviceCost1Position])! ?? 0.0
+                var newServiceCost2 = Float(stringRows[rowNumber][PgmConstants.serviceCost2Position])! ?? 0.0
+                var newServiceCost3 = Float(stringRows[rowNumber][PgmConstants.serviceCost3Position])! ?? 0.0
+                var newServicePrice1 = Float(stringRows[rowNumber][PgmConstants.servicePrice1Position])! ?? 0.0
+                var newServicePrice2 = Float(stringRows[rowNumber][PgmConstants.servicePrice2Position])! ?? 0.0
+                var newServicePrice3 = Float(stringRows[rowNumber][PgmConstants.servicePrice3Position])! ?? 0.0
+                
+                let newService = ServiceData(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
+                
+                referenceData.serviceList.insert(newService, at: serviceIndex)
+                serviceIndex += 1
+                rowNumber += 1
+            }
+        }
+    }
+    
+    func loadCityData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        let range = PgmConstants.cityRange + String(dataCounts.totalCities + PgmConstants.cityStartingRowNumber - 1)
+        print("range is \(range)")
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+// Load Cities from ReferenceData spreadsheet
+        sheetService.executeQuery(query) { (ticket, result, error) in
+            if let error = error {
+                print(error)
+                print("Failed to read data:\(error.localizedDescription)")
+                return
+            }
+            guard let result = result as? GTLRSheets_ValueRange else {
+                return
+            }
+            
+            let rows = result.values!
+            var stringRows = rows as! [[String]]
+            
+            for row in stringRows {
+                stringRows.append(row)
+                //               print(row)
+            }
+            
+            if rows.isEmpty {
+                print("No data found.")
+                return
+            }
+            
+            // Load the Cities
+            referenceData.cityList.removeAll()          // empty the array before loading as this could be a refresh
+            
+            var cityIndex = 0
+            var rowNumber = 0
+            while cityIndex < dataCounts.totalCities {
+                
+                var newCityKey = stringRows[rowNumber][PgmConstants.cityKeyPosition]
+                var newCityName = stringRows[rowNumber][PgmConstants.cityNamePosition]
+            print(newCityName)
+                var newCityMonthRevenue = Float(stringRows[rowNumber][PgmConstants.cityMonthRevenuePosition])! ?? 0.0
+                var newCityTotalRevenue = Float(stringRows[rowNumber][PgmConstants.cityTotalRevenuePosition])! ?? 0.0
+
+                let newCity = CityData(cityKey: newCityKey, cityName: newCityName, cityMonthRevenue: newCityMonthRevenue, cityTotalRevenue: newCityTotalRevenue)
+                
+                referenceData.cityList.insert(newCity, at: cityIndex)
+                cityIndex += 1
+                rowNumber += 1
+            }
         }
     }
 }
-    
