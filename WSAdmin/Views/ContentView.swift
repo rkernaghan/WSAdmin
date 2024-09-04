@@ -10,12 +10,12 @@ import GoogleSignIn
 
 struct ContentView: View {
 
-    let vm = UserAuthModel()
-    let refVM = RefDataModel()
+    let authVM = UserAuthModel()
+    let refDataVM = RefDataModel()
     
     fileprivate func SignInButton() -> Button<Text> {
         Button(action: {
-            vm.signIn()
+            authVM.signIn()
         }) {
             Text("Sign In")
         }
@@ -23,7 +23,7 @@ struct ContentView: View {
     
     fileprivate func SignOutButton() -> Button<Text> {
         Button(action: {
-            vm.signOut()
+            authVM.signOut()
         }) {
             Text("Sign Out")
         }
@@ -33,18 +33,18 @@ struct ContentView: View {
     var body: some View {
         VStack{
             
-            if (vm.isLoggedIn) {
+            if (authVM.isLoggedIn) {
                 DataMgmtView()
  
  //               SignOutButton()
             } else {
                 SignInView()
             }
-            Text(vm.errorMessage)
+            Text(authVM.errorMessage)
         }
         .navigationTitle("Login")
-        .environment(refVM)
-        .environment(vm)
+        .environment(refDataVM)
+        .environment(authVM)
     }
 }
 

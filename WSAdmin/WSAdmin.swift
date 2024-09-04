@@ -1,5 +1,5 @@
 //
-//  WSAdminApp.swift
+//  WSAdmin.swift
 //  WSAdmin
 //
 //  Created by Russell Kernaghan on 2024-08-13.
@@ -99,6 +99,7 @@ struct PgmConstants {
     static let notePrompt = "Choose Note"
 }
 var submitErrorMsg: String = " "
+
 @main
 struct WSAdmin: App {
     

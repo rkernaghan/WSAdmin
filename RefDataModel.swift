@@ -14,21 +14,23 @@ import GoogleAPIClientForREST
 
 @Observable class RefDataModel  {
     
-    var isDataLoaded: Bool
-    
-    var referenceData = ReferenceData()
-    var dataCounts = DataCounts()
-    var fileIDs = FileData()
-    
+    var isStudentDataLoaded: Bool
+    var isTutorDataLoaded: Bool
+    var isServiceDataLoaded: Bool
+    var isCityDataLoaded: Bool
+
     init() {
-        isDataLoaded = false
+        isStudentDataLoaded = false
+        isTutorDataLoaded = false
+        isServiceDataLoaded = false
+        isCityDataLoaded = false
     }
 //
 // This function loads the main reference data from the ReferenceData sheet.
 // 1) Call Google Drive to search for for the Tutor's timesheet file name in order to get the file's Google File ID
 // 2) If only a single file is retreived, call loadStudentServices to retrieve the Tutor's assigned Student list, Services list and Notes options as well as the Tutor service history for the month
 //
-    func readRefData(fileName: String) {
+    func readRefData(fileName: String, fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData) {
         
         print("Getting fileID for '\(fileName)'")
         
@@ -59,9 +61,9 @@ import GoogleAPIClientForREST
                         GIDSignIn.sharedInstance.signOut()
                     case 1:
                         let name = filesShow[0].name ?? ""
-                        self.fileIDs.referenceDataFile = filesShow[0].identifier ?? ""
-                        print(name, self.fileIDs.referenceDataFile)
-                        self.loadReferenceData(fileIDs: self.fileIDs, dataCounts: self.dataCounts, referenceData: self.referenceData)
+                        fileIDs.referenceDataFile = filesShow[0].identifier ?? ""
+                        print(name, fileIDs.referenceDataFile)
+                        self.loadReferenceData(fileIDs: fileIDs, dataCounts: dataCounts, referenceData: referenceData)
                     default:
                         print("Error: more than one tutor timesheet for '\(fileName)")
                         GIDSignIn.sharedInstance.signOut()
@@ -127,18 +129,17 @@ import GoogleAPIClientForREST
             dataCounts.totalCities = Int(stringRows[PgmConstants.dataCountTotalCitiesRow][PgmConstants.dataCountTotalCitiesCol])! ?? 0
             dataCounts.highestCityKey = Int(stringRows[PgmConstants.dataCountHighestCityKeyRow][PgmConstants.dataCountHighestCityKeyCol])! ?? 0
             
-            self.loadTutorData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadStudentData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadServiceData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadCityData(dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            
+            self.loadTutorData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadStudentData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadServiceData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadCityData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
         }
     }
     
-    func loadTutorData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadTutorData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.tutorRange + String(dataCounts.totalTutors + PgmConstants.tutorStartingRowNumber - 1)
-    print("range is \(range)")
+//    print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
             .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
 // Load Tutors from ReferenceData spreadsheet
@@ -165,8 +166,8 @@ import GoogleAPIClientForREST
                 return
             }
         
-            // Load the Tutors
-            referenceData.tutorList.removeAll()          // empty the array before loading as this could be a refresh
+// Load the Tutors
+//            referenceData.tutorsList.removeAll()          // empty the array before loading as this could be a refresh
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -177,7 +178,6 @@ import GoogleAPIClientForREST
                 
                 var newTutorKey = stringRows[rowNumber][PgmConstants.tutorKeyPosition]
                 var newTutorName = stringRows[rowNumber][PgmConstants.tutorNamePosition]
-        print(newTutorName)
                 var newTutorEmail = stringRows[rowNumber][PgmConstants.tutorEmailPosition]
                 var newTutorPhone = stringRows[rowNumber][PgmConstants.tutorPhonePosition]
                 var newTutorStatus = stringRows[rowNumber][PgmConstants.tutorStatusPosition]
@@ -196,19 +196,21 @@ import GoogleAPIClientForREST
                 var newTutorRevenue = Float(stringRows[rowNumber][PgmConstants.tutorTotalRevenuePosition])! ?? 0.0
                 var newTutorProfit = Float(stringRows[rowNumber][PgmConstants.tutorTotalProfitPosition])! ?? 0.0
                 
-                var newTutor = TutorData(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDate!, tutorEndDate: newTutorEndDate, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalPrice: newTutorRevenue, tutorTotalProfit: newTutorProfit)
-                referenceData.tutorList.insert(newTutor, at: tutorIndex)
+                var newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDate!, tutorEndDate: newTutorEndDate, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalPrice: newTutorRevenue, tutorTotalProfit: newTutorProfit)
+                referenceData.tutors.addTutor(newTutor: newTutor)
                 tutorIndex += 1
                 rowNumber += 1
             }
+            referenceData.tutors.printAll()
+            self.isTutorDataLoaded = true
         }
     }
 
     
-    func loadStudentData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadStudentData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.studentRange + String(dataCounts.totalStudents + PgmConstants.studentStartingRowNumber - 1)
-        print("range is \(range)")
+//        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
             .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
 // Load Students from ReferenceData spreadsheet
@@ -236,7 +238,7 @@ import GoogleAPIClientForREST
             }
             
             // Load the Students
-            referenceData.studentList.removeAll()          // empty the array before loading as this could be a refresh
+//           referenceData.studentList.removeAll()          // empty the array before loading as this could be a refresh
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -247,7 +249,6 @@ import GoogleAPIClientForREST
                 
                 var newStudentKey = stringRows[rowNumber][PgmConstants.studentKeyPosition]
                 var newStudentName = stringRows[rowNumber][PgmConstants.studentNamePosition]
-            print(newStudentName)
                 var newGuardianName = stringRows[rowNumber][PgmConstants.studentGuardianPosition]
                 var newStudentPhone = stringRows[rowNumber][PgmConstants.studentPhonePosition]
                 var newStudentEmail = stringRows[rowNumber][PgmConstants.studentEmailPosition]
@@ -265,19 +266,23 @@ import GoogleAPIClientForREST
                 var newStudentRevenue = Float(stringRows[rowNumber][PgmConstants.studentTotalRevenuePosition])! ?? 0.0
                 var newStudentProfit = Float(stringRows[rowNumber][PgmConstants.studentTotalProfitPosition])! ?? 0.0
                 
-                var newStudent = StudentData(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDate!, studentEndData: newStudentEndDate, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentCity: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalPrice: newStudentRevenue, studentTotalProfit: newStudentProfit)
+                var newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDate!, studentEndData: newStudentEndDate, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentCity: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalPrice: newStudentRevenue, studentTotalProfit: newStudentProfit)
                 
-                referenceData.studentList.insert(newStudent, at: studentIndex)
+                referenceData.students.addStudent(newStudent: newStudent)
+
                 studentIndex += 1
                 rowNumber += 1
             }
+
+            referenceData.students.printAll()
+            self.isStudentDataLoaded = true
         }
     }
     
-    func loadServiceData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadServiceData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.serviceRange + String(dataCounts.totalServices + PgmConstants.serviceStartingRowNumber - 1)
-        print("range is \(range)")
+//        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
             .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
 // Load Services from ReferenceData spreadsheet
@@ -305,7 +310,7 @@ import GoogleAPIClientForREST
             }
             
 // Load the Services
-            referenceData.serviceList.removeAll()          // empty the array before loading as this could be a refresh
+//            referenceData.serviceList.removeAll()          // empty the array before loading as this could be a refresh
 
             var serviceIndex = 0
             var rowNumber = 0
@@ -314,7 +319,6 @@ import GoogleAPIClientForREST
                 var newServiceKey = stringRows[rowNumber][PgmConstants.serviceKeyPosition]
                 var newServiceTimesheetName = stringRows[rowNumber][PgmConstants.serviceTimesheetNamePosition]
                 var newServiceInvoiceName = stringRows[rowNumber][PgmConstants.serviceInvoiceNamePosition]
-            print(newServiceTimesheetName)
                 var newServiceType = stringRows[rowNumber][PgmConstants.serviceTypePosition]
                 var newServiceBillingType = stringRows[rowNumber][PgmConstants.serviceBillingTypePosition]
                 var newServiceStatus = stringRows[rowNumber][PgmConstants.serviceStatusPosition]
@@ -325,19 +329,21 @@ import GoogleAPIClientForREST
                 var newServicePrice2 = Float(stringRows[rowNumber][PgmConstants.servicePrice2Position])! ?? 0.0
                 var newServicePrice3 = Float(stringRows[rowNumber][PgmConstants.servicePrice3Position])! ?? 0.0
                 
-                let newService = ServiceData(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
+                let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
                 
-                referenceData.serviceList.insert(newService, at: serviceIndex)
+                referenceData.services.addService(newService: newService)
                 serviceIndex += 1
                 rowNumber += 1
             }
+            referenceData.services.printAll()
+            self.isServiceDataLoaded = true
         }
     }
     
-    func loadCityData(dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadCityData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.cityRange + String(dataCounts.totalCities + PgmConstants.cityStartingRowNumber - 1)
-        print("range is \(range)")
+//        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
             .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
 // Load Cities from ReferenceData spreadsheet
@@ -364,8 +370,8 @@ import GoogleAPIClientForREST
                 return
             }
             
-            // Load the Cities
-            referenceData.cityList.removeAll()          // empty the array before loading as this could be a refresh
+// Load the Cities
+//           referenceData.citiesList.removeAll()          // empty the array before loading as this could be a refresh
             
             var cityIndex = 0
             var rowNumber = 0
@@ -373,16 +379,17 @@ import GoogleAPIClientForREST
                 
                 var newCityKey = stringRows[rowNumber][PgmConstants.cityKeyPosition]
                 var newCityName = stringRows[rowNumber][PgmConstants.cityNamePosition]
-            print(newCityName)
                 var newCityMonthRevenue = Float(stringRows[rowNumber][PgmConstants.cityMonthRevenuePosition])! ?? 0.0
                 var newCityTotalRevenue = Float(stringRows[rowNumber][PgmConstants.cityTotalRevenuePosition])! ?? 0.0
 
-                let newCity = CityData(cityKey: newCityKey, cityName: newCityName, cityMonthRevenue: newCityMonthRevenue, cityTotalRevenue: newCityTotalRevenue)
+                let newCity = City(cityKey: newCityKey, cityName: newCityName, cityMonthRevenue: newCityMonthRevenue, cityTotalRevenue: newCityTotalRevenue)
                 
-                referenceData.cityList.insert(newCity, at: cityIndex)
+                referenceData.cities.addCity(newCity: newCity)
                 cityIndex += 1
                 rowNumber += 1
             }
+            referenceData.cities.printAll()
+            self.isCityDataLoaded = true
         }
     }
 }
