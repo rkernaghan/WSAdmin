@@ -26,10 +26,10 @@ struct PgmConstants {
     static let dataCountActiveServicesCol = 1
     static let dataCountHighestServiceKeyRow = 8
     static let dataCountHighestServiceKeyCol = 1
-    static let dataCountTotalCitiesRow = 9
-    static let dataCountTotalCitiesCol = 1
-    static let dataCountHighestCityKeyRow = 10
-    static let dataCountHighestCityKeyCol = 1
+    static let dataCountTotalLocationsRow = 9
+    static let dataCountTotalLocationsCol = 1
+    static let dataCountHighestLocationKeyRow = 10
+    static let dataCountHighestLocationKeyCol = 1
     
     static let testRefFileName = "ReferenceData - TEST"
     static let prodRefFileName = "ReferenceData"
@@ -37,7 +37,7 @@ struct PgmConstants {
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
     static let serviceRange = "Master!AL3:AW"
-    static let cityRange = "Master!AZ3:BC"
+    static let locationRange = "Master!AZ3:BC"
     
     static let tutorStartingRowNumber = 2
     static let tutorKeyPosition = 0
@@ -87,11 +87,11 @@ struct PgmConstants {
     static let servicePrice2Position = 10
     static let servicePrice3Position = 11
     
-    static let cityStartingRowNumber = 3
-    static let cityKeyPosition = 0
-    static let cityNamePosition = 1
-    static let cityMonthRevenuePosition = 2
-    static let cityTotalRevenuePosition = 3
+    static let locationStartingRowNumber = 3
+    static let locationKeyPosition = 0
+    static let locationNamePosition = 1
+    static let locationMonthRevenuePosition = 2
+    static let locationTotalRevenuePosition = 3
     
     static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
     static let firstTimesheetRow = 5
@@ -103,7 +103,7 @@ struct PgmConstants {
     static let studentKeyPrefix = "S"
     static let serviceBaseKeyPrefix = "B"
     static let serviceSpecialKeyPrefix = "X"
-    static let cityKeyPrefix = "C"
+    static let locationKeyPrefix = "C"
 }
 var submitErrorMsg: String = " "
 

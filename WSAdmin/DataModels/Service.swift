@@ -20,7 +20,7 @@ class Service: Identifiable {
     var servicePrice1: Float
     var servicePrice2: Float
     var servicePrice3: Float
-    let id = UUID()
+    let ID = UUID()
     
     init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: String, serviceBillingType: String, serviceStatus: String, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
         self.serviceKey = serviceKey

@@ -29,8 +29,8 @@ class DataCounts {
     var totalServices: Int = 0
     var activeServices: Int = 0
     var highestServiceKey: Int = 0
-    var totalCities: Int = 0
-    var highestCityKey: Int = 0
+    var totalLocations: Int = 0
+    var highestLocationKey: Int = 0
 }
 
 
@@ -48,7 +48,7 @@ class ReferenceData {
     var tutors = TutorsList()
     var students = StudentsList()
     var services = ServicesList()
-    var cities = CitiesList()
+    var locations = LocationsList()
 }
 
 struct DataMgmtView: View {
@@ -104,9 +104,9 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    CitiesView(referenceData: referenceData)
+                    LocationsView(referenceData: referenceData)
                 } label: {
-                  Label("Cities", systemImage: "building")
+                  Label("Locations", systemImage: "building")
                 }
                 
                 NavigationLink {
@@ -119,6 +119,18 @@ struct SideView: View {
                     AddStudent(referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ")
                 } label: {
                   Label("Add Student", systemImage: "graduationcap")
+                }
+                
+                NavigationLink {
+                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+                } label: {
+                  Label("Add Service", systemImage: "list.bullet")
+                }
+                
+                NavigationLink {
+                    AddLocation(referenceData: referenceData, locationName: " ")
+                } label: {
+                  Label("Add Location", systemImage: "building")
                 }
             }
             .listStyle(SidebarListStyle())
@@ -142,11 +154,12 @@ struct TutorsView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
+    @State private var selectedTutor = Set<Tutor.ID>()
         
     var body: some View {
         if refDataModel.isTutorDataLoaded {
   
-            Table(referenceData.tutors.tutorsList) {
+            Table(referenceData.tutors.tutorsList, selection: $selectedTutor) {
                 TableColumn("Tutor Name", value: \.tutorName)
                 TableColumn("Phone", value: \.tutorPhone)
                 TableColumn("Email", value: \.tutorEmail)
@@ -189,7 +202,7 @@ struct StudentsView: View {
                 TableColumn("Status", value: \.studentStatus)
  //               TableColumn("Tutor Key", value: \.studentTutorKey)
  //               TableColumn("Tutor Name", value: \.studentTutorName)
-                TableColumn("Location", value: \.studentCity)
+                TableColumn("Location", value: \.studentLocation)
  //               TableColumn("Sessions", value: \.studentSessions)
  //               TableColumn("Total Cost", value: \.studentTotalCost)
  //               TableColumn("Total Revenue", value: \.studentTotalPrice)
@@ -224,19 +237,19 @@ struct ServicesView: View {
     }
 }
 
-struct CitiesView: View {
+struct LocationsView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
         
     var body: some View {
-        if refDataModel.isCityDataLoaded {
+        if refDataModel.isLocationDataLoaded {
   
-            Table(referenceData.cities.citiesList) {
-                TableColumn("Location Name", value: \.cityName)
+            Table(referenceData.locations.locationsList) {
+                TableColumn("Location Name", value: \.locationName)
   
-//               TableColumn("Location Month Revenue", value: \.cityMonthRevenue)
-//               TableColumn("Location Total Revenue", value: \.cityTotalRevenue)
+//               TableColumn("Location Month Revenue", value: \.locationMonthRevenue)
+//               TableColumn("Location Total Revenue", value: \.locationTotalRevenue)
 
             }
         }

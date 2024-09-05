@@ -19,14 +19,14 @@ class Student: Identifiable {
     var studentStatus: String
     var studentTutorKey: String?
     var studentTutorName: String?
-    var studentCity: String
+    var studentLocation: String
     var studentSessions: Int
     var studentTotalCost: Float
     var studentTotalPrice: Float
     var studentTotalProfit: Float
-    let id = UUID()
+    let ID = UUID()
     
-    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: Date, studentEndData: Date?, studentStatus: String, studentTutorKey: String?, studentTutorName: String?, studentCity: String, studentSessions: Int, studentTotalCost: Float, studentTotalPrice: Float, studentTotalProfit: Float) {
+    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: Date, studentEndData: Date?, studentStatus: String, studentTutorKey: String?, studentTutorName: String?, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalPrice: Float, studentTotalProfit: Float) {
         self.studentKey = studentKey
         self.studentName = studentName
         self.studentGuardian = studentGuardian
@@ -38,7 +38,7 @@ class Student: Identifiable {
         self.studentStatus = studentStatus
         self.studentTutorKey = studentTutorKey
         self.studentTutorName = studentTutorName
-        self.studentCity = studentCity
+        self.studentLocation = studentLocation
         self.studentSessions = studentSessions
         self.studentTotalCost = studentTotalCost
         self.studentTotalPrice = studentTotalPrice

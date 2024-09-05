@@ -17,13 +17,13 @@ import GoogleAPIClientForREST
     var isStudentDataLoaded: Bool
     var isTutorDataLoaded: Bool
     var isServiceDataLoaded: Bool
-    var isCityDataLoaded: Bool
+    var isLocationDataLoaded: Bool
 
     init() {
         isStudentDataLoaded = false
         isTutorDataLoaded = false
         isServiceDataLoaded = false
-        isCityDataLoaded = false
+        isLocationDataLoaded = false
     }
 //
 // This function loads the main reference data from the ReferenceData sheet.
@@ -126,13 +126,13 @@ import GoogleAPIClientForREST
             dataCounts.totalServices = Int(stringRows[PgmConstants.dataCountTotalServicesRow][PgmConstants.dataCountTotalServicesCol])! ?? 0
             dataCounts.activeServices = Int(stringRows[PgmConstants.dataCountActiveServicesRow][PgmConstants.dataCountActiveServicesCol])! ?? 0
             dataCounts.highestServiceKey = Int(stringRows[PgmConstants.dataCountHighestServiceKeyRow][PgmConstants.dataCountHighestServiceKeyCol])! ?? 0
-            dataCounts.totalCities = Int(stringRows[PgmConstants.dataCountTotalCitiesRow][PgmConstants.dataCountTotalCitiesCol])! ?? 0
-            dataCounts.highestCityKey = Int(stringRows[PgmConstants.dataCountHighestCityKeyRow][PgmConstants.dataCountHighestCityKeyCol])! ?? 0
+            dataCounts.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol])! ?? 0
+            dataCounts.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol])! ?? 0
             
             self.loadTutorData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             self.loadStudentData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             self.loadServiceData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadCityData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadLocationData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
         }
     }
     
@@ -266,7 +266,7 @@ import GoogleAPIClientForREST
                 var newStudentRevenue = Float(stringRows[rowNumber][PgmConstants.studentTotalRevenuePosition])! ?? 0.0
                 var newStudentProfit = Float(stringRows[rowNumber][PgmConstants.studentTotalProfitPosition])! ?? 0.0
                 
-                var newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDate!, studentEndData: newStudentEndDate, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentCity: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalPrice: newStudentRevenue, studentTotalProfit: newStudentProfit)
+                var newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDate!, studentEndData: newStudentEndDate, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalPrice: newStudentRevenue, studentTotalProfit: newStudentProfit)
                 
                 referenceData.students.addStudent(newStudent: newStudent)
 
@@ -340,9 +340,9 @@ import GoogleAPIClientForREST
         }
     }
     
-    func loadCityData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadLocationData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
-        let range = PgmConstants.cityRange + String(dataCounts.totalCities + PgmConstants.cityStartingRowNumber - 1)
+        let range = PgmConstants.locationRange + String(dataCounts.totalLocations + PgmConstants.locationStartingRowNumber - 1)
 //        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
             .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
@@ -373,23 +373,23 @@ import GoogleAPIClientForREST
 // Load the Cities
 //           referenceData.citiesList.removeAll()          // empty the array before loading as this could be a refresh
             
-            var cityIndex = 0
+            var locationIndex = 0
             var rowNumber = 0
-            while cityIndex < dataCounts.totalCities {
+            while locationIndex < dataCounts.totalLocations {
                 
-                var newCityKey = stringRows[rowNumber][PgmConstants.cityKeyPosition]
-                var newCityName = stringRows[rowNumber][PgmConstants.cityNamePosition]
-                var newCityMonthRevenue = Float(stringRows[rowNumber][PgmConstants.cityMonthRevenuePosition])! ?? 0.0
-                var newCityTotalRevenue = Float(stringRows[rowNumber][PgmConstants.cityTotalRevenuePosition])! ?? 0.0
+                var newLocationKey = stringRows[rowNumber][PgmConstants.locationKeyPosition]
+                var newLocationName = stringRows[rowNumber][PgmConstants.locationNamePosition]
+                var newLocationMonthRevenue = Float(stringRows[rowNumber][PgmConstants.locationMonthRevenuePosition])! ?? 0.0
+                var newLocationTotalRevenue = Float(stringRows[rowNumber][PgmConstants.locationTotalRevenuePosition])! ?? 0.0
 
-                let newCity = City(cityKey: newCityKey, cityName: newCityName, cityMonthRevenue: newCityMonthRevenue, cityTotalRevenue: newCityTotalRevenue)
+                let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue)
                 
-                referenceData.cities.addCity(newCity: newCity)
-                cityIndex += 1
+                referenceData.locations.addLocation(newLocation: newLocation)
+                locationIndex += 1
                 rowNumber += 1
             }
   //          referenceData.cities.printAll()
-            self.isCityDataLoaded = true
+            self.isLocationDataLoaded = true
         }
     }
 }
