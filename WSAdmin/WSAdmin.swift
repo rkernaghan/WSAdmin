@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct PgmConstants {
-    
     static let dataCountTotalStudentsRow = 0
     static let dataCountTotalStudentsCol = 1
     static let dataCountActiveStudentsRow = 1
@@ -32,6 +31,8 @@ struct PgmConstants {
     static let dataCountHighestCityKeyRow = 10
     static let dataCountHighestCityKeyCol = 1
     
+    static let testRefFileName = "ReferenceData - TEST"
+    static let prodRefFileName = "ReferenceData"
     static let dataCountRange = "Master!A2:B12"
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
@@ -97,6 +98,12 @@ struct PgmConstants {
     static let servicePrompt = "Choose Service"
     static let studentPrompt = "Choose Student"
     static let notePrompt = "Choose Note"
+    
+    static let tutorKeyPrefix = "T"
+    static let studentKeyPrefix = "S"
+    static let serviceBaseKeyPrefix = "B"
+    static let serviceSpecialKeyPrefix = "X"
+    static let cityKeyPrefix = "C"
 }
 var submitErrorMsg: String = " "
 

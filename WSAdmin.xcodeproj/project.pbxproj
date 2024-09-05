@@ -11,10 +11,10 @@
 		02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */; };
 		02A39F1F2C6B8B6200C1FB4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */; };
 		02A39F222C6B8B6200C1FB4B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F212C6B8B6200C1FB4B /* Preview Assets.xcassets */; };
-		02AC9BB32C855BF8007391A7 /* UserAuthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */; };
+		02AC9BB32C855BF8007391A7 /* UserAuthVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB22C855BF8007391A7 /* UserAuthVM.swift */; };
 		02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB42C855C7B007391A7 /* SignInView.swift */; };
 		02AC9BB92C8614B1007391A7 /* DataMgmtView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */; };
-		02AC9BBB2C8645E1007391A7 /* RefDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BBA2C8645E1007391A7 /* RefDataModel.swift */; };
+		02AC9BBB2C8645E1007391A7 /* RefDataVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BBA2C8645E1007391A7 /* RefDataVM.swift */; };
 		02AC9BC02C889F9A007391A7 /* Student.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BBF2C889F9A007391A7 /* Student.swift */; };
 		02AC9BC22C88A161007391A7 /* StudentsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BC12C88A161007391A7 /* StudentsList.swift */; };
 		02AC9BC52C88A66D007391A7 /* Tutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BC42C88A66D007391A7 /* Tutor.swift */; };
@@ -23,6 +23,10 @@
 		02AC9BCB2C88A6BA007391A7 /* ServicesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BCA2C88A6BA007391A7 /* ServicesList.swift */; };
 		02AC9BCD2C88A6C9007391A7 /* City.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BCC2C88A6C9007391A7 /* City.swift */; };
 		02AC9BCF2C88A6DC007391A7 /* CitiesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BCE2C88A6DB007391A7 /* CitiesList.swift */; };
+		02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD02C892B0F007391A7 /* AddTutor.swift */; };
+		02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD22C892B49007391A7 /* AddStudent.swift */; };
+		02AC9BD52C894BFC007391A7 /* StudentMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */; };
+		02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */; };
 		EA36FC5F1C7DD375009FAD78 /* Pods_WSAdmin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,11 +37,11 @@
 		02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		02A39F212C6B8B6200C1FB4B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		02A39F232C6B8B6200C1FB4B /* WSAdmin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WSAdmin.entitlements; sourceTree = "<group>"; };
-		02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthModel.swift; sourceTree = "<group>"; };
+		02AC9BB22C855BF8007391A7 /* UserAuthVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthVM.swift; sourceTree = "<group>"; };
 		02AC9BB42C855C7B007391A7 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		02AC9BB62C855CB9007391A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMgmtView.swift; sourceTree = "<group>"; };
-		02AC9BBA2C8645E1007391A7 /* RefDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefDataModel.swift; sourceTree = "<group>"; };
+		02AC9BBA2C8645E1007391A7 /* RefDataVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefDataVM.swift; sourceTree = "<group>"; };
 		02AC9BBF2C889F9A007391A7 /* Student.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Student.swift; sourceTree = "<group>"; };
 		02AC9BC12C88A161007391A7 /* StudentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsList.swift; sourceTree = "<group>"; };
 		02AC9BC42C88A66D007391A7 /* Tutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutor.swift; sourceTree = "<group>"; };
@@ -46,6 +50,10 @@
 		02AC9BCA2C88A6BA007391A7 /* ServicesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesList.swift; sourceTree = "<group>"; };
 		02AC9BCC2C88A6C9007391A7 /* City.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = City.swift; sourceTree = "<group>"; };
 		02AC9BCE2C88A6DB007391A7 /* CitiesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitiesList.swift; sourceTree = "<group>"; };
+		02AC9BD02C892B0F007391A7 /* AddTutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTutor.swift; sourceTree = "<group>"; };
+		02AC9BD22C892B49007391A7 /* AddStudent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStudent.swift; sourceTree = "<group>"; };
+		02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentMgmtVM.swift; sourceTree = "<group>"; };
+		02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorMgmtVM.swift; sourceTree = "<group>"; };
 		155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WSAdmin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		60A449B919D5EA4EE3D8FA59 /* Pods-WSAdmin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WSAdmin.release.xcconfig"; path = "Target Support Files/Pods-WSAdmin/Pods-WSAdmin.release.xcconfig"; sourceTree = "<group>"; };
 		99CA4DE900057EDDC4591E5B /* Pods-WSAdmin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WSAdmin.debug.xcconfig"; path = "Target Support Files/Pods-WSAdmin/Pods-WSAdmin.debug.xcconfig"; sourceTree = "<group>"; };
@@ -109,6 +117,8 @@
 			children = (
 				02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */,
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
+				02AC9BD02C892B0F007391A7 /* AddTutor.swift */,
+				02AC9BD22C892B49007391A7 /* AddStudent.swift */,
 				02AC9BB42C855C7B007391A7 /* SignInView.swift */,
 			);
 			path = Views;
@@ -117,8 +127,10 @@
 		02AC9BBE2C8895A5007391A7 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				02AC9BB22C855BF8007391A7 /* UserAuthModel.swift */,
-				02AC9BBA2C8645E1007391A7 /* RefDataModel.swift */,
+				02AC9BB22C855BF8007391A7 /* UserAuthVM.swift */,
+				02AC9BBA2C8645E1007391A7 /* RefDataVM.swift */,
+				02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */,
+				02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */,
 			);
 			name = ViewModels;
 			path = ..;
@@ -270,20 +282,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02AC9BB32C855BF8007391A7 /* UserAuthModel.swift in Sources */,
+				02AC9BB32C855BF8007391A7 /* UserAuthVM.swift in Sources */,
 				02AC9BCB2C88A6BA007391A7 /* ServicesList.swift in Sources */,
 				02AC9BC52C88A66D007391A7 /* Tutor.swift in Sources */,
 				02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */,
 				02AC9BC92C88A6A5007391A7 /* Service.swift in Sources */,
 				02AC9BB92C8614B1007391A7 /* DataMgmtView.swift in Sources */,
+				02AC9BD52C894BFC007391A7 /* StudentMgmtVM.swift in Sources */,
 				02AC9BC22C88A161007391A7 /* StudentsList.swift in Sources */,
 				02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */,
 				02AC9BCF2C88A6DC007391A7 /* CitiesList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,
+				02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */,
+				02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */,
+				02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,
 				02AC9BCD2C88A6C9007391A7 /* City.swift in Sources */,
-				02AC9BBB2C8645E1007391A7 /* RefDataModel.swift in Sources */,
+				02AC9BBB2C8645E1007391A7 /* RefDataVM.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

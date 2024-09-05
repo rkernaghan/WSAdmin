@@ -10,7 +10,7 @@ import SwiftUI
 import GoogleSignIn
 
 
-@Observable class UserAuthModel {
+@Observable class UserAuthVM {
     
     var isLoggedIn: Bool = false
     var errorMessage: String = ""

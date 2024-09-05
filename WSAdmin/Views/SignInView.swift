@@ -10,7 +10,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 
 struct SignInView: View {
-    @Environment(UserAuthModel.self) var userAuthModel: UserAuthModel
+    @Environment(UserAuthVM.self) var userAuthModel: UserAuthVM
     @State private var showAlert = false
 
     var body: some View {

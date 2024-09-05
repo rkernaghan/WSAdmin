@@ -12,7 +12,7 @@ import SwiftUI
 import GoogleSignIn
 import GoogleAPIClientForREST
 
-@Observable class RefDataModel  {
+@Observable class RefDataVM  {
     
     var isStudentDataLoaded: Bool
     var isTutorDataLoaded: Bool
@@ -201,7 +201,7 @@ import GoogleAPIClientForREST
                 tutorIndex += 1
                 rowNumber += 1
             }
-            referenceData.tutors.printAll()
+ //           referenceData.tutors.printAll()
             self.isTutorDataLoaded = true
         }
     }
@@ -274,7 +274,7 @@ import GoogleAPIClientForREST
                 rowNumber += 1
             }
 
-            referenceData.students.printAll()
+  //          referenceData.students.printAll()
             self.isStudentDataLoaded = true
         }
     }
@@ -335,7 +335,7 @@ import GoogleAPIClientForREST
                 serviceIndex += 1
                 rowNumber += 1
             }
-            referenceData.services.printAll()
+ //           referenceData.services.printAll()
             self.isServiceDataLoaded = true
         }
     }
@@ -388,7 +388,7 @@ import GoogleAPIClientForREST
                 cityIndex += 1
                 rowNumber += 1
             }
-            referenceData.cities.printAll()
+  //          referenceData.cities.printAll()
             self.isCityDataLoaded = true
         }
     }

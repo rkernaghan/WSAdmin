@@ -52,16 +52,10 @@ class ReferenceData {
 }
 
 struct DataMgmtView: View {
-    @State var currentOption = 0
-    let options: [Option] = [
-        .init(title: "Home", imageName: "house"),
-        .init(title: "Tutors", imageName: "person"),
-        .init(title: "Students", imageName: "graduationcap"),
-        .init(title: "Services", imageName: "list.bullet"),
-        .init(title: "cities", imageName: "building"),
-        .init(title: "billing", imageName: "dollarsign")
-    ]
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+
+    @Environment(RefDataVM.self) var refDataVM: RefDataVM
+    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
     var fileIDs = FileData()
     var dataCounts = DataCounts()
@@ -69,52 +63,77 @@ struct DataMgmtView: View {
     
     var body: some View {
         NavigationView {
-            SideView(options: options, currentSelection: $currentOption)
+            SideView(referenceData: referenceData)
             
-            switch currentOption {
-            case 0:
-                TutorsView(referenceData: referenceData)
-            case 1:
-                StudentsView(referenceData: referenceData)
-            case 2:
-                ServicesView(referenceData: referenceData)
-            case 3:
-                CitiesView(referenceData: referenceData)
-            default:
-               MainView(referenceData: referenceData)
-            }
-                
         }
         .frame(minWidth: 600, minHeight: 400)
         .onAppear(perform: {
             print("Start OnAppear")
-            let refDataFileName = "ReferenceData - TEST"
-            refDataModel.readRefData(fileName: refDataFileName, fileIDs: fileIDs, dataCounts: dataCounts, referenceData: referenceData)
+ //           let refDataFileName = PgmConstants.prodRefFileName
+            let refDataFileName = PgmConstants.testRefFileName
+            refDataVM.readRefData(fileName: refDataFileName, fileIDs: fileIDs, dataCounts: dataCounts, referenceData: referenceData)
             })
     }
 }
 
 struct SideView: View {
-    let options: [Option]
-    @Binding var currentSelection: Int
-    
+    var referenceData: ReferenceData
+    @Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
+        
     var body: some View {
-        VStack {
-            ForEach(options, id:\.self) {option in
-                HStack {
-                    Image(systemName: option.imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 30)
-                    
-                    Text(option.title)
-                    
-                    Spacer()
+        NavigationView {
+            
+            List {
+               
+                NavigationLink {
+                    TutorsView(referenceData: referenceData)
+                } label: {
+                  Label("Tutors", systemImage: "person")
+                }
+                
+                NavigationLink {
+                    StudentsView(referenceData: referenceData)
+                } label: {
+                  Label("Students", systemImage: "graduationcap")
+                }
+                
+                NavigationLink {
+                    ServicesView(referenceData: referenceData)
+                } label: {
+                  Label("Services", systemImage: "list.bullet")
+                }
+                
+                NavigationLink {
+                    CitiesView(referenceData: referenceData)
+                } label: {
+                  Label("Cities", systemImage: "building")
+                }
+                
+                NavigationLink {
+                    AddTutor(referenceData: referenceData, tutorName: " ", maxStudents: " ", contactPhone: " ", contactEmail: " ")
+                } label: {
+                  Label("Add Tutor", systemImage: "person")
+                }
+                
+                NavigationLink {
+                    AddStudent(referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ")
+                } label: {
+                  Label("Add Student", systemImage: "graduationcap")
+                }
+            }
+            .listStyle(SidebarListStyle())
+            .navigationTitle("Sidebar")
+            
+            Button(action: {
+                userAuthVM.signOut()
+                //                dismiss() }) {
+            }) {
+                    Text("Sign Out")
                 }
                 .padding()
-                .onTapGesture {
-                    self.currentSelection = 2                }
-            }
+                .background(Color.orange)
+                .foregroundColor(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
 }
@@ -122,7 +141,7 @@ struct SideView: View {
 struct TutorsView: View {
     var referenceData: ReferenceData
     
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+    @Environment(RefDataVM.self) var refDataModel: RefDataVM
         
     var body: some View {
         if refDataModel.isTutorDataLoaded {
@@ -149,7 +168,7 @@ struct TutorsView: View {
 struct StudentsView: View {
     var referenceData: ReferenceData
     
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+    @Environment(RefDataVM.self) var refDataModel: RefDataVM
         
     var body: some View {
         if refDataModel.isStudentDataLoaded {
@@ -183,7 +202,7 @@ struct StudentsView: View {
 struct ServicesView: View {
     var referenceData: ReferenceData
     
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+    @Environment(RefDataVM.self) var refDataModel: RefDataVM
         
     var body: some View {
         if refDataModel.isServiceDataLoaded {
@@ -208,7 +227,7 @@ struct ServicesView: View {
 struct CitiesView: View {
     var referenceData: ReferenceData
     
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+    @Environment(RefDataVM.self) var refDataModel: RefDataVM
         
     var body: some View {
         if refDataModel.isCityDataLoaded {
@@ -227,7 +246,7 @@ struct CitiesView: View {
 struct MainView: View {
     var referenceData: ReferenceData
     
-    @Environment(RefDataModel.self) var refDataModel: RefDataModel
+    @Environment(RefDataVM.self) var refDataVM: RefDataVM
         
     var body: some View {
        
