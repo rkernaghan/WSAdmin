@@ -12,7 +12,7 @@ class Location: Identifiable {
     var locationName: String
     var locationMonthRevenue: Float
     var locationTotalRevenue: Float
-    let ID = UUID()
+    let id = UUID()
     
     init(locationKey: String, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) {
         self.locationKey = locationKey

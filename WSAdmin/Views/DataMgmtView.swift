@@ -4,7 +4,7 @@
 //
 //  Created by Russell Kernaghan on 2024-09-02.
 //
-
+import Foundation
 import SwiftUI
 
 struct Option: Hashable {
@@ -13,10 +13,12 @@ struct Option: Hashable {
 }
 
 class FileData {
-    var referenceDataFile: String = " "
-    var tutorDataFile: String = " "
-    var tutorBillingFile: String = " "
-    var studentBillingFile: String = " "
+    var fileID: String = " "
+    var testTutorBillingFile: String = " "
+    var testStudentBillingFile: String = " "
+    
+    var prodTutorBillingFile: String = " "
+    var prodStudentBillingFile: String = " "
     }
 
 class DataCounts {
@@ -154,12 +156,13 @@ struct TutorsView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
-    @State private var selectedTutor = Set<Tutor.ID>()
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    @State private var selectedTutors = Set<Tutor.ID>()
         
     var body: some View {
         if refDataModel.isTutorDataLoaded {
   
-            Table(referenceData.tutors.tutorsList, selection: $selectedTutor) {
+            Table(referenceData.tutors.tutorsList, selection: $selectedTutors) {
                 TableColumn("Tutor Name", value: \.tutorName)
                 TableColumn("Phone", value: \.tutorPhone)
                 TableColumn("Email", value: \.tutorEmail)
@@ -174,6 +177,59 @@ struct TutorsView: View {
  //               TableColumn("Total Revenue", value: \.studentTotalPrice)
  //               TableColumn("Total Profit", value: \.studentTotalProfit)
             }
+            .contextMenu(forSelectionType: Tutor.ID.self) { items in
+                if items.isEmpty {
+                    Button {
+                        
+                    } label: {
+                      Label("New Tutor", systemImage: "plus")
+                    }
+                } else if items.count == 1 {
+                    Button {
+                        
+                    } label: {
+                      Label("List Tutor Students", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("List Tutor Costs", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Tutor", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("Assign Tutor", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button(role: .destructive) {
+                        tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                    } label: {
+                      Label("Delete Tutor", systemImage: "trash")
+                    }
+                    
+                } else {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Tutors", systemImage: "heart")
+                    }
+                    Button(role: .destructive) {
+                        
+                    } label: {
+                      Label("Delete Tutors", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { items in
+  //              store.favourite(items)
+              }
         }
     }
 }
@@ -182,10 +238,12 @@ struct StudentsView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
-        
+    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+    @State private var selectedStudents = Set<Student.ID>()
+    
     var body: some View {
         if refDataModel.isStudentDataLoaded {
-  
+            
             Table(referenceData.students.studentsList) {
                 TableColumn("Student Name", value: \.studentName)
                 TableColumn("Guardian", value: \.studentGuardian)
@@ -193,21 +251,69 @@ struct StudentsView: View {
                 TableColumn("Phone", value: \.studentGuardian)
                 TableColumn("Phone", value: \.studentPhone)
                 TableColumn("Email", value: \.studentEmail)
-   //             TableColumn("Email", value: \.studentEmail) { student in
-   //                 Text(referenceData.studentsList.studentsList[].studentEmail) }
+                //             TableColumn("Email", value: \.studentEmail) { student in
+                //                 Text(referenceData.studentsList.studentsList[].studentEmail) }
                 TableColumn("Type", value: \.studentType)
- //               TableColumn("Start Date") { student in
- //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
- //               TableColumn("End Date", value: \.studentEndData)
+                //               TableColumn("Start Date") { student in
+                //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
+                //               TableColumn("End Date", value: \.studentEndData)
                 TableColumn("Status", value: \.studentStatus)
- //               TableColumn("Tutor Key", value: \.studentTutorKey)
- //               TableColumn("Tutor Name", value: \.studentTutorName)
+                //               TableColumn("Tutor Key", value: \.studentTutorKey)
+                //               TableColumn("Tutor Name", value: \.studentTutorName)
                 TableColumn("Location", value: \.studentLocation)
- //               TableColumn("Sessions", value: \.studentSessions)
- //               TableColumn("Total Cost", value: \.studentTotalCost)
- //               TableColumn("Total Revenue", value: \.studentTotalPrice)
- //               TableColumn("Total Profit", value: \.studentTotalProfit)
+                //               TableColumn("Sessions", value: \.studentSessions)
+                //               TableColumn("Total Cost", value: \.studentTotalCost)
+                //               TableColumn("Total Revenue", value: \.studentTotalPrice)
+                //               TableColumn("Total Profit", value: \.studentTotalProfit)
             }
+            .contextMenu(forSelectionType: Student.ID.self) { items in
+                if items.isEmpty {
+                    Button { } label: {
+                      Label("New Student", systemImage: "plus")
+                    }
+                } else if items.count == 1 {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Student", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("Assign Student", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("UnAssign Student", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        
+                    } label: {
+                      Label("ReAssign Student", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    
+                    Button(role: .destructive) {
+                        studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                    } label: {
+                      Label("Delete Student", systemImage: "trash")
+                    }
+                    
+                } else {
+                    Button {} label: {
+                      Label("Edit Students", systemImage: "heart")
+                    }
+                    Button(role: .destructive) {} label: {
+                      Label("Delete Students", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { items in
+  //              store.favourite(items)
+              }
         }
     }
 }
@@ -216,11 +322,13 @@ struct ServicesView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
+    @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
+    @State private var selectedServices = Set<Service.ID>()
         
     var body: some View {
         if refDataModel.isServiceDataLoaded {
   
-            Table(referenceData.services.servicesList) {
+            Table(referenceData.services.servicesList, selection: $selectedServices) {
                 TableColumn("Timesheet Name", value: \.serviceTimesheetName)
                 TableColumn("Invoice Name", value: \.serviceInvoiceName)
                 TableColumn("Service Type", value: \.serviceType)
@@ -233,6 +341,40 @@ struct ServicesView: View {
 //               TableColumn("Price 2", value: \.servicePrice2)
 //               TableColumn("Price 3", value: \.servicePrice3)
             }
+            .contextMenu(forSelectionType: Service.ID.self) { items in
+                if items.isEmpty {
+                    Button {
+                        let result = AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+                    } label: {
+                      Label("New Service", systemImage: "plus")
+                    }
+                } else if items.count == 1 {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Service", systemImage: "square.and.arrow.up")
+                    }
+                    Button(role: .destructive) {
+                        serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+                    } label: {
+                      Label("Delete Service", systemImage: "trash")
+                    }
+                    
+                } else {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Services", systemImage: "heart")
+                    }
+                    Button(role: .destructive) {
+                        
+                    } label: {
+                      Label("Delete Selected", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { items in
+  //              store.favourite(items)
+              }
         }
     }
 }

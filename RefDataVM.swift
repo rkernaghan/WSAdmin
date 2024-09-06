@@ -61,8 +61,8 @@ import GoogleAPIClientForREST
                         GIDSignIn.sharedInstance.signOut()
                     case 1:
                         let name = filesShow[0].name ?? ""
-                        fileIDs.referenceDataFile = filesShow[0].identifier ?? ""
-                        print(name, fileIDs.referenceDataFile)
+                        fileIDs.fileID = filesShow[0].identifier ?? ""
+                        print(name, fileIDs.fileID)
                         self.loadReferenceData(fileIDs: fileIDs, dataCounts: dataCounts, referenceData: referenceData)
                     default:
                         print("Error: more than one tutor timesheet for '\(fileName)")
@@ -81,6 +81,13 @@ import GoogleAPIClientForREST
     
    
     func loadReferenceData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData)  {
+        var referenceFileID: String
+        
+        if runMode == "PROD" {
+            referenceFileID = PgmConstants.prodReferenceDataFileID
+        } else {
+            referenceFileID = PgmConstants.testReferenceDataFileID
+        }
         
         let sheetService = GTLRSheetsService()
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -88,7 +95,7 @@ import GoogleAPIClientForREST
         
         let range = PgmConstants.dataCountRange
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+            .query(withSpreadsheetId: referenceFileID, range:range)
         // Load data counts from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {
@@ -129,19 +136,19 @@ import GoogleAPIClientForREST
             dataCounts.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol])! ?? 0
             dataCounts.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol])! ?? 0
             
-            self.loadTutorData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadStudentData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadServiceData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
-            self.loadLocationData(fileIDs: fileIDs, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadTutorData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadStudentData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadServiceData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadLocationData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
         }
     }
     
-    func loadTutorData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadTutorData(referenceFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.tutorRange + String(dataCounts.totalTutors + PgmConstants.tutorStartingRowNumber - 1)
 //    print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+            .query(withSpreadsheetId: referenceFileID, range:range)
 // Load Tutors from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {
@@ -207,12 +214,12 @@ import GoogleAPIClientForREST
     }
 
     
-    func loadStudentData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadStudentData(referenceFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.studentRange + String(dataCounts.totalStudents + PgmConstants.studentStartingRowNumber - 1)
 //        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+            .query(withSpreadsheetId: referenceFileID, range:range)
 // Load Students from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {
@@ -279,12 +286,12 @@ import GoogleAPIClientForREST
         }
     }
     
-    func loadServiceData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadServiceData(referenceFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.serviceRange + String(dataCounts.totalServices + PgmConstants.serviceStartingRowNumber - 1)
 //        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+            .query(withSpreadsheetId: referenceFileID, range:range)
 // Load Services from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {
@@ -340,12 +347,12 @@ import GoogleAPIClientForREST
         }
     }
     
-    func loadLocationData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadLocationData(referenceFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.locationRange + String(dataCounts.totalLocations + PgmConstants.locationStartingRowNumber - 1)
 //        print("range is \(range)")
         let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: fileIDs.referenceDataFile, range:range)
+            .query(withSpreadsheetId: referenceFileID, range:range)
 // Load Cities from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {
@@ -370,7 +377,7 @@ import GoogleAPIClientForREST
                 return
             }
             
-// Load the Cities
+// Load the Locations
 //           referenceData.citiesList.removeAll()          // empty the array before loading as this could be a refresh
             
             var locationIndex = 0

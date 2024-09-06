@@ -24,7 +24,7 @@ class Student: Identifiable {
     var studentTotalCost: Float
     var studentTotalPrice: Float
     var studentTotalProfit: Float
-    let ID = UUID()
+    let id = UUID()
     
     init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: Date, studentEndData: Date?, studentStatus: String, studentTutorKey: String?, studentTutorName: String?, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalPrice: Float, studentTotalProfit: Float) {
         self.studentKey = studentKey

@@ -18,4 +18,15 @@ import Foundation
         referenceData.services.addService(newService: newService)
         
     }
+    
+    func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+        print("deleting Service")
+        
+        for objectID in indexes {
+            if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                referenceData.services.servicesList.remove(at: idx)
+            }
+        }
+        
+    }
 }

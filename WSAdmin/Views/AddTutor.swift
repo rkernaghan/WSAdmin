@@ -4,7 +4,7 @@
 //
 //  Created by Russell Kernaghan on 2024-09-04.
 //
-
+import Foundation
 import SwiftUI
 
 struct AddTutor: View {

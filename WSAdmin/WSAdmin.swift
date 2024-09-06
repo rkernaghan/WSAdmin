@@ -104,8 +104,16 @@ struct PgmConstants {
     static let serviceBaseKeyPrefix = "B"
     static let serviceSpecialKeyPrefix = "X"
     static let locationKeyPrefix = "C"
+    
+    static let testReferenceDataFileID: String = "1RdR_GPxAWcDUWBU-eytGKw2uzZhy3yR-MdQegmBZNis"
+    static let testTutorDataFileID: String = "1NaSjIe43RrGEa4AdAKHuF343eHlfogzuMuS5SPvowS8"
+    static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
+    static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
+
+    
 }
 var submitErrorMsg: String = " "
+var runMode: String = "TEST"
 
 @main
 struct WSAdmin: App {
