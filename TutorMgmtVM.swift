@@ -21,10 +21,19 @@ import GoogleAPIClientForREST
         
         let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "New", tutorStartDate: startDate, tutorEndDate: startDate, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalPrice: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.addTutor(newTutor: newTutor)
+        referenceData.tutors.saveTutorData()
         
         createNewSheet(tutorName: tutorName)
     }
     
+    func listTutorStudents(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+        for objectID in indexes {
+            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                print("Student Name \(referenceData.tutors.tutorsList[idx].tutorStudents[0].studentName)")
+            }
+        }
+    }
+            
     func deleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {
         print("deleting Tutor")
         
@@ -33,7 +42,9 @@ import GoogleAPIClientForREST
                 referenceData.tutors.tutorsList.remove(at: idx)
             }
         }
+        referenceData.tutors.saveTutorData()
     }
+    
     
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
         print("Creating New Sheet ...\n")

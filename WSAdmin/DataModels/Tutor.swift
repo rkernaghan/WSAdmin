@@ -21,6 +21,8 @@ class Tutor: Identifiable {
     var tutorTotalCost: Float
     var tutorTotalPrice: Float
     var tutorTotalProfit: Float
+    var tutorStudents = [TutorStudent]()
+    var tutorServices = [TutorService]()
     let id = UUID()
     
     init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: Date, tutorEndDate: Date?, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalPrice: Float, tutorTotalProfit: Float) {
@@ -37,5 +39,13 @@ class Tutor: Identifiable {
         self.tutorTotalCost = tutorTotalCost
         self.tutorTotalPrice = tutorTotalPrice
         self.tutorTotalProfit = tutorTotalProfit
+    }
+    
+    func addTutorStudent(newTutorStudent: TutorStudent) {
+        tutorStudents.append(newTutorStudent)
+    }
+    
+    func addTutorService(newTutorService: TutorService) {
+        tutorServices.append(newTutorService)
     }
 }

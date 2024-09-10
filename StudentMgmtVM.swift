@@ -15,6 +15,8 @@ import Foundation
         let startDate = Date()
         let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: " ", studentStartDate: startDate, studentEndData: startDate, studentStatus: " ", studentTutorKey: " ", studentTutorName: " ", studentLocation: " ", studentSessions: 0, studentTotalCost: 0.0, studentTotalPrice: 0.0, studentTotalProfit: 0.0)
         referenceData.students.addStudent(newStudent: newStudent)
+        
+        referenceData.students.saveStudentData()
     }
     
     func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) {
@@ -25,5 +27,7 @@ import Foundation
                 referenceData.students.studentsList.remove(at: idx)
             }
         }
+        referenceData.students.saveStudentData()
     }
+    
 }

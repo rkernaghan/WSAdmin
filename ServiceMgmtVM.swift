@@ -17,6 +17,8 @@ import Foundation
         let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: 0.0, serviceCost2: 0.0, serviceCost3: 0.0, servicePrice1: 0.0, servicePrice2: 0.0, servicePrice3: 0.0)
         referenceData.services.addService(newService: newService)
         
+        referenceData.services.saveServiceData()
+        
     }
     
     func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) {
@@ -28,5 +30,7 @@ import Foundation
             }
         }
         
+        referenceData.services.saveServiceData()
     }
+    
 }

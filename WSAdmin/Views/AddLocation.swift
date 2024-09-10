@@ -30,7 +30,7 @@ struct AddLocation: View {
              }
             
             Button(action: {
-                locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName)
+                locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
             }){
                 Text("Add Location")
             }

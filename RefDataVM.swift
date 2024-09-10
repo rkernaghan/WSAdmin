@@ -82,11 +82,14 @@ import GoogleAPIClientForREST
    
     func loadReferenceData(fileIDs: FileData, dataCounts: DataCounts, referenceData: ReferenceData)  {
         var referenceFileID: String
+        var tutorDataFileID: String
         
         if runMode == "PROD" {
             referenceFileID = PgmConstants.prodReferenceDataFileID
+            tutorDataFileID = PgmConstants.prodTutorDataFileID
         } else {
             referenceFileID = PgmConstants.testReferenceDataFileID
+            tutorDataFileID = PgmConstants.testTutorDataFileID
         }
         
         let sheetService = GTLRSheetsService()
@@ -136,14 +139,14 @@ import GoogleAPIClientForREST
             dataCounts.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol])! ?? 0
             dataCounts.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol])! ?? 0
             
-            self.loadTutorData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
+            self.loadTutorData(referenceFileID: referenceFileID, tutorDataFileID: tutorDataFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             self.loadStudentData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             self.loadServiceData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
             self.loadLocationData(referenceFileID: referenceFileID, dataCounts:dataCounts, referenceData: referenceData, sheetService: sheetService )
         }
     }
     
-    func loadTutorData(referenceFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+    func loadTutorData(referenceFileID: String, tutorDataFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         let range = PgmConstants.tutorRange + String(dataCounts.totalTutors + PgmConstants.tutorStartingRowNumber - 1)
 //    print("range is \(range)")
@@ -210,7 +213,117 @@ import GoogleAPIClientForREST
             }
  //           referenceData.tutors.printAll()
             self.isTutorDataLoaded = true
+            self.loadTutorDetails(tutorDataFileID: tutorDataFileID, dataCounts: dataCounts, referenceData: referenceData, sheetService: sheetService)
         }
+    }
+
+    func loadTutorDetails(tutorDataFileID: String, dataCounts: DataCounts, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        let tutors = referenceData.tutors
+        let tutorCount = dataCounts.totalTutors
+        var tutorNum = 0
+        while tutorNum < tutorCount {
+            var tutorName = tutors.tutorsList[tutorNum].tutorName
+            
+            let range = tutorName + PgmConstants.tutorCountsRange
+            print("Tutor details counts range is '\(range)")
+            let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+                .query(withSpreadsheetId: tutorDataFileID, range:range)
+            // Load data counts from ReferenceData spreadsheet
+            sheetService.executeQuery(query) { [tutorNum] (ticket, result, error) in
+                if let error = error {
+                    print(error)
+                    print("Failed to read data:\(error.localizedDescription)")
+                    return
+                }
+                guard let result = result as? GTLRSheets_ValueRange else {
+                    return
+                }
+                
+                let rows = result.values!
+                var stringRows = rows as! [[String]]
+                
+                for row in stringRows {
+                    stringRows.append(row)
+                    //               print(row)
+                }
+                
+                if rows.isEmpty {
+                    print("No data found.")
+                    return
+                }
+                
+  
+                let tutorStudentsCount = Int(stringRows[PgmConstants.tutorDataStudentCountRow][PgmConstants.tutorDataStudentCountCol])! ?? 0
+                let tutorServicesCount = Int(stringRows[PgmConstants.tutorDataServiceCountRow][PgmConstants.tutorDataServiceCountCol])! ?? 0
+                
+                print("Tutor \(tutorName) Students: \(stringRows[PgmConstants.tutorDataStudentCountRow][PgmConstants.tutorDataStudentCountCol]) Services: \(stringRows[PgmConstants.tutorDataServiceCountRow][PgmConstants.tutorDataServiceCountCol])")
+                
+                self.loadTutorStudents(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, tutorStudentsCount: tutorStudentsCount, referenceData: referenceData, sheetService: sheetService)
+                self.loadTutorServices(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, tutorServicesCount: tutorStudentsCount, referenceData: referenceData, sheetService: sheetService)
+            }
+            tutorNum += 1
+        }
+    }
+    
+    func loadTutorStudents(tutorNum:Int, tutorDataFileID: String, tutorStudentsCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        print("Loading \(tutorStudentsCount) Students")
+        var tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+            
+        let range = tutorName + PgmConstants.tutorStudentsRange + String(tutorStudentsCount + PgmConstants.tutorDataStudentsStartingRowNumber)
+            print("Tutor details counts range is '\(range)")
+            let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+                .query(withSpreadsheetId: tutorDataFileID, range:range)
+            // Load data counts from ReferenceData spreadsheet
+            sheetService.executeQuery(query) { (ticket, result, error) in
+                if let error = error {
+                    print(error)
+                    print("Failed to read data:\(error.localizedDescription)")
+                    return
+                }
+                guard let result = result as? GTLRSheets_ValueRange else {
+                    return
+                }
+                
+                let rows = result.values!
+                var stringRows = rows as! [[String]]
+                
+                for row in stringRows {
+                    stringRows.append(row)
+                    //               print(row)
+                }
+                
+                if rows.isEmpty {
+                    print("No data found.")
+                    return
+                }
+                
+                var rowNum = 0
+                var studentNum = 0
+                while studentNum < tutorStudentsCount {
+                    var studentKey = stringRows[rowNum][PgmConstants.tutorDataStudentNamePosition]
+                    var studentName = stringRows[rowNum][PgmConstants.tutorDataStudentNamePosition]
+                    var clientName = stringRows[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
+                    var clientEmail = stringRows[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
+                    var clientPhone = stringRows[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
+                    
+                    var newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
+                    
+                    referenceData.tutors.tutorsList[tutorNum].addTutorStudent( newTutorStudent: newTutorStudent)
+                    rowNum += 1
+                    studentNum += 1
+                }
+            }
+        }
+    
+    
+    func loadTutorServices(tutorNum: Int, tutorDataFileID: String, tutorServicesCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
+        
+        print("Loading \(tutorServicesCount) Students")
+        
+        
+        
     }
 
     

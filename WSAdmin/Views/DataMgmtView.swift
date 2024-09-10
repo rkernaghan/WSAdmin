@@ -66,7 +66,6 @@ struct DataMgmtView: View {
     var body: some View {
         NavigationView {
             SideView(referenceData: referenceData)
-            
         }
         .frame(minWidth: 600, minHeight: 400)
         .onAppear(perform: {
@@ -83,7 +82,6 @@ struct SideView: View {
     @Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
         
     var body: some View {
-        NavigationView {
             
             List {
                
@@ -133,7 +131,7 @@ struct SideView: View {
                     AddLocation(referenceData: referenceData, locationName: " ")
                 } label: {
                   Label("Add Location", systemImage: "building")
-                }
+                
             }
             .listStyle(SidebarListStyle())
             .navigationTitle("Sidebar")
@@ -161,77 +159,111 @@ struct TutorsView: View {
         
     var body: some View {
         if refDataModel.isTutorDataLoaded {
-  
-            Table(referenceData.tutors.tutorsList, selection: $selectedTutors) {
-                TableColumn("Tutor Name", value: \.tutorName)
-                TableColumn("Phone", value: \.tutorPhone)
-                TableColumn("Email", value: \.tutorEmail)
- //               TableColumn("Start Date") { student in
- //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
- //               TableColumn("End Date", value: \.studentEndData)
-                TableColumn("Status", value: \.tutorStatus)
- //               TableColumn("Tutor Key", value: \.studentTutorKey)
- //               TableColumn("Tutor Name", value: \.studentTutorName)
- //               TableColumn("Sessions", value: \.studentSessions)
- //               TableColumn("Total Cost", value: \.studentTotalCost)
- //               TableColumn("Total Revenue", value: \.studentTotalPrice)
- //               TableColumn("Total Profit", value: \.studentTotalProfit)
-            }
-            .contextMenu(forSelectionType: Tutor.ID.self) { items in
-                if items.isEmpty {
-                    Button {
-                        
-                    } label: {
-                      Label("New Tutor", systemImage: "plus")
-                    }
-                } else if items.count == 1 {
-                    Button {
-                        
-                    } label: {
-                      Label("List Tutor Students", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
-                        
-                    } label: {
-                      Label("List Tutor Costs", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
-                        
-                    } label: {
-                      Label("Edit Tutor", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
-                        
-                    } label: {
-                      Label("Assign Tutor", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button(role: .destructive) {
-                        tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
-                    } label: {
-                      Label("Delete Tutor", systemImage: "trash")
-                    }
-                    
-                } else {
-                    Button {
-                        
-                    } label: {
-                      Label("Edit Tutors", systemImage: "heart")
-                    }
-                    Button(role: .destructive) {
-                        
-                    } label: {
-                      Label("Delete Tutors", systemImage: "trash")
-                    }
+            NavigationView {
+                
+                Table(referenceData.tutors.tutorsList, selection: $selectedTutors) {
+                    TableColumn("Tutor Name", value: \.tutorName)
+                    TableColumn("Phone", value: \.tutorPhone)
+                    TableColumn("Email", value: \.tutorEmail)
+                    //               TableColumn("Start Date") { student in
+                    //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
+                    //               TableColumn("End Date", value: \.studentEndData)
+                    TableColumn("Status", value: \.tutorStatus)
+                    //               TableColumn("Tutor Key", value: \.studentTutorKey)
+                    //               TableColumn("Tutor Name", value: \.studentTutorName)
+                    //               TableColumn("Sessions", value: \.studentSessions)
+                    //               TableColumn("Total Cost", value: \.studentTotalCost)
+                    //               TableColumn("Total Revenue", value: \.studentTotalPrice)
+                    //               TableColumn("Total Profit", value: \.studentTotalProfit)
                 }
-            } primaryAction: { items in
-  //              store.favourite(items)
-              }
+                .contextMenu(forSelectionType: Tutor.ID.self) { items in
+                    if items.isEmpty {
+                        Button {
+                            
+                        } label: {
+                            Label("New Tutor", systemImage: "plus")
+                        }
+                    } else if items.count == 1 {
+                        VStack {
+                            NavigationLink(destination: TutorStudentsView(referenceData: referenceData, tutorIndex: items)) {
+                                Text("List Students")
+                                Image(systemName: "square.and.pencil")
+                            }
+                            
+                            //                   NavigationLink(destination: SegmentsEditView(timelineItem: visit)) {
+                            //                            Text("Edit individual segments")
+                            //                            Image(systemName: "ellipsis")
+                            //                        }
+                            
+                            Button {
+                                tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("List Tutor Students", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                TutorStudentsView(referenceData: referenceData, tutorIndex: items)
+                                
+                            } label: {
+                                Label("List Tutor Costs", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                
+                            } label: {
+                                Label("Edit Tutor", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                
+                            } label: {
+                                Label("Assign Tutor", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button(role: .destructive) {
+                                tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Delete Tutor", systemImage: "trash")
+                            }
+                        }
+                        
+                    } else {
+                        Button {
+                            
+                        } label: {
+                            Label("Edit Tutors", systemImage: "heart")
+                        }
+                        Button(role: .destructive) {
+                            
+                        } label: {
+                            Label("Delete Tutors", systemImage: "trash")
+                        }
+                    }
+                } primaryAction: { items in
+                    //              store.favourite(items)
+                }
+            }
         }
     }
+}
+
+struct TutorStudentsView: View {
+    var referenceData: ReferenceData
+    var tutorIndex: Set<Tutor.ID>
+    
+    var body: some View {
+        
+//        for objectID in tutorIndex {
+//            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
+                Table(referenceData.tutors.tutorsList[0].tutorStudents) {
+                    TableColumn("Student Name", value: \.studentName)
+                    TableColumn("Phone", value: \.clientName)
+                    TableColumn("Email", value: \.clientEmail)
+                    TableColumn("Status", value: \.clientPhone)
+                }
+            }
+//        }
+//    }
 }
 
 struct StudentsView: View {
@@ -244,7 +276,7 @@ struct StudentsView: View {
     var body: some View {
         if refDataModel.isStudentDataLoaded {
             
-            Table(referenceData.students.studentsList) {
+            Table(referenceData.students.studentsList, selection: $selectedStudents) {
                 TableColumn("Student Name", value: \.studentName)
                 TableColumn("Guardian", value: \.studentGuardian)
                 TableColumn("Phone", value: \.studentPhone)
@@ -344,7 +376,7 @@ struct ServicesView: View {
             .contextMenu(forSelectionType: Service.ID.self) { items in
                 if items.isEmpty {
                     Button {
-                        let result = AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+   //                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
                     } label: {
                       Label("New Service", systemImage: "plus")
                     }
@@ -383,17 +415,52 @@ struct LocationsView: View {
     var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
+    @Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
+    @State private var selectedLocation = Set<Location.ID>()
         
     var body: some View {
         if refDataModel.isLocationDataLoaded {
   
-            Table(referenceData.locations.locationsList) {
+            Table(referenceData.locations.locationsList, selection: $selectedLocation) {
                 TableColumn("Location Name", value: \.locationName)
   
 //               TableColumn("Location Month Revenue", value: \.locationMonthRevenue)
 //               TableColumn("Location Total Revenue", value: \.locationTotalRevenue)
-
             }
+            .contextMenu(forSelectionType: Location.ID.self) { items in
+                if items.isEmpty {
+                    Button {
+  //                      let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                    } label: {
+                      Label("New Service", systemImage: "plus")
+                    }
+                } else if items.count == 1 {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Service", systemImage: "square.and.arrow.up")
+                    }
+                    Button(role: .destructive) {
+                        locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+                    } label: {
+                      Label("Delete Service", systemImage: "trash")
+                    }
+                    
+                } else {
+                    Button {
+                        
+                    } label: {
+                      Label("Edit Services", systemImage: "heart")
+                    }
+                    Button(role: .destructive) {
+                        
+                    } label: {
+                      Label("Delete Selected", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { items in
+  //              store.favourite(items)
+              }
         }
     }
 }

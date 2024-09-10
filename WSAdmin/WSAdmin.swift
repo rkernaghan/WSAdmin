@@ -31,6 +31,11 @@ struct PgmConstants {
     static let dataCountHighestLocationKeyRow = 10
     static let dataCountHighestLocationKeyCol = 1
     
+    static let tutorDataStudentCountRow = 3
+    static let tutorDataStudentCountCol = 1
+    static let tutorDataServiceCountRow = 4
+    static let tutorDataServiceCountCol = 1
+    
     static let testRefFileName = "ReferenceData - TEST"
     static let prodRefFileName = "ReferenceData"
     static let dataCountRange = "Master!A2:B12"
@@ -38,6 +43,10 @@ struct PgmConstants {
     static let studentRange = "Master!T3:AI"
     static let serviceRange = "Master!AL3:AW"
     static let locationRange = "Master!AZ3:BC"
+    
+    static let tutorCountsRange = "!A1:B5"
+    static let tutorStudentsRange = "!O3:S"
+    static let tutorServicesRang = "!D3:M"
     
     static let tutorStartingRowNumber = 2
     static let tutorKeyPosition = 0
@@ -54,6 +63,13 @@ struct PgmConstants {
     static let tutorTotalCostPosition = 11
     static let tutorTotalRevenuePosition = 12
     static let tutorTotalProfitPosition = 13
+    
+    static let tutorDataStudentsStartingRowNumber = 2
+    static let tutorDataStudentKeyPosition = 0
+    static let tutorDataStudentNamePosition = 1
+    static let tutorDataStudentClientNamePosition = 2
+    static let tutorDataStudentClientEmailPosition = 3
+    static let tutorDataStudentClientPhonePosition = 4
     
     static let studentStartingRowNumber = 3
     static let studentKeyPosition = 0
@@ -109,9 +125,8 @@ struct PgmConstants {
     static let testTutorDataFileID: String = "1NaSjIe43RrGEa4AdAKHuF343eHlfogzuMuS5SPvowS8"
     static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
-
-    
 }
+
 var submitErrorMsg: String = " "
 var runMode: String = "TEST"
 
