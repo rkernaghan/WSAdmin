@@ -13,7 +13,7 @@ struct Option: Hashable {
 }
 
 class FileData {
-    var fileID: String = " "
+//    var fileID: String = " "
     var testTutorBillingFile: String = " "
     var testStudentBillingFile: String = " "
     
@@ -21,19 +21,19 @@ class FileData {
     var prodStudentBillingFile: String = " "
     }
 
-class DataCounts {
-    var totalStudents: Int = 0
-    var activeStudents: Int = 0
-    var highestStudentKey: Int = 0
-    var totalTutors: Int = 0
-    var activeTutors: Int = 0
-    var highestTutorKey: Int = 0
-    var totalServices: Int = 0
-    var activeServices: Int = 0
-    var highestServiceKey: Int = 0
-    var totalLocations: Int = 0
-    var highestLocationKey: Int = 0
-}
+// class DataCounts {
+//    var totalStudents: Int = 0
+//    var activeStudents: Int = 0
+//    var highestStudentKey: Int = 0
+//    var totalTutors: Int = 0
+//    var activeTutors: Int = 0
+//    var highestTutorKey: Int = 0
+//    var totalServices: Int = 0
+//    var activeServices: Int = 0
+//    var highestServiceKey: Int = 0
+//    var totalLocations: Int = 0
+//    var highestLocationKey: Int = 0
+// }
 
 
 enum ServiceTypes {
@@ -51,6 +51,7 @@ class ReferenceData {
     var students = StudentsList()
     var services = ServicesList()
     var locations = LocationsList()
+    var dataCounts = DataCounts()
 }
 
 struct DataMgmtView: View {
@@ -72,7 +73,7 @@ struct DataMgmtView: View {
             print("Start OnAppear")
  //           let refDataFileName = PgmConstants.prodRefFileName
             let refDataFileName = PgmConstants.testRefFileName
-            refDataVM.readRefData(fileName: refDataFileName, fileIDs: fileIDs, dataCounts: dataCounts, referenceData: referenceData)
+            refDataVM.loadReferenceData(referenceData: referenceData)
             })
     }
 }
@@ -116,13 +117,13 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    AddStudent(referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ")
+                    AddStudent(referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ")
                 } label: {
                   Label("Add Student", systemImage: "graduationcap")
                 }
                 
                 NavigationLink {
-                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ", cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
                 } label: {
                   Label("Add Service", systemImage: "list.bullet")
                 }
@@ -143,8 +144,8 @@ struct SideView: View {
                     Text("Sign Out")
                 }
                 .padding()
-                .background(Color.orange)
-                .foregroundColor(Color.white)
+ //               .background(Color.orange)
+ //               .foregroundColor(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
@@ -156,25 +157,33 @@ struct TutorsView: View {
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     @State private var selectedTutors = Set<Tutor.ID>()
+    @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
         
     var body: some View {
-        if refDataModel.isTutorDataLoaded {
+        if referenceData.tutors.isTutorDataLoaded {
             NavigationView {
                 
-                Table(referenceData.tutors.tutorsList, selection: $selectedTutors) {
+                Table(referenceData.tutors.tutorsList, selection: $selectedTutors, sortOrder: $sortOrder) {
                     TableColumn("Tutor Name", value: \.tutorName)
                     TableColumn("Phone", value: \.tutorPhone)
                     TableColumn("Email", value: \.tutorEmail)
-                    //               TableColumn("Start Date") { student in
-                    //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
-                    //               TableColumn("End Date", value: \.studentEndData)
+                    TableColumn("Start Date", value: \.tutorStartDate)
+                    TableColumn("End Date", value: \.tutorEndDate)
                     TableColumn("Status", value: \.tutorStatus)
-                    //               TableColumn("Tutor Key", value: \.studentTutorKey)
-                    //               TableColumn("Tutor Name", value: \.studentTutorName)
-                    //               TableColumn("Sessions", value: \.studentSessions)
-                    //               TableColumn("Total Cost", value: \.studentTotalCost)
-                    //               TableColumn("Total Revenue", value: \.studentTotalPrice)
-                    //               TableColumn("Total Profit", value: \.studentTotalProfit)
+                    TableColumn("Tutor Key", value: \.tutorMaxStudents) { data in
+                        Text(String(data.tutorMaxStudents))
+                    }
+                    TableColumn("Tutor Name", value: \.tutorStudentCount) {data in
+                        Text(String(data.tutorStudentCount))
+                    }
+                    TableColumn("Sessions", value: \.tutorServiceCount) {data in
+                        Text(String(data.tutorServiceCount))
+                    }
+//                    TableColumn("Total Cost", value: \.tutorTotalCost)
+//                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
+                    TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
+                        Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(2)))))
+                        }
                 }
                 .contextMenu(forSelectionType: Tutor.ID.self) { items in
                     if items.isEmpty {
@@ -272,31 +281,37 @@ struct StudentsView: View {
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @State private var selectedStudents = Set<Student.ID>()
+    @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
+    var studentArray = [Student]()
     
     var body: some View {
-        if refDataModel.isStudentDataLoaded {
+        if referenceData.students.isStudentDataLoaded {
+            let studentArray = referenceData.students.studentsList
             
-            Table(referenceData.students.studentsList, selection: $selectedStudents) {
-                TableColumn("Student Name", value: \.studentName)
-                TableColumn("Guardian", value: \.studentGuardian)
-                TableColumn("Phone", value: \.studentPhone)
-                TableColumn("Phone", value: \.studentGuardian)
-                TableColumn("Phone", value: \.studentPhone)
-                TableColumn("Email", value: \.studentEmail)
-                //             TableColumn("Email", value: \.studentEmail) { student in
-                //                 Text(referenceData.studentsList.studentsList[].studentEmail) }
-                TableColumn("Type", value: \.studentType)
-                //               TableColumn("Start Date") { student in
-                //                   Text(referenceData.studentsList.studentsList.studentStartDate, style: .date) }
-                //               TableColumn("End Date", value: \.studentEndData)
-                TableColumn("Status", value: \.studentStatus)
-                //               TableColumn("Tutor Key", value: \.studentTutorKey)
-                //               TableColumn("Tutor Name", value: \.studentTutorName)
-                TableColumn("Location", value: \.studentLocation)
-                //               TableColumn("Sessions", value: \.studentSessions)
-                //               TableColumn("Total Cost", value: \.studentTotalCost)
-                //               TableColumn("Total Revenue", value: \.studentTotalPrice)
-                //               TableColumn("Total Profit", value: \.studentTotalProfit)
+            Table(studentArray, selection: $selectedStudents) {
+ //               Group {
+                    TableColumn("Student Name", value: \Student.studentName)
+                    TableColumn("Guardian", value: \Student.studentGuardian)
+                    TableColumn("Phone", value: \Student.studentPhone)
+                    TableColumn("EMail", value: \Student.studentEmail)
+                    TableColumn("Student Type", value: \Student.studentType)
+   //             }
+     //           Group {
+                    TableColumn("Start Date", value: \Student.studentStartDate)
+                    TableColumn("End Date", value: \Student.studentEndDate)
+                    TableColumn("Status", value: \Student.studentStatus)
+ //                   TableColumn("Tutor Key", value: \Student.studentTutorKey)
+                    TableColumn("Tutor Name",value: \Student.studentTutorName)
+                    TableColumn("Location", value: \Student.studentLocation)
+             //       }
+ //                   TableColumn("Location", value: \.studentLocation)
+                    //                TableColumn("Sessions", value: \.studentSessions) {data in
+                    //                    Text("\(data.studentTotalSessions)")
+                    //                }
+                    //                              TableColumn("Total Cost", value: \.studentTotalCost)
+                    //                              TableColumn("Total Revenue", value: \.studentTotalRevenue)
+                    //                              TableColumn("Total Profit", value: \.studentTotalProfit)
+               // }
             }
             .contextMenu(forSelectionType: Student.ID.self) { items in
                 if items.isEmpty {
@@ -356,22 +371,42 @@ struct ServicesView: View {
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
     @State private var selectedServices = Set<Service.ID>()
-        
+    @State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
+    
     var body: some View {
-        if refDataModel.isServiceDataLoaded {
-  
-            Table(referenceData.services.servicesList, selection: $selectedServices) {
-                TableColumn("Timesheet Name", value: \.serviceTimesheetName)
-                TableColumn("Invoice Name", value: \.serviceInvoiceName)
-                TableColumn("Service Type", value: \.serviceType)
-                TableColumn("Billing Type", value: \.serviceBillingType)
-                TableColumn("Service Status", value: \.serviceStatus)
- //               TableColumn("Cost 1", value: \.serviceCost1)
-//               TableColumn("Cost 2", value: \.serviceCost2)
-//               TableColumn("Cost 3", value: \.serviceCost3)
- //               TableColumn("Price 1", value: \.servicePrice1)
-//               TableColumn("Price 2", value: \.servicePrice2)
-//               TableColumn("Price 3", value: \.servicePrice3)
+        if referenceData.services.isServiceDataLoaded {
+            let serviceArray = referenceData.services.servicesList
+
+            Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
+ //               Group {
+                    TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
+                    TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
+                    TableColumn("Service Type", value: \Service.serviceType)
+                    TableColumn("Billing Type", value: \Service.serviceBillingType)
+                    TableColumn("Service Status", value: \Service.serviceStatus)
+                    
+                    TableColumn("Cost 1", value: \Service.serviceCost1) { data in
+                        Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
+                    }
+ //               }
+ //               Group {
+                    TableColumn("Cost 2", value: \Service.serviceCost2) { data in
+                        Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
+                    }
+                    TableColumn("Cost 3", value: \Service.serviceCost3) { data in
+                        Text(String(data.serviceCost3.formatted(.number.precision(.fractionLength(2)))))
+                    }
+                    TableColumn("Price 1", value: \Service.servicePrice1) { data in
+                        Text(String(data.servicePrice1.formatted(.number.precision(.fractionLength(2)))))
+                    }
+                    TableColumn("Price 2", value: \Service.servicePrice2) { data in
+                        Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
+                    }
+ //                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
+ //                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
+ //                   }
+ //               }
+
             }
             .contextMenu(forSelectionType: Service.ID.self) { items in
                 if items.isEmpty {
@@ -419,7 +454,7 @@ struct LocationsView: View {
     @State private var selectedLocation = Set<Location.ID>()
         
     var body: some View {
-        if refDataModel.isLocationDataLoaded {
+        if referenceData.locations.isLocationDataLoaded {
   
             Table(referenceData.locations.locationsList, selection: $selectedLocation) {
                 TableColumn("Location Name", value: \.locationName)

@@ -14,14 +14,20 @@ import GoogleAPIClientForREST
 @Observable class TutorMgmtVM  {
     
     
-    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxSessions: String) {
+    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: String) {
+        
         
         let newTutorKey = PgmConstants.tutorKeyPrefix + "0034"
-        let startDate = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let startDate = dateFormatter.string(from: Date())
+        let maxStudentsInt = Int(maxStudents) ?? 0
         
-        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "New", tutorStartDate: startDate, tutorEndDate: startDate, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalPrice: 0.0, tutorTotalProfit: 0.0)
+        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "New", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudentsInt, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.addTutor(newTutor: newTutor)
         referenceData.tutors.saveTutorData()
+        referenceData.dataCounts.increaseTutorCount()
+        referenceData.dataCounts.saveDataCounts()
         
         createNewSheet(tutorName: tutorName)
     }

@@ -14,7 +14,8 @@ struct AddStudent: View {
     @State var guardianName: String
     @State var contactPhone: String
     @State var contactEmail: String
-    
+    @State var location: String
+
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -52,14 +53,21 @@ struct AddStudent: View {
                     .textFieldStyle(.roundedBorder)
              }
             
+            HStack {
+                Text("Location")
+                TextField("Location", text: $location)
+                    .frame(width: 300)
+                    .textFieldStyle(.roundedBorder)
+             }
+            
             Button(action: {
-                studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone)
+                studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
             }){
                 Text("Add Student")
             }
             .padding()
-            .background(Color.orange)
-            .foregroundColor(Color.white)
+//            .background(Color.orange)
+//            .foregroundColor(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Spacer()

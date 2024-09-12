@@ -31,6 +31,7 @@
 		02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */; };
 		02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4D2C8A141A002893AD /* AddService.swift */; };
 		02DD5A502C8A1428002893AD /* AddLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4F2C8A1428002893AD /* AddLocation.swift */; };
+		02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02E7B1BA2C90769300EE73A3 /* DataCounts.swift */; };
 		02F6D0E12C8BE306007AB4D4 /* TutorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F6D0E02C8BE306007AB4D4 /* TutorService.swift */; };
 		02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */; };
 		EA36FC5F1C7DD375009FAD78 /* Pods_WSAdmin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */; };
@@ -64,6 +65,7 @@
 		02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4D2C8A141A002893AD /* AddService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddService.swift; sourceTree = "<group>"; };
 		02DD5A4F2C8A1428002893AD /* AddLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLocation.swift; sourceTree = "<group>"; };
+		02E7B1BA2C90769300EE73A3 /* DataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCounts.swift; sourceTree = "<group>"; };
 		02F6D0E02C8BE306007AB4D4 /* TutorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TutorService.swift; path = WSAdmin/Views/TutorService.swift; sourceTree = SOURCE_ROOT; };
 		02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorStudent.swift; sourceTree = "<group>"; };
 		155C162A0215761C62AC6D29 /* Pods_WSAdmin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WSAdmin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,6 +167,7 @@
 				02AC9BCA2C88A6BA007391A7 /* ServicesList.swift */,
 				02AC9BCC2C88A6C9007391A7 /* Location.swift */,
 				02AC9BCE2C88A6DB007391A7 /* LocationsList.swift */,
+				02E7B1BA2C90769300EE73A3 /* DataCounts.swift */,
 			);
 			path = DataModels;
 			sourceTree = "<group>";
@@ -312,6 +315,7 @@
 				02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */,
 				02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
+				02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */,
 				02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,
 				02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */,

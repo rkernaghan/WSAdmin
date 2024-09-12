@@ -35,8 +35,8 @@ struct AddLocation: View {
                 Text("Add Location")
             }
             .padding()
-            .background(Color.orange)
-            .foregroundColor(Color.white)
+//            .background(Color.orange)
+//            .foregroundColor(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Spacer()

@@ -9,27 +9,27 @@ import SwiftUI
 
 struct PgmConstants {
     static let dataCountTotalStudentsRow = 0
-    static let dataCountTotalStudentsCol = 1
+    static let dataCountTotalStudentsCol = 0
     static let dataCountActiveStudentsRow = 1
-    static let dataCountActiveStudentsCol = 1
+    static let dataCountActiveStudentsCol = 0
     static let dataCountHighestStudentKeyRow = 2
-    static let dataCountHighestStudentKeyCol = 1
+    static let dataCountHighestStudentKeyCol = 0
     static let dataCountTotalTutorsRow = 3
-    static let dataCountTotalTutorsCol = 1
+    static let dataCountTotalTutorsCol = 0
     static let dataCountActiveTutorsRow = 4
-    static let dataCountActiveTutorsCol = 1
+    static let dataCountActiveTutorsCol = 0
     static let dataCountHighestTutorKeyRow = 5
-    static let dataCountHighestTutorKeyCol = 1
+    static let dataCountHighestTutorKeyCol = 0
     static let dataCountTotalServicesRow = 6
-    static let dataCountTotalServicesCol = 1
+    static let dataCountTotalServicesCol = 0
     static let dataCountActiveServicesRow = 7
-    static let dataCountActiveServicesCol = 1
+    static let dataCountActiveServicesCol = 0
     static let dataCountHighestServiceKeyRow = 8
-    static let dataCountHighestServiceKeyCol = 1
+    static let dataCountHighestServiceKeyCol = 0
     static let dataCountTotalLocationsRow = 9
-    static let dataCountTotalLocationsCol = 1
+    static let dataCountTotalLocationsCol = 0
     static let dataCountHighestLocationKeyRow = 10
-    static let dataCountHighestLocationKeyCol = 1
+    static let dataCountHighestLocationKeyCol = 0
     
     static let tutorDataStudentCountRow = 3
     static let tutorDataStudentCountCol = 1
@@ -38,9 +38,10 @@ struct PgmConstants {
     
     static let testRefFileName = "ReferenceData - TEST"
     static let prodRefFileName = "ReferenceData"
-    static let dataCountRange = "Master!A2:B12"
+    static let dataCountRange = "Master!B2:B12"
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
+//    static let serviceRange = "Master!AL3:AW"
     static let serviceRange = "Master!AL3:AW"
     static let locationRange = "Master!AZ3:BC"
     

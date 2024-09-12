@@ -53,14 +53,14 @@ struct AddTutor: View {
              }
             
             Button(action: {
-                tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxSessions: maxStudents)
+                tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
     
             }){
                 Text("Add Tutor")
             }
             .padding()
-            .background(Color.orange)
-            .foregroundColor(Color.white)
+//            .background(Color.orange)
+//            .foregroundColor(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Spacer()

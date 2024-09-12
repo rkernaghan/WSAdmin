@@ -7,52 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "3593D2DB-53F9-4DFF-9803-B67082FA24A7"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "WSAdmin/Views/DataMgmtView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "379"
-            endingLineNumber = "379"
-            landmarkName = "body"
-            landmarkType = "24">
-            <Locations>
-               <Location
-                  uuid = "3593D2DB-53F9-4DFF-9803-B67082FA24A7 - 1f753accf6ccc75c"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 () -&gt; () in closure #2 (Swift.Set&lt;Foundation.UUID&gt;) -&gt; SwiftUI._ConditionalContent&lt;SwiftUI._ConditionalContent&lt;SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.TupleView&lt;(SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;)&gt;&gt;, SwiftUI.TupleView&lt;(SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;)&gt;&gt; in WSAdmin.ServicesView.body.getter : some"
-                  moduleName = "WSAdmin"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/russellkernaghan/Documents/IOSApps/WSAdmin/WSAdmin/Views/DataMgmtView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
-               </Location>
-               <Location
-                  uuid = "3593D2DB-53F9-4DFF-9803-B67082FA24A7 - 97c79f7e36f3ba13"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #2 () -&gt; SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt; in closure #2 (Swift.Set&lt;Foundation.UUID&gt;) -&gt; SwiftUI._ConditionalContent&lt;SwiftUI._ConditionalContent&lt;SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.TupleView&lt;(SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;)&gt;&gt;, SwiftUI.TupleView&lt;(SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;, SwiftUI.Button&lt;SwiftUI.Label&lt;SwiftUI.Text, SwiftUI.Image&gt;&gt;)&gt;&gt; in WSAdmin.ServicesView.body.getter : some"
-                  moduleName = "WSAdmin"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/russellkernaghan/Documents/IOSApps/WSAdmin/WSAdmin/Views/DataMgmtView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "381"
-                  endingLineNumber = "381">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "52FA373C-A816-4FBB-B5C2-24022D8FA4B8"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -60,13 +14,13 @@
             filePath = "WSAdmin/Views/DataMgmtView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "258"
-            endingLineNumber = "258"
+            startingLineNumber = "267"
+            endingLineNumber = "267"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
                <Location
-                  uuid = "52FA373C-A816-4FBB-B5C2-24022D8FA4B8 - 8fe1d70926ba2659"
+                  uuid = "52FA373C-A816-4FBB-B5C2-24022D8FA4B8 - 8fe1d70926ba2170"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -76,11 +30,11 @@
                   urlString = "file:///Users/russellkernaghan/Documents/IOSApps/WSAdmin/WSAdmin/Views/DataMgmtView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "258"
-                  endingLineNumber = "258">
+                  startingLineNumber = "267"
+                  endingLineNumber = "267">
                </Location>
                <Location
-                  uuid = "52FA373C-A816-4FBB-B5C2-24022D8FA4B8 - 24827b57c53d7ed1"
+                  uuid = "52FA373C-A816-4FBB-B5C2-24022D8FA4B8 - 24827b57c53d79ba"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -90,8 +44,8 @@
                   urlString = "file:///Users/russellkernaghan/Documents/IOSApps/WSAdmin/WSAdmin/Views/DataMgmtView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "259"
-                  endingLineNumber = "259">
+                  startingLineNumber = "268"
+                  endingLineNumber = "268">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -99,16 +53,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "C72E98E4-8C34-4290-835D-76639D3247F7"
-            shouldBeEnabled = "Yes"
+            uuid = "14550458-0BEA-440B-9478-E9AC6189F177"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "WSAdmin/DataModels/TutorsList.swift"
+            filePath = "WSAdmin/DataModels/ServicesList.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "77"
-            endingLineNumber = "77"
-            landmarkName = "saveTutorData()"
+            startingLineNumber = "100"
+            endingLineNumber = "100"
+            landmarkName = "saveServiceData()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

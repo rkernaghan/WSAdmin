@@ -13,19 +13,20 @@ class Tutor: Identifiable {
     var tutorEmail: String
     var tutorPhone: String
     var tutorStatus: String
-    var tutorStartDate: Date
-    var tutorEndDate: Date?
+    var tutorStartDate: String
+    var tutorEndDate: String
+    var tutorMaxStudents: Int
     var tutorStudentCount: Int
     var tutorServiceCount: Int
     var tutorTotalSessions: Int
     var tutorTotalCost: Float
-    var tutorTotalPrice: Float
+    var tutorTotalRevenue: Float
     var tutorTotalProfit: Float
     var tutorStudents = [TutorStudent]()
     var tutorServices = [TutorService]()
     let id = UUID()
     
-    init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: Date, tutorEndDate: Date?, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalPrice: Float, tutorTotalProfit: Float) {
+    init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalRevenue: Float, tutorTotalProfit: Float) {
         self.tutorKey = tutorKey
         self.tutorName = tutorName
         self.tutorEmail = tutorEmail
@@ -33,11 +34,12 @@ class Tutor: Identifiable {
         self.tutorStatus = tutorStatus
         self.tutorStartDate = tutorStartDate
         self.tutorEndDate = tutorEndDate
+        self.tutorMaxStudents = tutorMaxStudents
         self.tutorStudentCount = tutorStudentCount
         self.tutorServiceCount = tutorServiceCount
         self.tutorTotalSessions = tutorTotalSessions
         self.tutorTotalCost = tutorTotalCost
-        self.tutorTotalPrice = tutorTotalPrice
+        self.tutorTotalRevenue = tutorTotalRevenue
         self.tutorTotalProfit = tutorTotalProfit
     }
     
