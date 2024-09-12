@@ -106,17 +106,17 @@ class DataCounts {
             print("Active Student count is '\(rows[1][0])")
             print("Highest STudent Key is '\(rows[2][0])")
             print("Number of rows in sheet: \(rows.count)")
-            self.totalStudents = Int(stringRows[PgmConstants.dataCountTotalStudentsRow][PgmConstants.dataCountTotalStudentsCol])! ?? 0
-            self.activeStudents = Int(stringRows[PgmConstants.dataCountActiveStudentsRow][PgmConstants.dataCountActiveStudentsCol])! ?? 0
-            self.highestStudentKey = Int(stringRows[PgmConstants.dataCountHighestStudentKeyRow][PgmConstants.dataCountHighestStudentKeyCol])! ?? 0
-            self.totalTutors = Int(stringRows[PgmConstants.dataCountTotalTutorsRow][PgmConstants.dataCountTotalTutorsCol])! ?? 0
-            self.activeTutors = Int(stringRows[PgmConstants.dataCountActiveTutorsRow][PgmConstants.dataCountActiveTutorsCol])! ?? 0
-            self.highestTutorKey = Int(stringRows[PgmConstants.dataCountHighestTutorKeyRow][PgmConstants.dataCountHighestTutorKeyCol])! ?? 0
-            self.totalServices = Int(stringRows[PgmConstants.dataCountTotalServicesRow][PgmConstants.dataCountTotalServicesCol])! ?? 0
-            self.activeServices = Int(stringRows[PgmConstants.dataCountActiveServicesRow][PgmConstants.dataCountActiveServicesCol])! ?? 0
-            self.highestServiceKey = Int(stringRows[PgmConstants.dataCountHighestServiceKeyRow][PgmConstants.dataCountHighestServiceKeyCol])! ?? 0
-            self.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol])! ?? 0
-            self.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol])! ?? 0
+            self.totalStudents = Int(stringRows[PgmConstants.dataCountTotalStudentsRow][PgmConstants.dataCountTotalStudentsCol]) ?? 0
+            self.activeStudents = Int(stringRows[PgmConstants.dataCountActiveStudentsRow][PgmConstants.dataCountActiveStudentsCol]) ?? 0
+            self.highestStudentKey = Int(stringRows[PgmConstants.dataCountHighestStudentKeyRow][PgmConstants.dataCountHighestStudentKeyCol]) ?? 0
+            self.totalTutors = Int(stringRows[PgmConstants.dataCountTotalTutorsRow][PgmConstants.dataCountTotalTutorsCol]) ?? 0
+            self.activeTutors = Int(stringRows[PgmConstants.dataCountActiveTutorsRow][PgmConstants.dataCountActiveTutorsCol]) ?? 0
+            self.highestTutorKey = Int(stringRows[PgmConstants.dataCountHighestTutorKeyRow][PgmConstants.dataCountHighestTutorKeyCol]) ?? 0
+            self.totalServices = Int(stringRows[PgmConstants.dataCountTotalServicesRow][PgmConstants.dataCountTotalServicesCol]) ?? 0
+            self.activeServices = Int(stringRows[PgmConstants.dataCountActiveServicesRow][PgmConstants.dataCountActiveServicesCol]) ?? 0
+            self.highestServiceKey = Int(stringRows[PgmConstants.dataCountHighestServiceKeyRow][PgmConstants.dataCountHighestServiceKeyCol]) ?? 0
+            self.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol]) ?? 0
+            self.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol]) ?? 0
             self.isDataCountsLoaded = true
             referenceData.tutors.loadTutorData(referenceFileID: referenceFileID, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
             referenceData.students.loadStudentData(referenceFileID: referenceFileID, referenceData: referenceData)

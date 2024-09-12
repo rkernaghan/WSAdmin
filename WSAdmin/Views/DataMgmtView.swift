@@ -170,13 +170,13 @@ struct TutorsView: View {
                     TableColumn("Start Date", value: \.tutorStartDate)
                     TableColumn("End Date", value: \.tutorEndDate)
                     TableColumn("Status", value: \.tutorStatus)
-                    TableColumn("Tutor Key", value: \.tutorMaxStudents) { data in
+                    TableColumn("Max Students", value: \.tutorMaxStudents) { data in
                         Text(String(data.tutorMaxStudents))
                     }
-                    TableColumn("Tutor Name", value: \.tutorStudentCount) {data in
+                    TableColumn("Student Count", value: \.tutorStudentCount) {data in
                         Text(String(data.tutorStudentCount))
                     }
-                    TableColumn("Sessions", value: \.tutorServiceCount) {data in
+                    TableColumn("Service Count", value: \.tutorServiceCount) {data in
                         Text(String(data.tutorServiceCount))
                     }
 //                    TableColumn("Total Cost", value: \.tutorTotalCost)
@@ -227,6 +227,12 @@ struct TutorsView: View {
                                 
                             } label: {
                                 Label("Assign Tutor", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                tutorMgmtVM.printTutor(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Print Tutor", systemImage: "square.and.arrow.up")
                             }
                             
                             Button(role: .destructive) {

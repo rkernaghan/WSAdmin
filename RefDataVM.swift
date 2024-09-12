@@ -80,8 +80,8 @@ import GoogleAPIClientForREST
                 }
                 
   
-                let tutorStudentsCount = Int(stringRows[PgmConstants.tutorDataStudentCountRow][PgmConstants.tutorDataStudentCountCol])! ?? 0
-                let tutorServicesCount = Int(stringRows[PgmConstants.tutorDataServiceCountRow][PgmConstants.tutorDataServiceCountCol])! ?? 0
+                let tutorStudentsCount = Int(stringRows[PgmConstants.tutorDataStudentCountRow][PgmConstants.tutorDataStudentCountCol]) ?? 0
+                let tutorServicesCount = Int(stringRows[PgmConstants.tutorDataServiceCountRow][PgmConstants.tutorDataServiceCountCol]) ?? 0
                 
                 print("Tutor \(tutorName) Students: \(stringRows[PgmConstants.tutorDataStudentCountRow][PgmConstants.tutorDataStudentCountCol]) Services: \(stringRows[PgmConstants.tutorDataServiceCountRow][PgmConstants.tutorDataServiceCountCol])")
                 
@@ -95,7 +95,7 @@ import GoogleAPIClientForREST
     func loadTutorStudents(tutorNum:Int, tutorDataFileID: String, tutorStudentsCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
         print("Loading \(tutorStudentsCount) Students")
-        var tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+        let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
             
         let range = tutorName + PgmConstants.tutorStudentsRange + String(tutorStudentsCount + PgmConstants.tutorDataStudentsStartingRowNumber)
             print("Tutor details counts range is '\(range)")

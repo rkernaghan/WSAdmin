@@ -27,6 +27,7 @@
 		02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD22C892B49007391A7 /* AddStudent.swift */; };
 		02AC9BD52C894BFC007391A7 /* StudentMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */; };
 		02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */; };
+		02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */; };
 		02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */; };
 		02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */; };
 		02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4D2C8A141A002893AD /* AddService.swift */; };
@@ -61,6 +62,7 @@
 		02AC9BD22C892B49007391A7 /* AddStudent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStudent.swift; sourceTree = "<group>"; };
 		02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentMgmtVM.swift; sourceTree = "<group>"; };
 		02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorMgmtVM.swift; sourceTree = "<group>"; };
+		02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorDataCounts.swift; sourceTree = "<group>"; };
 		02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4D2C8A141A002893AD /* AddService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddService.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 			children = (
 				02F6D0E02C8BE306007AB4D4 /* TutorService.swift */,
 				02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */,
+				02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */,
 				02AC9BBF2C889F9A007391A7 /* Student.swift */,
 				02AC9BC12C88A161007391A7 /* StudentsList.swift */,
 				02AC9BC42C88A66D007391A7 /* Tutor.swift */,
@@ -321,6 +324,7 @@
 				02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */,
 				02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */,
 				02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */,
+				02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */,
 				02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */,
 				02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,

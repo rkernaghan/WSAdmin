@@ -93,13 +93,15 @@ import GoogleAPIClientForREST
                 
                 let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit)
                 self.tutorsList.append(newTutor)
+                    
+                self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
                 
                 tutorIndex += 1
                 rowNumber += 1
             }
  //           referenceData.tutors.printAll()
             self.isTutorDataLoaded = true
- //           self.loadTutorDetails(tutorDataFileID: tutorDataFileID, referenceData: referenceData, sheetService: sheetService)
+
         }
         
     }
@@ -137,12 +139,11 @@ import GoogleAPIClientForREST
         let tutorCount = tutorsList.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
-        
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
         let newRow = PgmConstants.firstTimesheetRow + tutorCount
         print("New row", newRow)
-        let newRowString = String(newRow)
+
         let range = PgmConstants.tutorRange + String(tutorCount + PgmConstants.tutorStartingRowNumber + 1)              //One extra row for blanking line at end
         print("Range", range)
   

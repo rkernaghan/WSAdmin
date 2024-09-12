@@ -155,4 +155,22 @@ import GoogleAPIClientForREST
         })
     }
     
+    func printTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+        print("Printing Tutor")
+        
+        for objectID in indexes {
+            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                print("Tutor Name: \(referenceData.tutors.tutorsList[idx].tutorName)")
+                print("Tutor Student Count: \(referenceData.tutors.tutorsList[idx].tutorStudentCount)")
+                var studentNum = 0
+                while studentNum < referenceData.tutors.tutorsList[idx].tutorStudentCount {
+                    print("Tutor Student: \(referenceData.tutors.tutorsList[idx].tutorStudents[studentNum].studentName)")
+                    studentNum += 1
+                }
+                print("Tutor Service Count: \(referenceData.tutors.tutorsList[idx].tutorServiceCount)")
+            }
+        }
+        referenceData.tutors.saveTutorData()
+    }
+    
 }
