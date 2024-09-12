@@ -168,6 +168,11 @@ import GoogleAPIClientForREST
                     studentNum += 1
                 }
                 print("Tutor Service Count: \(referenceData.tutors.tutorsList[idx].tutorServiceCount)")
+                var serviceNum = 0
+                while serviceNum < referenceData.tutors.tutorsList[idx].tutorServiceCount {
+                    print("Tutor Service: \(referenceData.tutors.tutorsList[idx].tutorServices[serviceNum].timesheetServiceName)")
+                    serviceNum += 1
+                }
             }
         }
         referenceData.tutors.saveTutorData()

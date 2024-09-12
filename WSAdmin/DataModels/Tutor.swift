@@ -164,7 +164,59 @@ class Tutor: Identifiable {
     }
     
     func loadTutorServices(tutorNum: Int, tutorDataFileID: String, serviceCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService ) {
-        
+       
+        print("Loading \(serviceCount) Services")
+        let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+            
+        let range = tutorName + PgmConstants.tutorServicesRange + String(serviceCount + PgmConstants.tutorDataServicesStartingRowNumber)
+            print("Tutor details counts range is '\(range)")
+            let query = GTLRSheetsQuery_SpreadsheetsValuesGet
+                .query(withSpreadsheetId: tutorDataFileID, range:range)
+            // Load data counts from ReferenceData spreadsheet
+            sheetService.executeQuery(query) { (ticket, result, error) in
+                if let error = error {
+                    print(error)
+                    print("Failed to read data:\(error.localizedDescription)")
+                    return
+                }
+                guard let result = result as? GTLRSheets_ValueRange else {
+                    return
+                }
+                
+                let rows = result.values!
+                var stringRows = rows as! [[String]]
+                
+                for row in stringRows {
+                    stringRows.append(row)
+                    //               print(row)
+                }
+                
+                if rows.isEmpty {
+                    print("No data found.")
+                    return
+                }
+                
+                var rowNum = 0
+                var serviceNum = 0
+                while serviceNum < serviceCount {
+                    let serviceKey = stringRows[rowNum][PgmConstants.tutorDataServiceKeyPosition]
+                    let timesheetName = stringRows[rowNum][PgmConstants.tutorDataServiceTimesheetNamePosition]
+                    let invoiceName = stringRows[rowNum][PgmConstants.tutorDataServiceInvoiceNamePosition]
+                    let billingType = stringRows[rowNum][PgmConstants.tutorDataServiceBillingTypePosition]
+                    let cost1 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost1Position]) ?? 0.0
+                    let cost2 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost2Position]) ?? 0.0
+                    let cost3 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost3Position]) ?? 0.0
+                    let price1 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice1Position]) ?? 0.0
+                    let price2 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice2Position]) ?? 0.0
+                                       let price3 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice3Position]) ?? 0.0
+                    
+                    let newTutorService = TutorService(serviceKey: serviceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    
+                    self.addTutorService( newTutorService: newTutorService)
+                    rowNum += 1
+                    serviceNum += 1
+                }
+            }
     }
     
     func saveTutorServices() {
