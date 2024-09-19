@@ -126,7 +126,7 @@ import GoogleAPIClientForREST
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
         let range = PgmConstants.serviceRange + String(serviceCount + PgmConstants.serviceStartingRowNumber + 1)            // One extra line for blanking row at end
-        print("Range", range)
+        print("Service Data Save Range", range)
   
         var serviceNum = 0
         while serviceNum < serviceCount {
@@ -162,7 +162,7 @@ import GoogleAPIClientForREST
                 return
             }
             else {
-                print("services saved")
+                print("Services saved")
             }
         }
     }

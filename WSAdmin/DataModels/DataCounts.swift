@@ -102,9 +102,9 @@ class DataCounts {
                 return
             }
             
-            print("Total Student count is '\(rows[0][0])")
-            print("Active Student count is '\(rows[1][0])")
-            print("Highest STudent Key is '\(rows[2][0])")
+            print("Total Student count is \(rows[0][0])")
+            print("Active Student count is \(rows[1][0])")
+            print("Highest Student Key is \(rows[2][0])")
             print("Number of rows in sheet: \(rows.count)")
             self.totalStudents = Int(stringRows[PgmConstants.dataCountTotalStudentsRow][PgmConstants.dataCountTotalStudentsCol]) ?? 0
             self.activeStudents = Int(stringRows[PgmConstants.dataCountActiveStudentsRow][PgmConstants.dataCountActiveStudentsCol]) ?? 0
@@ -142,7 +142,7 @@ class DataCounts {
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
         let range = PgmConstants.dataCountRange
-        print("Range", range)
+        print("Data Counts Range", range)
   
 
         updateValues.insert([String(totalStudents)], at: PgmConstants.dataCountTotalStudentsRow)
@@ -170,7 +170,7 @@ class DataCounts {
                 return
             }
             else {
-                print("services saved")
+                print("Data Counts saved")
             }
         }
         

@@ -145,7 +145,7 @@ import GoogleAPIClientForREST
         print("New row", newRow)
 
         let range = PgmConstants.tutorRange + String(tutorCount + PgmConstants.tutorStartingRowNumber + 1)              //One extra row for blanking line at end
-        print("Range", range)
+        print("Tutor Data Save Range", range)
   
         var tutorNum = 0
         while tutorNum < tutorCount {

@@ -23,16 +23,24 @@ import Foundation
         referenceData.dataCounts.saveDataCounts()
     }
     
-    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+        var deleteResult = true
         print("deleting Student")
         
         for objectID in indexes {
             if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.students.studentsList[index].markDeleted()
+                if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
+                    referenceData.students.studentsList[index].markDeleted()
+                    referenceData.students.saveStudentData()
+                    referenceData.dataCounts.decreaseStudentCount()
+                } else {
+                    let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
+                    print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
+                    deleteResult = false
+                }
             }
         }
-        referenceData.students.saveStudentData()
-        referenceData.dataCounts.decreaseStudentCount()
+        return(deleteResult)
     }
     
 }

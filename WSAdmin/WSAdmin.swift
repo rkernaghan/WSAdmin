@@ -140,7 +140,7 @@ struct PgmConstants {
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
 }
 
-var submitErrorMsg: String = " "
+var buttonErrorMsg: String = " "
 var runMode: String = "TEST"
 
 @main

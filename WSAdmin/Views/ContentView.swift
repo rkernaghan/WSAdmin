@@ -35,19 +35,17 @@ struct ContentView: View {
     
 
     var body: some View {
-    //    NavigationView {
+        NavigationStack {
             VStack{
                 
                 if (authVM.isLoggedIn) {
                     DataMgmtView()
-                    
-                    //               SignOutButton()
                 } else {
                     SignInView()
                 }
                 Text(authVM.errorMessage)
             }
-     //   }
+        }
         .navigationTitle("Login")
         .environment(refDataVM)
         .environment(authVM)

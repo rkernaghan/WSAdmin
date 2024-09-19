@@ -14,9 +14,6 @@ class TutorDataCounts {
     var tutorStudentCount: Int = 0
     var tutorServiceCount: Int = 0
     
-    
-  
-    
     func saveTutorDataCounts() {
         
     }

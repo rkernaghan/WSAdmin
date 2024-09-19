@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Student: Identifiable {
+@Observable class Student: Identifiable {
     var studentKey: String
     var studentName: String
     var studentGuardian: String

@@ -40,17 +40,49 @@ import GoogleAPIClientForREST
         }
     }
             
-    func deleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {
-        print("deleting Tutor")
+    func deleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+        var deleteResult = true
+        print("Deleting Tutor")
         
         for objectID in indexes {
             if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.tutors.tutorsList.remove(at: idx)
+                if referenceData.tutors.tutorsList[idx].tutorStudentCount == 0 {
+                    referenceData.tutors.tutorsList[idx].markDeleted()
+                    referenceData.tutors.saveTutorData()
+                } else {
+                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[idx].tutorName)"
+                    print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[idx].tutorName)")
+                    deleteResult = false
+                }
             }
         }
-        referenceData.tutors.saveTutorData()
+
+        return(deleteResult)
+    }
+
+    func unDeleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+        var unDeleteResult = true
+        print("UnDeleting Tutor")
+        
+        for objectID in indexes {
+            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                if referenceData.tutors.tutorsList[idx].tutorStatus == "Deleted" {
+                    referenceData.tutors.tutorsList[idx].markUnDeleted()
+                    referenceData.tutors.saveTutorData()
+                } else {
+                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted"
+                    print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted")
+                    unDeleteResult = false
+                }
+            }
+        }
+
+        return(unDeleteResult)
     }
     
+    func assignStudent(studentIndex: Set<Student.ID>, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+            print("Assigning Student to Tutor")
+    }
     
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
         print("Creating New Sheet ...\n")

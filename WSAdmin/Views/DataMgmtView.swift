@@ -65,10 +65,10 @@ struct DataMgmtView: View {
     var referenceData = ReferenceData()
     
     var body: some View {
-        NavigationView {
+
             SideView(referenceData: referenceData)
-        }
-        .frame(minWidth: 600, minHeight: 400)
+
+        .frame(minWidth: 100, minHeight: 100)
         .onAppear(perform: {
             print("Start OnAppear")
  //           let refDataFileName = PgmConstants.prodRefFileName
@@ -83,87 +83,89 @@ struct SideView: View {
     @Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
         
     var body: some View {
-            
+ //       NavigationStack {
             List {
-               
+                
                 NavigationLink {
                     TutorsView(referenceData: referenceData)
                 } label: {
-                  Label("Tutors", systemImage: "person")
+                    Label("Tutors", systemImage: "person")
                 }
                 
                 NavigationLink {
                     StudentsView(referenceData: referenceData)
                 } label: {
-                  Label("Students", systemImage: "graduationcap")
+                    Label("Students", systemImage: "graduationcap")
                 }
                 
                 NavigationLink {
                     ServicesView(referenceData: referenceData)
                 } label: {
-                  Label("Services", systemImage: "list.bullet")
+                    Label("Services", systemImage: "list.bullet")
                 }
                 
                 NavigationLink {
                     LocationsView(referenceData: referenceData)
                 } label: {
-                  Label("Locations", systemImage: "building")
+                    Label("Locations", systemImage: "building")
                 }
                 
                 NavigationLink {
                     AddTutor(referenceData: referenceData, tutorName: " ", maxStudents: " ", contactPhone: " ", contactEmail: " ")
                 } label: {
-                  Label("Add Tutor", systemImage: "person")
+                    Label("Add Tutor", systemImage: "person")
                 }
                 
                 NavigationLink {
                     AddStudent(referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ")
                 } label: {
-                  Label("Add Student", systemImage: "graduationcap")
+                    Label("Add Student", systemImage: "graduationcap")
                 }
                 
                 NavigationLink {
                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ", cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
                 } label: {
-                  Label("Add Service", systemImage: "list.bullet")
+                    Label("Add Service", systemImage: "list.bullet")
                 }
                 
                 NavigationLink {
                     AddLocation(referenceData: referenceData, locationName: " ")
                 } label: {
-                  Label("Add Location", systemImage: "building")
-                
+                    Label("Add Location", systemImage: "building")
+                }
             }
-            .listStyle(SidebarListStyle())
+//            .listStyle(SidebarListStyle())
             .navigationTitle("Sidebar")
             
-            Button(action: {
+           Button(action: {
                 userAuthVM.signOut()
                 //                dismiss() }) {
             }) {
-                    Text("Sign Out")
-                }
-                .padding()
- //               .background(Color.orange)
- //               .foregroundColor(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                Text("Sign Out")
+            }
+            .padding()
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-    }
+//    }
 }
 
+
 struct TutorsView: View {
-    var referenceData: ReferenceData
+    @State var referenceData: ReferenceData
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     @State private var selectedTutors = Set<Tutor.ID>()
     @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
+    @State private var showAlert = false
+    @State private var viewChange: Bool = false
         
     var body: some View {
         if referenceData.tutors.isTutorDataLoaded {
-            NavigationView {
-                
-                Table(referenceData.tutors.tutorsList, selection: $selectedTutors, sortOrder: $sortOrder) {
+  
+            VStack {
+                Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}, selection: $selectedTutors, sortOrder: $sortOrder) {
+                    
                     TableColumn("Tutor Name", value: \.tutorName)
                     TableColumn("Phone", value: \.tutorPhone)
                     TableColumn("Email", value: \.tutorEmail)
@@ -179,11 +181,11 @@ struct TutorsView: View {
                     TableColumn("Service Count", value: \.tutorServiceCount) {data in
                         Text(String(data.tutorServiceCount))
                     }
-//                    TableColumn("Total Cost", value: \.tutorTotalCost)
-//                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
+                    //                    TableColumn("Total Cost", value: \.tutorTotalCost)
+                    //                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
                     TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
                         Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(2)))))
-                        }
+                    }
                 }
                 .contextMenu(forSelectionType: Tutor.ID.self) { items in
                     if items.isEmpty {
@@ -194,6 +196,7 @@ struct TutorsView: View {
                         }
                     } else if items.count == 1 {
                         VStack {
+                            
                             NavigationLink(destination: TutorStudentsView(referenceData: referenceData, tutorIndex: items)) {
                                 Text("List Students")
                                 Image(systemName: "square.and.pencil")
@@ -203,6 +206,11 @@ struct TutorsView: View {
                             //                            Text("Edit individual segments")
                             //                            Image(systemName: "ellipsis")
                             //                        }
+                            
+                            NavigationLink(destination: StudentSelectionView(referenceData: referenceData, tutorIndex: items)) {
+                                Text("Assign Student")
+                                Image(systemName: "square.and.pencil")
+                            }
                             
                             Button {
                                 tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
@@ -226,7 +234,13 @@ struct TutorsView: View {
                             Button {
                                 
                             } label: {
-                                Label("Assign Tutor", systemImage: "square.and.arrow.up")
+                                Label("Assign Student", systemImage: "square.and.arrow.up")
+                            }
+
+                            Button {
+                                
+                            } label: {
+                                Label("UnAssign Student", systemImage: "square.and.arrow.up")
                             }
                             
                             Button {
@@ -236,12 +250,33 @@ struct TutorsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                                let result: Bool = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                                if result == false {
+                                    showAlert = true
+                                    viewChange.toggle()
+                                }
+                                
                             } label: {
                                 Label("Delete Tutor", systemImage: "trash")
+                                
+                            }
+                            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                                Button("OK", role: .cancel) { }
+                            }
+                            
+                            Button(role: .destructive) {
+                                let result: Bool = tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
+                                if result == false {
+                                    showAlert = true
+                                    viewChange.toggle()
+                                }
+                                
+                            } label: {
+                                Label("Undelete Tutor", systemImage: "trash")
+                                
                             }
                         }
-                        
+                       
                     } else {
                         Button {
                             
@@ -258,6 +293,7 @@ struct TutorsView: View {
                     //              store.favourite(items)
                 }
             }
+//        }
         }
     }
 }
@@ -276,10 +312,61 @@ struct TutorStudentsView: View {
                     TableColumn("Email", value: \.clientEmail)
                     TableColumn("Status", value: \.clientPhone)
                 }
+        Text(" Got here")
             }
 //        }
 //    }
 }
+
+struct StudentSelectionView: View {
+    var referenceData: ReferenceData
+    var tutorIndex: Set<Tutor.ID>
+    
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    
+    @State private var selectedStudents = Set<Student.ID>()
+    @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
+    @State private var showAlert = false
+    @State private var viewChange: Bool = false
+
+    var body: some View {
+        
+        //        for objectID in tutorIndex {
+        //            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
+        VStack {
+            Table(referenceData.students.studentsList.filter{$0.studentStatus != "Assigned"}, selection: $selectedStudents, sortOrder: $sortOrder) {
+                
+                TableColumn("Student Name", value: \.studentName)
+                TableColumn("Status", value: \.studentStatus)
+            }
+            
+            .contextMenu(forSelectionType: Tutor.ID.self) { items in
+                if items.count == 1 {
+                    VStack {
+                        
+                        Button {
+                            tutorMgmtVM.assignStudent(studentIndex: items, tutorIndex: tutorIndex, referenceData: referenceData)
+                        } label: {
+                            Label("Assign Student to Tutor", systemImage: "square.and.arrow.up")
+                        }
+                    }
+                    
+                } else {
+                    Button {
+                        tutorMgmtVM.assignStudent(studentIndex: items, tutorIndex: tutorIndex, referenceData: referenceData)
+                    } label: {
+                        Label("Assign Student to Tutor", systemImage: "square.and.arrow.up")
+                    }
+                }
+                    
+                } primaryAction: { items in
+                    //              store.favourite(items)
+                }
+            }
+        }
+    }
+
+
 
 struct StudentsView: View {
     var referenceData: ReferenceData
@@ -288,7 +375,9 @@ struct StudentsView: View {
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @State private var selectedStudents = Set<Student.ID>()
     @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
+    @State private var showAlert = false
     var studentArray = [Student]()
+    
     
     var body: some View {
         if referenceData.students.isStudentDataLoaded {
@@ -325,36 +414,45 @@ struct StudentsView: View {
                       Label("New Student", systemImage: "plus")
                     }
                 } else if items.count == 1 {
-                    Button {
+                    VStack {
+                        Button {
+                            
+                        } label: {
+                            Label("Edit Student", systemImage: "square.and.arrow.up")
+                        }
                         
-                    } label: {
-                      Label("Edit Student", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
+                        Button {
+                            
+                        } label: {
+                            Label("Assign Tutor", systemImage: "square.and.arrow.up")
+                        }
                         
-                    } label: {
-                      Label("Assign Student", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
+                        Button {
+                            
+                        } label: {
+                            Label("UnAssign Tutor", systemImage: "square.and.arrow.up")
+                        }
                         
-                    } label: {
-                      Label("UnAssign Student", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button {
+                        Button {
+                            
+                        } label: {
+                            Label("ReAssign Student", systemImage: "square.and.arrow.up")
+                        }
                         
-                    } label: {
-                      Label("ReAssign Student", systemImage: "square.and.arrow.up")
+                        
+                        Button(role: .destructive) {
+                            let result: Bool = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                            if result == false {
+                                showAlert = true
+                            }
+                        } label: {
+                            Label("Delete Student", systemImage: "trash")
+                        }
+                        .alert(buttonErrorMsg, isPresented: $showAlert) {
+                            Button("OK", role: .cancel) { }
+                        }
                     }
                     
-                    
-                    Button(role: .destructive) {
-                        studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-                    } label: {
-                      Label("Delete Student", systemImage: "trash")
-                    }
                     
                 } else {
                     Button {} label: {

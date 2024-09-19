@@ -52,7 +52,7 @@ import GoogleAPIClientForREST
             var tutorName = tutors.tutorsList[tutorNum].tutorName
             
             let range = tutorName + PgmConstants.tutorCountsRange
-            print("Tutor details counts range is '\(range)")
+            print("Tutor details counts range is \(range)")
             let query = GTLRSheetsQuery_SpreadsheetsValuesGet
                 .query(withSpreadsheetId: tutorDataFileID, range:range)
             // Load data counts from ReferenceData spreadsheet
@@ -98,7 +98,7 @@ import GoogleAPIClientForREST
         let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
             
         let range = tutorName + PgmConstants.tutorStudentsRange + String(tutorStudentsCount + PgmConstants.tutorDataStudentsStartingRowNumber)
-            print("Tutor details counts range is '\(range)")
+            print("Tutor details counts range is \(range)")
             let query = GTLRSheetsQuery_SpreadsheetsValuesGet
                 .query(withSpreadsheetId: tutorDataFileID, range:range)
             // Load data counts from ReferenceData spreadsheet

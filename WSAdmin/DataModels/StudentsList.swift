@@ -142,7 +142,7 @@ import GoogleAPIClientForREST
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
         let range = PgmConstants.studentRange + String(studentCount + PgmConstants.studentStartingRowNumber + 1)            // One extra row for blanking line at end
-        print("Range", range)
+        print("Student Data Save Range", range)
   
         var studentNum = 0
         while studentNum < studentCount {
@@ -182,7 +182,7 @@ import GoogleAPIClientForREST
                 return
             }
             else {
-                print("students saved")
+                print("Students saved")
             }
         }
     }

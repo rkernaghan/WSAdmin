@@ -53,6 +53,18 @@ class Tutor: Identifiable {
         tutorServices.append(newTutorService)
     }
     
+    func markDeleted() {
+        tutorStatus = "Deleted"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        tutorEndDate = dateFormatter.string(from: Date())
+    }
+    
+    func markUnDeleted() {
+        tutorStatus = "New"
+        tutorEndDate = " "
+    }
+    
     func loadTutorDetails(tutorNum: Int, tutorDataFileID: String, referenceData: ReferenceData) {
         
         let sheetService = GTLRSheetsService()
@@ -99,9 +111,13 @@ class Tutor: Identifiable {
                 
                 print("Tutor \(tutorName) Students: \(tutorStudentCount) Services: \(tutorServiceCount)")
                 
-                self.loadTutorServices(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, serviceCount: tutorServiceCount, referenceData: referenceData, sheetService: sheetService)
-
-                self.loadTutorStudents(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, studentCount: tutorStudentCount, referenceData: referenceData, sheetService: sheetService)
+                if tutorServiceCount > 0 {
+                    self.loadTutorServices(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, serviceCount: tutorServiceCount, referenceData: referenceData, sheetService: sheetService)
+                }
+        
+                if tutorStudentCount > 0 {
+                    self.loadTutorStudents(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, studentCount: tutorStudentCount, referenceData: referenceData, sheetService: sheetService)
+                }
 //            }
 //            tutorNum += 1
         }

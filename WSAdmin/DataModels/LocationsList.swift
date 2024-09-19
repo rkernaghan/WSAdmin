@@ -109,7 +109,7 @@ import GoogleAPIClientForREST
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
         let range = PgmConstants.locationRange + String(locationCount + PgmConstants.locationStartingRowNumber + 1)     // One extra row for blanking row at end
-        print("Range", range)
+        print("Location Data Save Range", range)
   
         var locationNum = 0
         while locationNum < locationCount {
