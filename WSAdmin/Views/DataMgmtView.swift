@@ -159,6 +159,9 @@ struct TutorsView: View {
     @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
     @State private var showAlert = false
     @State private var viewChange: Bool = false
+    
+    @State private var selectStudent = false
+    @State private var listStudents = false
         
     var body: some View {
         if referenceData.tutors.isTutorDataLoaded {
@@ -210,6 +213,14 @@ struct TutorsView: View {
                             NavigationLink(destination: StudentSelectionView(referenceData: referenceData, tutorIndex: items)) {
                                 Text("Assign Student")
                                 Image(systemName: "square.and.pencil")
+                            }
+                            
+                            Button("Assign Student 2") {
+                                selectStudent.toggle()
+                            }
+                            
+                            Button("List Students 2") {
+                                listStudents.toggle()
                             }
                             
                             Button {
@@ -276,6 +287,12 @@ struct TutorsView: View {
                                 
                             }
                         }
+                        .navigationDestination(isPresented: $selectStudent) {
+                            StudentSelectionView(referenceData: referenceData, tutorIndex: items)
+                        }
+                        .navigationDestination(isPresented: $listStudents) {
+                            TutorStudentsView(referenceData: referenceData, tutorIndex: items)
+                        }
                        
                     } else {
                         Button {
@@ -304,19 +321,20 @@ struct TutorStudentsView: View {
     
     var body: some View {
         
-//        for objectID in tutorIndex {
-//            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
+   //     for objectID in tutorIndex {
+   //         if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                 Table(referenceData.tutors.tutorsList[0].tutorStudents) {
                     TableColumn("Student Name", value: \.studentName)
                     TableColumn("Phone", value: \.clientName)
                     TableColumn("Email", value: \.clientEmail)
                     TableColumn("Status", value: \.clientPhone)
                 }
-        Text(" Got here")
+                
             }
-//        }
-//    }
-}
+        }
+ //   }
+// }
+
 
 struct StudentSelectionView: View {
     var referenceData: ReferenceData
@@ -559,47 +577,60 @@ struct LocationsView: View {
         
     var body: some View {
         if referenceData.locations.isLocationDataLoaded {
+//            Table(of: LocationsList.self) {
+//                TableColumn("Given Name", value: \.locationName)
+ //               TableColumn("Family Name", value: \.locationfamilyName)
+ //           } rows: {
+ //               ForEach(referenceData.locations.locationsList) { city in
+ //                   TableRow(city)
+//                        .contextMenu {
+ //                           Button("Delete Location") {
+ //                               locationMgmtVM.deleteLocation(city: city, referenceData: referenceData)
+ //                           }
+ //                       }
+ //               }
+ //           }
   
-            Table(referenceData.locations.locationsList, selection: $selectedLocation) {
-                TableColumn("Location Name", value: \.locationName)
+ //           Table(referenceData.locations.locationsList, selection: $selectedLocation) {
+ //               TableColumn("Location Name", value: \.locationName)
   
 //               TableColumn("Location Month Revenue", value: \.locationMonthRevenue)
 //               TableColumn("Location Total Revenue", value: \.locationTotalRevenue)
-            }
-            .contextMenu(forSelectionType: Location.ID.self) { items in
-                if items.isEmpty {
-                    Button {
+//            }
+//            .contextMenu(forSelectionType: Location.ID.self) { items in
+//                if items.isEmpty {
+//                    Button {
   //                      let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-                    } label: {
-                      Label("New Service", systemImage: "plus")
-                    }
-                } else if items.count == 1 {
-                    Button {
-                        
-                    } label: {
-                      Label("Edit Service", systemImage: "square.and.arrow.up")
-                    }
-                    Button(role: .destructive) {
-                        locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
-                    } label: {
-                      Label("Delete Service", systemImage: "trash")
-                    }
-                    
-                } else {
-                    Button {
-                        
-                    } label: {
-                      Label("Edit Services", systemImage: "heart")
-                    }
-                    Button(role: .destructive) {
-                        
-                    } label: {
-                      Label("Delete Selected", systemImage: "trash")
-                    }
-                }
-            } primaryAction: { items in
+ //                   } label: {
+ //                     Label("New Service", systemImage: "plus")
+ //                   }
+ //               } else if items.count == 1 {
+ //                   Button {
+ //
+ //                   } label: {
+ //                     Label("Edit Service", systemImage: "square.and.arrow.up")
+ //                   }
+ //                   Button(role: .destructive) {
+ //                       locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+ //                   } label: {
+ //                     Label("Delete Service", systemImage: "trash")
+ //                   }
+ //
+ //               } else {
+ //                   Button {
+ //
+ //                   } label: {
+ //                     Label("Edit Services", systemImage: "heart")
+ //                   }
+ //                   Button(role: .destructive) {
+ //
+ //                   } label: {
+ //                     Label("Delete Selected", systemImage: "trash")
+ //                   }
+ //               }
+ //           } primaryAction: { items in
   //              store.favourite(items)
-              }
+  //            }
         }
     }
 }

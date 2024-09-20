@@ -103,7 +103,6 @@ import GoogleAPIClientForREST
             self.isTutorDataLoaded = true
 
         }
-        
     }
     
     func saveTutorData() {
@@ -187,5 +186,7 @@ import GoogleAPIClientForREST
             }
         }
     }
+    
+    
     
 }

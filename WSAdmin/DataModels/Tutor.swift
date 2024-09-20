@@ -159,7 +159,7 @@ class Tutor: Identifiable {
                 var rowNum = 0
                 var studentNum = 0
                 while studentNum < studentCount {
-                    let studentKey = stringRows[rowNum][PgmConstants.tutorDataStudentNamePosition]
+                    let studentKey = stringRows[rowNum][PgmConstants.tutorDataStudentKeyPosition]
                     let studentName = stringRows[rowNum][PgmConstants.tutorDataStudentNamePosition]
                     let clientName = stringRows[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
                     let clientEmail = stringRows[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
@@ -176,8 +176,66 @@ class Tutor: Identifiable {
     
     
     func saveTutorStudents() {
+        var referenceFileID: String
+        var tutorDataFileID: String
+        var updateValues: [[String]] = []
         
+        var studentKey: String = " "
+        var studentName: String = " "
+        var clientName: String = " "
+        var clientEmail: String = " "
+        var clientPhone: String = " "
+        
+        if runMode == "PROD" {
+            referenceFileID = PgmConstants.prodReferenceDataFileID
+            tutorDataFileID = PgmConstants.prodTutorDataFileID
+        } else {
+            referenceFileID = PgmConstants.testReferenceDataFileID
+            tutorDataFileID = PgmConstants.testTutorDataFileID
+        }
+        
+        let sheetService = GTLRSheetsService()
+        let spreadsheetID = tutorDataFileID
+        let tutorStudentTotal = tutorStudents.count
+        
+        let currentUser = GIDSignIn.sharedInstance.currentUser
+        sheetService.authorizer = currentUser?.fetcherAuthorizer
+
+        let range = tutorName + PgmConstants.tutorStudentsRange + String(tutorStudentTotal + PgmConstants.tutorDataStudentsStartingRowNumber + 1)              //One extra row for blanking line at end
+        print("Tutor Data Save Range", range)
+  
+        var tutorStudentNum = 0
+        while tutorStudentNum < tutorStudentTotal {
+            studentKey = tutorStudents[tutorStudentNum].studentKey
+            studentName = tutorStudents[tutorStudentNum].studentName
+            clientName = tutorStudents[tutorStudentNum].clientPhone
+            clientEmail = tutorStudents[tutorStudentNum].clientEmail
+            clientPhone = tutorStudents[tutorStudentNum].clientPhone
+              
+            updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone], at: tutorStudentNum)
+            tutorStudentNum += 1
+        }
+// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
+        updateValues.insert([" ", " ", " ", " ", " "], at: tutorStudentNum)
+        
+        let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+        valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
+        valueRange.range = range
+        valueRange.values = updateValues
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        query.valueInputOption = "USER_ENTERED"
+        sheetService.executeQuery(query) { ticket, object, error in
+            if let error = error {
+                print(error)
+                print("Failed to save data:\(error.localizedDescription)")
+                return
+            }
+            else {
+                print("Tutor Students saved")
+            }
+        }
     }
+    
     
     func loadTutorServices(tutorNum: Int, tutorDataFileID: String, serviceCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService ) {
        
@@ -236,6 +294,78 @@ class Tutor: Identifiable {
     }
     
     func saveTutorServices() {
+        var referenceFileID: String
+        var tutorDataFileID: String
+        var updateValues: [[String]] = []
         
+        var serviceKey: String = " "
+        var timesheetName: String = " "
+        var invoiceName: String = " "
+        var billingType: String = " "
+        var cost1: String = " "
+        var cost2: String = " "
+        var cost3: String = " "
+        var totalCost: String = " "
+        var price1: String = " "
+        var price2: String = " "
+        var price3: String = " "
+        var totalPrice: String = " "
+        
+        if runMode == "PROD" {
+            referenceFileID = PgmConstants.prodReferenceDataFileID
+            tutorDataFileID = PgmConstants.prodTutorDataFileID
+        } else {
+            referenceFileID = PgmConstants.testReferenceDataFileID
+            tutorDataFileID = PgmConstants.testTutorDataFileID
+        }
+        
+        let sheetService = GTLRSheetsService()
+        let spreadsheetID = tutorDataFileID
+        let tutorServiceTotal = tutorServices.count
+        
+        let currentUser = GIDSignIn.sharedInstance.currentUser
+        sheetService.authorizer = currentUser?.fetcherAuthorizer
+
+        let range = tutorName + PgmConstants.tutorServicesRange + String(tutorServiceTotal + PgmConstants.tutorDataServicesStartingRowNumber + 1)              //One extra row for blanking line at end
+        print("Tutor Services Save Range", range)
+  
+        var tutorServiceNum = 0
+        while tutorServiceNum < tutorServiceTotal {
+            serviceKey = tutorServices[tutorServiceNum].serviceKey
+            timesheetName = tutorServices[tutorServiceNum].timesheetServiceName
+            invoiceName = tutorServices[tutorServiceNum].invoiceServiceName
+            billingType = tutorServices[tutorServiceNum].billingType
+            cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
+            cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
+            cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))
+            totalCost = String(tutorServices[tutorServiceNum].totalCost.formatted(.number.precision(.fractionLength(2))))
+            price1 = String(tutorServices[tutorServiceNum].price1.formatted(.number.precision(.fractionLength(2))))
+            price2 = String(tutorServices[tutorServiceNum].price2.formatted(.number.precision(.fractionLength(2))))
+            price3 = String(tutorServices[tutorServiceNum].price3.formatted(.number.precision(.fractionLength(2))))
+            totalPrice = String(tutorServices[tutorServiceNum].totalPrice.formatted(.number.precision(.fractionLength(2))))
+            
+            updateValues.insert([serviceKey, timesheetName, invoiceName, billingType, cost1, cost2, cost3, totalCost, price1, price2, price3, totalPrice], at: tutorServiceNum)
+            tutorServiceNum += 1
+        }
+// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
+        updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: tutorServiceNum)
+        
+        let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+        valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
+        valueRange.range = range
+        valueRange.values = updateValues
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        query.valueInputOption = "USER_ENTERED"
+        sheetService.executeQuery(query) { ticket, object, error in
+            if let error = error {
+                print(error)
+                print("Failed to save data:\(error.localizedDescription)")
+                return
+            }
+            else {
+                print("Tutor Services saved")
+            }
+        }
     }
+
 }

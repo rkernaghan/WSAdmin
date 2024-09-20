@@ -19,14 +19,15 @@ import Foundation
         referenceData.locations.saveLocationData()
     }
     
-    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+//    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+    func deleteLocation(city: Location, referenceData: ReferenceData) {
         print("deleting Location")
         
-        for objectID in indexes {
-            if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.locations.locationsList.remove(at: idx)
-            }
-        }
+ //       for objectID in indexes {
+ //           if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
+ //               referenceData.locations.locationsList.remove(at: idx)
+ //           }
+ //       }
         
         referenceData.locations.saveLocationData()
     }

@@ -51,4 +51,10 @@ import Foundation
         dateFormatter.dateFormat = "yyyy-MM-dd"
         self.studentEndDate = dateFormatter.string(from: Date())
     }
+    
+    func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
+        self.studentStatus = "Assigned"
+        self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+        self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+    }
 }

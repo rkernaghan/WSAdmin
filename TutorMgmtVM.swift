@@ -82,6 +82,33 @@ import GoogleAPIClientForREST
     
     func assignStudent(studentIndex: Set<Student.ID>, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
             print("Assigning Student to Tutor")
+//        var studentNum: Int = 0
+//        var tutorNum: Int = 0
+//        var tutorNum1: Int = 0
+//        var studentNum1: Int = 0
+        
+        for objectID in tutorIndex {
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                print(referenceData.tutors.tutorsList[tutorNum].tutorName)
+ 
+                for objectID in studentIndex {
+                    if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                        print(referenceData.students.studentsList[studentNum].studentName)
+                        let studentNum1 = studentNum
+                        print(studentNum, studentNum1)
+                        
+                        referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+                        referenceData.students.saveStudentData()
+                        
+                        let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone)
+                        referenceData.tutors.tutorsList[tutorNum].addTutorStudent(newTutorStudent: newTutorStudent)
+                        referenceData.tutors.tutorsList[tutorNum].saveTutorStudents()
+                        
+                    }
+                }
+            }
+        }
+        
     }
     
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {

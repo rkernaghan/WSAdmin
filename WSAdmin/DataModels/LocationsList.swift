@@ -9,9 +9,10 @@ import Foundation
 import GoogleSignIn
 import GoogleAPIClientForREST
 
-@Observable class LocationsList {
+@Observable class LocationsList: Identifiable {
     var locationsList = [Location]()
     var isLocationDataLoaded: Bool
+    var id = UUID()
     
     init() {
         isLocationDataLoaded = false
