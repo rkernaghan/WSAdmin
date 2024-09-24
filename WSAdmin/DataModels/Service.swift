@@ -36,5 +36,19 @@ class Service: Identifiable {
         self.servicePrice2 = servicePrice2
         self.servicePrice3 = servicePrice3
     }
+    
+    func markDeleted() {
+        serviceStatus = "Deleted"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+//        serviceEndDate = dateFormatter.string(from: Date())
+    }
+    
+    func markUnDeleted() {
+        serviceStatus = "New"
+//        serviceEndDate = " "
+    }
+    
+    
 }
 

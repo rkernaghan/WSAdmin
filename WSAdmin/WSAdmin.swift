@@ -48,6 +48,7 @@ struct PgmConstants {
     static let tutorCountsRange = "!A1:B5"
     static let tutorStudentsRange = "!O3:S"
     static let tutorServicesRange = "!D3:M"
+    static let tutorDataCountsRange = "!B4:B5"
     
     static let tutorStartingRowNumber = 2
     static let tutorKeyPosition = 0
@@ -139,6 +140,60 @@ struct PgmConstants {
     static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
 }
+
+enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+    case Base
+    case Special
+    
+    var id: Self { self }
+
+    var description: String {
+
+        switch self {
+        case .Base:
+            return "Base"
+        case .Special:
+            return "Special"
+        }
+    }
+}
+
+enum BillingTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
+    case Fixed
+    case Variable
+    
+    var id: Self { self }
+
+    var description: String {
+
+        switch self {
+        case .Fixed:
+            return "Fixed"
+        case .Variable:
+            return "Variable"
+        }
+    }
+}
+
+
+enum StudentTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
+    case Minor
+    case Adult
+    
+    var id: Self { self }
+
+    var description: String {
+
+        switch self {
+        case .Minor:
+            return "Minor"
+        case .Adult:
+            return "Adult"
+        }
+    }
+}
+
+
 
 var buttonErrorMsg: String = " "
 var runMode: String = "TEST"

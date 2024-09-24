@@ -13,8 +13,8 @@ struct AddService: View {
     
     @State var timesheetName: String
     @State var invoiceName: String
-    @State var serviceType: String
-    @State var billingType: String
+    @State var serviceType: ServiceTypeOption = .Base
+    @State var billingType: BillingTypeOption = .Fixed
     @State var cost1: String
     @State var cost2: String
     @State var cost3: String
@@ -46,19 +46,22 @@ struct AddService: View {
             }
             
             HStack {
-                Text("Service Type")
-                TextField("Service Type", text: $serviceType)
-                    .frame(width: 300)
-                    .textFieldStyle(.roundedBorder)
+                Picker("Service Type", selection: $serviceType) {
+                            ForEach(ServiceTypeOption.allCases) { option in
+                                Text(String(describing: option))
+                            }
+                        }
+//                        .pickerStyle(.wheel)
             }
             
             HStack {
-                Text("Billing Type")
-                TextField("Billing Type", text: $billingType)
-                    .frame(width: 300)
-                    .textFieldStyle(.roundedBorder)
+                Picker("Billing Type", selection: $billingType) {
+                            ForEach(BillingTypeOption.allCases) { option in
+                                Text(String(describing: option))
+                            }
+                        }
+//                        .pickerStyle(.wheel)
             }
-
             HStack {
                 Text("Cost 1")
                 TextField("Cost 1", text: $cost1)
@@ -100,9 +103,8 @@ struct AddService: View {
                     .textFieldStyle(.roundedBorder)
              }
 
-
             Button(action: {
-                serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
             }){
                 Text("Add Service")
             }

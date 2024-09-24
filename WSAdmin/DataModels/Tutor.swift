@@ -48,9 +48,45 @@ class Tutor: Identifiable {
     func addTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
     }
+
+    func addNewTutorStudent(newTutorStudent: TutorStudent) {
+        tutorStudents.append(newTutorStudent)
+        saveTutorStudents()
+        tutorStudentCount += 1
+        saveTutorDataCounts()
+    }
+
+    func removeTutorStudent(studentKey: String) {
+        let (studentFound, tutorStudentNum) = findTutorStudentByKey(studentKey: studentKey)
+        
+        if studentFound {
+            tutorStudents.remove(at: tutorStudentNum)
+            saveTutorStudents()
+            tutorStudentCount -= 1
+            saveTutorDataCounts()
+        }
+    }
     
     func addTutorService(newTutorService: TutorService) {
         tutorServices.append(newTutorService)
+    }
+    
+    func addNewTutorService(newTutorService: TutorService) {
+        tutorServices.append(newTutorService)
+        saveTutorServices()
+        tutorServiceCount += 1
+        saveTutorDataCounts()
+    }
+
+    func removeTutorService(serviceKey: String) {
+        let (serviceFound, tutorServiceNum) = findTutorServiceByKey(serviceKey: serviceKey)
+        
+        if serviceFound {
+            tutorServices.remove(at: tutorServiceNum)
+            saveTutorServices()
+            tutorServiceCount -= 1
+            saveTutorDataCounts()
+        }
     }
     
     func markDeleted() {
@@ -65,62 +101,107 @@ class Tutor: Identifiable {
         tutorEndDate = " "
     }
     
+    func unassignTutor() {
+ 
+    }
+    
+    func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
+        var studentFound = false
+        var tutorStudentNum = 0
+        
+        while tutorStudentNum < tutorStudents.count && !studentFound {
+            if tutorStudents[tutorStudentNum].studentKey == studentKey {
+                studentFound = true
+            } else {
+                tutorStudentNum += 1
+            }
+        }
+        return(studentFound, tutorStudentNum)
+    }
+    
+    func findTutorServiceByKey(serviceKey: String) -> (Bool, Int) {
+        var serviceFound = false
+        var tutorServiceNum = 0
+        
+        while tutorServiceNum < tutorServices.count && !serviceFound {
+            if tutorServices[tutorServiceNum].serviceKey == serviceKey {
+                serviceFound = true
+            } else {
+                tutorServiceNum += 1
+            }
+        }
+        return(serviceFound, tutorServiceNum)
+    }
+    
+
+    
     func loadTutorDetails(tutorNum: Int, tutorDataFileID: String, referenceData: ReferenceData) {
         
         let sheetService = GTLRSheetsService()
         let currentUser = GIDSignIn.sharedInstance.currentUser
         sheetService.authorizer = currentUser?.fetcherAuthorizer
         
-//        let tutors = referenceData.tutors
-//        let tutorCount = referenceData.dataCounts.totalTutors
-//        var tutorNum = 0
-//        while tutorNum < tutorCount {
-//            var tutorName = tutors.tutorsList[tutorNum].tutorName
-            
- //           let range = tutorName + PgmConstants.tutorCountsRange
- //           print("Tutor details counts range is '\(range)")
- //           let query = GTLRSheetsQuery_SpreadsheetsValuesGet
- //               .query(withSpreadsheetId: tutorDataFileID, range:range)
-            // Load data counts from ReferenceData spreadsheet
- //           sheetService.executeQuery(query) { [tutorNum] (ticket, result, error) in
- //               if let error = error {
- //                   print(error)
- //                   print("Failed to read data:\(error.localizedDescription)")
- //                   return
- //               }
- //               guard let result = result as? GTLRSheets_ValueRange else {
- //                   return
- //               }
-                
- //               let rows = result.values!
- //               var stringRows = rows as! [[String]]
-                
-//                for row in stringRows {
- //                   stringRows.append(row)
-                    //               print(row)
- //               }
-                
- //               if rows.isEmpty {
- //                   print("No data found.")
- //                   return
- //               }
-                
-                
-                let tutorStudentCount = tutorStudentCount
-                let tutorServiceCount = tutorServiceCount
-                
-                print("Tutor \(tutorName) Students: \(tutorStudentCount) Services: \(tutorServiceCount)")
-                
-                if tutorServiceCount > 0 {
-                    self.loadTutorServices(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, serviceCount: tutorServiceCount, referenceData: referenceData, sheetService: sheetService)
-                }
+        let tutorStudentCount = tutorStudentCount
+        let tutorServiceCount = tutorServiceCount
         
-                if tutorStudentCount > 0 {
-                    self.loadTutorStudents(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, studentCount: tutorStudentCount, referenceData: referenceData, sheetService: sheetService)
-                }
-//            }
-//            tutorNum += 1
+        print("Tutor \(tutorName) Students: \(tutorStudentCount) Services: \(tutorServiceCount)")
+        
+        if tutorServiceCount > 0 {
+            self.loadTutorServices(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, serviceCount: tutorServiceCount, referenceData: referenceData, sheetService: sheetService)
         }
+
+        if tutorStudentCount > 0 {
+            self.loadTutorStudents(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, studentCount: tutorStudentCount, referenceData: referenceData, sheetService: sheetService)
+        }
+    }
+    
+    func saveTutorDataCounts() {
+        var tutorStudentCount: Int
+        var tutorServiceCount: Int
+        var referenceFileID: String
+        var tutorDataFileID: String
+        var updateValues: [[String]] = []
+        
+        if runMode == "PROD" {
+            referenceFileID = PgmConstants.prodReferenceDataFileID
+            tutorDataFileID = PgmConstants.prodTutorDataFileID
+        } else {
+            referenceFileID = PgmConstants.testReferenceDataFileID
+            tutorDataFileID = PgmConstants.testTutorDataFileID
+        }
+        
+        let sheetService = GTLRSheetsService()
+        let spreadsheetID = tutorDataFileID
+        let tutorStudentTotal = tutorStudents.count
+        
+        let currentUser = GIDSignIn.sharedInstance.currentUser
+        sheetService.authorizer = currentUser?.fetcherAuthorizer
+
+        let range = tutorName + PgmConstants.tutorDataCountsRange
+        print("Tutor Data Counts Save Range", range)
+  
+        tutorStudentCount = tutorStudents.count
+        tutorServiceCount = tutorServices.count
+                      
+        updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
+
+        let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+        valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
+        valueRange.range = range
+        valueRange.values = updateValues
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        query.valueInputOption = "USER_ENTERED"
+        sheetService.executeQuery(query) { ticket, object, error in
+            if let error = error {
+                print(error)
+                print("Failed to save data:\(error.localizedDescription)")
+                return
+            }
+            else {
+                print("Tutor Data Counts saved")
+            }
+        }
+    }
     
     
     func loadTutorStudents(tutorNum: Int, tutorDataFileID: String, studentCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {

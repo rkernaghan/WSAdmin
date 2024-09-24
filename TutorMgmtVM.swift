@@ -23,44 +23,46 @@ import GoogleAPIClientForREST
         let startDate = dateFormatter.string(from: Date())
         let maxStudentsInt = Int(maxStudents) ?? 0
         
-        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "New", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudentsInt, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
+        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudentsInt, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.addTutor(newTutor: newTutor)
         referenceData.tutors.saveTutorData()
-        referenceData.dataCounts.increaseTutorCount()
-        referenceData.dataCounts.saveDataCounts()
+        referenceData.dataCounts.increaseTotalTutorCount()
         
         createNewSheet(tutorName: tutorName)
     }
     
-    func listTutorStudents(indexes: Set<Service.ID>, referenceData: ReferenceData) {
-        for objectID in indexes {
-            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                print("Student Name \(referenceData.tutors.tutorsList[idx].tutorStudents[0].studentName)")
-            }
-        }
+    func listTutorStudents(indexes: Int, referenceData: ReferenceData) {
+//        for objectID in indexes {
+//            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+ //               print("Student Name \(referenceData.tutors.tutorsList[idx].tutorStudents[0].studentName)")
+                
+               let result = TutorStudentsView(tutorNum: indexes, referenceData: referenceData)
+        print(result)
+//            }
+//        }
     }
             
-    func deleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+    func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
         var deleteResult = true
         print("Deleting Tutor")
         
         for objectID in indexes {
-            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                if referenceData.tutors.tutorsList[idx].tutorStudentCount == 0 {
-                    referenceData.tutors.tutorsList[idx].markDeleted()
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
+                    referenceData.tutors.tutorsList[tutorNum].markDeleted()
                     referenceData.tutors.saveTutorData()
+                    referenceData.dataCounts.decreaseActiveStudentCount()
                 } else {
-                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[idx].tutorName)"
-                    print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[idx].tutorName)")
+                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+                    print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
                     deleteResult = false
                 }
             }
         }
-
         return(deleteResult)
     }
 
-    func unDeleteTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+    func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
         var unDeleteResult = true
         print("UnDeleting Tutor")
         
@@ -69,6 +71,7 @@ import GoogleAPIClientForREST
                 if referenceData.tutors.tutorsList[idx].tutorStatus == "Deleted" {
                     referenceData.tutors.tutorsList[idx].markUnDeleted()
                     referenceData.tutors.saveTutorData()
+                    referenceData.dataCounts.increaseActiveTutorCount()
                 } else {
                     let buttonMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted"
                     print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted")
@@ -76,7 +79,6 @@ import GoogleAPIClientForREST
                 }
             }
         }
-
         return(unDeleteResult)
     }
     
@@ -101,14 +103,12 @@ import GoogleAPIClientForREST
                         referenceData.students.saveStudentData()
                         
                         let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone)
-                        referenceData.tutors.tutorsList[tutorNum].addTutorStudent(newTutorStudent: newTutorStudent)
-                        referenceData.tutors.tutorsList[tutorNum].saveTutorStudents()
-                        
+                        referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+                        referenceData.tutors.saveTutorData()                    // increased Student count
                     }
                 }
             }
         }
-        
     }
     
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {

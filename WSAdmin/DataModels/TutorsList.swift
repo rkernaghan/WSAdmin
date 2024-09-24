@@ -27,9 +27,24 @@ import GoogleAPIClientForREST
             print ("Tutor Name is \(tutor.tutorName)")
         }
     }
+    
+    func findTutorByKey(tutorKey: String) -> (Bool, Int) {
+        var found = false
+        
+        var tutorNum = 0
+        while tutorNum < tutorsList.count && !found {
+            if tutorsList[tutorNum].tutorKey == tutorKey {
+                found = true
+            } else {
+                tutorNum += 1
+            }
+        }
+        return(found, tutorNum)
+    }
+    
     func loadTutorData(referenceFileID: String, tutorDataFileID: String, referenceData: ReferenceData) {
         
-        let  sheetService = GTLRSheetsService()
+        let sheetService = GTLRSheetsService()
         let currentUser = GIDSignIn.sharedInstance.currentUser
         sheetService.authorizer = currentUser?.fetcherAuthorizer
 
@@ -186,7 +201,5 @@ import GoogleAPIClientForREST
             }
         }
     }
-    
-    
     
 }

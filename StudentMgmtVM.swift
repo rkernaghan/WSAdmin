@@ -19,7 +19,7 @@ import Foundation
         referenceData.students.addStudent(newStudent: newStudent, referenceData: referenceData)
         
         referenceData.students.saveStudentData()
-        referenceData.dataCounts.increaseStudentCount()
+        referenceData.dataCounts.increaseTotalStudentCount()
         referenceData.dataCounts.saveDataCounts()
     }
     
@@ -32,7 +32,7 @@ import Foundation
                 if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
                     referenceData.students.studentsList[index].markDeleted()
                     referenceData.students.saveStudentData()
-                    referenceData.dataCounts.decreaseStudentCount()
+                    referenceData.dataCounts.decreaseActiveStudentCount()
                 } else {
                     let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
                     print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
@@ -41,6 +41,46 @@ import Foundation
             }
         }
         return(deleteResult)
+    }
+    
+    func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+        var deleteResult = true
+        print("undeleting Student")
+        
+        for objectID in indexes {
+            if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                if referenceData.students.studentsList[index].studentStatus == "Deleted" {
+                    referenceData.students.studentsList[index].markUndeleted()
+                    referenceData.students.saveStudentData()
+                    referenceData.dataCounts.increaseActiveStudentCount()
+                } else {
+                    let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
+                    print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
+                    deleteResult = false
+                }
+            }
+        }
+        return(deleteResult)
+    }
+    
+    func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) {
+        
+        for objectID in studentIndex {
+            if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                
+                let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
+            
+                referenceData.students.studentsList[studentNum].unassignTutor()
+                referenceData.students.saveStudentData()
+                
+                let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
+                if foundFlag {
+                    referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
+                    referenceData.tutors.saveTutorData()                    // increased Student count
+                }
+            }
+            
+        }
     }
     
 }

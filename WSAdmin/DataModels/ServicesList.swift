@@ -72,8 +72,8 @@ import GoogleAPIClientForREST
                 let newServiceKey = stringRows[rowNumber][PgmConstants.serviceKeyPosition]
                 let newServiceTimesheetName = stringRows[rowNumber][PgmConstants.serviceTimesheetNamePosition]
                 let newServiceInvoiceName = stringRows[rowNumber][PgmConstants.serviceInvoiceNamePosition]
-                let newServiceType = stringRows[rowNumber][PgmConstants.serviceTypePosition]
-                let newServiceBillingType = stringRows[rowNumber][PgmConstants.serviceBillingTypePosition]
+                let newServiceType = String(describing: stringRows[rowNumber][PgmConstants.serviceTypePosition])
+                let newServiceBillingType = String(describing: stringRows[rowNumber][PgmConstants.serviceBillingTypePosition])
                 let newServiceStatus = stringRows[rowNumber][PgmConstants.serviceStatusPosition]
                 let newServiceCost1 = Float(stringRows[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
                 let newServiceCost2 = Float(stringRows[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
@@ -133,8 +133,8 @@ import GoogleAPIClientForREST
             serviceKey = servicesList[serviceNum].serviceKey
             serviceTimesheetName = servicesList[serviceNum].serviceTimesheetName
             serviceInvoiceName = servicesList[serviceNum].serviceInvoiceName
+            serviceType =  servicesList[serviceNum].serviceType
             serviceBillingType = servicesList[serviceNum].serviceBillingType
-            serviceType = servicesList[serviceNum].serviceType
             serviceStatus = servicesList[serviceNum].serviceStatus
             serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.precision(.fractionLength(2))))
             serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.precision(.fractionLength(2))))
@@ -147,7 +147,7 @@ import GoogleAPIClientForREST
             serviceNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-        updateValues.insert([" ", " ", " ", " "], at: serviceNum)
+        updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: serviceNum)
         
         let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert

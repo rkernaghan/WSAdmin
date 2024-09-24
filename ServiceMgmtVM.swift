@@ -16,6 +16,23 @@ import Foundation
     var price2Float: Float = 0.0
     var price3Float: Float = 0.0
     
+    func addService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+            
+        let cost1Float = Float(cost1) ?? 0
+        let cost2Float = Float(cost2) ?? 0
+        let cost3Float = Float(cost3) ?? 0
+        let price1Float = Float(price1) ?? 0
+        let price2Float = Float(price2) ?? 0
+        let price3Float = Float(price3) ?? 0
+        
+        let newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(referenceData.dataCounts.highestServiceKey)
+ 
+        let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: cost1Float, serviceCost2: cost2Float, serviceCost3:  cost3Float, servicePrice1: price1Float, servicePrice2: price2Float, servicePrice3: price3Float)
+        
+        referenceData.services.addService(newService: newService, referenceData: referenceData)
+        
+    }
+    
     func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
             
         let cost1Float = Float(cost1) ?? 0
@@ -32,7 +49,7 @@ import Foundation
         referenceData.services.addService(newService: newService, referenceData: referenceData)
         
         referenceData.services.saveServiceData()
-        referenceData.dataCounts.increaseServiceCount()
+        referenceData.dataCounts.increaseTotalServiceCount()
         referenceData.dataCounts.saveDataCounts()
         
     }
@@ -41,12 +58,32 @@ import Foundation
         print("deleting Service")
         
         for objectID in indexes {
-            if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.services.servicesList.remove(at: idx)
+            if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                referenceData.services.servicesList[serviceNum].markDeleted()
+                referenceData.services.saveServiceData()
+                referenceData.dataCounts.decreaseActiveServiceCount()
             }
         }
+    }
+    
+    func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
+        var unDeleteResult = true
+        print("UnDeleting Service")
         
-        referenceData.services.saveServiceData()
+        for objectID in indexes {
+            if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                if referenceData.services.servicesList[serviceNum].serviceStatus == "Deleted" {
+                    referenceData.services.servicesList[serviceNum].markUnDeleted()
+                    referenceData.services.saveServiceData()
+                    referenceData.dataCounts.increaseActiveServiceCount()
+                } else {
+                    let buttonMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
+                    print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted")
+                    unDeleteResult = false
+                }
+            }
+        }
+        return(unDeleteResult)
     }
     
 }

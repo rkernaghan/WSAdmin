@@ -52,9 +52,21 @@ import Foundation
         self.studentEndDate = dateFormatter.string(from: Date())
     }
     
+    func markUndeleted() {
+        self.studentStatus = "Unassigned"
+        self.studentEndDate = " "
+    }
+    
     func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
         self.studentStatus = "Assigned"
         self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
         self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
     }
+
+    func unassignTutor() {
+        self.studentStatus = "Unassigned"
+        self.studentTutorKey = " "
+        self.studentTutorName = " "
+    }
+    
 }

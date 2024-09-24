@@ -123,7 +123,7 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ", cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
+                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
                 } label: {
                     Label("Add Service", systemImage: "list.bullet")
                 }
@@ -160,14 +160,26 @@ struct TutorsView: View {
     @State private var showAlert = false
     @State private var viewChange: Bool = false
     
-    @State private var selectStudent = false
+    @State private var assignStudent = false
+    @State private var unassignStudent = false
     @State private var listStudents = false
+    @State private var listServices = false
+    @State private var addService = false
+    @State private var editService = false
+    @State private var removeService = false
+    
+    @State private var tutorNumber = 0
         
+    func setTutorNumber(number: Int) {
+        tutorNumber = number
+    }
+    
     var body: some View {
         if referenceData.tutors.isTutorDataLoaded {
-  
+            
             VStack {
-                Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}, selection: $selectedTutors, sortOrder: $sortOrder) {
+ //               Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}, selection: $selectedTutors, sortOrder: $sortOrder) {
+                Table(referenceData.tutors.tutorsList, selection: $selectedTutors, sortOrder: $sortOrder) {
                     
                     TableColumn("Tutor Name", value: \.tutorName)
                     TableColumn("Phone", value: \.tutorPhone)
@@ -186,79 +198,95 @@ struct TutorsView: View {
                     }
                     //                    TableColumn("Total Cost", value: \.tutorTotalCost)
                     //                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
-                    TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
-                        Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(2)))))
-                    }
+  //                  TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
+  //                      Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(2)))))
+  //                  }
                 }
                 .contextMenu(forSelectionType: Tutor.ID.self) { items in
                     if items.isEmpty {
                         Button {
-                            
+                            print("empty selected Tutor")
                         } label: {
                             Label("New Tutor", systemImage: "plus")
                         }
                     } else if items.count == 1 {
                         VStack {
-                            
-                            NavigationLink(destination: TutorStudentsView(referenceData: referenceData, tutorIndex: items)) {
-                                Text("List Students")
-                                Image(systemName: "square.and.pencil")
-                            }
-                            
-                            //                   NavigationLink(destination: SegmentsEditView(timelineItem: visit)) {
-                            //                            Text("Edit individual segments")
-                            //                            Image(systemName: "ellipsis")
-                            //                        }
-                            
-                            NavigationLink(destination: StudentSelectionView(referenceData: referenceData, tutorIndex: items)) {
-                                Text("Assign Student")
-                                Image(systemName: "square.and.pencil")
-                            }
-                            
-                            Button("Assign Student 2") {
-                                selectStudent.toggle()
-                            }
-                            
-                            Button("List Students 2") {
-                                listStudents.toggle()
-                            }
-                            
-                            Button {
-                                tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
-                            } label: {
-                                Label("List Tutor Students", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                TutorStudentsView(referenceData: referenceData, tutorIndex: items)
-                                
-                            } label: {
-                                Label("List Tutor Costs", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                
-                            } label: {
-                                Label("Edit Tutor", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                
-                            } label: {
-                                Label("Assign Student", systemImage: "square.and.arrow.up")
-                            }
+//
+// edit tutor - subview (tutor view)
+// assign student - subview (unassigned students)
+// unassign student - subview (assigned to tutor students)
+// list students - subview (assigned to tutor students)
+// list services - subview (assigned to tutor services)
+// add service - subview (unassigned services)
+// edit service costs - subview (service view)
+// remove service - subview (services assigned to tutor)
+// delete tutor - tutorMgmtVM
+// undelete tutor - tutorMgMtVM
+//
+//
 
-                            Button {
-                                
-                            } label: {
-                                Label("UnAssign Student", systemImage: "square.and.arrow.up")
+//                           NavigationLink(destination: TutorStudentsView(referenceData: referenceData, tutorIndex: items)) {
+//                               Text("List Students")
+//                               Image(systemName: "square.and.pencil")
+//                           }
+
+//                          NavigationLink(destination: StudentSelectionView(referenceData: referenceData, tutorIndex: items)) {
+//                              Text("Assign Student")
+//                              Image(systemName: "square.and.pencil")
+//                          }
+                            
+                            Button("Assign Student to Tutor") {
+                                assignStudent.toggle()
                             }
                             
-                            Button {
-                                tutorMgmtVM.printTutor(indexes: items, referenceData: referenceData)
-                            } label: {
-                                Label("Print Tutor", systemImage: "square.and.arrow.up")
+                            Button("Unassign Student from Tutor") {
+                                unassignStudent.toggle()
                             }
+                            
+                            Button("List Tutor Students") {
+                                for objectID in items {
+                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                                        setTutorNumber(number: idx)
+                                        listStudents.toggle()
+                                    }
+                                }
+ //                               listStudents.toggle()
+                            }
+                            
+ //                           Button("List Tutor Services") {
+ //                               listServices.toggle()
+ //                           }
+                            
+ //                           Button("Add Service to Tutor") {
+ //                               addService.toggle()
+ //                           }
+                            
+                            Button("Edit Service Costs for Tutor") {
+                                editService.toggle()
+                            }
+                            
+                            Button("Remove Service from Tutor") {
+                                removeService.toggle()
+                            }
+                            
+//                          Button {
+//                              tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
+//                          } label: {
+//                              Label("List Tutor Students", systemImage: "square.and.arrow.up")
+//                          }
+
+//                          Button {
+//                              TutorStudentsList(referenceData: referenceData, tutorIndex: items)
+//                          } label: {
+//                              Label("List Tutor Costs", systemImage: "square.and.arrow.up")
+//                          }
+
+
+//                          Button {
+//                              tutorMgmtVM.printTutor(indexes: items, referenceData: referenceData)
+//                          } label: {
+//                              Label("Print Tutor", systemImage: "square.and.arrow.up")
+                            //                          }
                             
                             Button(role: .destructive) {
                                 let result: Bool = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
@@ -266,10 +294,8 @@ struct TutorsView: View {
                                     showAlert = true
                                     viewChange.toggle()
                                 }
-                                
                             } label: {
                                 Label("Delete Tutor", systemImage: "trash")
-                                
                             }
                             .alert(buttonErrorMsg, isPresented: $showAlert) {
                                 Button("OK", role: .cancel) { }
@@ -281,19 +307,19 @@ struct TutorsView: View {
                                     showAlert = true
                                     viewChange.toggle()
                                 }
-                                
                             } label: {
                                 Label("Undelete Tutor", systemImage: "trash")
-                                
                             }
+                            
                         }
-                        .navigationDestination(isPresented: $selectStudent) {
+                        .navigationDestination(isPresented: $assignStudent) {
                             StudentSelectionView(referenceData: referenceData, tutorIndex: items)
                         }
                         .navigationDestination(isPresented: $listStudents) {
-                            TutorStudentsView(referenceData: referenceData, tutorIndex: items)
+                            TutorStudentsView(tutorNum: tutorNumber, referenceData: referenceData)
+//                            tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
                         }
-                       
+                        
                     } else {
                         Button {
                             
@@ -310,12 +336,14 @@ struct TutorsView: View {
                     //              store.favourite(items)
                 }
             }
-//        }
+
+            //        }
         }
     }
+   
 }
 
-struct TutorStudentsView: View {
+struct TutorStudentsList: View {
     var referenceData: ReferenceData
     var tutorIndex: Set<Tutor.ID>
     
@@ -395,8 +423,9 @@ struct StudentsView: View {
     @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
     @State private var showAlert = false
     var studentArray = [Student]()
-    
-    
+
+    @State private var unassignTutor = false
+
     var body: some View {
         if referenceData.students.isStudentDataLoaded {
             let studentArray = referenceData.students.studentsList
@@ -433,6 +462,20 @@ struct StudentsView: View {
                     }
                 } else if items.count == 1 {
                     VStack {
+//
+// edit Student - subview(student edit)
+// assign Tutor - subview(tutors list)
+// Unassign Tutor - tutorMgmtVM
+// Reassign Student - subview(other tutors list)
+// Delete Student - tutorMgmtVM
+// Undelete Student - tutorMgmtVM
+                        
+                        Button {
+                            studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                        } label: {
+                            Label("Unassign Student", systemImage: "square.and.arrow.up")
+                        }
+                        
                         Button {
                             
                         } label: {
@@ -457,7 +500,6 @@ struct StudentsView: View {
                             Label("ReAssign Student", systemImage: "square.and.arrow.up")
                         }
                         
-                        
                         Button(role: .destructive) {
                             let result: Bool = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
                             if result == false {
@@ -469,7 +511,23 @@ struct StudentsView: View {
                         .alert(buttonErrorMsg, isPresented: $showAlert) {
                             Button("OK", role: .cancel) { }
                         }
+                        
+                        Button(role: .destructive) {
+                            let result: Bool = studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
+                            if result == false {
+                                showAlert = true
+                            }
+                        } label: {
+                            Label("UnDelete Student", systemImage: "trash")
+                        }
+                        .alert(buttonErrorMsg, isPresented: $showAlert) {
+                            Button("OK", role: .cancel) { }
+                        }
+                        
                     }
+  //                  .navigationDestination(isPresented: $unassignTutor) {
+                        
+  //                  }
                     
                     
                 } else {
@@ -498,12 +556,20 @@ struct ServicesView: View {
     var body: some View {
         if referenceData.services.isServiceDataLoaded {
             let serviceArray = referenceData.services.servicesList
+//
+// edit service - subview( service edit)
+// assign service - subview( tutors not assigned)
+// unassign service - subview( tutors assigned)
+// delete service - serviceMgmtVM
+// undelete service - serviceMgMtVM
+//
+//
 
             Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
  //               Group {
                     TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
                     TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
-                    TableColumn("Service Type", value: \Service.serviceType)
+                    TableColumn("Service Type", value: \Service.serviceType) 
                     TableColumn("Billing Type", value: \Service.serviceBillingType)
                     TableColumn("Service Status", value: \Service.serviceStatus)
                     
@@ -543,12 +609,26 @@ struct ServicesView: View {
                     } label: {
                       Label("Edit Service", systemImage: "square.and.arrow.up")
                     }
+                    
                     Button(role: .destructive) {
                         serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
                     } label: {
                       Label("Delete Service", systemImage: "trash")
                     }
+
+                    Button(role: .destructive) {
+                        serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+                    } label: {
+                      Label("Undelete Service", systemImage: "trash")
+                    }
+
+                    Button(role: .destructive) {
+                
+                    } label: {
+                      Label("Assign Service to Tutor", systemImage: "trash")
+                    }
                     
+
                 } else {
                     Button {
                         

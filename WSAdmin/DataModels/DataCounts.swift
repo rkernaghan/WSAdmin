@@ -27,38 +27,53 @@ class DataCounts {
         isDataCountsLoaded = false
     }
     
-    func increaseStudentCount() {
+    func increaseTotalStudentCount() {
         totalStudents += 1
         activeStudents += 1
         highestStudentKey += 1
         saveDataCounts()
     }
-    
-    func decreaseStudentCount() {
+
+    func increaseActiveStudentCount() {
+        activeStudents += 1
+        saveDataCounts()
+    }
+
+    func decreaseActiveStudentCount() {
         activeStudents -= 1
         saveDataCounts()
     }
     
-    func increaseTutorCount() {
+    func increaseTotalTutorCount() {
         totalTutors += 1
         activeTutors += 1
         highestTutorKey += 1
         saveDataCounts()
     }
-    
-    func decreaseTutorCount() {
+
+    func increaseActiveTutorCount() {
+        activeTutors += 1
+        saveDataCounts()
+    }
+
+    func decreaseActiveTutorCount() {
         activeTutors -= 1
         saveDataCounts()
     }
     
-    func increaseServiceCount() {
+    func increaseTotalServiceCount() {
         totalServices += 1
         activeServices += 1
         highestServiceKey += 1
         saveDataCounts()
     }
-    
-    func decreaseServiceCount() {
+
+    func increaseActiveServiceCount() {
+        activeServices += 1
+        saveDataCounts()
+    }
+
+    func decreaseActiveServiceCount() {
         activeServices -= 1
         saveDataCounts()
     }
@@ -144,7 +159,6 @@ class DataCounts {
         let range = PgmConstants.dataCountRange
         print("Data Counts Range", range)
   
-
         updateValues.insert([String(totalStudents)], at: PgmConstants.dataCountTotalStudentsRow)
         updateValues.insert([String(activeStudents)], at: PgmConstants.dataCountActiveStudentsRow)
         updateValues.insert([String(highestStudentKey)], at: PgmConstants.dataCountHighestStudentKeyRow)
