@@ -9,7 +9,7 @@ import Foundation
 import GoogleSignIn
 import GoogleAPIClientForREST
 
-class Tutor: Identifiable {
+@Observable class Tutor: Identifiable {
     var tutorKey: String
     var tutorName: String
     var tutorEmail: String
@@ -45,7 +45,7 @@ class Tutor: Identifiable {
         self.tutorTotalProfit = tutorTotalProfit
     }
     
-    func addTutorStudent(newTutorStudent: TutorStudent) {
+    func loadTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
     }
 
@@ -67,7 +67,7 @@ class Tutor: Identifiable {
         }
     }
     
-    func addTutorService(newTutorService: TutorService) {
+    func loadTutorService(newTutorService: TutorService) {
         tutorServices.append(newTutorService)
     }
     
@@ -248,7 +248,7 @@ class Tutor: Identifiable {
                     
                     let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
                     
-                    self.addTutorStudent( newTutorStudent: newTutorStudent)
+                    self.loadTutorStudent( newTutorStudent: newTutorStudent)
                     rowNum += 1
                     studentNum += 1
                 }
@@ -367,7 +367,7 @@ class Tutor: Identifiable {
                     
                     let newTutorService = TutorService(serviceKey: serviceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
                     
-                    self.addTutorService( newTutorService: newTutorService)
+                    self.loadTutorService( newTutorService: newTutorService)
                     rowNum += 1
                     serviceNum += 1
                 }
@@ -386,11 +386,10 @@ class Tutor: Identifiable {
         var cost1: String = " "
         var cost2: String = " "
         var cost3: String = " "
-        var totalCost: String = " "
         var price1: String = " "
         var price2: String = " "
         var price3: String = " "
-        var totalPrice: String = " "
+
         
         if runMode == "PROD" {
             referenceFileID = PgmConstants.prodReferenceDataFileID
@@ -419,17 +418,15 @@ class Tutor: Identifiable {
             cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
             cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
             cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))
-            totalCost = String(tutorServices[tutorServiceNum].totalCost.formatted(.number.precision(.fractionLength(2))))
             price1 = String(tutorServices[tutorServiceNum].price1.formatted(.number.precision(.fractionLength(2))))
             price2 = String(tutorServices[tutorServiceNum].price2.formatted(.number.precision(.fractionLength(2))))
             price3 = String(tutorServices[tutorServiceNum].price3.formatted(.number.precision(.fractionLength(2))))
-            totalPrice = String(tutorServices[tutorServiceNum].totalPrice.formatted(.number.precision(.fractionLength(2))))
-            
-            updateValues.insert([serviceKey, timesheetName, invoiceName, billingType, cost1, cost2, cost3, totalCost, price1, price2, price3, totalPrice], at: tutorServiceNum)
+
+            updateValues.insert([serviceKey, timesheetName, invoiceName, billingType, cost1, cost2, cost3, price1, price2, price3], at: tutorServiceNum)
             tutorServiceNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-        updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: tutorServiceNum)
+        updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: tutorServiceNum)
         
         let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert

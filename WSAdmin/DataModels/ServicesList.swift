@@ -17,7 +17,7 @@ import GoogleAPIClientForREST
         isServiceDataLoaded = false
     }
     
-    func addService(newService: Service, referenceData: ReferenceData) {
+    func loadService(newService: Service, referenceData: ReferenceData) {
         self.servicesList.append(newService)
 
     }

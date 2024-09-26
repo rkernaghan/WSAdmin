@@ -17,7 +17,7 @@ import GoogleAPIClientForREST
         isStudentDataLoaded = false
     }
     
-    func addStudent(newStudent: Student, referenceData: ReferenceData) {
+    func loadStudent(newStudent: Student, referenceData: ReferenceData) {
         
         self.studentsList.append(newStudent)
     }

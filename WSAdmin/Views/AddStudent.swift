@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AddStudent: View {
+    
+    var updateStudentFlag: Bool
     var referenceData: ReferenceData
     
     @State var studentName: String
@@ -15,7 +17,7 @@ struct AddStudent: View {
     @State var contactPhone: String
     @State var contactEmail: String
     @State var location: String
-
+    
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -61,7 +63,11 @@ struct AddStudent: View {
              }
             
             Button(action: {
-                studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                if updateStudentFlag {
+                    studentMgmtVM.updateStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                } else {
+                    studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                }
             }){
                 Text("Add Student")
             }

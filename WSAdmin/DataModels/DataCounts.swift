@@ -187,7 +187,6 @@ class DataCounts {
                 print("Data Counts saved")
             }
         }
-        
     }
     
 }

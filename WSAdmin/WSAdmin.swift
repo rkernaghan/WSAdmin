@@ -193,8 +193,6 @@ enum StudentTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
     }
 }
 
-
-
 var buttonErrorMsg: String = " "
 var runMode: String = "TEST"
 

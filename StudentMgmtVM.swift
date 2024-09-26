@@ -16,7 +16,21 @@ import Foundation
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let startDate = dateFormatter.string(from: Date())
         let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: " ", studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
-        referenceData.students.addStudent(newStudent: newStudent, referenceData: referenceData)
+        referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
+        
+        referenceData.students.saveStudentData()
+        referenceData.dataCounts.increaseTotalStudentCount()
+        referenceData.dataCounts.saveDataCounts()
+    }
+    
+    func updateStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, location: String) {
+        
+        let newStudentKey = PgmConstants.studentKeyPrefix + String(referenceData.dataCounts.highestStudentKey)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let startDate = dateFormatter.string(from: Date())
+        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: " ", studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+        referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
         
         referenceData.students.saveStudentData()
         referenceData.dataCounts.increaseTotalStudentCount()
@@ -62,6 +76,25 @@ import Foundation
         }
         return(deleteResult)
     }
+    
+    func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+        
+        for objectID in tutorIndex {
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                
+                let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
+            
+                referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+                referenceData.students.saveStudentData()
+                
+                let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone )
+                referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+                referenceData.tutors.saveTutorData()                    // increased Student count
+                }
+            }
+            
+        }
+    
     
     func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) {
         

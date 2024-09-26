@@ -29,8 +29,7 @@ import Foundation
  
         let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: cost1Float, serviceCost2: cost2Float, serviceCost3:  cost3Float, servicePrice1: price1Float, servicePrice2: price2Float, servicePrice3: price3Float)
         
-        referenceData.services.addService(newService: newService, referenceData: referenceData)
-        
+        referenceData.services.loadService(newService: newService, referenceData: referenceData)
     }
     
     func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
@@ -46,12 +45,24 @@ import Foundation
  
         let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: cost1Float, serviceCost2: cost2Float, serviceCost3:  cost3Float, servicePrice1: price1Float, servicePrice2: price2Float, servicePrice3: price3Float)
         
-        referenceData.services.addService(newService: newService, referenceData: referenceData)
+        referenceData.services.loadService(newService: newService, referenceData: referenceData)
         
         referenceData.services.saveServiceData()
         referenceData.dataCounts.increaseTotalServiceCount()
         referenceData.dataCounts.saveDataCounts()
         
+        if serviceType == "Base" {
+            if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
+                var tutorNum = 0
+                while tutorNum < referenceData.tutors.tutorsList.count {
+                    if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+                        let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+                        referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+                        tutorNum += 1
+                    }
+                }
+            }
+        }
     }
     
     func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) {

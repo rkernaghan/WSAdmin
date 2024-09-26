@@ -8,15 +8,20 @@
 import SwiftUI
 
 struct TutorStudentsView: View {
-  var tutorNum: Int
+  @Binding var tutorNum: Int
+//    var tutorIndex: Set<Tutor.ID>
     var referenceData: ReferenceData
     
     var body: some View {
-        Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents) {
-            TableColumn("Student Name", value: \.studentName)
-            TableColumn("Phone", value: \.clientName)
-            TableColumn("Email", value: \.clientEmail)
-            TableColumn("Status", value: \.clientPhone)
+//        ForEach(tutorIndex) {tutor in
+//            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
+                Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents) {
+                    TableColumn("Student Name", value: \.studentName)
+                    TableColumn("Phone", value: \.clientName)
+                    TableColumn("Email", value: \.clientEmail)
+                    TableColumn("Status", value: \.clientPhone)
+  //              }
+  //          }
         }
     }
 }

@@ -18,7 +18,7 @@ import GoogleAPIClientForREST
         isLocationDataLoaded = false
     }
     
-    func addLocation(newLocation: Location) {
+    func loadLocation(newLocation: Location) {
      
     }
     

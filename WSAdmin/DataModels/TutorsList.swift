@@ -18,7 +18,7 @@ import GoogleAPIClientForREST
         isTutorDataLoaded = false
     }
     
-    func addTutor(newTutor: Tutor) {
+    func loadTutor(newTutor: Tutor) {
         self.tutorsList.append(newTutor)
     }
     
@@ -108,8 +108,10 @@ import GoogleAPIClientForREST
                 
                 let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit)
                 self.tutorsList.append(newTutor)
-                    
-                self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
+                
+                if newTutorStatus != "Deleted" {
+                    self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
+                }
                 
                 tutorIndex += 1
                 rowNumber += 1

@@ -39,5 +39,4 @@ class TutorService: Identifiable {
         self.totalPrice = price1 + price2 + price3
     }
  
-    
 }

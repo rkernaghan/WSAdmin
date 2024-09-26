@@ -15,8 +15,7 @@ import GoogleAPIClientForREST
     
     
     func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: String) {
-        
-        
+
         let newTutorKey = PgmConstants.tutorKeyPrefix + "0034"
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -24,7 +23,7 @@ import GoogleAPIClientForREST
         let maxStudentsInt = Int(maxStudents) ?? 0
         
         let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudentsInt, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
-        referenceData.tutors.addTutor(newTutor: newTutor)
+        referenceData.tutors.loadTutor(newTutor: newTutor)
         referenceData.tutors.saveTutorData()
         referenceData.dataCounts.increaseTotalTutorCount()
         
@@ -36,8 +35,8 @@ import GoogleAPIClientForREST
 //            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
  //               print("Student Name \(referenceData.tutors.tutorsList[idx].tutorStudents[0].studentName)")
                 
-               let result = TutorStudentsView(tutorNum: indexes, referenceData: referenceData)
-        print(result)
+//               let result = TutorStudentsView(tutorNum: indexes, referenceData: referenceData)
+//        print(result)
 //            }
 //        }
     }
@@ -82,31 +81,21 @@ import GoogleAPIClientForREST
         return(unDeleteResult)
     }
     
-    func assignStudent(studentIndex: Set<Student.ID>, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
-            print("Assigning Student to Tutor")
-//        var studentNum: Int = 0
-//        var tutorNum: Int = 0
-//        var tutorNum1: Int = 0
-//        var studentNum1: Int = 0
-        
-        for objectID in tutorIndex {
-            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                print(referenceData.tutors.tutorsList[tutorNum].tutorName)
+    func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) {
+        print("Assigning Student to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
  
-                for objectID in studentIndex {
-                    if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-                        print(referenceData.students.studentsList[studentNum].studentName)
-                        let studentNum1 = studentNum
-                        print(studentNum, studentNum1)
-                        
-                        referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-                        referenceData.students.saveStudentData()
-                        
-                        let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone)
-                        referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-                        referenceData.tutors.saveTutorData()                    // increased Student count
-                    }
-                }
+        for objectID in studentIndex {
+            if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                print(referenceData.students.studentsList[studentNum].studentName)
+                let studentNum1 = studentNum
+                print(studentNum, studentNum1)
+                
+                referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+                referenceData.students.saveStudentData()
+                
+                let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone)
+                referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+                referenceData.tutors.saveTutorData()                    // increased Student count
             }
         }
     }
