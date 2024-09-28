@@ -99,6 +99,24 @@ import GoogleAPIClientForREST
             }
         }
     }
+
+    func assignService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+        
+        print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor")
+ 
+        for objectID in tutorIndex {
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                print(referenceData.tutors.tutorsList[tutorNum].tutorName)
+                
+ //               referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+ //               referenceData.students.saveStudentData()
+                
+                let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+                referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+                referenceData.tutors.saveTutorData()                    // increased Student count
+            }
+        }
+    }
     
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
         print("Creating New Sheet ...\n")

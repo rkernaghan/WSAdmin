@@ -56,10 +56,15 @@ struct AddStudent: View {
              }
             
             HStack {
-                Text("Location")
-                TextField("Location", text: $location)
-                    .frame(width: 300)
-                    .textFieldStyle(.roundedBorder)
+//                Text("Location")
+//                TextField("Location", text: $location)
+//                    .frame(width: 300)
+//                    .textFieldStyle(.roundedBorder)
+                Picker("Location", selection: $location) {
+                    ForEach(referenceData.locations.locationsList) { option in
+                        Text(String(option.locationName))
+                            }
+                        }
              }
             
             Button(action: {

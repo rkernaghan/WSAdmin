@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020557372CA65FA800F4F7EB /* TutorServicesView.swift */; };
 		02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1A2C6B8B5C00C1FB4B /* WSAdmin.swift */; };
 		02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */; };
 		02A39F1F2C6B8B6200C1FB4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */; };
@@ -40,6 +41,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		020557372CA65FA800F4F7EB /* TutorServicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServicesView.swift; sourceTree = "<group>"; };
 		02A39F172C6B8B5C00C1FB4B /* WSAdmin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WSAdmin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		02A39F1A2C6B8B5C00C1FB4B /* WSAdmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSAdmin.swift; sourceTree = "<group>"; };
 		02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -137,9 +139,10 @@
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
 				02AC9BD02C892B0F007391A7 /* AddTutor.swift */,
 				02DD5A4D2C8A141A002893AD /* AddService.swift */,
-				02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */,
-				02DD5A4F2C8A1428002893AD /* AddLocation.swift */,
 				02AC9BD22C892B49007391A7 /* AddStudent.swift */,
+				02DD5A4F2C8A1428002893AD /* AddLocation.swift */,
+				02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */,
+				020557372CA65FA800F4F7EB /* TutorServicesView.swift */,
 				02AC9BB42C855C7B007391A7 /* SignInView.swift */,
 			);
 			path = Views;
@@ -328,6 +331,7 @@
 				02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */,
 				02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */,
 				02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */,
+				020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */,
 				02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */,
 				02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,

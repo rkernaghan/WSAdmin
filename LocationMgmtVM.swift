@@ -13,7 +13,7 @@ import Foundation
         
         let newLocationKey = PgmConstants.locationKeyPrefix + "0034"
         
-        let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+        let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0)
         referenceData.locations.loadLocation(newLocation: newLocation)
         
         referenceData.locations.saveLocationData()

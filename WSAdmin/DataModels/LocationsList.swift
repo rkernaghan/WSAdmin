@@ -73,8 +73,8 @@ import GoogleAPIClientForREST
                 let newLocationName = stringRows[rowNumber][PgmConstants.locationNamePosition]
                 let newLocationMonthRevenue = Float(stringRows[rowNumber][PgmConstants.locationMonthRevenuePosition]) ?? 0.0
                 let newLocationTotalRevenue = Float(stringRows[rowNumber][PgmConstants.locationTotalRevenuePosition]) ?? 0.0
-
-                let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue)
+                let newLocationStudentCount = Int(stringRows[rowNumber][PgmConstants.locationStudentCountPosition]) ?? 0
+                let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue, locationStudentCount: newLocationStudentCount)
                 
                 self.locationsList.append(newLocation)
                 
@@ -94,6 +94,7 @@ import GoogleAPIClientForREST
         var locationName: String = " "
         var locationMonthRevenue: String = " "
         var locationTotalRevenue: String = " "
+        var locationStudentCount: String = " "
         
         if runMode == "PROD" {
             referenceFileID = PgmConstants.prodReferenceDataFileID
@@ -118,8 +119,9 @@ import GoogleAPIClientForREST
             locationName = locationsList[locationNum].locationName
             locationMonthRevenue = String(locationsList[locationNum].locationMonthRevenue)
             locationTotalRevenue = String(locationsList[locationNum].locationTotalRevenue)
+            locationStudentCount = String(locationsList[locationNum].locationStudentCount)
             
-            updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue], at: locationNum)
+            updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue, locationStudentCount], at: locationNum)
             locationNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet

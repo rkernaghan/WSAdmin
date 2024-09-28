@@ -218,9 +218,14 @@ struct TutorsView: View {
  //                               listStudents.toggle()
                             }
                             
- //                           Button("List Tutor Services") {
- //                               listServices.toggle()
- //                           }
+                            Button("List Tutor Services") {
+                                for objectID in items {
+                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                                        tutorNumber = idx
+                                        listServices.toggle()
+                                    }
+                                }
+                            }
                             
  //                           Button("Add Service to Tutor") {
  //                               addService.toggle()
@@ -300,6 +305,9 @@ struct TutorsView: View {
             }
             .navigationDestination(isPresented: $listStudents) {
                 TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)
+            }
+            .navigationDestination(isPresented: $listServices) {
+                TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
         }
     }
@@ -564,6 +572,11 @@ struct ServicesView: View {
     @State private var selectedServices = Set<Service.ID>()
     @State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
     
+    @State private var assignService: Bool = false
+    @State private var editService: Bool = false
+    
+    @State private var serviceNumber: Int = 0
+    
     var body: some View {
         if referenceData.services.isServiceDataLoaded {
             let serviceArray = referenceData.services.servicesList
@@ -617,7 +630,23 @@ struct ServicesView: View {
                 } else if items.count == 1 {
                     VStack {
                         Button {
-                            
+                            for objectID in items {
+                                if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                                    serviceNumber = idx
+                                    assignService.toggle()
+                                }
+                            }
+                        } label: {
+                            Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Button {
+                            for objectID in items {
+                                if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                                    serviceNumber = idx
+                                    editService.toggle()
+                                }
+                            }
                         } label: {
                             Label("Edit Service", systemImage: "square.and.arrow.up")
                         }
@@ -661,9 +690,58 @@ struct ServicesView: View {
             } primaryAction: { items in
   //              store.favourite(items)
               }
+            .navigationDestination(isPresented: $assignService) {
+                TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
+            }
         }
     }
 }
+
+struct TutorServiceSelectionView: View {
+    @Binding var serviceNum: Int
+    var referenceData: ReferenceData
+
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    
+    @State private var selectedTutor = Set<Tutor.ID>()
+    @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
+    @State private var showAlert = false
+    @State private var viewChange: Bool = false
+
+    var body: some View {
+    
+        VStack {
+            Table(referenceData.tutors.tutorsList, selection: $selectedTutor, sortOrder: $sortOrder) {
+                
+                TableColumn("Tutor Name", value: \.tutorName)
+                TableColumn("Tutor Status", value: \.tutorStatus)
+            }
+            
+            .contextMenu(forSelectionType: Tutor.ID.self) { items in
+                if items.count == 1 {
+                    VStack {
+                        
+                        Button {
+                            tutorMgmtVM.assignService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                        } label: {
+                            Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+                        }
+                    }
+                    
+                } else {
+                    Button {
+                        tutorMgmtVM.assignService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                    } label: {
+                        Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+                    }
+                }
+                    
+                } primaryAction: { items in
+                    //              store.favourite(items)
+                }
+            }
+        }
+    }
 
 struct LocationsView: View {
     var referenceData: ReferenceData
@@ -692,15 +770,17 @@ struct LocationsView: View {
  //               }
  //           }
   
-            Table(referenceData.locations.locationsList, selection: $selectedLocations) {
+            Table(referenceData.locations.locationsList, selection: $selectedLocations, sortOrder: $sortOrder) {
                 TableColumn("Location Name", value: \.locationName)
-  
-  //              TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
-  //                  Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
-  //              }
-  //              TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
-  //                     Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
-  //              }
+                TableColumn("Student Count", value: \.locationStudentCount) {data in
+                   Text(String(data.locationStudentCount))
+                }
+                TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
+                    Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
+                }
+                TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
+                       Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
+                }
             }
             .contextMenu(forSelectionType: Location.ID.self) { items in
                 if items.isEmpty {
