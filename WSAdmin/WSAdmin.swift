@@ -28,7 +28,9 @@ struct PgmConstants {
     static let dataCountHighestServiceKeyCol = 0
     static let dataCountTotalLocationsRow = 9
     static let dataCountTotalLocationsCol = 0
-    static let dataCountHighestLocationKeyRow = 10
+    static let dataCountActiveLocationsRow = 10
+    static let dataCountActiveLocationsCol = 0
+    static let dataCountHighestLocationKeyRow = 11
     static let dataCountHighestLocationKeyCol = 0
     
     static let tutorDataStudentCountRow = 3
@@ -38,12 +40,11 @@ struct PgmConstants {
     
     static let testRefFileName = "ReferenceData - TEST"
     static let prodRefFileName = "ReferenceData"
-    static let dataCountRange = "Master!B2:B12"
+    static let dataCountRange = "Master!B2:B13"
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
-//    static let serviceRange = "Master!AL3:AW"
     static let serviceRange = "Master!AL3:AW"
-    static let locationRange = "Master!AZ3:BD"
+    static let locationRange = "Master!AZ3:BE"
     
     static let tutorCountsRange = "!A1:B5"
     static let tutorStudentsRange = "!O3:S"
@@ -123,6 +124,7 @@ struct PgmConstants {
     static let locationMonthRevenuePosition = 2
     static let locationTotalRevenuePosition = 3
     static let locationStudentCountPosition = 4
+    static let locationStatusPosition = 5
     
     static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
     static let firstTimesheetRow = 5

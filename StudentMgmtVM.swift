@@ -23,18 +23,31 @@ import Foundation
         referenceData.dataCounts.saveDataCounts()
     }
     
-    func updateStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, location: String) {
+    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, location: String) {
         
-        let newStudentKey = PgmConstants.studentKeyPrefix + String(referenceData.dataCounts.highestStudentKey)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let startDate = dateFormatter.string(from: Date())
-        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: " ", studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
-        referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
+        let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+        
+        referenceData.students.studentsList[studentNum].studentName = studentName
+        referenceData.students.studentsList[studentNum].studentGuardian = guardianName
+        referenceData.students.studentsList[studentNum].studentEmail = contactEmail
+        referenceData.students.studentsList[studentNum].studentPhone = contactPhone
+        referenceData.students.studentsList[studentNum].studentLocation = location
         
         referenceData.students.saveStudentData()
-        referenceData.dataCounts.increaseTotalStudentCount()
-        referenceData.dataCounts.saveDataCounts()
+        
+        var tutorNum = 0
+        while tutorNum < referenceData.tutors.tutorsList.count {
+            let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
+            if tutorStudentFound {
+                referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName = studentName
+                referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
+                referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
+                referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
+                referenceData.tutors.tutorsList[tutorNum].saveTutorStudents()
+                
+            }
+            tutorNum += 1
+        }
     }
     
     func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {

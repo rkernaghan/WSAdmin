@@ -45,6 +45,34 @@ import GoogleAPIClientForREST
         self.tutorTotalProfit = tutorTotalProfit
     }
     
+    func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
+        var studentFound = false
+        var tutorStudentNum = 0
+        
+        while tutorStudentNum < tutorStudents.count && !studentFound {
+            if tutorStudents[tutorStudentNum].studentKey == studentKey {
+                studentFound = true
+            } else {
+                tutorStudentNum += 1
+            }
+        }
+        return(studentFound, tutorStudentNum)
+    }
+    
+    func findTutorServiceByKey(serviceKey: String) -> (Bool, Int) {
+        var serviceFound = false
+        var tutorServiceNum = 0
+        
+        while tutorServiceNum < tutorServices.count && !serviceFound {
+            if tutorServices[tutorServiceNum].serviceKey == serviceKey {
+                serviceFound = true
+            } else {
+                tutorServiceNum += 1
+            }
+        }
+        return(serviceFound, tutorServiceNum)
+    }
+    
     func loadTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
     }
@@ -104,37 +132,7 @@ import GoogleAPIClientForREST
     func unassignTutor() {
  
     }
-    
-    func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
-        var studentFound = false
-        var tutorStudentNum = 0
         
-        while tutorStudentNum < tutorStudents.count && !studentFound {
-            if tutorStudents[tutorStudentNum].studentKey == studentKey {
-                studentFound = true
-            } else {
-                tutorStudentNum += 1
-            }
-        }
-        return(studentFound, tutorStudentNum)
-    }
-    
-    func findTutorServiceByKey(serviceKey: String) -> (Bool, Int) {
-        var serviceFound = false
-        var tutorServiceNum = 0
-        
-        while tutorServiceNum < tutorServices.count && !serviceFound {
-            if tutorServices[tutorServiceNum].serviceKey == serviceKey {
-                serviceFound = true
-            } else {
-                tutorServiceNum += 1
-            }
-        }
-        return(serviceFound, tutorServiceNum)
-    }
-    
-
-    
     func loadTutorDetails(tutorNum: Int, tutorDataFileID: String, referenceData: ReferenceData) {
         
         let sheetService = GTLRSheetsService()

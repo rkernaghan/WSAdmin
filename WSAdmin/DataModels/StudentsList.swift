@@ -17,6 +17,20 @@ import GoogleAPIClientForREST
         isStudentDataLoaded = false
     }
     
+    func findStudentByKey(studentKey: String) -> (Bool, Int) {
+        var found = false
+        
+        var studentNum = 0
+        while studentNum < studentsList.count && !found {
+            if studentsList[studentNum].studentKey == studentKey {
+                found = true
+            } else {
+                studentNum += 1
+            }
+        }
+        return(found, studentNum)
+    }
+    
     func loadStudent(newStudent: Student, referenceData: ReferenceData) {
         
         self.studentsList.append(newStudent)

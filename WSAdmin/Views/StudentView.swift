@@ -7,16 +7,18 @@
 
 import SwiftUI
 
-struct AddStudent: View {
+struct StudentView: View {
     
     var updateStudentFlag: Bool
     var referenceData: ReferenceData
+    var studentKey: String
     
     @State var studentName: String
     @State var guardianName: String
     @State var contactPhone: String
     @State var contactEmail: String
     @State var location: String
+    @State var studentType: String
     
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
@@ -67,9 +69,19 @@ struct AddStudent: View {
                         }
              }
             
+            HStack {
+                Picker("Student Type", selection: $studentType) {
+                            ForEach(StudentTypeOption.allCases) { option in
+                                Text(String(describing: option))
+                            }
+                        }
+//                        .pickerStyle(.wheel)
+            }
+            
+
             Button(action: {
                 if updateStudentFlag {
-                    studentMgmtVM.updateStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                    studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
                 } else {
                     studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
                 }

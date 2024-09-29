@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct AddService: View {
+struct ServiceView: View {
     var referenceData: ReferenceData
     
     @State var timesheetName: String
@@ -62,6 +62,7 @@ struct AddService: View {
                         }
 //                        .pickerStyle(.wheel)
             }
+            
             HStack {
                 Text("Cost 1")
                 TextField("Cost 1", text: $cost1)

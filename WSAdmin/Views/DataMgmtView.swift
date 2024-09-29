@@ -93,19 +93,19 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    AddStudent(updateStudentFlag: false, referenceData: referenceData, studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ")
+                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ", studentType: "Minor")
                 } label: {
                     Label("Add Student", systemImage: "graduationcap")
                 }
                 
                 NavigationLink {
-                    AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
+                    ServiceView(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
                 } label: {
                     Label("Add Service", systemImage: "list.bullet")
                 }
                 
                 NavigationLink {
-                    AddLocation(referenceData: referenceData, locationName: " ")
+                    LocationView(referenceData: referenceData, locationName: " ")
                 } label: {
                     Label("Add Location", systemImage: "building")
                 }
@@ -389,6 +389,7 @@ struct StudentsView: View {
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+    
     @State private var selectedStudents: Set<Student.ID> = []
     @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
     @State private var showAlert = false
@@ -396,10 +397,10 @@ struct StudentsView: View {
 
     @State private var assignTutor = false
     @State private var unassignTutor = false
+    @State private var editStudent = false
     
     @State private var studentNumber: Int = 0
     
-
     var body: some View {
         if referenceData.students.isStudentDataLoaded {
             VStack {
@@ -437,19 +438,7 @@ struct StudentsView: View {
                         }
                     } else if items.count == 1 {
                         VStack {
-                            
-                            Button {
-                                studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
-                            } label: {
-                                Label("Unassign Student", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                
-                            } label: {
-                                Label("Edit Student", systemImage: "square.and.arrow.up")
-                            }
-                            
+
                             Button {
                                 for objectID in items {
                                     if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
@@ -462,9 +451,21 @@ struct StudentsView: View {
                             }
                             
                             Button {
-                                
+                                studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
                             } label: {
-                                Label("UnAssign Tutor from Student", systemImage: "square.and.arrow.up")
+                                Label("Unassign Student", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                for objectID in items {
+                                    if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                                        studentNumber = idx
+//                                        student = referenceData.students.studentsList[studentNumber]
+                                        editStudent.toggle()
+                                    }
+                                }
+                            } label: {
+                                Label("Edit Student", systemImage: "square.and.arrow.up")
                             }
                             
                             Button {
@@ -513,6 +514,10 @@ struct StudentsView: View {
             }
             .navigationDestination(isPresented: $assignTutor) {
                 TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
+            }
+            .navigationDestination(isPresented: $editStudent) {
+                StudentView(updateStudentFlag: true, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
+                    studentType: referenceData.students.studentsList[studentNumber].studentType)
             }
         }
     }
@@ -663,30 +668,21 @@ struct ServicesView: View {
                             Label("Undelete Service", systemImage: "trash")
                         }
                         
-                        Button(role: .destructive) {
-                            
-                        } label: {
-                            Label("Assign Service to Tutor", systemImage: "trash")
-                        }
-                        
                     }
- 
+                         
+                } else {
+                    Button {
                         
-                    } else {
-                        Button {
-                            
-                        } label: {
-                            Label("Edit Services", systemImage: "heart")
-                        }
-                        Button(role: .destructive) {
-                            
-                        } label: {
-                            Label("Delete Selected", systemImage: "trash")
-                        }
+                    } label: {
+                        Label("Edit Services", systemImage: "heart")
                     }
+                    Button(role: .destructive) {
+                        
+                    } label: {
+                        Label("Delete Selected", systemImage: "trash")
+                    }
+                }
 
-                
-                
             } primaryAction: { items in
   //              store.favourite(items)
               }
@@ -781,6 +777,8 @@ struct LocationsView: View {
                 TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
                        Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
                 }
+                TableColumn("Location Status", value: \.locationStatus)
+                
             }
             .contextMenu(forSelectionType: Location.ID.self) { items in
                 if items.isEmpty {
@@ -796,10 +794,17 @@ struct LocationsView: View {
                         } label: {
                             Label("Edit Location", systemImage: "square.and.arrow.up")
                         }
+                        
                         Button(role: .destructive) {
                             locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
                         } label: {
                             Label("Delete Location", systemImage: "trash")
+                        }
+                        
+                        Button(role: .destructive) {
+                            locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+                        } label: {
+                            Label("Undelete Location", systemImage: "trash")
                         }
                     }
                     .navigationDestination(isPresented: $listStudents) {

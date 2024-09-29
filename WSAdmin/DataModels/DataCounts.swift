@@ -20,6 +20,7 @@ class DataCounts {
     var activeServices: Int = 0
     var highestServiceKey: Int = 0
     var totalLocations: Int = 0
+    var activeLocations: Int = 0
     var highestLocationKey: Int = 0
     var isDataCountsLoaded: Bool
     
@@ -78,12 +79,21 @@ class DataCounts {
         saveDataCounts()
     }
     
-    func increaseLocationCount() {
+    func increaseTotalLocationCount() {
         totalLocations += 1
         highestLocationKey += 1
         saveDataCounts()
     }
     
+    func increaseActiveLocationCount() {
+        activeLocations += 1
+        saveDataCounts()
+    }
+
+    func decreaseActiveLocationCount() {
+        activeLocations -= 1
+        saveDataCounts()
+    }
     func loadDataCounts(referenceFileID: String, tutorDataFileID: String, referenceData: ReferenceData) {
         
         let sheetService = GTLRSheetsService()
@@ -131,6 +141,7 @@ class DataCounts {
             self.activeServices = Int(stringRows[PgmConstants.dataCountActiveServicesRow][PgmConstants.dataCountActiveServicesCol]) ?? 0
             self.highestServiceKey = Int(stringRows[PgmConstants.dataCountHighestServiceKeyRow][PgmConstants.dataCountHighestServiceKeyCol]) ?? 0
             self.totalLocations = Int(stringRows[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol]) ?? 0
+            self.activeLocations = Int(stringRows[PgmConstants.dataCountActiveLocationsRow][PgmConstants.dataCountActiveLocationsCol]) ?? 0
             self.highestLocationKey = Int(stringRows[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol]) ?? 0
             self.isDataCountsLoaded = true
             referenceData.tutors.loadTutorData(referenceFileID: referenceFileID, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
@@ -169,6 +180,7 @@ class DataCounts {
         updateValues.insert([String(activeServices)], at: PgmConstants.dataCountActiveServicesRow)
         updateValues.insert([String(highestServiceKey)], at: PgmConstants.dataCountHighestServiceKeyRow)
         updateValues.insert([String(totalLocations)], at: PgmConstants.dataCountTotalLocationsRow)
+        updateValues.insert([String(activeLocations)], at: PgmConstants.dataCountActiveLocationsRow)
         updateValues.insert([String(highestLocationKey)], at: PgmConstants.dataCountHighestLocationKeyRow)
 
         let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params

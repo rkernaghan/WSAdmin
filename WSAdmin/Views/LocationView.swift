@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct AddLocation: View {
+struct LocationView: View {
     var referenceData: ReferenceData
     
     @State var locationName: String

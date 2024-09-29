@@ -17,6 +17,20 @@ import GoogleAPIClientForREST
         isServiceDataLoaded = false
     }
     
+    func findServiceByKey(serviceKey: String) -> (Bool, Int) {
+        var found = false
+        
+        var serviceNum = 0
+        while serviceNum < servicesList.count && !found {
+            if servicesList[serviceNum].serviceKey == serviceKey {
+                found = true
+            } else {
+                serviceNum += 1
+            }
+        }
+        return(found, serviceNum)
+    }
+    
     func loadService(newService: Service, referenceData: ReferenceData) {
         self.servicesList.append(newService)
 

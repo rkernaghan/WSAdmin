@@ -13,13 +13,30 @@ class Location: Identifiable {
     var locationMonthRevenue: Float
     var locationTotalRevenue: Float
     var locationStudentCount: Int
+    var locationStatus: String
     let id = UUID()
     
-    init(locationKey: String, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float, locationStudentCount: Int) {
+    init(locationKey: String, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float, locationStudentCount: Int, locationStatus: String) {
         self.locationKey = locationKey
         self.locationName = locationName
         self.locationMonthRevenue = locationMonthRevenue
         self.locationTotalRevenue = locationTotalRevenue
         self.locationStudentCount = locationStudentCount
+        self.locationStatus = locationStatus
     }
+    
+    func markDeleted() {
+        locationStatus = "Deleted"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+//        serviceEndDate = dateFormatter.string(from: Date())
+    }
+    
+    func markUndeleted() {
+        locationStatus = "Active"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+//        serviceEndDate = dateFormatter.string(from: Date())
+    }
+    
 }

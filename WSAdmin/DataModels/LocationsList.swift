@@ -18,6 +18,20 @@ import GoogleAPIClientForREST
         isLocationDataLoaded = false
     }
     
+    func findServiceByKey(locationKey: String) -> (Bool, Int) {
+        var found = false
+        
+        var locationNum = 0
+        while locationNum < locationsList.count && !found {
+            if locationsList[locationNum].locationKey == locationKey {
+                found = true
+            } else {
+                locationNum += 1
+            }
+        }
+        return(found, locationNum)
+    }
+    
     func loadLocation(newLocation: Location) {
      
     }
@@ -74,7 +88,8 @@ import GoogleAPIClientForREST
                 let newLocationMonthRevenue = Float(stringRows[rowNumber][PgmConstants.locationMonthRevenuePosition]) ?? 0.0
                 let newLocationTotalRevenue = Float(stringRows[rowNumber][PgmConstants.locationTotalRevenuePosition]) ?? 0.0
                 let newLocationStudentCount = Int(stringRows[rowNumber][PgmConstants.locationStudentCountPosition]) ?? 0
-                let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue, locationStudentCount: newLocationStudentCount)
+                let newLocationStatus = stringRows[rowNumber][PgmConstants.locationStatusPosition]
+                let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue, locationStudentCount: newLocationStudentCount, locationStatus: newLocationStatus)
                 
                 self.locationsList.append(newLocation)
                 
@@ -95,6 +110,7 @@ import GoogleAPIClientForREST
         var locationMonthRevenue: String = " "
         var locationTotalRevenue: String = " "
         var locationStudentCount: String = " "
+        var locationStatus: String = " "
         
         if runMode == "PROD" {
             referenceFileID = PgmConstants.prodReferenceDataFileID
@@ -120,12 +136,13 @@ import GoogleAPIClientForREST
             locationMonthRevenue = String(locationsList[locationNum].locationMonthRevenue)
             locationTotalRevenue = String(locationsList[locationNum].locationTotalRevenue)
             locationStudentCount = String(locationsList[locationNum].locationStudentCount)
+            locationStatus = locationsList[locationNum].locationStatus
             
-            updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue, locationStudentCount], at: locationNum)
+            updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue, locationStudentCount, locationStatus], at: locationNum)
             locationNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-        updateValues.insert([" ", " ", " ", " "], at: locationNum)
+        updateValues.insert([" ", " ", " ", " ", " ", " "], at: locationNum)
         
         let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert

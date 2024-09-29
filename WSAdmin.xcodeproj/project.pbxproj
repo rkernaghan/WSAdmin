@@ -25,15 +25,15 @@
 		02AC9BCD2C88A6C9007391A7 /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BCC2C88A6C9007391A7 /* Location.swift */; };
 		02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BCE2C88A6DB007391A7 /* LocationsList.swift */; };
 		02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD02C892B0F007391A7 /* AddTutor.swift */; };
-		02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD22C892B49007391A7 /* AddStudent.swift */; };
+		02AC9BD32C892B49007391A7 /* StudentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD22C892B49007391A7 /* StudentView.swift */; };
 		02AC9BD52C894BFC007391A7 /* StudentMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */; };
 		02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */; };
 		02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */; };
 		02C8BEF22C9F145200EAB9DE /* TutorStudentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */; };
 		02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */; };
 		02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */; };
-		02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4D2C8A141A002893AD /* AddService.swift */; };
-		02DD5A502C8A1428002893AD /* AddLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4F2C8A1428002893AD /* AddLocation.swift */; };
+		02DD5A4E2C8A141A002893AD /* ServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4D2C8A141A002893AD /* ServiceView.swift */; };
+		02DD5A502C8A1428002893AD /* LocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4F2C8A1428002893AD /* LocationView.swift */; };
 		02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02E7B1BA2C90769300EE73A3 /* DataCounts.swift */; };
 		02F6D0E12C8BE306007AB4D4 /* TutorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F6D0E02C8BE306007AB4D4 /* TutorService.swift */; };
 		02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */; };
@@ -62,15 +62,15 @@
 		02AC9BCC2C88A6C9007391A7 /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		02AC9BCE2C88A6DB007391A7 /* LocationsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsList.swift; sourceTree = "<group>"; };
 		02AC9BD02C892B0F007391A7 /* AddTutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTutor.swift; sourceTree = "<group>"; };
-		02AC9BD22C892B49007391A7 /* AddStudent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStudent.swift; sourceTree = "<group>"; };
+		02AC9BD22C892B49007391A7 /* StudentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentView.swift; sourceTree = "<group>"; };
 		02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentMgmtVM.swift; sourceTree = "<group>"; };
 		02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorMgmtVM.swift; sourceTree = "<group>"; };
 		02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorDataCounts.swift; sourceTree = "<group>"; };
 		02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorStudentsView.swift; sourceTree = "<group>"; };
 		02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMgmtVM.swift; sourceTree = "<group>"; };
-		02DD5A4D2C8A141A002893AD /* AddService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddService.swift; sourceTree = "<group>"; };
-		02DD5A4F2C8A1428002893AD /* AddLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLocation.swift; sourceTree = "<group>"; };
+		02DD5A4D2C8A141A002893AD /* ServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceView.swift; sourceTree = "<group>"; };
+		02DD5A4F2C8A1428002893AD /* LocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationView.swift; sourceTree = "<group>"; };
 		02E7B1BA2C90769300EE73A3 /* DataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCounts.swift; sourceTree = "<group>"; };
 		02F6D0E02C8BE306007AB4D4 /* TutorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TutorService.swift; path = WSAdmin/Views/TutorService.swift; sourceTree = SOURCE_ROOT; };
 		02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorStudent.swift; sourceTree = "<group>"; };
@@ -138,9 +138,9 @@
 				02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */,
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
 				02AC9BD02C892B0F007391A7 /* AddTutor.swift */,
-				02DD5A4D2C8A141A002893AD /* AddService.swift */,
-				02AC9BD22C892B49007391A7 /* AddStudent.swift */,
-				02DD5A4F2C8A1428002893AD /* AddLocation.swift */,
+				02DD5A4D2C8A141A002893AD /* ServiceView.swift */,
+				02AC9BD22C892B49007391A7 /* StudentView.swift */,
+				02DD5A4F2C8A1428002893AD /* LocationView.swift */,
 				02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */,
 				020557372CA65FA800F4F7EB /* TutorServicesView.swift */,
 				02AC9BB42C855C7B007391A7 /* SignInView.swift */,
@@ -328,15 +328,15 @@
 				02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,
 				02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */,
-				02AC9BD32C892B49007391A7 /* AddStudent.swift in Sources */,
-				02DD5A4E2C8A141A002893AD /* AddService.swift in Sources */,
+				02AC9BD32C892B49007391A7 /* StudentView.swift in Sources */,
+				02DD5A4E2C8A141A002893AD /* ServiceView.swift in Sources */,
 				02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */,
 				020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */,
 				02AC9BD12C892B0F007391A7 /* AddTutor.swift in Sources */,
 				02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,
 				02AC9BCD2C88A6C9007391A7 /* Location.swift in Sources */,
-				02DD5A502C8A1428002893AD /* AddLocation.swift in Sources */,
+				02DD5A502C8A1428002893AD /* LocationView.swift in Sources */,
 				02AC9BBB2C8645E1007391A7 /* RefDataVM.swift in Sources */,
 				02F6D0E12C8BE306007AB4D4 /* TutorService.swift in Sources */,
 				02C8BEF22C9F145200EAB9DE /* TutorStudentsView.swift in Sources */,
