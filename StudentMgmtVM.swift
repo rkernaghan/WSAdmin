@@ -129,4 +129,23 @@ import Foundation
         }
     }
     
+    func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) {
+        
+        for objectID in tutorStudentIndex {
+            if let tutorStudentNum = referenceData.tutors.tutorsList[tutorNum].tutorStudents.firstIndex(where: {$0.id == objectID} ) {
+                
+                let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+                let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+                
+                referenceData.students.studentsList[studentNum].unassignTutor()
+                referenceData.students.saveStudentData()
+                
+                referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
+                referenceData.tutors.saveTutorData()                    // increased Student count
+                
+            }
+            
+        }
+    }
+    
 }

@@ -30,6 +30,7 @@
 		02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */; };
 		02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */; };
 		02C8BEF22C9F145200EAB9DE /* TutorStudentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */; };
+		02CA8C1C2CAB3CD700CCD03C /* TutorServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */; };
 		02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */; };
 		02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */; };
 		02DD5A4E2C8A141A002893AD /* ServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DD5A4D2C8A141A002893AD /* ServiceView.swift */; };
@@ -67,6 +68,7 @@
 		02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorMgmtVM.swift; sourceTree = "<group>"; };
 		02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorDataCounts.swift; sourceTree = "<group>"; };
 		02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorStudentsView.swift; sourceTree = "<group>"; };
+		02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceView.swift; sourceTree = "<group>"; };
 		02DD5A492C8A0FFA002893AD /* ServiceMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4B2C8A1015002893AD /* LocationMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMgmtVM.swift; sourceTree = "<group>"; };
 		02DD5A4D2C8A141A002893AD /* ServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceView.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
 				02AC9BD02C892B0F007391A7 /* AddTutor.swift */,
 				02DD5A4D2C8A141A002893AD /* ServiceView.swift */,
+				02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */,
 				02AC9BD22C892B49007391A7 /* StudentView.swift */,
 				02DD5A4F2C8A1428002893AD /* LocationView.swift */,
 				02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */,
@@ -324,6 +327,7 @@
 				02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */,
 				02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
+				02CA8C1C2CAB3CD700CCD03C /* TutorServiceView.swift in Sources */,
 				02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */,
 				02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,

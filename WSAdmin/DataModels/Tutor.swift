@@ -76,14 +76,14 @@ import GoogleAPIClientForREST
     func loadTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
     }
-
+    
     func addNewTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
         saveTutorStudents()
         tutorStudentCount += 1
         saveTutorDataCounts()
     }
-
+    
     func removeTutorStudent(studentKey: String) {
         let (studentFound, tutorStudentNum) = findTutorStudentByKey(studentKey: studentKey)
         
@@ -104,6 +104,16 @@ import GoogleAPIClientForREST
         saveTutorServices()
         tutorServiceCount += 1
         saveTutorDataCounts()
+    }
+    
+    func updateTutorService(tutorServiceNum: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+        tutorServices[tutorServiceNum].cost1 = cost1
+        tutorServices[tutorServiceNum].cost2 = cost2
+        tutorServices[tutorServiceNum].cost3 = cost3
+        tutorServices[tutorServiceNum].price1 = price1
+        tutorServices[tutorServiceNum].price2 = price2
+        tutorServices[tutorServiceNum].price3 = price3
+        saveTutorServices()
     }
 
     func removeTutorService(serviceKey: String) {

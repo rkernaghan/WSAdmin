@@ -118,6 +118,18 @@ import GoogleAPIClientForREST
         }
     }
     
+    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+        let cost1Float = Float(cost1) ?? 0
+        let cost2Float = Float(cost2) ?? 0
+        let cost3Float = Float(cost3) ?? 0
+        let price1Float = Float(price1) ?? 0
+        let price2Float = Float(price2) ?? 0
+        let price3Float = Float(price3) ?? 0
+        
+        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+        
+    }
+    
     func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
         print("Creating New Sheet ...\n")
         let sheetService = GTLRSheetsService()

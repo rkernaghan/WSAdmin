@@ -1,20 +1,21 @@
 //
-//  AddService.swift
+//  TutorServiceView.swift
 //  WSAdmin
 //
-//  Created by Russell Kernaghan on 2024-09-05.
+//  Created by Russell Kernaghan on 2024-09-30.
 //
 
 import Foundation
 import SwiftUI
 
-struct ServiceView: View {
+struct TutorServiceView: View {
+    @Binding var tutorNum: Int
+    @Binding var tutorServiceNum: Int
     var referenceData: ReferenceData
     
-    @State var timesheetName: String
-    @State var invoiceName: String
-    @State var serviceType: ServiceTypeOption = .Base
-    @State var billingType: BillingTypeOption = .Fixed
+    var timesheetName: String
+    var invoiceName: String
+    var billingType: String
     @State var cost1: String
     @State var cost2: String
     @State var cost3: String
@@ -28,43 +29,31 @@ struct ServiceView: View {
     
     var body: some View {
         
-        Text("Add Service")
-        
         VStack {
             HStack {
                 Text("Timesheet Name")
-                TextField("Timesheet Name", text: $timesheetName)
+                Text(timesheetName)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Invoice Name")
-                TextField("Invoice Name", text: $invoiceName)
+                Text(invoiceName)
+                    .frame(width: 300)
+                    .textFieldStyle(.roundedBorder)
+            }
+           
+            HStack {
+                Text("Billing Type")
+                Text(billingType)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
-                Picker("Service Type", selection: $serviceType) {
-                            ForEach(ServiceTypeOption.allCases) { option in
-                                Text(String(describing: option))
-                            }
-                        }
-//                        .pickerStyle(.wheel)
-            }
-            
-            HStack {
-                Picker("Billing Type", selection: $billingType) {
-                    ForEach(BillingTypeOption.allCases, id:\.self) { option in
-                                Text(String(describing: option))
-                            }
-                        }
-//                        .pickerStyle(.wheel)
-            }
-            
-            HStack {
                 Text("Cost 1")
+ //               TextField("Cost 1", text: String(cost1.formatted(.number.precision(.fractionLength(2)))))
                 TextField("Cost 1", text: $cost1)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
@@ -105,9 +94,9 @@ struct ServiceView: View {
              }
 
             Button(action: {
-                serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                tutorMgmtVM.updateTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
             }){
-                Text("Add Service")
+                Text("Edit Service")
             }
             .padding()
 //            .background(Color.orange)
@@ -123,4 +112,5 @@ struct ServiceView: View {
 //#Preview {
 //    AddStudent()
 //}
+
 

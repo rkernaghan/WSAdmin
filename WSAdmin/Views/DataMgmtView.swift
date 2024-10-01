@@ -198,7 +198,6 @@ struct TutorsView: View {
                                 for objectID in items {
                                     if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                                         tutorNumber = idx
-                                        //                                self.assignStudent.toggle()
                                         assignStudent = true
                                     }
                                 }
@@ -503,8 +502,15 @@ struct StudentsView: View {
                         Button {} label: {
                             Label("Edit Students", systemImage: "heart")
                         }
+                        
                         Button(role: .destructive) {} label: {
                             Label("Delete Students", systemImage: "trash")
+                        }
+                        
+                        Button {
+                            studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                        } label: {
+                            Label("Unassign Students", systemImage: "square.and.arrow.up")
                         }
                     }
                 } primaryAction: { items in
@@ -668,6 +674,11 @@ struct ServicesView: View {
                             Label("Undelete Service", systemImage: "trash")
                         }
                         
+                        Button(role: .destructive) {
+   
+                        } label: {
+                            Label("List Individual Tutor Costs", systemImage: "trash")
+                        }
                     }
                          
                 } else {
