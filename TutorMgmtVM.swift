@@ -14,15 +14,15 @@ import GoogleAPIClientForREST
 @Observable class TutorMgmtVM  {
     
     
-    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: String) {
+    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
 
         let newTutorKey = PgmConstants.tutorKeyPrefix + "0034"
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let startDate = dateFormatter.string(from: Date())
-        let maxStudentsInt = Int(maxStudents) ?? 0
+ //       let maxStudentsInt = Int(maxStudents) ?? 0
         
-        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudentsInt, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
+        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.loadTutor(newTutor: newTutor)
         referenceData.tutors.saveTutorData()
         referenceData.dataCounts.increaseTotalTutorCount()
@@ -41,10 +41,10 @@ import GoogleAPIClientForREST
 //        }
     }
     
-    func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: String) {
+    func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
         
-        let maxStudentsInt: Int = Int(maxStudents) ?? 0
-        referenceData.tutors.tutorsList[tutorNum].updateTutor(contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudentsInt)
+ //       let maxStudentsInt: Int = Int(maxStudents) ?? 0
+        referenceData.tutors.tutorsList[tutorNum].updateTutor(contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
         referenceData.tutors.saveTutorData()
 
     }
@@ -126,15 +126,15 @@ import GoogleAPIClientForREST
         }
     }
     
-    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
-        let cost1Float = Float(cost1) ?? 0
-        let cost2Float = Float(cost2) ?? 0
-        let cost3Float = Float(cost3) ?? 0
-        let price1Float = Float(price1) ?? 0
-        let price2Float = Float(price2) ?? 0
-        let price3Float = Float(price3) ?? 0
+    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+//        let cost1Float = Float(cost1) ?? 0
+//        let cost2Float = Float(cost2) ?? 0
+//        let cost3Float = Float(cost3) ?? 0
+//        let price1Float = Float(price1) ?? 0
+//        let price2Float = Float(price2) ?? 0
+//        let price3Float = Float(price3) ?? 0
         
-        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
     }
     

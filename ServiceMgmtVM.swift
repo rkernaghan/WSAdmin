@@ -32,18 +32,18 @@ import Foundation
         referenceData.services.loadService(newService: newService, referenceData: referenceData)
     }
     
-    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
             
-        let cost1Float = Float(cost1) ?? 0
-        let cost2Float = Float(cost2) ?? 0
-        let cost3Float = Float(cost3) ?? 0
-        let price1Float = Float(price1) ?? 0
-        let price2Float = Float(price2) ?? 0
-        let price3Float = Float(price3) ?? 0
+//        let cost1Float = Float(cost1) ?? 0
+//        let cost2Float = Float(cost2) ?? 0
+//        let cost3Float = Float(cost3) ?? 0
+//        let price1Float = Float(price1) ?? 0
+//        let price2Float = Float(price2) ?? 0
+//        let price3Float = Float(price3) ?? 0
         
         let newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(referenceData.dataCounts.highestServiceKey)
  
-        let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: cost1Float, serviceCost2: cost2Float, serviceCost3:  cost3Float, servicePrice1: price1Float, servicePrice2: price2Float, servicePrice3: price3Float)
+        let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "New", serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
         
         referenceData.services.loadService(newService: newService, referenceData: referenceData)
         
@@ -56,7 +56,7 @@ import Foundation
                 var tutorNum = 0
                 while tutorNum < referenceData.tutors.tutorsList.count {
                     if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
-                        let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+                        let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
                         referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
                         tutorNum += 1
                     }
@@ -65,16 +65,16 @@ import Foundation
         }
     }
     
-    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 
-        let cost1Float = Float(cost1) ?? 0
-        let cost2Float = Float(cost2) ?? 0
-        let cost3Float = Float(cost3) ?? 0
-        let price1Float = Float(price1) ?? 0
-        let price2Float = Float(price2) ?? 0
-        let price3Float = Float(price3) ?? 0
+//        let cost1Float = Float(cost1) ?? 0
+//        let cost2Float = Float(cost2) ?? 0
+//        let cost3Float = Float(cost3) ?? 0
+  //      let price1Float = Float(price1) ?? 0
+//        let price2Float = Float(price2) ?? 0
+//        let price3Float = Float(price3) ?? 0
         
-       referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+       referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
         referenceData.services.saveServiceData()
         

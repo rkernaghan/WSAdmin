@@ -87,7 +87,7 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: " ", contactEmail: " ", contactPhone: " ", maxStudents: " ")
+                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: " ", contactEmail: " ", contactPhone: " ", maxStudents: 0)
                 } label: {
                     Label("Add Tutor", systemImage: "person")
                 }
@@ -99,7 +99,7 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
+                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: 0.0, cost2: 0.0, cost3: 0.0, price1: 0.0, price2: 0.0, price3: 0.0 )
                 } label: {
                     Label("Add Service", systemImage: "list.bullet")
                 }
@@ -289,7 +289,7 @@ struct TutorsView: View {
                 TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
             .navigationDestination(isPresented: $editTutor) {
-                TutorView(updateTutorFlag: true, tutorNum: tutorNumber, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, contactEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, contactPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: String(referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents) )
+                TutorView(updateTutorFlag: true, tutorNum: tutorNumber, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, contactEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, contactPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
             }
         }
     }
@@ -675,7 +675,7 @@ struct ServicesView: View {
                 TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
             }
             .navigationDestination(isPresented: $editService) {
-                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  ServiceTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceType) ?? .Base, billingType: BillingTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceBillingType) ?? .Fixed, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1.formatted(.number.precision(.fractionLength(2))), cost2: referenceData.services.servicesList[serviceNumber].serviceCost2.formatted(.number.precision(.fractionLength(2))), cost3: referenceData.services.servicesList[serviceNumber].serviceCost3.formatted(.number.precision(.fractionLength(2))), price1: referenceData.services.servicesList[serviceNumber].servicePrice1.formatted(.number.precision(.fractionLength(2))), price2: referenceData.services.servicesList[serviceNumber].servicePrice2.formatted(.number.precision(.fractionLength(2))), price3: referenceData.services.servicesList[serviceNumber].servicePrice3.formatted(.number.precision(.fractionLength(2))))
+                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  ServiceTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceType) ?? .Base, billingType: BillingTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceBillingType) ?? .Fixed, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
             }
         }
     }

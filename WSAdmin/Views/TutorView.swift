@@ -15,11 +15,12 @@ struct TutorView: View {
     @State var tutorName: String
     @State var contactEmail: String
     @State var contactPhone: String
-    @State var maxStudents: String
+    @State var maxStudents: Int
     
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    
     
     var body: some View {
         
@@ -32,6 +33,13 @@ struct TutorView: View {
              }
  
             HStack {
+                Text("Max Students")
+                TextField("Max Students", value: $maxStudents, format: .number)
+                    .frame(width: 300)
+                    .textFieldStyle(.roundedBorder)
+            }
+            
+            HStack {
                 Text("Tutor Email")
                 TextField("Contact EMail", text: $contactEmail)
                     .frame(width: 300)
@@ -41,13 +49,6 @@ struct TutorView: View {
             HStack {
                 Text("Tutor Phone")
                 TextField("Contact Phone", text: $contactPhone)
-                    .frame(width: 300)
-                    .textFieldStyle(.roundedBorder)
-             }
-            
-            HStack {
-                Text("Max Students")
-                TextField("Max Students", text: $maxStudents)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
              }
