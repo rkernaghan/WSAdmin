@@ -7,21 +7,21 @@
 import Foundation
 import SwiftUI
 
-struct AddTutor: View {
+struct TutorView: View {
+    var updateTutorFlag: Bool
+    var tutorNum: Int
     var referenceData: ReferenceData
     
     @State var tutorName: String
-    @State var maxStudents: String
-    @State var contactPhone: String
     @State var contactEmail: String
+    @State var contactPhone: String
+    @State var maxStudents: String
     
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
     var body: some View {
-        
-        Text("Add Tutor")
         
         VStack {
             HStack {
@@ -53,8 +53,11 @@ struct AddTutor: View {
              }
             
             Button(action: {
-                tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
-    
+                if updateTutorFlag {
+                    tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                } else {
+                    tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                }
             }){
                 Text("Add Tutor")
             }

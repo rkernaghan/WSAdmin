@@ -44,11 +44,29 @@ class Service: Identifiable {
 //        serviceEndDate = dateFormatter.string(from: Date())
     }
     
+    func updateService(timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+  
+//    func updateService(timesheetName: String, invoiceName: String, serviceType: String, billingType: String) {
+      
+        
+        self.serviceTimesheetName = timesheetName
+        self.serviceInvoiceName = invoiceName
+        self.serviceType = serviceType
+        self.serviceBillingType = billingType
+        
+        self.serviceCost1 = cost1
+        self.serviceCost2 = cost2
+        self.serviceCost3 = cost3
+        
+        self.servicePrice1 = price1
+        self.servicePrice2 = price2
+        self.servicePrice3 = price3
+    }
+    
     func markUnDeleted() {
         serviceStatus = "New"
 //        serviceEndDate = " "
     }
-    
     
 }
 

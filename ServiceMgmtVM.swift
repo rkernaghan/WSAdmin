@@ -65,6 +65,35 @@ import Foundation
         }
     }
     
+    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+
+        let cost1Float = Float(cost1) ?? 0
+        let cost2Float = Float(cost2) ?? 0
+        let cost3Float = Float(cost3) ?? 0
+        let price1Float = Float(price1) ?? 0
+        let price2Float = Float(price2) ?? 0
+        let price3Float = Float(price3) ?? 0
+        
+       referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+        
+        referenceData.services.saveServiceData()
+        
+        if serviceType == "Base" {
+            if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
+                var tutorNum = 0
+                while tutorNum < referenceData.tutors.tutorsList.count {
+                    if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+                        let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
+                        if serviceFound {
+                            referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+                        }
+                    }
+                    tutorNum += 1
+                }
+            }
+        }
+    }
+
     func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) {
         print("deleting Service")
         

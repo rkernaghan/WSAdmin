@@ -161,7 +161,7 @@ enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
     }
 }
 
-enum BillingTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
+enum BillingTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
     case Fixed
     case Variable
     
@@ -177,7 +177,6 @@ enum BillingTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
         }
     }
 }
-
 
 enum StudentTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
     case Minor

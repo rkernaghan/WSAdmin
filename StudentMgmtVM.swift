@@ -50,6 +50,18 @@ import Foundation
         }
     }
     
+    func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String) -> (Bool, String) {
+        var returnResult: Bool = true
+        var returnMessage: String = " "
+        
+        let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+        if studentFoundFlag {
+            returnResult = false
+            returnMessage = "Student Name Already Exists"
+        }
+        return(returnResult, returnMessage)
+    }
+    
     func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
         var deleteResult = true
         print("deleting Student")

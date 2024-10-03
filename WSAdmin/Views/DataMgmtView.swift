@@ -87,7 +87,7 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    AddTutor(referenceData: referenceData, tutorName: " ", maxStudents: " ", contactPhone: " ", contactEmail: " ")
+                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: " ", contactEmail: " ", contactPhone: " ", maxStudents: " ")
                 } label: {
                     Label("Add Tutor", systemImage: "person")
                 }
@@ -99,13 +99,13 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    ServiceView(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
+                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: "0.0", cost2: "0.0", cost3: "0.0", price1: "0.0", price2: "0.0", price3: "0.0" )
                 } label: {
                     Label("Add Service", systemImage: "list.bullet")
                 }
                 
                 NavigationLink {
-                    LocationView(referenceData: referenceData, locationName: " ")
+                    LocationView(updateLocationFlag: false, locationNum: 0, referenceData: referenceData, locationName: " ")
                 } label: {
                     Label("Add Location", systemImage: "building")
                 }
@@ -132,16 +132,16 @@ struct TutorsView: View {
     @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
     @State private var showAlert: Bool = false
     @State private var viewChange: Bool = false
-    
     @State private var assignStudent:Bool = false
     @State private var unassignStudent: Bool = false
-    @State private var listStudents:Bool = false
-    @State private var listServices = false
-    @State private var addService = false
-    @State private var editService = false
-    @State private var removeService = false
+    @State private var listTutorStudents: Bool = false
+    @State private var listTutorServices: Bool = false
+    @State private var addService: Bool = false
+    @State private var editService: Bool = false
+    @State private var removeService: Bool = false
+    @State private var editTutor: Bool = false
     
-    @State private var tutorNumber = 0
+    @State private var tutorNumber: Int = 0
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -184,15 +184,6 @@ struct TutorsView: View {
                         }
                     } else if items.count == 1 {
                         VStack {
- //                          NavigationLink(destination: TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)) {
- //                              Text("List Students")
- //                              Image(systemName: "square.and.pencil")
- //                          }
-
-//                          NavigationLink(destination: StudentSelectionView(referenceData: referenceData, tutorIndex: items)) {
-//                              Text("Assign Student")
-//                              Image(systemName: "square.and.pencil")
-//                          }
                             
                             Button("Assign Student to Tutor") {
                                 for objectID in items {
@@ -211,7 +202,7 @@ struct TutorsView: View {
                                for objectID in items {
                                     if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                                         tutorNumber = idx
-                                        listStudents.toggle()
+                                        listTutorStudents.toggle()
                                     }
                                 }
  //                               listStudents.toggle()
@@ -221,7 +212,7 @@ struct TutorsView: View {
                                 for objectID in items {
                                     if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                                         tutorNumber = idx
-                                        listServices.toggle()
+                                        listTutorServices.toggle()
                                     }
                                 }
                             }
@@ -237,25 +228,15 @@ struct TutorsView: View {
                             Button("Remove Service from Tutor") {
                                 removeService.toggle()
                             }
-                            
-//                          Button {
-//                              tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
-//                          } label: {
-//                              Label("List Tutor Students", systemImage: "square.and.arrow.up")
-//                          }
 
-//                          Button {
-//                              TutorStudentsList(referenceData: referenceData, tutorIndex: items)
-//                          } label: {
-//                              Label("List Tutor Costs", systemImage: "square.and.arrow.up")
-//                          }
-
-
-//                          Button {
-//                              tutorMgmtVM.printTutor(indexes: items, referenceData: referenceData)
-//                          } label: {
-//                              Label("Print Tutor", systemImage: "square.and.arrow.up")
-//                          }
+                            Button("Edit Tutor") {
+                                for objectID in items {
+                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                                        tutorNumber = idx
+                                        editTutor.toggle()
+                                    }
+                                }
+                            }
                             
                             Button(role: .destructive) {
                                 let result: Bool = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
@@ -279,7 +260,6 @@ struct TutorsView: View {
                             } label: {
                                 Label("Undelete Tutor", systemImage: "trash")
                             }
-                            
                         }
                         
                     } else {
@@ -302,11 +282,14 @@ struct TutorsView: View {
             .navigationDestination(isPresented: $assignStudent) {
                 StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
-            .navigationDestination(isPresented: $listStudents) {
+            .navigationDestination(isPresented: $listTutorStudents) {
                 TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
-            .navigationDestination(isPresented: $listServices) {
+            .navigationDestination(isPresented: $listTutorServices) {
                 TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
+            }
+            .navigationDestination(isPresented: $editTutor) {
+                TutorView(updateTutorFlag: true, tutorNum: tutorNumber, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, contactEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, contactPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: String(referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents) )
             }
         }
     }
@@ -459,7 +442,6 @@ struct StudentsView: View {
                                 for objectID in items {
                                     if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
                                         studentNumber = idx
-//                                        student = referenceData.students.studentsList[studentNumber]
                                         editStudent.toggle()
                                     }
                                 }
@@ -591,14 +573,6 @@ struct ServicesView: View {
     var body: some View {
         if referenceData.services.isServiceDataLoaded {
             let serviceArray = referenceData.services.servicesList
-//
-// edit service - subview( service edit)
-// assign service - subview( tutors not assigned)
-// unassign service - subview( tutors assigned)
-// delete service - serviceMgmtVM
-// undelete service - serviceMgMtVM
-//
-//
 
             Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
  //               Group {
@@ -700,6 +674,9 @@ struct ServicesView: View {
             .navigationDestination(isPresented: $assignService) {
                 TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
             }
+            .navigationDestination(isPresented: $editService) {
+                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  ServiceTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceType) ?? .Base, billingType: BillingTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceBillingType) ?? .Fixed, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1.formatted(.number.precision(.fractionLength(2))), cost2: referenceData.services.servicesList[serviceNumber].serviceCost2.formatted(.number.precision(.fractionLength(2))), cost3: referenceData.services.servicesList[serviceNumber].serviceCost3.formatted(.number.precision(.fractionLength(2))), price1: referenceData.services.servicesList[serviceNumber].servicePrice1.formatted(.number.precision(.fractionLength(2))), price2: referenceData.services.servicesList[serviceNumber].servicePrice2.formatted(.number.precision(.fractionLength(2))), price3: referenceData.services.servicesList[serviceNumber].servicePrice3.formatted(.number.precision(.fractionLength(2))))
+            }
         }
     }
 }
@@ -758,38 +735,25 @@ struct LocationsView: View {
     @State private var selectedLocations = Set<Location.ID>()
     @State private var sortOrder = [KeyPathComparator(\Location.locationName)]
     @State private var listStudents: Bool = false
-        
+    @State private var editLocation: Bool = false
+    @State private var locationNumber: Int = 0
+    
     var body: some View {
         if referenceData.locations.isLocationDataLoaded {
             let locationArray = referenceData.locations.locationsList
-//            Table( locationArray, selected: $selectedLocations, sortOrder: SortOrder) {
-//                TableColumn("Location", value: \.locationName)
-//                TableColumn("Month Revenue", value: \.locationMonthRevenue)
-//                TableColumn("Totsl Revenue", value: \.locationTotalRevenue)
- //           } rows: {
- //               ForEach(referenceData.locations.locationsList) { city in
- //                   TableRow(city)
-//                        .contextMenu {
- //                           Button("Delete Location") {
- //                               locationMgmtVM.deleteLocation(city: city, referenceData: referenceData)
- //                           }
- //                       }
- //               }
- //           }
-  
+
             Table(referenceData.locations.locationsList, selection: $selectedLocations, sortOrder: $sortOrder) {
                 TableColumn("Location Name", value: \.locationName)
                 TableColumn("Student Count", value: \.locationStudentCount) {data in
-                   Text(String(data.locationStudentCount))
+                    Text(String(data.locationStudentCount))
                 }
                 TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
                     Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
                 }
                 TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
-                       Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
+                    Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
                 }
                 TableColumn("Location Status", value: \.locationStatus)
-                
             }
             .contextMenu(forSelectionType: Location.ID.self) { items in
                 if items.isEmpty {
@@ -801,7 +765,12 @@ struct LocationsView: View {
                 } else if items.count == 1 {
                     VStack {
                         Button {
-                            listStudents.toggle()
+                            for objectID in items {
+                                if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
+                                    locationNumber = idx
+                                    editLocation.toggle()
+                                }
+                            }
                         } label: {
                             Label("Edit Location", systemImage: "square.and.arrow.up")
                         }
@@ -818,27 +787,28 @@ struct LocationsView: View {
                             Label("Undelete Location", systemImage: "trash")
                         }
                     }
-                    .navigationDestination(isPresented: $listStudents) {
-//                        TutorStudentsView(tutorNum: 0, referenceData: referenceData)
-//                           tutorMgmtVM.listTutorStudents(indexes: items, referenceData: referenceData)
-                    }
                     
                 } else {
-                    Button {
-                        
-                    } label: {
-                        Label("Edit Locations", systemImage: "heart")
-                    }
-                    Button(role: .destructive) {
-                        
-                    } label: {
-                        Label("Delete Selected Locations", systemImage: "trash")
+                    VStack {
+                        Button {
+                            
+                        } label: {
+                            Label("Edit Locations", systemImage: "heart")
+                        }
+                        Button(role: .destructive) {
+                            
+                        } label: {
+                            Label("Delete Selected Locations", systemImage: "trash")
+                        }
                     }
                 }
-    
+                
             } primaryAction: { items in
-  //              store.favourite(items)
-              }
+                //              store.favourite(items)
+            }
+            .navigationDestination(isPresented: $editLocation) {
+                LocationView(updateLocationFlag: true, locationNum: locationNumber, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName)
+            }
         }
     }
 }

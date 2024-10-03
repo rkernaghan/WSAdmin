@@ -25,6 +25,10 @@ class Location: Identifiable {
         self.locationStatus = locationStatus
     }
     
+    func updateLocation(locationName: String) {
+        self.locationName = locationName
+    }
+    
     func markDeleted() {
         locationStatus = "Deleted"
         let dateFormatter = DateFormatter()

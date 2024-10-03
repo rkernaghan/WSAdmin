@@ -40,6 +40,14 @@ import GoogleAPIClientForREST
 //            }
 //        }
     }
+    
+    func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: String) {
+        
+        let maxStudentsInt: Int = Int(maxStudents) ?? 0
+        referenceData.tutors.tutorsList[tutorNum].updateTutor(contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudentsInt)
+        referenceData.tutors.saveTutorData()
+
+    }
             
     func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
         var deleteResult = true
@@ -126,7 +134,7 @@ import GoogleAPIClientForREST
         let price2Float = Float(price2) ?? 0
         let price3Float = Float(price3) ?? 0
         
-        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
         
     }
     

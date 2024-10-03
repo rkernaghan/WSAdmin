@@ -22,6 +22,13 @@ import Foundation
         referenceData.dataCounts.saveDataCounts()
     }
     
+    func updateLocation(locationNum: Int, referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) {
+        
+        referenceData.locations.locationsList[locationNum].updateLocation(locationName: locationName)
+        referenceData.locations.saveLocationData()
+        
+    }
+    
     func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
 //    func deleteLocation(city: Location, referenceData: ReferenceData) {
         print("deleting Location")

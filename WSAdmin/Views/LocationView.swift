@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 struct LocationView: View {
+    var updateLocationFlag: Bool
+    var locationNum: Int
     var referenceData: ReferenceData
     
     @State var locationName: String
@@ -19,8 +21,6 @@ struct LocationView: View {
     
     var body: some View {
         
-        Text("Add Location")
-        
         VStack {
             HStack {
                 Text("Location Name")
@@ -30,7 +30,12 @@ struct LocationView: View {
              }
             
             Button(action: {
-                locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                if updateLocationFlag {
+                    locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                }
+                else {
+                    locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                }
             }){
                 Text("Add Location")
             }

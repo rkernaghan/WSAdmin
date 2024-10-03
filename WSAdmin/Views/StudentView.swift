@@ -26,8 +26,6 @@ struct StudentView: View {
     
     var body: some View {
         
-        Text("Add Student")
-        
         VStack {
             HStack {
                 Text("Student Name")
@@ -78,15 +76,20 @@ struct StudentView: View {
 //                        .pickerStyle(.wheel)
             }
             
-
             Button(action: {
+                let studentName = studentName.trimmingCharacters(in: .whitespaces)
+                let guardianName = guardianName.trimmingCharacters(in: .whitespaces)
+                let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
+                let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
+                
                 if updateStudentFlag {
                     studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
                 } else {
+                    let (validateResult, message) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone)
                     studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
                 }
             }){
-                Text("Add Student")
+                Text("Add/Edit Student")
             }
             .padding()
 //            .background(Color.orange)

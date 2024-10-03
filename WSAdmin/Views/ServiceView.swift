@@ -9,12 +9,14 @@ import Foundation
 import SwiftUI
 
 struct ServiceView: View {
+    var updateServiceFlag: Bool
+    var serviceNum: Int
     var referenceData: ReferenceData
-    
+    var serviceKey: String
     @State var timesheetName: String
     @State var invoiceName: String
-    @State var serviceType: ServiceTypeOption = .Base
-    @State var billingType: BillingTypeOption = .Fixed
+    @State var serviceType: ServiceTypeOption
+    @State var billingType: BillingTypeOption
     @State var cost1: String
     @State var cost2: String
     @State var cost3: String
@@ -27,9 +29,7 @@ struct ServiceView: View {
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
     var body: some View {
-        
-        Text("Add Service")
-        
+                
         VStack {
             HStack {
                 Text("Timesheet Name")
@@ -105,9 +105,13 @@ struct ServiceView: View {
              }
 
             Button(action: {
-                serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                if updateServiceFlag {
+                    serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                } else {
+                    serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                }
             }){
-                Text("Add Service")
+                Text("Add/Update Service")
             }
             .padding()
 //            .background(Color.orange)
