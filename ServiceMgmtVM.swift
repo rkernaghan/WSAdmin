@@ -65,6 +65,32 @@ import Foundation
         }
     }
     
+    func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String,cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+        var validationResult: Bool = true
+        var validationMessage: String = " "
+        
+        let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
+        if serviceFoundFlag {
+            validationResult = false
+            validationMessage = "Error: Service \(timesheetName) Already Exists "
+        }
+        
+        return(validationResult, validationMessage)
+    }
+
+    func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String,cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+        var validationResult: Bool = true
+        var validationMessage: String = " "
+        
+        let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
+        if !serviceFoundFlag {
+            validationResult = false
+            validationMessage = "Error: Service \(timesheetName) Does Not Exist "
+        }
+        
+        return(validationResult, validationMessage)
+    }
+    
     func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 
 //        let cost1Float = Float(cost1) ?? 0

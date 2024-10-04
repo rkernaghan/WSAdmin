@@ -14,6 +14,7 @@ struct LocationView: View {
     var referenceData: ReferenceData
     
     @State var locationName: String
+    @State private var showAlert: Bool = false
  
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
@@ -34,10 +35,20 @@ struct LocationView: View {
                     locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
                 }
                 else {
-                    locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                    let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
+                    if locationValidationResult {
+                        locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
+                    
                 }
             }){
                 Text("Add Location")
+            }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
             }
             .padding()
 //            .background(Color.orange)

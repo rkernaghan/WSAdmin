@@ -29,6 +29,19 @@ import Foundation
         
     }
     
+    func validateNewLocation(referenceData: ReferenceData, locationName: String) -> (Bool, String) {
+        var validationResult: Bool = true
+        var validationMessage: String = " "
+        
+        let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: locationName)
+        if locationFoundFlag {
+            validationResult = false
+            validationMessage += "Error: Location \(locationName) already exists"
+        }
+        
+        return(validationResult, validationMessage)
+    }
+    
     func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
 //    func deleteLocation(city: Location, referenceData: ReferenceData) {
         print("deleting Location")

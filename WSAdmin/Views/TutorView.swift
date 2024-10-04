@@ -17,6 +17,8 @@ struct TutorView: View {
     @State var contactPhone: String
     @State var maxStudents: Int
     
+    @State private var showAlert = false
+    
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -54,18 +56,40 @@ struct TutorView: View {
              }
             
             Button(action: {
+                let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
+                let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
+                let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
+                
                 if updateTutorFlag {
-                    tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                    let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
+                    if tutorValidationResult {
+                        tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
+                    
                 } else {
-                    tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                    let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
+                    if tutorValidationResult {
+                        tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
                 }
+                
             }){
                 Text("Add Tutor")
             }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            }
             .padding()
-//            .background(Color.orange)
-//            .foregroundColor(Color.white)
+            .background(Color.orange)
+            .foregroundColor(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding()
 
             Spacer()
 

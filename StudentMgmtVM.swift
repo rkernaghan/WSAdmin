@@ -51,17 +51,69 @@ import Foundation
     }
     
     func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String) -> (Bool, String) {
-        var returnResult: Bool = true
-        var returnMessage: String = " "
+        var validationResult: Bool = true
+        var validationMessage: String = " "
         
         let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
         if studentFoundFlag {
-            returnResult = false
-            returnMessage = "Student Name Already Exists"
+            validationResult = false
+            validationMessage = "Student Name \(studentName) Already Exists"
         }
-        return(returnResult, returnMessage)
+        
+        let validEmailFlag = isValidEmail(contactEmail)
+        if !validEmailFlag {
+            validationResult = false
+            validationMessage += " Error: Email \(contactEmail) is Not Valid"
+        }
+        
+        let validPhoneFlag = isValidPhone(contactPhone)
+        if !validPhoneFlag {
+            validationResult = false
+            validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid"
+        }
+    
+        return(validationResult, validationMessage)
+    }
+
+    func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String) -> (Bool, String) {
+        var validationResult: Bool = true
+        var validationMessage: String = " "
+        
+        let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+        if !studentFoundFlag {
+            validationResult = false
+            validationMessage = "Student Name \(studentName) Does Not Exist"
+        }
+        
+        let validEmailFlag = isValidEmail(contactEmail)
+        if !validEmailFlag {
+            validationResult = false
+            validationMessage += " Error: Email \(contactEmail) is Not Valid"
+        }
+        
+        let validPhoneFlag = isValidPhone(contactPhone)
+        if !validPhoneFlag {
+            validationResult = false
+            validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid"
+        }
+    
+        return(validationResult, validationMessage)
     }
     
+    
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,64}$"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES[c] %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+    
+    func isValidPhone(_ phone: String)-> Bool {
+        let phoneRegex = "(\\([0-9]{3}\\) |[0-9]{3}-)[0-9]{3}-[0-9]{4}"
+        let phonePredicate = NSPredicate(format: "SELF MATCHES[c] %@", phoneRegex)
+        return phonePredicate.evaluate(with: phone)
+    }
+    
+
     func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
         var deleteResult = true
         print("deleting Student")

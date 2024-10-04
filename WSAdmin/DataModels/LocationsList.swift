@@ -18,7 +18,7 @@ import GoogleAPIClientForREST
         isLocationDataLoaded = false
     }
     
-    func findServiceByKey(locationKey: String) -> (Bool, Int) {
+    func findLocationByKey(locationKey: String) -> (Bool, Int) {
         var found = false
         
         var locationNum = 0
@@ -31,9 +31,24 @@ import GoogleAPIClientForREST
         }
         return(found, locationNum)
     }
+
+    func findLocationByName(locationName: String) -> (Bool, Int) {
+        var found = false
+        
+        var locationNum = 0
+        while locationNum < locationsList.count && !found {
+            if locationsList[locationNum].locationName == locationName {
+                found = true
+            } else {
+                locationNum += 1
+            }
+        }
+        return(found, locationNum)
+    }
     
     func loadLocation(newLocation: Location) {
-     
+        self.locationsList.append(newLocation)
+
     }
     
     func printAll() {

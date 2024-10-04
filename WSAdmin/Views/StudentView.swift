@@ -20,6 +20,8 @@ struct StudentView: View {
     @State var location: String
     @State var studentType: String
     
+    @State private var showAlert: Bool = false
+    
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -83,13 +85,27 @@ struct StudentView: View {
                 let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
                 
                 if updateStudentFlag {
-                    studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                    let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone)
+                    if studentValidationResult {
+                        studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
                 } else {
-                    let (validateResult, message) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone)
-                    studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                    let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone)
+                    if studentValidationResult {
+                        studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, location: location)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
                 }
             }){
                 Text("Add/Edit Student")
+            }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
             }
             .padding()
 //            .background(Color.orange)

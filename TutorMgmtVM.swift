@@ -48,7 +48,69 @@ import GoogleAPIClientForREST
         referenceData.tutors.saveTutorData()
 
     }
-            
+    
+    func validateNewTutor(tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData)->(Bool, String) {
+        var validationResult = true
+        var validationMessage = " "
+        
+        let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+        if tutorFoundFlag {
+            validationResult = false
+            validationMessage += "Error: Tutor Name \(tutorName) Already Exists"
+        }
+        
+        let validEmailFlag = isValidEmail(tutorEmail)
+        if !validEmailFlag {
+            validationResult = false
+            validationMessage += " Error: Tutor Email \(tutorEmail) is Not Valid"
+        }
+        
+        let validPhoneFlag = isValidPhone(tutorPhone)
+        if !validPhoneFlag {
+            validationResult = false
+            validationMessage += "Error: Phone Number \(tutorPhone) Is Not Valid"
+        }
+        
+        return(validationResult, validationMessage)
+    }
+
+    func validateUpdatedTutor(tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData) -> (Bool, String) {
+        var validationResult = true
+        var validationMessage = " "
+        
+        let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+        if !tutorFoundFlag {
+            validationResult = false
+            validationMessage += "Error: Tutor \(tutorName) does not exist"
+        }
+        
+        let validEmailFlag = isValidEmail(tutorEmail)
+        if !validEmailFlag {
+            validationResult = false
+            validationMessage += " Error: Email \(tutorEmail) is Not Valid"
+        }
+        
+        let validPhoneFlag = isValidPhone(tutorPhone)
+        if !validPhoneFlag {
+            validationResult = false
+            validationMessage += "Error: Phone Number \(tutorPhone) Is Not Valid"
+        }
+        
+        return(validationResult, validationMessage)
+    }
+    
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,64}$"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES[c] %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+    
+    func isValidPhone(_ phone: String)-> Bool {
+        let phoneRegex = "(\\([0-9]{3}\\) |[0-9]{3}-)[0-9]{3}-[0-9]{4}"
+        let phonePredicate = NSPredicate(format: "SELF MATCHES[c] %@", phoneRegex)
+        return phonePredicate.evaluate(with: phone)
+    }
+    
     func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
         var deleteResult = true
         print("Deleting Tutor")

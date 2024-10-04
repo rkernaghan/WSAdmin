@@ -42,6 +42,20 @@ import GoogleAPIClientForREST
         return(found, tutorNum)
     }
     
+    func findTutorByName(tutorName: String) -> (Bool, Int) {
+        var found = false
+        
+        var tutorNum = 0
+        while tutorNum < tutorsList.count && !found {
+            if tutorsList[tutorNum].tutorName == tutorName {
+                found = true
+            } else {
+                tutorNum += 1
+            }
+        }
+        return(found, tutorNum)
+    }
+    
     func loadTutorData(referenceFileID: String, tutorDataFileID: String, referenceData: ReferenceData) {
         
         let sheetService = GTLRSheetsService()
