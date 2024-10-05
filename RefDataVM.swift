@@ -39,10 +39,6 @@ import GoogleAPIClientForREST
         if referenceData.dataCounts.isDataCountsLoaded {
  
         }
-        
     }
-    
-
-
     
 }

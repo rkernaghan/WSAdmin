@@ -122,7 +122,7 @@ import GoogleAPIClientForREST
                 
                 let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit)
                 self.tutorsList.append(newTutor)
-                
+                print("Loaded tutor \(newTutorName)")
                 if newTutorStatus != "Deleted" {
                     self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
                 }
@@ -130,9 +130,8 @@ import GoogleAPIClientForREST
                 tutorIndex += 1
                 rowNumber += 1
             }
- //           referenceData.tutors.printAll()
+            print("Loaded Base Tutor Data for \(tutorIndex) Tutors")
             self.isTutorDataLoaded = true
-
         }
     }
     

@@ -30,14 +30,14 @@ struct TutorView: View {
             HStack {
                 Text("Tutor Name")
                 TextField("Tutor Name", text: $tutorName)
-                    .frame(width: 300)
+                    .frame(width: 200)
                     .textFieldStyle(.roundedBorder)
              }
  
             HStack {
                 Text("Max Students")
                 TextField("Max Students", value: $maxStudents, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 45)
                     .textFieldStyle(.roundedBorder)
             }
             
@@ -51,7 +51,7 @@ struct TutorView: View {
             HStack {
                 Text("Tutor Phone")
                 TextField("Contact Phone", text: $contactPhone)
-                    .frame(width: 300)
+                    .frame(width: 120)
                     .textFieldStyle(.roundedBorder)
              }
             

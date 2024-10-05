@@ -24,6 +24,8 @@ struct ServiceView: View {
     @State var price2: Float
     @State var price3: Float
     
+    @State private var showAlert:Bool = false
+    
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -34,56 +36,56 @@ struct ServiceView: View {
             HStack {
                 Text("Timesheet Name")
                 TextField("Timesheet Name", text: $timesheetName)
-                    .frame(width: 300)
+                    .frame(width: 350)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Invoice Name")
                 TextField("Invoice Name", text: $invoiceName)
-                    .frame(width: 300)
+                    .frame(width: 350)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Cost 1")
                 TextField("Cost 1", value: $cost1, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Cost 2")
                 TextField("Cost 2", value: $cost2, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Cost 3")
                 TextField("Cost 3", value: $cost3, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Price 1")
                 TextField("Price 1", value: $price1, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
             }
 
             HStack {
                 Text("Price 2")
                 TextField("Price 2", value: $price2, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
             }
             
             HStack {
                 Text("Price 3")
                 TextField("Price 3", value: $price3, format: .number)
-                    .frame(width: 300)
+                    .frame(width: 80)
                     .textFieldStyle(.roundedBorder)
              }
             
@@ -93,8 +95,10 @@ struct ServiceView: View {
                                 Text(String(describing: option))
                             }
                         }
-//                        .pickerStyle(.wheel)
             }
+            .frame(width:200)
+            .clipped()
+
             
             HStack {
                 Picker("Billing Type", selection: $billingType) {
@@ -102,17 +106,33 @@ struct ServiceView: View {
                                 Text(String(describing: option))
                             }
                         }
-//                        .pickerStyle(.wheel)
             }
+            .frame(width:200)
+            .clipped()
 
             Button(action: {
                 if updateServiceFlag {
-                    serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    if validationResult {
+                        serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
                 } else {
-                    serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    let (validationResult, validationMessage) = serviceMgmtVM.validateNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    if validationResult {
+                        serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: String(describing: serviceType), billingType: String(describing: billingType), cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                    } else {
+                        buttonErrorMsg = validationMessage
+                        showAlert = true
+                    }
                 }
             }){
                 Text("Add/Update Service")
+            }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
             }
             .padding()
 //            .background(Color.orange)

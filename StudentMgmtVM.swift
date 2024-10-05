@@ -60,6 +60,18 @@ import Foundation
             validationMessage = "Student Name \(studentName) Already Exists"
         }
         
+        var commaFlag = studentName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Student Name: \(studentName) Contains a Comma "
+        }
+        
+        commaFlag = guardianName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma "
+        }
+        
         let validEmailFlag = isValidEmail(contactEmail)
         if !validEmailFlag {
             validationResult = false
@@ -83,6 +95,18 @@ import Foundation
         if !studentFoundFlag {
             validationResult = false
             validationMessage = "Student Name \(studentName) Does Not Exist"
+        }
+        
+        var commaFlag = studentName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Student Name: \(studentName) Contains a Comma "
+        }
+        
+        commaFlag = guardianName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma "
         }
         
         let validEmailFlag = isValidEmail(contactEmail)

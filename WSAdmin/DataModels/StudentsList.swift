@@ -105,10 +105,10 @@ import GoogleAPIClientForREST
                 let newGuardianName = stringRows[rowNumber][PgmConstants.studentGuardianPosition]
                 let newStudentPhone = stringRows[rowNumber][PgmConstants.studentPhonePosition]
                 let newStudentEmail = stringRows[rowNumber][PgmConstants.studentEmailPosition]
-                let newStudentType = stringRows[rowNumber][PgmConstants.studentTypePosition]
+                let newStudentType = String(describing: stringRows[rowNumber][PgmConstants.studentTypePosition])
                 let newStudentStartDateString = stringRows[rowNumber][PgmConstants.studentStartDatePosition]
   //              let newStudentStartDate = dateFormatter.string(from: newStudentStartDateString)
-                let newStudentStartDate = "2024-01-01"
+  //              let newStudentStartDate = dateFormatter.string(from: Date())
                 let newStudentEndDateString = stringRows[rowNumber][PgmConstants.studentEndDatePosition]
   //              let newStudentEndDate = dateFormatter.date(from: newStudentEndDateString)
                 let newStudentStatus = stringRows[rowNumber][PgmConstants.studentStatusPosition]
@@ -191,7 +191,7 @@ import GoogleAPIClientForREST
             studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.precision(.fractionLength(2))))
             studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.precision(.fractionLength(2))))
 
-            updateValues.insert([studentKey, studentName, studentGuardian, studentEmail, studentPhone, studentType, studentStartDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
+            updateValues.insert([studentKey, studentName, studentGuardian, studentPhone, studentEmail, studentType, studentStartDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
             studentNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet

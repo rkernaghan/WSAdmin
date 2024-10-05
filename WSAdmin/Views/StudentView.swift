@@ -18,7 +18,7 @@ struct StudentView: View {
     @State var contactPhone: String
     @State var contactEmail: String
     @State var location: String
-    @State var studentType: String
+    @State var studentType: StudentTypeOption
     
     @State private var showAlert: Bool = false
     
@@ -32,52 +32,51 @@ struct StudentView: View {
             HStack {
                 Text("Student Name")
                 TextField("Stuudent Name", text: $studentName)
-                    .frame(width: 300)
+                    .frame(width: 150)
                     .textFieldStyle(.roundedBorder)
              }
             
             HStack {
                 Text("Guardian Name")
                 TextField("Guardian Name", text: $guardianName)
-                    .frame(width: 300)
+                    .frame(width: 150)
                     .textFieldStyle(.roundedBorder)
              }
             
             HStack {
                 Text("Contact Email")
                 TextField("Contact EMail", text: $contactEmail)
-                    .frame(width: 300)
+                    .frame(width: 200)
                     .textFieldStyle(.roundedBorder)
              }
             
             HStack {
                 Text("Contact Phone")
                 TextField("Contact Phone", text: $contactPhone)
-                    .frame(width: 300)
+                    .frame(width: 125)
                     .textFieldStyle(.roundedBorder)
              }
             
             HStack {
-//                Text("Location")
-//                TextField("Location", text: $location)
-//                    .frame(width: 300)
-//                    .textFieldStyle(.roundedBorder)
                 Picker("Location", selection: $location) {
                     ForEach(referenceData.locations.locationsList) { option in
-                        Text(String(option.locationName))
+                        Text(String(option.locationName)).tag(option.locationName)
                             }
                         }
+                .frame(width: 200)
+                .clipped()
              }
-            
+
             HStack {
                 Picker("Student Type", selection: $studentType) {
                             ForEach(StudentTypeOption.allCases) { option in
                                 Text(String(describing: option))
                             }
                         }
-//                        .pickerStyle(.wheel)
+                .frame(width: 200)
+                .clipped()
             }
-            
+
             Button(action: {
                 let studentName = studentName.trimmingCharacters(in: .whitespaces)
                 let guardianName = guardianName.trimmingCharacters(in: .whitespaces)

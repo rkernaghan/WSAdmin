@@ -26,7 +26,7 @@ struct LocationView: View {
             HStack {
                 Text("Location Name")
                 TextField("Location Name", text: $locationName)
-                    .frame(width: 300)
+                    .frame(width: 200)
                     .textFieldStyle(.roundedBorder)
              }
             

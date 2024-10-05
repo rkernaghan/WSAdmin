@@ -75,6 +75,12 @@ import Foundation
             validationMessage = "Error: Service \(timesheetName) Already Exists "
         }
         
+        let commaFlag = invoiceName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma "
+        }
+        
         return(validationResult, validationMessage)
     }
 
@@ -86,6 +92,12 @@ import Foundation
         if !serviceFoundFlag {
             validationResult = false
             validationMessage = "Error: Service \(timesheetName) Does Not Exist "
+        }
+        
+        let commaFlag = invoiceName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma "
         }
         
         return(validationResult, validationMessage)

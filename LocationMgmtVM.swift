@@ -39,9 +39,35 @@ import Foundation
             validationMessage += "Error: Location \(locationName) already exists"
         }
         
+        let commaFlag = locationName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Location Name: \(locationName) Contains a Comma "
+        }
+        
+        return(validationResult, validationMessage)
+    }
+
+    func validateUpdatedLocation(referenceData: ReferenceData, locationName: String) -> (Bool, String) {
+        var validationResult: Bool = true
+        var validationMessage: String = " "
+        
+ //       let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: locationName)
+ //       if locationFoundFlag {
+ //           validationResult = false
+ //           validationMessage += "Error: Location \(locationName) already exists"
+ //       }
+        
+        let commaFlag = locationName.contains(",")
+        if commaFlag {
+            validationResult = false
+            validationMessage = "Error: Location Name: \(locationName) Contains a Comma "
+        }
+        
         return(validationResult, validationMessage)
     }
     
+
     func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
 //    func deleteLocation(city: Location, referenceData: ReferenceData) {
         print("deleting Location")

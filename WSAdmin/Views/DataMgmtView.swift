@@ -93,7 +93,7 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ", studentType: "Minor")
+                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ", studentType: .Minor)
                 } label: {
                     Label("Add Student", systemImage: "graduationcap")
                 }
@@ -403,15 +403,15 @@ struct StudentsView: View {
                     //                   TableColumn("Tutor Key", value: \Student.studentTutorKey)
                     TableColumn("Tutor Name",value: \Student.studentTutorName)
                     TableColumn("Location", value: \Student.studentLocation)
-                    //       }
-                    //                   TableColumn("Location", value: \.studentLocation)
-                    //                TableColumn("Sessions", value: \.studentSessions) {data in
-                    //                    Text("\(data.studentTotalSessions)")
-                    //                }
-                    //                              TableColumn("Total Cost", value: \.studentTotalCost)
-                    //                              TableColumn("Total Revenue", value: \.studentTotalRevenue)
-                    //                              TableColumn("Total Profit", value: \.studentTotalProfit)
-                    // }
+//                  }
+//                  TableColumn("Location", value: \.studentLocation)
+//                  TableColumn("Sessions", value: \.studentSessions) {data in
+//                  Text("\(data.studentTotalSessions)")
+//                  }
+//                  TableColumn("Total Cost", value: \.studentTotalCost)
+//                  TableColumn("Total Revenue", value: \.studentTotalRevenue)
+//                  TableColumn("Total Profit", value: \.studentTotalProfit)
+//                  }
                 }
                 .contextMenu(forSelectionType: Student.ID.self) { items in
                     if items.isEmpty {
@@ -505,7 +505,7 @@ struct StudentsView: View {
             }
             .navigationDestination(isPresented: $editStudent) {
                 StudentView(updateStudentFlag: true, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
-                    studentType: referenceData.students.studentsList[studentNumber].studentType)
+                            studentType: (StudentTypeOption(rawValue: referenceData.students.studentsList[studentNumber].studentType) ?? .Minor))
             }
         }
     }

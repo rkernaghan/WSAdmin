@@ -225,16 +225,17 @@ import GoogleAPIClientForREST
     
     func loadTutorStudents(tutorNum: Int, tutorDataFileID: String, studentCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
         
-        print("Loading \(studentCount) Students")
+        print("Loading \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
         let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
             
         let range = tutorName + PgmConstants.tutorStudentsRange + String(studentCount + PgmConstants.tutorDataStudentsStartingRowNumber)
-            print("Tutor details counts range is '\(range)")
+//            print("Tutor Students Load range is '\(range)")
             let query = GTLRSheetsQuery_SpreadsheetsValuesGet
                 .query(withSpreadsheetId: tutorDataFileID, range:range)
             // Load data counts from ReferenceData spreadsheet
             sheetService.executeQuery(query) { (ticket, result, error) in
                 if let error = error {
+                    print("Error loading Tutor Students Data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
                     print(error)
                     print("Failed to read data:\(error.localizedDescription)")
                     return
@@ -271,6 +272,7 @@ import GoogleAPIClientForREST
                     rowNum += 1
                     studentNum += 1
                 }
+                print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
             }
         }
     
@@ -339,16 +341,17 @@ import GoogleAPIClientForREST
     
     func loadTutorServices(tutorNum: Int, tutorDataFileID: String, serviceCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService ) {
        
-        print("Loading \(serviceCount) Services")
+        print("Loading \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
         let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
             
         let range = tutorName + PgmConstants.tutorServicesRange + String(serviceCount + PgmConstants.tutorDataServicesStartingRowNumber)
-            print("Tutor details counts range is '\(range)")
+ //           print("Tutor Services Load range is '\(range)")
             let query = GTLRSheetsQuery_SpreadsheetsValuesGet
                 .query(withSpreadsheetId: tutorDataFileID, range:range)
             // Load data counts from ReferenceData spreadsheet
             sheetService.executeQuery(query) { (ticket, result, error) in
                 if let error = error {
+                    print("Error loading Tutor Services Data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
                     print(error)
                     print("Failed to read data:\(error.localizedDescription)")
                     return
@@ -390,6 +393,7 @@ import GoogleAPIClientForREST
                     rowNum += 1
                     serviceNum += 1
                 }
+                print("Loaded \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
             }
     }
     

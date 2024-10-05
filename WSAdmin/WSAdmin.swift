@@ -178,7 +178,7 @@ enum BillingTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
     }
 }
 
-enum StudentTypeOption: CaseIterable, Identifiable, CustomStringConvertible {
+enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
     case Minor
     case Adult
     
