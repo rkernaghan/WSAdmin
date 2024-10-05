@@ -15,7 +15,7 @@ struct TutorServiceView: View {
     
     var timesheetName: String
     var invoiceName: String
-    var billingType: String
+    var billingType: BillingTypeOption
     @State var cost1: Float
     @State var cost2: Float
     @State var cost3: Float
@@ -46,7 +46,8 @@ struct TutorServiceView: View {
            
             HStack {
                 Text("Billing Type")
-                Text(billingType)
+                Text(billingType.rawValue)
+ //               Text(billingType)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
             }

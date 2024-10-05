@@ -22,7 +22,7 @@ struct TutorView: View {
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
-    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         
@@ -64,6 +64,7 @@ struct TutorView: View {
                     let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
                     if tutorValidationResult {
                         tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                        dismiss()
                     } else {
                         buttonErrorMsg = validationMessage
                         showAlert = true
@@ -73,6 +74,7 @@ struct TutorView: View {
                     let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
                     if tutorValidationResult {
                         tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                        dismiss()
                     } else {
                         buttonErrorMsg = validationMessage
                         showAlert = true

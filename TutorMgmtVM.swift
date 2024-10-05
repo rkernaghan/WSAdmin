@@ -188,7 +188,7 @@ import GoogleAPIClientForREST
         }
     }
     
-    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 //        let cost1Float = Float(cost1) ?? 0
 //        let cost2Float = Float(cost2) ?? 0
 //        let cost3Float = Float(cost3) ?? 0

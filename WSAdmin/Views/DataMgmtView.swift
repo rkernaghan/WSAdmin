@@ -394,7 +394,9 @@ struct StudentsView: View {
                     TableColumn("Guardian", value: \Student.studentGuardian)
                     TableColumn("Phone", value: \Student.studentPhone)
                     TableColumn("EMail", value: \Student.studentEmail)
-                    TableColumn("Student Type", value: \Student.studentType)
+                    TableColumn("Student Type") {data in
+                        Text(data.studentType.rawValue)
+                    }
                     //             }
                     //           Group {
                     TableColumn("Start Date", value: \Student.studentStartDate)
@@ -505,7 +507,7 @@ struct StudentsView: View {
             }
             .navigationDestination(isPresented: $editStudent) {
                 StudentView(updateStudentFlag: true, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
-                            studentType: (StudentTypeOption(rawValue: referenceData.students.studentsList[studentNumber].studentType) ?? .Minor))
+                            studentType: referenceData.students.studentsList[studentNumber].studentType )
             }
         }
     }
@@ -578,11 +580,15 @@ struct ServicesView: View {
  //               Group {
                     TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
                     TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
-                    TableColumn("Service Type", value: \Service.serviceType) 
-                    TableColumn("Billing Type", value: \Service.serviceBillingType)
+                    TableColumn("Service Type") {data in
+                        Text(data.serviceType.rawValue)
+                    }
+                    TableColumn("Billing Type") {data in
+                        Text(data.serviceBillingType.rawValue)
+                    }
                     TableColumn("Service Status", value: \Service.serviceStatus)
                     
-                    TableColumn("Cost 1", value: \Service.serviceCost1) { data in
+                    TableColumn("Cost 1") { data in
                         Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
                     }
  //               }
@@ -675,7 +681,7 @@ struct ServicesView: View {
                 TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
             }
             .navigationDestination(isPresented: $editService) {
-                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  ServiceTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceType) ?? .Base, billingType: BillingTypeOption(rawValue: referenceData.services.servicesList[serviceNumber].serviceBillingType) ?? .Fixed, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
             }
         }
     }

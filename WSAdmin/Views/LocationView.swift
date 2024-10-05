@@ -19,6 +19,7 @@ struct LocationView: View {
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         
@@ -38,6 +39,7 @@ struct LocationView: View {
                     let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
                     if locationValidationResult {
                         locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                        dismiss()
                     } else {
                         buttonErrorMsg = validationMessage
                         showAlert = true

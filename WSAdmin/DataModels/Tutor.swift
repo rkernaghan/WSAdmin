@@ -112,7 +112,7 @@ import GoogleAPIClientForREST
         saveTutorDataCounts()
     }
     
-    func updateTutorService(tutorServiceNum: Int, timesheetName: String, invoiceName: String, billingType:String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateTutorService(tutorServiceNum: Int, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
         tutorServices[tutorServiceNum].timesheetServiceName = timesheetName
         tutorServices[tutorServiceNum].invoiceServiceName = invoiceName
         tutorServices[tutorServiceNum].billingType = billingType
@@ -379,7 +379,7 @@ import GoogleAPIClientForREST
                     let serviceKey = stringRows[rowNum][PgmConstants.tutorDataServiceKeyPosition]
                     let timesheetName = stringRows[rowNum][PgmConstants.tutorDataServiceTimesheetNamePosition]
                     let invoiceName = stringRows[rowNum][PgmConstants.tutorDataServiceInvoiceNamePosition]
-                    let billingType = stringRows[rowNum][PgmConstants.tutorDataServiceBillingTypePosition]
+                    let billingType: BillingTypeOption = BillingTypeOption(rawValue: stringRows[rowNum][PgmConstants.tutorDataServiceBillingTypePosition]) ?? .Fixed
                     let cost1 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost1Position]) ?? 0.0
                     let cost2 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost2Position]) ?? 0.0
                     let cost3 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost3Position]) ?? 0.0
@@ -437,7 +437,7 @@ import GoogleAPIClientForREST
             serviceKey = tutorServices[tutorServiceNum].serviceKey
             timesheetName = tutorServices[tutorServiceNum].timesheetServiceName
             invoiceName = tutorServices[tutorServiceNum].invoiceServiceName
-            billingType = tutorServices[tutorServiceNum].billingType
+            billingType = String(describing: tutorServices[tutorServiceNum].billingType)
             cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
             cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
             cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))

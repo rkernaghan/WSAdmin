@@ -13,7 +13,7 @@ import Foundation
     var studentGuardian: String
     var studentPhone: String
     var studentEmail: String
-    var studentType: String
+    var studentType: StudentTypeOption
     var studentStartDate: String
     var studentEndDate: String
     var studentStatus: String
@@ -26,7 +26,7 @@ import Foundation
     var studentTotalProfit: Float
     let id = UUID()
     
-    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: String, studentStartDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
+    init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: StudentTypeOption, studentStartDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
         self.studentKey = studentKey
         self.studentName = studentName
         self.studentGuardian = studentGuardian

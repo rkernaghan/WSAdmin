@@ -9,13 +9,13 @@ import Foundation
 
 @Observable class StudentMgmtVM  {
     
-    func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, location: String) {
+    func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
         
         let newStudentKey = PgmConstants.studentKeyPrefix + String(referenceData.dataCounts.highestStudentKey)
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let startDate = dateFormatter.string(from: Date())
-        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: " ", studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
         referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
         
         referenceData.students.saveStudentData()
@@ -23,7 +23,7 @@ import Foundation
         referenceData.dataCounts.saveDataCounts()
     }
     
-    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, location: String) {
+    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
         
         let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
         
@@ -32,6 +32,7 @@ import Foundation
         referenceData.students.studentsList[studentNum].studentEmail = contactEmail
         referenceData.students.studentsList[studentNum].studentPhone = contactPhone
         referenceData.students.studentsList[studentNum].studentLocation = location
+        referenceData.students.studentsList[studentNum].studentType = studentType
         
         referenceData.students.saveStudentData()
         
@@ -50,7 +51,7 @@ import Foundation
         }
     }
     
-    func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String) -> (Bool, String) {
+    func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
         var validationResult: Bool = true
         var validationMessage: String = " "
         
@@ -84,10 +85,15 @@ import Foundation
             validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid"
         }
     
+        if locationName == " " || locationName == "" {
+            validationResult = false
+            validationMessage += "Error: No Location selected"
+        }
+        
         return(validationResult, validationMessage)
     }
 
-    func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String) -> (Bool, String) {
+    func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
         var validationResult: Bool = true
         var validationMessage: String = " "
         

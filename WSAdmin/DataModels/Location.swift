@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Location: Identifiable {
+@Observable class Location: Identifiable {
     var locationKey: String
     var locationName: String
     var locationMonthRevenue: Float

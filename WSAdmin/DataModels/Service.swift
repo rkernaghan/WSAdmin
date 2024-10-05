@@ -7,12 +7,12 @@
 
 import Foundation
 
-class Service: Identifiable {
+@Observable class Service: Identifiable {
     var serviceKey: String
     var serviceTimesheetName: String
     var serviceInvoiceName: String
-    var serviceType: String
-    var serviceBillingType: String
+    var serviceType: ServiceTypeOption
+    var serviceBillingType: BillingTypeOption
     var serviceStatus: String
     var serviceCost1: Float
     var serviceCost2: Float
@@ -22,7 +22,7 @@ class Service: Identifiable {
     var servicePrice3: Float
     let id = UUID()
     
-    init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: String, serviceBillingType: String, serviceStatus: String, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
+    init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
         self.serviceKey = serviceKey
         self.serviceTimesheetName = serviceTimesheetName
         self.serviceInvoiceName = serviceInvoiceName
@@ -44,7 +44,7 @@ class Service: Identifiable {
 //        serviceEndDate = dateFormatter.string(from: Date())
     }
     
-    func updateService(timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateService(timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
   
 //    func updateService(timesheetName: String, invoiceName: String, serviceType: String, billingType: String) {
       

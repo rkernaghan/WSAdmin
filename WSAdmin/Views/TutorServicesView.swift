@@ -23,7 +23,9 @@ struct TutorServicesView: View {
             Table(referenceData.tutors.tutorsList[tutorNum].tutorServices, selection: $selectedServices, sortOrder: $sortOrder) {
                 TableColumn("Timesheet Name", value: \.timesheetServiceName)
                 TableColumn("Invoice Name", value: \.invoiceServiceName)
-                TableColumn("Billing Type", value: \.billingType)
+                TableColumn("Billing Type") {data in
+                    Text(data.billingType.rawValue)
+                }
                 TableColumn("Cost 1", value: \.cost1) { data in
                     Text(String(data.cost1.formatted(.number.precision(.fractionLength(2)))))
                 }

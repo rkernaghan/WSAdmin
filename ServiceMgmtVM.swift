@@ -16,7 +16,7 @@ import Foundation
     var price2Float: Float = 0.0
     var price3Float: Float = 0.0
     
-    func addService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
+    func addService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
             
         let cost1Float = Float(cost1) ?? 0
         let cost2Float = Float(cost2) ?? 0
@@ -32,7 +32,7 @@ import Foundation
         referenceData.services.loadService(newService: newService, referenceData: referenceData)
     }
     
-    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
             
 //        let cost1Float = Float(cost1) ?? 0
 //        let cost2Float = Float(cost2) ?? 0
@@ -51,7 +51,7 @@ import Foundation
         referenceData.dataCounts.increaseTotalServiceCount()
         referenceData.dataCounts.saveDataCounts()
         
-        if serviceType == "Base" {
+        if String(describing: serviceType) == "Base" {
             if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
                 var tutorNum = 0
                 while tutorNum < referenceData.tutors.tutorsList.count {
@@ -65,7 +65,7 @@ import Foundation
         }
     }
     
-    func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String,cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+    func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
         var validationResult: Bool = true
         var validationMessage: String = " "
         
@@ -84,7 +84,7 @@ import Foundation
         return(validationResult, validationMessage)
     }
 
-    func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String,cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+    func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
         var validationResult: Bool = true
         var validationMessage: String = " "
         
@@ -103,7 +103,7 @@ import Foundation
         return(validationResult, validationMessage)
     }
     
-    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: String, billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 
 //        let cost1Float = Float(cost1) ?? 0
 //        let cost2Float = Float(cost2) ?? 0
@@ -116,7 +116,7 @@ import Foundation
         
         referenceData.services.saveServiceData()
         
-        if serviceType == "Base" {
+        if String(describing: serviceType) == "Base" {
             if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
                 var tutorNum = 0
                 while tutorNum < referenceData.tutors.tutorsList.count {

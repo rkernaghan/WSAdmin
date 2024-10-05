@@ -13,7 +13,7 @@ class TutorService: Identifiable {
     var serviceKey: String
     var timesheetServiceName: String
     var invoiceServiceName: String
-    var billingType: String
+    var billingType: BillingTypeOption
     var cost1: Float
     var cost2: Float
     var cost3: Float
@@ -24,7 +24,7 @@ class TutorService: Identifiable {
     var totalPrice: Float
     var id = UUID()
     
-    init(serviceKey: String, timesheetName: String, invoiceName: String,  billingType: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    init(serviceKey: String, timesheetName: String, invoiceName: String,  billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
         self.serviceKey = serviceKey
         self.timesheetServiceName = timesheetName
         self.invoiceServiceName = invoiceName

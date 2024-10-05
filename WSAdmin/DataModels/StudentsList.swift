@@ -105,7 +105,7 @@ import GoogleAPIClientForREST
                 let newGuardianName = stringRows[rowNumber][PgmConstants.studentGuardianPosition]
                 let newStudentPhone = stringRows[rowNumber][PgmConstants.studentPhonePosition]
                 let newStudentEmail = stringRows[rowNumber][PgmConstants.studentEmailPosition]
-                let newStudentType = String(describing: stringRows[rowNumber][PgmConstants.studentTypePosition])
+                let newStudentType:StudentTypeOption =  StudentTypeOption(rawValue: stringRows[rowNumber][PgmConstants.studentTypePosition]) ?? .Minor
                 let newStudentStartDateString = stringRows[rowNumber][PgmConstants.studentStartDatePosition]
   //              let newStudentStartDate = dateFormatter.string(from: newStudentStartDateString)
   //              let newStudentStartDate = dateFormatter.string(from: Date())
@@ -179,7 +179,7 @@ import GoogleAPIClientForREST
             studentGuardian = studentsList[studentNum].studentGuardian
             studentPhone = studentsList[studentNum].studentPhone
             studentEmail = studentsList[studentNum].studentEmail
-            studentType = studentsList[studentNum].studentType
+            studentType = String(describing: studentsList[studentNum].studentType)
             studentStartDate = studentsList[studentNum].studentStartDate
             studentEndDate = studentsList[studentNum].studentEndDate
             studentStatus = studentsList[studentNum].studentStatus
