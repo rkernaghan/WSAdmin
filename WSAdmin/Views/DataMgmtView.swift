@@ -142,16 +142,26 @@ struct TutorsView: View {
     @State private var editTutor: Bool = false
     
     @State private var tutorNumber: Int = 0
+    @State private var showDeleted: Bool = false
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
     var body: some View {
         if referenceData.tutors.isTutorDataLoaded {
+
+            var tutorArray: [Tutor] {
+                if showDeleted {
+                    return referenceData.tutors.tutorsList
+                } else {
+                    return referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}
+                }
+            }
+
             VStack {
-                
- //               Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}, selection: $selectedTutors, sortOrder: $sortOrder) {
-                Table(referenceData.tutors.tutorsList, selection: $selectedTutors, sortOrder: $sortOrder) {
+                Toggle("Show Deleted", isOn: $showDeleted)
+ 
+                Table(tutorArray,selection: $selectedTutors, sortOrder: $sortOrder) {
                     TableColumn("Tutor Name", value: \.tutorName)
                     TableColumn("Phone", value: \.tutorPhone)
                     TableColumn("Email", value: \.tutorEmail)
@@ -380,13 +390,24 @@ struct StudentsView: View {
     @State private var assignTutor = false
     @State private var unassignTutor = false
     @State private var editStudent = false
+    @State private var showDeleted = false
     
     @State private var studentNumber: Int = 0
     
     var body: some View {
         if referenceData.students.isStudentDataLoaded {
+            
+            var studentArray: [Student] {
+                if showDeleted {
+                    return referenceData.students.studentsList
+                } else {
+                    return referenceData.students.studentsList.filter{$0.studentStatus != "Deleted"}
+                }
+            }
+            
             VStack {
-                let studentArray = referenceData.students.studentsList
+             
+                Toggle("Show Deleted", isOn: $showDeleted)
                 
                 Table(studentArray, selection: $selectedStudents) {
                     //               Group {
@@ -569,15 +590,28 @@ struct ServicesView: View {
     
     @State private var assignService: Bool = false
     @State private var editService: Bool = false
+    @State private var showDeleted: Bool = false
     
     @State private var serviceNumber: Int = 0
+//    @State private var serviceArray = [Service]()
     
     var body: some View {
         if referenceData.services.isServiceDataLoaded {
-            let serviceArray = referenceData.services.servicesList
 
-            Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
- //               Group {
+            var serviceArray: [Service] {
+                if showDeleted {
+                    return referenceData.services.servicesList
+                } else {
+                    return referenceData.services.servicesList.filter{$0.serviceStatus != "Deleted"}
+                }
+            }
+ 
+            VStack {
+                Toggle("Show Deleted", isOn: $showDeleted)
+                
+                
+                Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
+                    //               Group {
                     TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
                     TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
                     TableColumn("Service Type") {data in
@@ -591,8 +625,7 @@ struct ServicesView: View {
                     TableColumn("Cost 1") { data in
                         Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
                     }
- //               }
- //               Group {
+
                     TableColumn("Cost 2", value: \Service.serviceCost2) { data in
                         Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
                     }
@@ -605,83 +638,85 @@ struct ServicesView: View {
                     TableColumn("Price 2", value: \Service.servicePrice2) { data in
                         Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
                     }
- //                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
- //                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
- //                   }
- //               }
-
-            }
-            .contextMenu(forSelectionType: Service.ID.self) { items in
-                if items.isEmpty {
-                    Button {
-   //                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
-                    } label: {
-                      Label("New Service", systemImage: "plus")
-                    }
-                } else if items.count == 1 {
-                    VStack {
-                        Button {
-                            for objectID in items {
-                                if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                                    serviceNumber = idx
-                                    assignService.toggle()
-                                }
-                            }
-                        } label: {
-                            Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
-                        }
-                        
-                        Button {
-                            for objectID in items {
-                                if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                                    serviceNumber = idx
-                                    editService.toggle()
-                                }
-                            }
-                        } label: {
-                            Label("Edit Service", systemImage: "square.and.arrow.up")
-                        }
-                        
-                        Button(role: .destructive) {
-                            serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
-                        } label: {
-                            Label("Delete Service", systemImage: "trash")
-                        }
-                        
-                        Button(role: .destructive) {
-                            let result = serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
-                        } label: {
-                            Label("Undelete Service", systemImage: "trash")
-                        }
-                        
-                        Button(role: .destructive) {
-   
-                        } label: {
-                            Label("List Individual Tutor Costs", systemImage: "trash")
-                        }
-                    }
-                         
-                } else {
-                    Button {
-                        
-                    } label: {
-                        Label("Edit Services", systemImage: "heart")
-                    }
-                    Button(role: .destructive) {
-                        
-                    } label: {
-                        Label("Delete Selected", systemImage: "trash")
-                    }
+                    //                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
+                    //                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
+                    //                   }
+                    //               }
+                    
                 }
-
-            } primaryAction: { items in
-  //              store.favourite(items)
-              }
-            .navigationDestination(isPresented: $assignService) {
-                TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
-            }
-            .navigationDestination(isPresented: $editService) {
-                ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+                .contextMenu(forSelectionType: Service.ID.self) { items in
+                    if items.isEmpty {
+                        Button {
+                            //                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+                        } label: {
+                            Label("New Service", systemImage: "plus")
+                        }
+                    } else if items.count == 1 {
+                        VStack {
+                            Button {
+                                for objectID in items {
+                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                                        serviceNumber = idx
+                                        assignService.toggle()
+                                    }
+                                }
+                            } label: {
+                                Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button {
+                                for objectID in items {
+                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                                        serviceNumber = idx
+                                        editService.toggle()
+                                    }
+                                }
+                            } label: {
+                                Label("Edit Service", systemImage: "square.and.arrow.up")
+                            }
+                            
+                            Button(role: .destructive) {
+                                serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Delete Service", systemImage: "trash")
+                            }
+                            
+                            Button(role: .destructive) {
+                                let result = serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Undelete Service", systemImage: "trash")
+                            }
+                            
+                            Button(role: .destructive) {
+                                
+                            } label: {
+                                Label("List Individual Tutor Costs", systemImage: "trash")
+                            }
+                        }
+                        
+                    } else {
+                        Button {
+                            
+                        } label: {
+                            Label("Edit Services", systemImage: "heart")
+                        }
+                        Button(role: .destructive) {
+                            
+                        } label: {
+                            Label("Delete Selected", systemImage: "trash")
+                        }
+                    }
+                    
+                    
+                } primaryAction: { items in
+                    //              store.favourite(items)
+                }
+                .navigationDestination(isPresented: $assignService) {
+                    TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
+                }
+                .navigationDestination(isPresented: $editService) {
+                    ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+                }
             }
         }
     }
@@ -743,77 +778,89 @@ struct LocationsView: View {
     @State private var listStudents: Bool = false
     @State private var editLocation: Bool = false
     @State private var locationNumber: Int = 0
+    @State private var showDeleted: Bool = false
     
     var body: some View {
         if referenceData.locations.isLocationDataLoaded {
-            let locationArray = referenceData.locations.locationsList
-
-            Table(referenceData.locations.locationsList, selection: $selectedLocations, sortOrder: $sortOrder) {
-                TableColumn("Location Name", value: \.locationName)
-                TableColumn("Student Count", value: \.locationStudentCount) {data in
-                    Text(String(data.locationStudentCount))
+            
+            var locationArray: [Location] {
+                if showDeleted {
+                    return referenceData.locations.locationsList
+                } else {
+                    return referenceData.locations.locationsList.filter{$0.locationStatus != "Deleted"}
                 }
-                TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
-                    Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
-                }
-                TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
-                    Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
-                }
-                TableColumn("Location Status", value: \.locationStatus)
             }
-            .contextMenu(forSelectionType: Location.ID.self) { items in
-                if items.isEmpty {
-                    Button {
-                        //                       let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-                    } label: {
-                        Label("New Service", systemImage: "plus")
+            
+            VStack {
+                Toggle("Show Deleted", isOn: $showDeleted)
+                
+                Table(locationArray, selection: $selectedLocations, sortOrder: $sortOrder) {
+                    TableColumn("Location Name", value: \.locationName)
+                    TableColumn("Student Count", value: \.locationStudentCount) {data in
+                        Text(String(data.locationStudentCount))
                     }
-                } else if items.count == 1 {
-                    VStack {
+                    TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
+                        Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
+                    }
+                    TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
+                        Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
+                    }
+                    TableColumn("Location Status", value: \.locationStatus)
+                }
+                .contextMenu(forSelectionType: Location.ID.self) { items in
+                    if items.isEmpty {
                         Button {
-                            for objectID in items {
-                                if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                                    locationNumber = idx
-                                    editLocation.toggle()
+                            //                       let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                        } label: {
+                            Label("New Service", systemImage: "plus")
+                        }
+                    } else if items.count == 1 {
+                        VStack {
+                            Button {
+                                for objectID in items {
+                                    if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
+                                        locationNumber = idx
+                                        editLocation.toggle()
+                                    }
                                 }
+                            } label: {
+                                Label("Edit Location", systemImage: "square.and.arrow.up")
                             }
-                        } label: {
-                            Label("Edit Location", systemImage: "square.and.arrow.up")
+                            
+                            Button(role: .destructive) {
+                                locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Delete Location", systemImage: "trash")
+                            }
+                            
+                            Button(role: .destructive) {
+                                locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+                            } label: {
+                                Label("Undelete Location", systemImage: "trash")
+                            }
                         }
                         
-                        Button(role: .destructive) {
-                            locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
-                        } label: {
-                            Label("Delete Location", systemImage: "trash")
-                        }
-                        
-                        Button(role: .destructive) {
-                            locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
-                        } label: {
-                            Label("Undelete Location", systemImage: "trash")
+                    } else {
+                        VStack {
+                            Button {
+                                
+                            } label: {
+                                Label("Edit Locations", systemImage: "heart")
+                            }
+                            Button(role: .destructive) {
+                                
+                            } label: {
+                                Label("Delete Selected Locations", systemImage: "trash")
+                            }
                         }
                     }
                     
-                } else {
-                    VStack {
-                        Button {
-                            
-                        } label: {
-                            Label("Edit Locations", systemImage: "heart")
-                        }
-                        Button(role: .destructive) {
-                            
-                        } label: {
-                            Label("Delete Selected Locations", systemImage: "trash")
-                        }
-                    }
+                } primaryAction: { items in
+                    //              store.favourite(items)
                 }
-                
-            } primaryAction: { items in
-                //              store.favourite(items)
-            }
-            .navigationDestination(isPresented: $editLocation) {
-                LocationView(updateLocationFlag: true, locationNum: locationNumber, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName)
+                .navigationDestination(isPresented: $editLocation) {
+                    LocationView(updateLocationFlag: true, locationNum: locationNumber, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName)
+                }
             }
         }
     }
