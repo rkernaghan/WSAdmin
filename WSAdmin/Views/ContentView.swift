@@ -46,7 +46,7 @@ struct ContentView: View {
                 Text(authVM.errorMessage)
             }
         }
-        .navigationTitle("Login")
+        .navigationTitle("Write Seattle Administration")
         .environment(refDataVM)
         .environment(authVM)
         .environment(studentMgmtVM)

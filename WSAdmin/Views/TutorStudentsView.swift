@@ -48,7 +48,6 @@ struct TutorStudentsView: View {
                 //              store.favourite(items)
             }
         }
-        
     }
     
 }

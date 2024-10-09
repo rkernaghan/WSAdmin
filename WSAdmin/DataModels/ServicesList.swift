@@ -103,6 +103,7 @@ import GoogleAPIClientForREST
                 let newServiceType: ServiceTypeOption =  ServiceTypeOption(rawValue: stringRows[rowNumber][PgmConstants.serviceTypePosition]) ?? .Special
                 let newServiceBillingType: BillingTypeOption = BillingTypeOption(rawValue: stringRows[rowNumber][PgmConstants.serviceBillingTypePosition]) ?? .Fixed
                 let newServiceStatus = stringRows[rowNumber][PgmConstants.serviceStatusPosition]
+                let newServiceCount = Int(stringRows[rowNumber][PgmConstants.serviceCountPosition]) ?? 0
                 let newServiceCost1 = Float(stringRows[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
                 let newServiceCost2 = Float(stringRows[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
                 let newServiceCost3 = Float(stringRows[rowNumber][PgmConstants.serviceCost3Position]) ?? 0.0
@@ -110,8 +111,7 @@ import GoogleAPIClientForREST
                 let newServicePrice2 = Float(stringRows[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
                 let newServicePrice3 = Float(stringRows[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
                 
-                let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
-//                let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCost1: 1.0, serviceCost2: 1.0, serviceCost3: 1.0, servicePrice1: 1.0, servicePrice2: 1.0, servicePrice3: 1.0)
+                let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
                 
                 self.servicesList.append(newService)
                 serviceIndex += 1
@@ -132,6 +132,7 @@ import GoogleAPIClientForREST
         var serviceType: String = " "
         var serviceBillingType: String = " "
         var serviceStatus: String = " "
+        var serviceCount: String = " "
         var serviceCost1: String = " "
         var serviceCost2: String = " "
         var serviceCost3: String = " "
@@ -147,23 +148,24 @@ import GoogleAPIClientForREST
         
         let sheetService = GTLRSheetsService()
         let spreadsheetID = referenceFileID
-        let serviceCount = servicesList.count
+        let serviceTotal = servicesList.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
         
         sheetService.authorizer = currentUser?.fetcherAuthorizer
             
-        let range = PgmConstants.serviceRange + String(serviceCount + PgmConstants.serviceStartingRowNumber + 1)            // One extra line for blanking row at end
+        let range = PgmConstants.serviceRange + String(serviceTotal + PgmConstants.serviceStartingRowNumber + 1)            // One extra line for blanking row at end
         print("Service Data Save Range", range)
   
         var serviceNum = 0
-        while serviceNum < serviceCount {
+        while serviceNum < serviceTotal {
             serviceKey = servicesList[serviceNum].serviceKey
             serviceTimesheetName = servicesList[serviceNum].serviceTimesheetName
             serviceInvoiceName = servicesList[serviceNum].serviceInvoiceName
             serviceType =  String(describing: servicesList[serviceNum].serviceType)
             serviceBillingType = String(describing: servicesList[serviceNum].serviceBillingType)
             serviceStatus = servicesList[serviceNum].serviceStatus
+            serviceCount = String(servicesList[serviceNum].serviceCount)
             serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.precision(.fractionLength(2))))
             serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.precision(.fractionLength(2))))
             serviceCost3 = String(servicesList[serviceNum].serviceCost3.formatted(.number.precision(.fractionLength(2))))
@@ -171,7 +173,7 @@ import GoogleAPIClientForREST
             servicePrice2 = String(servicesList[serviceNum].servicePrice2.formatted(.number.precision(.fractionLength(2))))
             servicePrice3 = String(servicesList[serviceNum].servicePrice3.formatted(.number.precision(.fractionLength(2))))
             
-            updateValues.insert([serviceKey, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
+            updateValues.insert([serviceKey, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCount, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
             serviceNum += 1
         }
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet

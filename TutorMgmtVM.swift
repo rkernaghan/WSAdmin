@@ -16,18 +16,18 @@ import GoogleAPIClientForREST
     
     func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
 
-        let newTutorKey = PgmConstants.tutorKeyPrefix + "0034"
+        let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let startDate = dateFormatter.string(from: Date())
  //       let maxStudentsInt = Int(maxStudents) ?? 0
         
-        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
+        let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Active", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.loadTutor(newTutor: newTutor)
         referenceData.tutors.saveTutorData()
         referenceData.dataCounts.increaseTotalTutorCount()
         
-        createNewSheet(tutorName: tutorName)
+        createNewSheet(tutorName: tutorName, tutorKey: newTutorKey)
     }
     
     func listTutorStudents(indexes: Int, referenceData: ReferenceData) {
@@ -170,7 +170,7 @@ import GoogleAPIClientForREST
         }
     }
 
-    func assignService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+    func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
         
         print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor")
  
@@ -184,8 +184,27 @@ import GoogleAPIClientForREST
                 let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
                 referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
                 referenceData.tutors.saveTutorData()                    // increased Student count
+                referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+                referenceData.services.saveServiceData()
             }
         }
+    }
+    
+    func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) -> (Bool, String) {
+        var unassignResult: Bool = true
+        var unassignMsg: String = " "
+        
+        let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
+        let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
+        if serviceFound {
+            referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
+            referenceData.services.saveServiceData()
+            referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
+        } else {
+            unassignResult = false
+            unassignMsg = "Tutor Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+        }
+        return(unassignResult, unassignMsg)
     }
     
     func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
@@ -233,9 +252,10 @@ import GoogleAPIClientForREST
         }
     }
     
-    func createNewSheet(tutorName: String) {
+    func createNewSheet(tutorName: String, tutorKey: String) {
         
         var spreadsheetID: String
+        var updateValues: [[String]] = []
         
         let batchUpdate = GTLRSheets_BatchUpdateSpreadsheetRequest.init()
         let request = GTLRSheets_Request.init()
@@ -264,12 +284,69 @@ import GoogleAPIClientForREST
         sheetService.executeQuery(createQuery) { (ticket, result, err) in
             if let error = err {
                 print(error)
-                print("Error with creating sheet:\(error.localizedDescription)")
+                print("Error with creating Tutor Details sheet for tutor \(tutorName):\(error.localizedDescription)")
             } else {
-                print("Success!")
-                //newSheet.sheetId =
-                print("Sheet added!")
+                print("Tutor Details Sheet added for tutor \(tutorName)")
             }
+           
+            var range = tutorName + PgmConstants.tutorHeader1Range
+            updateValues = PgmConstants.tutorHeader1Array
+            let valueRange1 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+            valueRange1.majorDimension = "ROWS" // Indicates horizontal row insert
+            valueRange1.range = range
+            valueRange1.values = updateValues
+            let query1 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange1, spreadsheetId: spreadsheetID, range: range)
+            query1.valueInputOption = "USER_ENTERED"
+            sheetService.executeQuery(query1) { ticket, object, error in
+                if let error = error {
+                    print(error)
+                    print("Failed to save Tutor Details Header 1 data for Tutor \(tutorName):\(error.localizedDescription)")
+                    return
+                }
+                else {
+                    print("Tutor Details Header 1 saved for tutor \(tutorName)")
+                }
+            }
+            
+            range = tutorName + PgmConstants.tutorHeader2Range
+            updateValues = PgmConstants.tutorHeader2Array
+            let valueRange2 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+            valueRange2.majorDimension = "ROWS" // Indicates horizontal row insert
+            valueRange2.range = range
+            valueRange2.values = updateValues
+            let query2 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange2, spreadsheetId: spreadsheetID, range: range)
+            query2.valueInputOption = "USER_ENTERED"
+            sheetService.executeQuery(query2) { ticket, object, error in
+                if let error = error {
+                    print(error)
+                    print("Failed to save Tutor Details Header 2 data for Tutor \(tutorName):\(error.localizedDescription)")
+                    return
+                }
+                else {
+                    print("Tutor Details Header 2 saved tutor \(tutorName)")
+                }
+            }
+            
+            range = tutorName + PgmConstants.tutorHeader3Range
+            updateValues = [[tutorKey, tutorName]]
+            let valueRange3 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+            valueRange3.majorDimension = "COLUMNS" // Indicates horizontal row insert
+            valueRange3.range = range
+            valueRange3.values = updateValues
+            let query3 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange3, spreadsheetId: spreadsheetID, range: range)
+            query3.valueInputOption = "USER_ENTERED"
+            sheetService.executeQuery(query3) { ticket, object, error in
+                if let error = error {
+                    print(error)
+                    print("Failed to save Tutor Details Header 3 data for tutor \(tutorName):\(error.localizedDescription)")
+                    return
+                }
+                else {
+                    print("Tutor Details Header 3 saved for Tutor \(tutorName)")
+                }
+            }
+ 
+            
         }
     }
     
@@ -324,6 +401,31 @@ import GoogleAPIClientForREST
             }
         }
         referenceData.tutors.saveTutorData()
+    }
+    
+    func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) -> TutorServiceCostList {
+       let tutorServiceCostList = TutorServiceCostList()
+        
+        let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+        var tutorNum = 0
+        while tutorNum < referenceData.tutors.tutorsList.count {
+            let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
+            if serviceFound {
+                let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+                let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+                let cost1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1
+                let cost2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2
+                let cost3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3
+                let price1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1
+                let price2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2
+                let price3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3
+                
+                let newTutorServiceCost = TutorServiceCost(tutorKey: tutorKey, tutorName: tutorName, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                tutorServiceCostList.addTutorServiceCost(newTutorServiceCost: newTutorServiceCost, referenceData: referenceData)
+            }
+            tutorNum += 1
+        }
+        return(tutorServiceCostList)
     }
     
 }

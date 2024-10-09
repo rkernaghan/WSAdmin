@@ -15,7 +15,7 @@ class TutorStudent: Identifiable {
     var clientName: String
     var clientEmail: String
     var clientPhone: String
-    var id = UUID()
+    let id = UUID()
     
     init(studentKey: String, studentName: String, clientName: String, clientEmail: String, clientPhone: String) {
         self.studentKey = studentKey

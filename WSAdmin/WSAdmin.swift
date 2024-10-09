@@ -43,8 +43,8 @@ struct PgmConstants {
     static let dataCountRange = "Master!B2:B13"
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
-    static let serviceRange = "Master!AL3:AW"
-    static let locationRange = "Master!AZ3:BE"
+    static let serviceRange = "Master!AL3:AX"
+    static let locationRange = "Master!BA3:BF"
     
     static let tutorCountsRange = "!A1:B5"
     static let tutorStudentsRange = "!O3:S"
@@ -111,12 +111,13 @@ struct PgmConstants {
     static let serviceTypePosition = 3
     static let serviceBillingTypePosition = 4
     static let serviceStatusPosition = 5
-    static let serviceCost1Position = 6
-    static let serviceCost2Position = 7
-    static let serviceCost3Position = 8
-    static let servicePrice1Position = 9
-    static let servicePrice2Position = 10
-    static let servicePrice3Position = 11
+    static let serviceCountPosition = 6
+    static let serviceCost1Position = 7
+    static let serviceCost2Position = 8
+    static let serviceCost3Position = 9
+    static let servicePrice1Position = 10
+    static let servicePrice2Position = 11
+    static let servicePrice3Position = 12
     
     static let locationStartingRowNumber = 3
     static let locationKeyPosition = 0
@@ -142,6 +143,16 @@ struct PgmConstants {
     static let testTutorDataFileID: String = "1NaSjIe43RrGEa4AdAKHuF343eHlfogzuMuS5SPvowS8"
     static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
+    
+    static let tutorHeaderArray1 = ["TUTOR", " ", " ", "Service Key", "Timesheet Name", "Invoice Name", "Billing Type", "Cost 1", "Cost 2", "Cost 3", "Price 1", "Price 2", "Price 3", " ", "Student Key", "Student Name", "Client Name", "Client Email", "Client Phone" ]
+    static let tutorHeaderArray2 = [" ", " ", " ", "B000", "-", " ", " ", " ", " ", " ", " ", " ", " ", " ", "S0000", "-"]
+    static let tutorHeader1Range = "!A1:S2"
+    static let tutorHeader1Array = [tutorHeaderArray1, tutorHeaderArray2]
+    static let tutorHeader2Array = [["Student Count", "0"], ["Service Count", "0"]]
+    static let tutorHeader2Range = "!A4:B5"
+    static let tutorHeader3Range = "!A2:A3"
+    
+
 }
 
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {

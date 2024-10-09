@@ -12,10 +12,13 @@ struct TutorServicesView: View {
     var referenceData: ReferenceData
     
     @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    @Environment(\.dismiss) var dismiss
     
     @State private var selectedServices: Set<Service.ID> = []
     @State private var tutorServiceNum: Int = 0
     @State private var editTutorService = false
+    @State private var unassignTutorService = false
     @State private var sortOrder = [KeyPathComparator(\TutorService.timesheetServiceName)]
     
     var body: some View {
@@ -60,20 +63,50 @@ struct TutorServicesView: View {
                                 }
                             }
                         } label: {
-                            Label("Edit Tutor Service", systemImage: "square.and.arrow.up")
+                            Label("Edit Tutor Service for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Button {
+                            for objectID in items {
+                                if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+                                    tutorServiceNum = idx
+                                    let (unassignResult, unassignMessage) = tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+                                    if unassignResult {
+                                        dismiss()
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Unassign Service from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
                         }
                     }
                     
                 } else {
-                    Button {
-                        for objectID in items {
-                            if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
-                                let tutorServiceNum = idx
-                                editTutorService.toggle()
+                    VStack {
+                        Button {
+                            for objectID in items {
+                                if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+                                    tutorServiceNum = idx
+                                    editTutorService.toggle()
+                                }
                             }
+                        } label: {
+                            Label("Edit Tutor Services", systemImage: "square.and.arrow.up")
                         }
-                    } label: {
-                        Label("Edit Tutor Services", systemImage: "square.and.arrow.up")
+                        
+                        Button {
+                            for objectID in items {
+                                if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+                                    tutorServiceNum = idx
+                                    let (unassignResult, unassignMessage) = tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+                                    if unassignResult {
+                                        //                                    dismiss()
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Unassign Tutor Services", systemImage: "square.and.arrow.up")
+                        }
                     }
                 }
             } primaryAction: { items in
@@ -81,7 +114,7 @@ struct TutorServicesView: View {
             }
          }
         .navigationDestination(isPresented: $editTutorService) {
-            TutorServiceView(tutorNum: $tutorNum, tutorServiceNum: $tutorServiceNum, referenceData: referenceData, timesheetName: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName, invoiceName: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].invoiceServiceName, billingType: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].billingType, cost1: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1, cost2: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2, cost3: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3, price1: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1, price2: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2, price3: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3)
+//            TutorServiceView(tutorNum: $tutorNum, tutorServiceNum: $tutorServiceNum, referenceData: referenceData, timesheetName: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName, invoiceName: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].invoiceServiceName, billingType: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].billingType, cost1: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1, cost2: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2, cost3: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3, price1: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1, price2: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2, price3: referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3)
         }
     }
 }

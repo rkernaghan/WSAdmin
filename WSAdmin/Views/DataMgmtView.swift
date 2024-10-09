@@ -87,19 +87,19 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: " ", contactEmail: " ", contactPhone: " ", maxStudents: 0)
+                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: "", contactEmail: "", contactPhone: "", maxStudents: 0)
                 } label: {
                     Label("Add Tutor", systemImage: "person")
                 }
                 
                 NavigationLink {
-                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: " ", guardianName: " ", contactPhone: " ", contactEmail: " ", location: " ", studentType: .Minor)
+                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
                 } label: {
                     Label("Add Student", systemImage: "graduationcap")
                 }
                 
                 NavigationLink {
-                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: " ", invoiceName: " ", serviceType: .Base, billingType: .Fixed, cost1: 0.0, cost2: 0.0, cost3: 0.0, price1: 0.0, price2: 0.0, price3: 0.0 )
+                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: "", invoiceName: "", serviceType: .Base, billingType: .Fixed, serviceCount: 0, cost1: 0.0, cost2: 0.0, cost3: 0.0, price1: 0.0, price2: 0.0, price3: 0.0 )
                 } label: {
                     Label("Add Service", systemImage: "list.bullet")
                 }
@@ -133,7 +133,6 @@ struct TutorsView: View {
     @State private var showAlert: Bool = false
     @State private var viewChange: Bool = false
     @State private var assignStudent:Bool = false
-    @State private var unassignStudent: Bool = false
     @State private var listTutorStudents: Bool = false
     @State private var listTutorServices: Bool = false
     @State private var addService: Bool = false
@@ -163,20 +162,37 @@ struct TutorsView: View {
  
                 Table(tutorArray,selection: $selectedTutors, sortOrder: $sortOrder) {
                     TableColumn("Tutor Name", value: \.tutorName)
+                        .width(min: 100, ideal: 120, max: 240)
+                    
                     TableColumn("Phone", value: \.tutorPhone)
+                        .width(min: 100, ideal: 120, max: 120)
+                    
                     TableColumn("Email", value: \.tutorEmail)
+                        .width(min: 150, ideal: 180, max: 260)
+                    
                     TableColumn("Start Date", value: \.tutorStartDate)
+                        .width(min: 90, ideal: 100, max: 100)
+                    
                     TableColumn("End Date", value: \.tutorEndDate)
+                        .width(min: 90, ideal: 100, max: 100)
+                    
                     TableColumn("Status", value: \.tutorStatus)
+                        .width(min: 40, ideal: 60, max: 70)
+                    
                     TableColumn("Max Students", value: \.tutorMaxStudents) { data in
                         Text(String(data.tutorMaxStudents))
                     }
+                    .width(min: 40, ideal: 70, max: 80)
+                    
                     TableColumn("Student Count", value: \.tutorStudentCount) {data in
                         Text(String(data.tutorStudentCount))
                     }
+                    .width(min: 40, ideal: 70, max: 80)
+                    
                     TableColumn("Service Count", value: \.tutorServiceCount) {data in
                         Text(String(data.tutorServiceCount))
                     }
+                    .width(min: 40, ideal: 70, max: 80)
                     //                    TableColumn("Total Cost", value: \.tutorTotalCost)
                     //                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
   //                  TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
@@ -202,10 +218,6 @@ struct TutorsView: View {
                                         assignStudent = true
                                     }
                                 }
-                            }
-                            
-                            Button("Unassign Student from Tutor") {
-                                self.unassignStudent.toggle()
                             }
                             
                             Button("List Tutor Students") {
@@ -412,20 +424,37 @@ struct StudentsView: View {
                 Table(studentArray, selection: $selectedStudents) {
                     //               Group {
                     TableColumn("Student Name", value: \Student.studentName)
+                        .width(min: 90, ideal: 149, max: 260)
+                    
                     TableColumn("Guardian", value: \Student.studentGuardian)
+                        .width(min: 90, ideal: 140, max: 260)
+                    
                     TableColumn("Phone", value: \Student.studentPhone)
+                        .width(min: 100, ideal: 120, max: 120)
+                    
                     TableColumn("EMail", value: \Student.studentEmail)
+                        .width(min: 100, ideal: 120, max: 200)
+                    
                     TableColumn("Student Type") {data in
                         Text(data.studentType.rawValue)
                     }
+                    .width(min: 50, ideal: 70, max: 90)
                     //             }
                     //           Group {
                     TableColumn("Start Date", value: \Student.studentStartDate)
+                        .width(min: 80, ideal: 90, max: 90)
+                    
                     TableColumn("End Date", value: \Student.studentEndDate)
+                        .width(min: 80, ideal: 90, max: 90)
+                    
                     TableColumn("Status", value: \Student.studentStatus)
-                    //                   TableColumn("Tutor Key", value: \Student.studentTutorKey)
+                        .width(min: 70, ideal: 80, max: 90)
+
                     TableColumn("Tutor Name",value: \Student.studentTutorName)
+                        .width(min: 100, ideal: 150, max: 240)
+                    
                     TableColumn("Location", value: \Student.studentLocation)
+                        .width(min: 80, ideal: 1200, max: 160)
 //                  }
 //                  TableColumn("Location", value: \.studentLocation)
 //                  TableColumn("Sessions", value: \.studentSessions) {data in
@@ -585,15 +614,19 @@ struct ServicesView: View {
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+    
     @State private var selectedServices = Set<Service.ID>()
     @State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
     
     @State private var assignService: Bool = false
     @State private var editService: Bool = false
+    @State private var listServiceCosts: Bool = false
     @State private var showDeleted: Bool = false
     
     @State private var serviceNumber: Int = 0
-//    @State private var serviceArray = [Service]()
+    @State private var serviceCostList = TutorServiceCostList()
+    
     
     var body: some View {
         if referenceData.services.isServiceDataLoaded {
@@ -609,35 +642,55 @@ struct ServicesView: View {
             VStack {
                 Toggle("Show Deleted", isOn: $showDeleted)
                 
-                
                 Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
                     //               Group {
                     TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
+                        .width(min: 120, ideal: 150, max: 240)
+                    
                     TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
+                        .width(min: 120, ideal: 150, max: 240)
+                    
                     TableColumn("Service Type") {data in
                         Text(data.serviceType.rawValue)
                     }
+                    .width(min: 50, ideal: 70, max: 80)
+                    
                     TableColumn("Billing Type") {data in
                         Text(data.serviceBillingType.rawValue)
                     }
+                    .width(min: 50, ideal: 70, max: 80)
+                    
                     TableColumn("Service Status", value: \Service.serviceStatus)
+                        .width(min: 50, ideal: 70, max: 80)
+                    
+                    TableColumn("Assigned Tutors" ) { data in
+                        Text(String(data.serviceCount))
+                    }
+                    .width(min: 40, ideal: 60, max: 70)
                     
                     TableColumn("Cost 1") { data in
                         Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
                     }
-
+                    .width(min: 40, ideal: 50, max: 50)
+                    
                     TableColumn("Cost 2", value: \Service.serviceCost2) { data in
                         Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
                     }
+                    .width(min: 40, ideal: 50, max: 50)
+                    
                     TableColumn("Cost 3", value: \Service.serviceCost3) { data in
                         Text(String(data.serviceCost3.formatted(.number.precision(.fractionLength(2)))))
                     }
+                    .width(min: 40, ideal: 50, max: 50)
+                    
                     TableColumn("Price 1", value: \Service.servicePrice1) { data in
                         Text(String(data.servicePrice1.formatted(.number.precision(.fractionLength(2)))))
                     }
-                    TableColumn("Price 2", value: \Service.servicePrice2) { data in
-                        Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
-                    }
+                    .width(min: 40, ideal: 50, max: 50)
+                    
+//                    TableColumn("Price 2", value: \Service.servicePrice2) { data in
+//                        Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
+//                    }
                     //                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
                     //                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
                     //                   }
@@ -688,7 +741,13 @@ struct ServicesView: View {
                             }
                             
                             Button(role: .destructive) {
-                                
+                                for objectID in items {
+                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+                                        serviceNumber = idx
+                                        listServiceCosts.toggle()
+                                        serviceCostList = tutorMgmtVM.buildServiceCostArray(serviceNum: serviceNumber, referenceData: referenceData)
+                                    }
+                                }
                             } label: {
                                 Label("List Individual Tutor Costs", systemImage: "trash")
                             }
@@ -707,7 +766,6 @@ struct ServicesView: View {
                         }
                     }
                     
-                    
                 } primaryAction: { items in
                     //              store.favourite(items)
                 }
@@ -715,7 +773,14 @@ struct ServicesView: View {
                     TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
                 }
                 .navigationDestination(isPresented: $editService) {
-                    ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+                    if referenceData.services.servicesList.count > 0 {
+                        ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+                    }
+                }
+                .navigationDestination(isPresented: $listServiceCosts) {
+                    if $serviceCostList.tutorServiceCostList.count > 0 {
+                        TutorServiceCostView(serviceNum: $serviceNumber, serviceCostList: $serviceCostList, referenceData: referenceData)
+                    }
                 }
             }
         }
@@ -747,7 +812,7 @@ struct TutorServiceSelectionView: View {
                     VStack {
                         
                         Button {
-                            tutorMgmtVM.assignService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                            tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
                         } label: {
                             Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
                         }
@@ -755,7 +820,7 @@ struct TutorServiceSelectionView: View {
                     
                 } else {
                     Button {
-                        tutorMgmtVM.assignService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                        tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
                     } label: {
                         Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
                     }

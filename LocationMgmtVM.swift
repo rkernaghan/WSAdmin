@@ -11,7 +11,7 @@ import Foundation
   
     func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) {
         
-        let newLocationKey = PgmConstants.locationKeyPrefix + "0034"
+        let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey)
         
         let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
         referenceData.locations.loadLocation(newLocation: newLocation)
