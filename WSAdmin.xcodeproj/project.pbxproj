@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020557372CA65FA800F4F7EB /* TutorServicesView.swift */; };
+		02863C842CB48508002FE12B /* TutorServiceCostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C832CB484FB002FE12B /* TutorServiceCostView.swift */; };
+		02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C852CB4877A002FE12B /* TutorServiceCost.swift */; };
+		02863C882CB48856002FE12B /* TutorServiceCostList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C872CB4884B002FE12B /* TutorServiceCostList.swift */; };
 		02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1A2C6B8B5C00C1FB4B /* WSAdmin.swift */; };
 		02A39F1D2C6B8B5C00C1FB4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */; };
 		02A39F1F2C6B8B6200C1FB4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02A39F1E2C6B8B6200C1FB4B /* Assets.xcassets */; };
@@ -43,6 +46,9 @@
 
 /* Begin PBXFileReference section */
 		020557372CA65FA800F4F7EB /* TutorServicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServicesView.swift; sourceTree = "<group>"; };
+		02863C832CB484FB002FE12B /* TutorServiceCostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceCostView.swift; sourceTree = "<group>"; };
+		02863C852CB4877A002FE12B /* TutorServiceCost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceCost.swift; sourceTree = "<group>"; };
+		02863C872CB4884B002FE12B /* TutorServiceCostList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceCostList.swift; sourceTree = "<group>"; };
 		02A39F172C6B8B5C00C1FB4B /* WSAdmin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WSAdmin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		02A39F1A2C6B8B5C00C1FB4B /* WSAdmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSAdmin.swift; sourceTree = "<group>"; };
 		02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -146,6 +152,7 @@
 				02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */,
 				02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */,
 				020557372CA65FA800F4F7EB /* TutorServicesView.swift */,
+				02863C832CB484FB002FE12B /* TutorServiceCostView.swift */,
 				02AC9BB42C855C7B007391A7 /* SignInView.swift */,
 			);
 			path = Views;
@@ -168,14 +175,16 @@
 		02AC9BC32C88A34A007391A7 /* DataModels */ = {
 			isa = PBXGroup;
 			children = (
-				02F6D0E02C8BE306007AB4D4 /* TutorService.swift */,
-				02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */,
 				02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */,
 				02AC9BBF2C889F9A007391A7 /* Student.swift */,
 				02AC9BC12C88A161007391A7 /* StudentsList.swift */,
 				02AC9BC42C88A66D007391A7 /* Tutor.swift */,
 				02AC9BC62C88A68A007391A7 /* TutorsList.swift */,
 				02AC9BC82C88A6A5007391A7 /* Service.swift */,
+				02F6D0E02C8BE306007AB4D4 /* TutorService.swift */,
+				02863C852CB4877A002FE12B /* TutorServiceCost.swift */,
+				02863C872CB4884B002FE12B /* TutorServiceCostList.swift */,
+				02F6D0E22C8BE321007AB4D4 /* TutorStudent.swift */,
 				02AC9BCA2C88A6BA007391A7 /* ServicesList.swift */,
 				02AC9BCC2C88A6C9007391A7 /* Location.swift */,
 				02AC9BCE2C88A6DB007391A7 /* LocationsList.swift */,
@@ -328,6 +337,7 @@
 				02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
 				02CA8C1C2CAB3CD700CCD03C /* TutorServiceView.swift in Sources */,
+				02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */,
 				02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */,
 				02DD5A4C2C8A1015002893AD /* LocationMgmtVM.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,
@@ -335,9 +345,11 @@
 				02AC9BD32C892B49007391A7 /* StudentView.swift in Sources */,
 				02DD5A4E2C8A141A002893AD /* ServiceView.swift in Sources */,
 				02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */,
+				02863C842CB48508002FE12B /* TutorServiceCostView.swift in Sources */,
 				020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */,
 				02AC9BD12C892B0F007391A7 /* TutorView.swift in Sources */,
 				02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */,
+				02863C882CB48856002FE12B /* TutorServiceCostList.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,
 				02AC9BCD2C88A6C9007391A7 /* Location.swift in Sources */,
 				02DD5A502C8A1428002893AD /* LocationView.swift in Sources */,

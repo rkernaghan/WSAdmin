@@ -82,6 +82,7 @@ import GoogleAPIClientForREST
         saveTutorStudents()
         tutorStudentCount += 1
         saveTutorDataCounts()
+        self.tutorStatus = "Assigned"
     }
     
     func updateTutor(contactEmail: String, contactPhone: String, maxStudents: Int) {
@@ -98,6 +99,10 @@ import GoogleAPIClientForREST
             saveTutorStudents()
             tutorStudentCount -= 1
             saveTutorDataCounts()
+            
+            if tutorStudentCount == 0 {
+                self.tutorStatus = "Unassigned"
+            }
         }
     }
     
@@ -146,7 +151,7 @@ import GoogleAPIClientForREST
     }
     
     func markUnDeleted() {
-        tutorStatus = "New"
+        tutorStatus = "Unassigned"
         tutorEndDate = " "
     }
     

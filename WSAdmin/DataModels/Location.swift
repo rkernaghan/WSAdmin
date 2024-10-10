@@ -43,4 +43,12 @@ import Foundation
 //        serviceEndDate = dateFormatter.string(from: Date())
     }
     
+    func increaseStudentCount() {
+        self.locationStudentCount += 1
+    }
+    
+    func decreaseStudentCount() {
+        self.locationStudentCount -= 1
+    }
+    
 }

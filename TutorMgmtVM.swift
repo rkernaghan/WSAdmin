@@ -111,8 +111,9 @@ import GoogleAPIClientForREST
         return phonePredicate.evaluate(with: phone)
     }
     
-    func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
+    func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> (Bool, String) {
         var deleteResult = true
+        var deleteMessage = " "
         print("Deleting Tutor")
         
         for objectID in indexes {
@@ -122,17 +123,18 @@ import GoogleAPIClientForREST
                     referenceData.tutors.saveTutorData()
                     referenceData.dataCounts.decreaseActiveStudentCount()
                 } else {
-                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+                    deleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
                     print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
                     deleteResult = false
                 }
             }
         }
-        return(deleteResult)
+        return(deleteResult, deleteMessage)
     }
 
-    func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> Bool {
+    func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> (Bool, String) {
         var unDeleteResult = true
+        var unDeleteMessage = " "
         print("UnDeleting Tutor")
         
         for objectID in indexes {
@@ -142,13 +144,13 @@ import GoogleAPIClientForREST
                     referenceData.tutors.saveTutorData()
                     referenceData.dataCounts.increaseActiveTutorCount()
                 } else {
-                    let buttonMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted"
+                    unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted"
                     print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted")
                     unDeleteResult = false
                 }
             }
         }
-        return(unDeleteResult)
+        return(unDeleteResult, unDeleteMessage)
     }
     
     func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) {
@@ -208,13 +210,7 @@ import GoogleAPIClientForREST
     }
     
     func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
-//        let cost1Float = Float(cost1) ?? 0
-//        let cost2Float = Float(cost2) ?? 0
-//        let cost3Float = Float(cost3) ?? 0
-//        let price1Float = Float(price1) ?? 0
-//        let price2Float = Float(price2) ?? 0
-//        let price3Float = Float(price3) ?? 0
-        
+
         referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
     }

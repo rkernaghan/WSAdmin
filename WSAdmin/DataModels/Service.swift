@@ -64,16 +64,20 @@ import Foundation
     }
     
     func markUnDeleted() {
-        serviceStatus = "New"
+        serviceStatus = "Unassigned"
 //        serviceEndDate = " "
     }
     
     func increaseServiceUseCount() {
         self.serviceCount += 1
+        serviceStatus = "Assigned"
     }
     
     func decreaseServiceUseCount() {
         self.serviceCount -= 1
+        if serviceCount == 0 {
+            serviceStatus = "Unassigned"
+        }
     }
 }
 

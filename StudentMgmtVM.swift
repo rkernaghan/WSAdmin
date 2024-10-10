@@ -15,17 +15,22 @@ import Foundation
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let startDate = dateFormatter.string(from: Date())
-        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "New", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
         referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
         
         referenceData.students.saveStudentData()
         referenceData.dataCounts.increaseTotalStudentCount()
         referenceData.dataCounts.saveDataCounts()
+        
+        let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
+        referenceData.locations.locationsList[locationNum].increaseStudentCount()
+        referenceData.locations.saveLocationData()
     }
     
     func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
         
         let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+        let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
         
         referenceData.students.studentsList[studentNum].studentName = studentName
         referenceData.students.studentsList[studentNum].studentGuardian = guardianName
@@ -35,6 +40,12 @@ import Foundation
         referenceData.students.studentsList[studentNum].studentType = studentType
         
         referenceData.students.saveStudentData()
+ 
+        let (originalLocationFound, originalLocationNum) = referenceData.locations.findLocationByName(locationName: originalLocation)
+        referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
+        let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
+        referenceData.locations.locationsList[locationNum].increaseStudentCount()
+        referenceData.locations.saveLocationData()
         
         var tutorNum = 0
         while tutorNum < referenceData.tutors.tutorsList.count {
@@ -151,9 +162,14 @@ import Foundation
         for objectID in indexes {
             if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
-                    referenceData.students.studentsList[index].markDeleted()
+                    let studentNum = index
+                    referenceData.students.studentsList[studentNum].markDeleted()
                     referenceData.students.saveStudentData()
                     referenceData.dataCounts.decreaseActiveStudentCount()
+                    let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
+                    referenceData.locations.locationsList[locationNum].decreaseStudentCount()
+                    referenceData.locations.saveLocationData()
+                    
                 } else {
                     let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
                     print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
@@ -171,9 +187,14 @@ import Foundation
         for objectID in indexes {
             if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.students.studentsList[index].studentStatus == "Deleted" {
-                    referenceData.students.studentsList[index].markUndeleted()
+                    let studentNum = index
+                    referenceData.students.studentsList[studentNum].markUndeleted()
                     referenceData.students.saveStudentData()
                     referenceData.dataCounts.increaseActiveStudentCount()
+                    let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
+                    referenceData.locations.locationsList[locationNum].increaseStudentCount()
+                    referenceData.locations.saveLocationData()
+                    
                 } else {
                     let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
                     print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")

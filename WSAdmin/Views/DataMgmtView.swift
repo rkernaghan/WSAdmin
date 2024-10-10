@@ -142,6 +142,7 @@ struct TutorsView: View {
     
     @State private var tutorNumber: Int = 0
     @State private var showDeleted: Bool = false
+    @State private var showUnassigned: Bool = false
     
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -152,13 +153,20 @@ struct TutorsView: View {
             var tutorArray: [Tutor] {
                 if showDeleted {
                     return referenceData.tutors.tutorsList
+                } else if showUnassigned {
+                    return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
                 } else {
                     return referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}
                 }
             }
 
             VStack {
-                Toggle("Show Deleted", isOn: $showDeleted)
+                HStack {
+                    Toggle("Show Deleted", isOn: $showDeleted)
+                    Toggle("Show Unassigned", isOn: $showUnassigned)
+                    Text("     Tutor Count: ")
+                    Text(String(tutorArray.count))
+                }
  
                 Table(tutorArray,selection: $selectedTutors, sortOrder: $sortOrder) {
                     TableColumn("Tutor Name", value: \.tutorName)
@@ -179,17 +187,17 @@ struct TutorsView: View {
                     TableColumn("Status", value: \.tutorStatus)
                         .width(min: 40, ideal: 60, max: 70)
                     
-                    TableColumn("Max Students", value: \.tutorMaxStudents) { data in
+                    TableColumn("Max\nStudents", value: \.tutorMaxStudents) { data in
                         Text(String(data.tutorMaxStudents))
                     }
                     .width(min: 40, ideal: 70, max: 80)
                     
-                    TableColumn("Student Count", value: \.tutorStudentCount) {data in
+                    TableColumn("Student\nCount", value: \.tutorStudentCount) {data in
                         Text(String(data.tutorStudentCount))
                     }
                     .width(min: 40, ideal: 70, max: 80)
                     
-                    TableColumn("Service Count", value: \.tutorServiceCount) {data in
+                    TableColumn("Service\nCount", value: \.tutorServiceCount) {data in
                         Text(String(data.tutorServiceCount))
                     }
                     .width(min: 40, ideal: 70, max: 80)
@@ -261,10 +269,11 @@ struct TutorsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let result: Bool = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
-                                if result == false {
+                                let (deleteResult, deleteMessage) = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                                if deleteResult == false {
                                     showAlert = true
-                                    viewChange.toggle()
+                                    buttonErrorMsg = deleteMessage
+//                                    viewChange.toggle()
                                 }
                             } label: {
                                 Label("Delete Tutor", systemImage: "trash")
@@ -274,13 +283,17 @@ struct TutorsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let result: Bool = tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
-                                if result == false {
+                                let (deleteResult, deleteMessage) = tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
+                                if deleteResult == false {
                                     showAlert = true
-                                    viewChange.toggle()
+                                    buttonErrorMsg = deleteMessage
+ //                                   viewChange.toggle()
                                 }
                             } label: {
                                 Label("Undelete Tutor", systemImage: "trash")
+                            }
+                            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                                Button("OK", role: .cancel) { }
                             }
                         }
                         
@@ -292,7 +305,7 @@ struct TutorsView: View {
                         }
                         
                         Button(role: .destructive) {
-                            let result: Bool = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                            let (deleteResult, deleteMessage) = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
                         } label: {
                             Label("Delete Tutors", systemImage: "trash")
                         }
@@ -403,6 +416,7 @@ struct StudentsView: View {
     @State private var unassignTutor = false
     @State private var editStudent = false
     @State private var showDeleted = false
+    @State private var showUnassigned = false
     
     @State private var studentNumber: Int = 0
     
@@ -412,6 +426,8 @@ struct StudentsView: View {
             var studentArray: [Student] {
                 if showDeleted {
                     return referenceData.students.studentsList
+                } else if showUnassigned {
+                    return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
                 } else {
                     return referenceData.students.studentsList.filter{$0.studentStatus != "Deleted"}
                 }
@@ -419,7 +435,12 @@ struct StudentsView: View {
             
             VStack {
              
-                Toggle("Show Deleted", isOn: $showDeleted)
+                HStack {
+                    Toggle("Show Deleted", isOn: $showDeleted)
+                    Toggle("Show Unassigned", isOn: $showUnassigned)
+                    Text("     Student Count: ")
+                    Text(String(studentArray.count))
+                }
                 
                 Table(studentArray, selection: $selectedStudents) {
                     //               Group {
@@ -435,7 +456,7 @@ struct StudentsView: View {
                     TableColumn("EMail", value: \Student.studentEmail)
                         .width(min: 100, ideal: 120, max: 200)
                     
-                    TableColumn("Student Type") {data in
+                    TableColumn("Student\nType") {data in
                         Text(data.studentType.rawValue)
                     }
                     .width(min: 50, ideal: 70, max: 90)
@@ -623,6 +644,7 @@ struct ServicesView: View {
     @State private var editService: Bool = false
     @State private var listServiceCosts: Bool = false
     @State private var showDeleted: Bool = false
+    @State private var showUnassigned: Bool = false
     
     @State private var serviceNumber: Int = 0
     @State private var serviceCostList = TutorServiceCostList()
@@ -634,13 +656,20 @@ struct ServicesView: View {
             var serviceArray: [Service] {
                 if showDeleted {
                     return referenceData.services.servicesList
+                } else if showUnassigned {
+                    return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
                 } else {
                     return referenceData.services.servicesList.filter{$0.serviceStatus != "Deleted"}
                 }
             }
  
             VStack {
-                Toggle("Show Deleted", isOn: $showDeleted)
+                HStack {
+                    Toggle("Show Deleted", isOn: $showDeleted)
+                    Toggle("Show Unassigned", isOn: $showUnassigned)
+                    Text("     Service Count: ")
+                    Text(String(serviceArray.count))
+                }
                 
                 Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
                     //               Group {
@@ -650,20 +679,20 @@ struct ServicesView: View {
                     TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
                         .width(min: 120, ideal: 150, max: 240)
                     
-                    TableColumn("Service Type") {data in
+                    TableColumn("Service\nType") {data in
                         Text(data.serviceType.rawValue)
                     }
                     .width(min: 50, ideal: 70, max: 80)
                     
-                    TableColumn("Billing Type") {data in
+                    TableColumn("Billing\nType") {data in
                         Text(data.serviceBillingType.rawValue)
                     }
                     .width(min: 50, ideal: 70, max: 80)
                     
-                    TableColumn("Service Status", value: \Service.serviceStatus)
+                    TableColumn("Service\nStatus", value: \Service.serviceStatus)
                         .width(min: 50, ideal: 70, max: 80)
                     
-                    TableColumn("Assigned Tutors" ) { data in
+                    TableColumn("Assigned\nTutors" ) { data in
                         Text(String(data.serviceCount))
                     }
                     .width(min: 40, ideal: 60, max: 70)
