@@ -138,14 +138,14 @@ import GoogleAPIClientForREST
         print("UnDeleting Tutor")
         
         for objectID in indexes {
-            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                if referenceData.tutors.tutorsList[idx].tutorStatus == "Deleted" {
-                    referenceData.tutors.tutorsList[idx].markUnDeleted()
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Deleted" {
+                    referenceData.tutors.tutorsList[tutorNum].markUnDeleted()
                     referenceData.tutors.saveTutorData()
                     referenceData.dataCounts.increaseActiveTutorCount()
                 } else {
-                    unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted"
-                    print("Error: \(referenceData.tutors.tutorsList[idx].tutorStudentCount) Can not be undeleted")
+                    unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)"
+                    print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)")
                     unDeleteResult = false
                 }
             }

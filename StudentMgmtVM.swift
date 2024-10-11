@@ -155,8 +155,11 @@ import Foundation
     }
     
 
-    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
-        var deleteResult = true
+    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+
+        var deleteResult: Bool = true
+        var deleteMessage: String = " "
+
         print("deleting Student")
         
         for objectID in indexes {
@@ -171,17 +174,19 @@ import Foundation
                     referenceData.locations.saveLocationData()
                     
                 } else {
-                    let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
+                    deleteMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
                     print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
                     deleteResult = false
                 }
             }
         }
-        return(deleteResult)
+        return(deleteResult, deleteMessage)
     }
     
-    func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
-        var deleteResult = true
+    func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+        var unDeleteResult: Bool = true
+        var unDeleteMessage: String = " "
+        
         print("undeleting Student")
         
         for objectID in indexes {
@@ -196,13 +201,13 @@ import Foundation
                     referenceData.locations.saveLocationData()
                     
                 } else {
-                    let buttonMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
+                    unDeleteMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
                     print("Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)")
-                    deleteResult = false
+                    unDeleteResult = false
                 }
             }
         }
-        return(deleteResult)
+        return(unDeleteResult, unDeleteMessage)
     }
     
     func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {

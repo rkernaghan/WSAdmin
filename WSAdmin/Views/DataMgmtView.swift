@@ -268,19 +268,21 @@ struct TutorsView: View {
                                 }
                             }
                             
-                            Button(role: .destructive) {
+                            Button(action: {
                                 let (deleteResult, deleteMessage) = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
                                 if deleteResult == false {
                                     showAlert = true
                                     buttonErrorMsg = deleteMessage
 //                                    viewChange.toggle()
                                 }
-                            } label: {
-                                Label("Delete Tutor", systemImage: "trash")
+                            }) {
+                                Text("Delete Tutor")
                             }
-                            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                                Button("OK", role: .cancel) { }
-                            }
+//                            .alert(buttonErrorMsg, isPresented: $showAlert) {
+//                                Button("OK", role: .cancel) {
+//                                    print("error alert")
+//                                }
+//                            }
                             
                             Button(role: .destructive) {
                                 let (deleteResult, deleteMessage) = tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
@@ -292,9 +294,9 @@ struct TutorsView: View {
                             } label: {
                                 Label("Undelete Tutor", systemImage: "trash")
                             }
-                            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                                Button("OK", role: .cancel) { }
-                            }
+ //                           .alert(buttonErrorMsg, isPresented: $showAlert) {
+ //                               Button("OK", role: .cancel) { }
+ //                           }
                         }
                         
                     } else {
@@ -314,6 +316,10 @@ struct TutorsView: View {
                     //              store.favourite(items)
                 }
             }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            }
+
             .navigationDestination(isPresented: $assignStudent) {
                 StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
@@ -529,9 +535,10 @@ struct StudentsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let result: Bool = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-                                if result == false {
+                                let (deleteResult, deleteMessage) = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                                if deleteResult == false {
                                     showAlert = true
+                                    buttonErrorMsg = deleteMessage
                                 }
                             } label: {
                                 Label("Delete Student", systemImage: "trash")
@@ -541,9 +548,10 @@ struct StudentsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let result: Bool = studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
-                                if result == false {
+                                let (unDeleteResult, unDeleteMessage) = studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
+                                if unDeleteResult == false {
                                     showAlert = true
+                                    buttonErrorMsg = unDeleteMessage
                                 }
                             } label: {
                                 Label("UnDelete Student", systemImage: "trash")
@@ -573,6 +581,10 @@ struct StudentsView: View {
                 }
                 
             }
+            .alert(buttonErrorMsg, isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            }
+            
             .navigationDestination(isPresented: $assignTutor) {
                 TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
             }
@@ -645,6 +657,7 @@ struct ServicesView: View {
     @State private var listServiceCosts: Bool = false
     @State private var showDeleted: Bool = false
     @State private var showUnassigned: Bool = false
+    @State private var showAlert: Bool = false
     
     @State private var serviceNumber: Int = 0
     @State private var serviceCostList = TutorServiceCostList()
@@ -758,13 +771,21 @@ struct ServicesView: View {
                             }
                             
                             Button(role: .destructive) {
-                                serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+                                let (deleteResult, deleteMessage) = serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+                                if deleteResult == false {
+                                    showAlert = true
+                                    buttonErrorMsg = deleteMessage
+                                }
                             } label: {
                                 Label("Delete Service", systemImage: "trash")
                             }
                             
                             Button(role: .destructive) {
-                                let result = serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+                                let (unDeleteResult, unDeleteMessage) = serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+                                if unDeleteResult == false {
+                                    showAlert = true
+                                    buttonErrorMsg = unDeleteMessage
+                                }
                             } label: {
                                 Label("Undelete Service", systemImage: "trash")
                             }
@@ -798,6 +819,10 @@ struct ServicesView: View {
                 } primaryAction: { items in
                     //              store.favourite(items)
                 }
+                .alert(buttonErrorMsg, isPresented: $showAlert) {
+                    Button("OK", role: .cancel) { }
+                }
+                
                 .navigationDestination(isPresented: $assignService) {
                     TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
                 }
@@ -873,6 +898,7 @@ struct LocationsView: View {
     @State private var editLocation: Bool = false
     @State private var locationNumber: Int = 0
     @State private var showDeleted: Bool = false
+    @State private var showAlert: Bool = false
     
     var body: some View {
         if referenceData.locations.isLocationDataLoaded {
@@ -922,13 +948,21 @@ struct LocationsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+                                let (deleteResult, deleteMessage) = locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+                                if deleteResult == false {
+                                    showAlert = true
+                                    buttonErrorMsg = deleteMessage
+                                }
                             } label: {
                                 Label("Delete Location", systemImage: "trash")
                             }
                             
                             Button(role: .destructive) {
-                                locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+                                let (unDeleteResult, unDeleteMessage) = locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+                                if unDeleteResult == false {
+                                    showAlert = true
+                                    buttonErrorMsg = unDeleteMessage
+                                }
                             } label: {
                                 Label("Undelete Location", systemImage: "trash")
                             }
@@ -952,6 +986,10 @@ struct LocationsView: View {
                 } primaryAction: { items in
                     //              store.favourite(items)
                 }
+                .alert(buttonErrorMsg, isPresented: $showAlert) {
+                    Button("OK", role: .cancel) { }
+                }
+                
                 .navigationDestination(isPresented: $editLocation) {
                     LocationView(updateLocationFlag: true, locationNum: locationNumber, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName)
                 }

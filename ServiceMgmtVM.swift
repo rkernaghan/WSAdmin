@@ -123,20 +123,31 @@ import Foundation
         }
     }
 
-    func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+    func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+        var deleteResult: Bool = true
+        var deleteMessage: String = " "
+
         print("deleting Service")
         
         for objectID in indexes {
             if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.services.servicesList[serviceNum].markDeleted()
-                referenceData.services.saveServiceData()
-                referenceData.dataCounts.decreaseActiveServiceCount()
+                if referenceData.services.servicesList[serviceNum].serviceStatus == "Unassigned" {
+                    referenceData.services.servicesList[serviceNum].markDeleted()
+                    referenceData.services.saveServiceData()
+                    referenceData.dataCounts.decreaseActiveServiceCount()
+                } else {
+                    deleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
+                    print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be deleted")
+                    deleteResult = false
+                }
             }
         }
+        return(deleteResult, deleteMessage)
     }
     
-    func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> Bool {
-        var unDeleteResult = true
+    func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+        var unDeleteResult: Bool = true
+        var unDeleteMessage: String = " "
         print("UnDeleting Service")
         
         for objectID in indexes {
@@ -146,13 +157,13 @@ import Foundation
                     referenceData.services.saveServiceData()
                     referenceData.dataCounts.increaseActiveServiceCount()
                 } else {
-                    let buttonMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
+                    unDeleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
                     print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted")
                     unDeleteResult = false
                 }
             }
         }
-        return(unDeleteResult)
+        return(unDeleteResult, unDeleteMessage)
     }
     
 }

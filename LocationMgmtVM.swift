@@ -68,31 +68,51 @@ import Foundation
     }
     
 
-    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+        var deleteResult: Bool = true
+        var deleteMessage: String = " "
+
 //    func deleteLocation(city: Location, referenceData: ReferenceData) {
         print("deleting Location")
         
        for objectID in indexes {
             if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.locations.locationsList[locationNum].markDeleted()
-                referenceData.dataCounts.decreaseActiveLocationCount()
+                if referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
+                    referenceData.locations.locationsList[locationNum].markDeleted()
+                    referenceData.dataCounts.decreaseActiveLocationCount()
+                } else {
+                    deleteMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned"
+                    print("Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned")
+                    deleteResult = false
+                }
             }
         }
-        
         referenceData.locations.saveLocationData()
+        
+        return(deleteResult, deleteMessage)
     }
     
-    func undeleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) {
-//    func deleteLocation(city: Location, referenceData: ReferenceData) {
-        print("deleting Location")
+    func undeleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+        var unDeleteResult: Bool = true
+        var unDeleteMessage: String = " "
+        
+        print("undeleting Location")
         
        for objectID in indexes {
             if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                referenceData.locations.locationsList[locationNum].markUndeleted()
-                referenceData.dataCounts.increaseActiveLocationCount()
+                if referenceData.locations.locationsList[locationNum].locationStatus == "Deleted" {
+                    referenceData.locations.locationsList[locationNum].markUndeleted()
+                    referenceData.dataCounts.increaseActiveLocationCount()
+                } else {
+                    unDeleteMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted"
+                    print("rror: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted")
+                    unDeleteResult = false
+                }
             }
-        }        
+        }
         referenceData.locations.saveLocationData()
+        
+        return(unDeleteResult, unDeleteMessage)
     }
     
 }
