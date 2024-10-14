@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import GoogleSignIn
 import GoogleAPIClientForREST
+import GTMSessionFetcher
 
 
 @Observable class TutorMgmtVM  {
@@ -27,7 +28,13 @@ import GoogleAPIClientForREST
         referenceData.tutors.saveTutorData()
         referenceData.dataCounts.increaseTotalTutorCount()
         
-        createNewSheet(tutorName: tutorName, tutorKey: newTutorKey)
+        createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey)
+        
+ //       createNewTimesheet(tutorName: tutorName)
+        copyNewTimesheet(tutorName: tutorName)
+//        copyDriveFile(timesheetTemplateFileID: "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU", newTimesheetFileName: "new timesheet")
+        
+//        addPermissionToDriveFile(fileId: "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU", accessToken: "Token", role: "writer", type: "user")
     }
     
     func listTutorStudents(indexes: Int, referenceData: ReferenceData) {
@@ -215,8 +222,10 @@ import GoogleAPIClientForREST
         
     }
     
-    func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
-        print("Creating New Sheet ...\n")
+ //   func createNewTimesheet(tutorName: String, completionHandler: @escaping (String) -> Void) {
+   func createNewTimesheet(tutorName: String) {
+        print("Creating New Timesheet for \(tutorName)")
+
         let sheetService = GTLRSheetsService()
         let currentUser = GIDSignIn.sharedInstance.currentUser
         sheetService.authorizer = currentUser?.fetcherAuthorizer
@@ -234,7 +243,7 @@ import GoogleAPIClientForREST
         sheetService.executeQuery(query) { (ticket, result, error) in
             // let sheet = result as? GTLRSheets_Spreadsheet
             if let error = error {
-                completionHandler("Error:\n\(error.localizedDescription)")
+  //              completionHandler("Error:\n\(error.localizedDescription)")
                 print("Error in creating the Sheet: \(error)")
                 return
             }
@@ -247,8 +256,52 @@ import GoogleAPIClientForREST
             }
         }
     }
-    
-    func createNewSheet(tutorName: String, tutorKey: String) {
+   
+    func copyNewTimesheet(tutorName: String) {
+        var timesheetTemplateFileID: String = " "
+        var newFileID: String
+        
+         print("Copying New Timesheet for \(tutorName)")
+        if runMode == "PROD" {
+            timesheetTemplateFileID = PgmConstants.prodTimesheetTemplateFileID
+        } else {
+            timesheetTemplateFileID = PgmConstants.testTimesheetTemplateFileID
+        }
+         let driveService = GTLRDriveService()
+         let currentUser = GIDSignIn.sharedInstance.currentUser
+//        if let user = GIDSignIn.sharedInstance().currentUser {
+            driveService.authorizer = currentUser?.fetcherAuthorizer
+//        }
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("YYYY")
+        let currentYear = formatter.string(from: Date.now)
+        let newTimesheetName  = "Timesheet " + currentYear + " " + tutorName
+        let copyFile = GTLRDrive_File()
+        copyFile.name = newTimesheetName
+         
+        let query = GTLRDriveQuery_FilesCopy.query(withObject: copyFile, fileId: timesheetTemplateFileID )
+         driveService.executeQuery(query) { (ticket, file, error) in
+             // let sheet = result as? GTLRSheets_Spreadsheet
+             if let error = error {
+   //              completionHandler("Error:\n\(error.localizedDescription)")
+                 print("Error in creating the Sheet: \(error)")
+                 return
+             }
+             else {
+                 if let file = file as? GTLRDrive_File {
+
+//                         newFileID = file.identifier
+
+                 }
+               
+                
+                 print("Spreadsheet id")
+                 
+                 print("Success!")
+             }
+         }
+     }
+    func createNewDetailsSheet(tutorName: String, tutorKey: String) {
         
         var spreadsheetID: String
         var updateValues: [[String]] = []
@@ -346,8 +399,8 @@ import GoogleAPIClientForREST
         }
     }
     
-    func copyDriveFile(sourceFileID: String, newFileName: String) {
-        print("Copying sheet")
+    func listDriveFiles() {
+        print("List files available to user")
         let driveService = GTLRDriveService()
         let currentUser = GIDSignIn.sharedInstance.currentUser
         driveService.authorizer = currentUser?.fetcherAuthorizer
@@ -360,20 +413,39 @@ import GoogleAPIClientForREST
         dquery.spaces = "drive"
         dquery.corpora = "user"
         dquery.fields = "files(id,name),nextPageToken"
-// Retreive all files with Tutor timesheet name (should only be one)
+// Retreive all files
         driveService.executeQuery(dquery, completionHandler: {(ticket, files, error) in
             if let error = error {
                 print(error)
-                print("Error with creating sheet:\(error)")
+                print("Error with listing files:\(error)")
                 return
             } else {
-                print("Success!")
-                //newSheet.sheetId =
-                print("Sheet added!")
-                let newFileID = " "
+                print("Retrieved list of user files")
                 return()
             }
         })
+    }
+    
+    func addPermissionToDriveFile(fileId: String, accessToken: String, role: String, type: String) {
+        let service = GTLRDriveService()
+  //      service.authorizer = GTMAppAuthFetcherAuthorization(authState: OAuth2.authState)
+        let currentUser = GIDSignIn.sharedInstance.currentUser
+        service.authorizer = currentUser?.fetcherAuthorizer
+
+        let permission = GTLRDrive_Permission()
+        permission.role = role  // e.g., "reader", "writer"
+        permission.type = type  // e.g., "user", "group", "domain", "anyone"
+        permission.emailAddress = "rskernaghan@gmail.com"
+
+        let query = GTLRDriveQuery_PermissionsCreate.query(withObject: permission, fileId: fileId)
+        
+        service.executeQuery(query) { ticket, permission, error in
+            if let error = error {
+                print("Error adding permission: \(error.localizedDescription)")
+            } else {
+                print("Permission added successfully")
+            }
+        }
     }
     
     func printTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {

@@ -141,8 +141,10 @@ struct PgmConstants {
     
     static let testReferenceDataFileID: String = "1RdR_GPxAWcDUWBU-eytGKw2uzZhy3yR-MdQegmBZNis"
     static let testTutorDataFileID: String = "1NaSjIe43RrGEa4AdAKHuF343eHlfogzuMuS5SPvowS8"
+    static let testTimesheetTemplateFileID: String = "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU"
     static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
+    static let prodTimesheetTemplateFileID: String = "1NwA5A0xvFPqGmpclsgFtQbUALxwHw5kOd8vGJGsqeCg"
     
     static let tutorHeaderArray1 = ["TUTOR", " ", " ", "Service Key", "Timesheet Name", "Invoice Name", "Billing Type", "Cost 1", "Cost 2", "Cost 3", "Price 1", "Price 2", "Price 3", " ", "Student Key", "Student Name", "Client Name", "Client Email", "Client Phone" ]
     static let tutorHeaderArray2 = [" ", " ", " ", "B000", "-", " ", " ", " ", " ", " ", " ", " ", " ", " ", "S0000", "-"]

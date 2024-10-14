@@ -47,6 +47,16 @@ struct DataMgmtView: View {
         .frame(minWidth: 100, minHeight: 100)
         .onAppear(perform: {
             print("Start OnAppear")
+            
+            getFileID(fileName: "ReferenceData") {result in 
+                switch result {
+                case .success(let fileID):
+                    print("File ID: \(fileID)")
+                case . failure(let error):
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            
  //           let refDataFileName = PgmConstants.prodRefFileName
             let refDataFileName = PgmConstants.testRefFileName
             refDataVM.loadReferenceData(referenceData: referenceData)
@@ -57,6 +67,7 @@ struct DataMgmtView: View {
 struct SideView: View {
     var referenceData: ReferenceData
     @Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
+    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
         
     var body: some View {
  //       NavigationStack {
@@ -108,6 +119,12 @@ struct SideView: View {
                     LocationView(updateLocationFlag: false, locationNum: 0, referenceData: referenceData, locationName: " ")
                 } label: {
                     Label("Add Location", systemImage: "building")
+                }
+                
+                Button( action: {
+                    tutorMgmtVM.listDriveFiles()
+                }) {
+                    Text("List Service Account Files")
                 }
             }
 //            .listStyle(SidebarListStyle())
