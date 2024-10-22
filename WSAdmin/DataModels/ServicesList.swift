@@ -64,8 +64,7 @@ import GoogleAPIClientForREST
 
         let range = PgmConstants.serviceRange + String(referenceData.dataCounts.totalServices + PgmConstants.serviceStartingRowNumber - 1)
 //        print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: referenceFileID, range:range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: referenceFileID, range:range)
 // Load Services from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {

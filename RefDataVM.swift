@@ -23,19 +23,8 @@ import GoogleAPIClientForREST
     
    
     func loadReferenceData(referenceData: ReferenceData)  {
-        var referenceFileID: String
-        var tutorDataFileID: String
 
-        if runMode == "PROD" {
-            referenceFileID = PgmConstants.prodReferenceDataFileID
-            tutorDataFileID = PgmConstants.prodTutorDataFileID
-            
-        } else {
-            referenceFileID = PgmConstants.testReferenceDataFileID
-            tutorDataFileID = PgmConstants.testTutorDataFileID
-        }
-        
-        referenceData.dataCounts.loadDataCounts(referenceFileID: referenceFileID, tutorDataFileID: tutorDataFileID, referenceData: referenceData)
+        referenceData.dataCounts.loadDataCounts(referenceFileID: referenceDataFileID, tutorDataFileID: tutorDetailsFileID, referenceData: referenceData)
         if referenceData.dataCounts.isDataCountsLoaded {
  
         }

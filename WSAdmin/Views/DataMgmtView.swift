@@ -48,19 +48,19 @@ struct DataMgmtView: View {
         .onAppear(perform: {
             print("Start OnAppear")
             
-            getFileID(fileName: "ReferenceData") {result in 
-                switch result {
-                case .success(let fileID):
-                    print("File ID: \(fileID)")
-                case . failure(let error):
-                    print("Error: \(error.localizedDescription)")
+            Task {
+                if runMode == "PROD" {
+                    (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsProdFileName)
+                    (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataProdFileName)
+                    (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+                } else {
+                    (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsTestFileName)
+                    (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataTestFileName)
+                    (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
                 }
+                refDataVM.loadReferenceData(referenceData: referenceData)
             }
-            
- //           let refDataFileName = PgmConstants.prodRefFileName
-            let refDataFileName = PgmConstants.testRefFileName
-            refDataVM.loadReferenceData(referenceData: referenceData)
-            })
+        })
     }
 }
 
@@ -96,6 +96,12 @@ struct SideView: View {
                 } label: {
                     Label("Locations", systemImage: "building")
                 }
+
+                NavigationLink {
+                    BillingView(referenceData: referenceData)
+                } label: {
+                    Label("Billing", systemImage: "person")
+                }
                 
                 NavigationLink {
                     TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: "", contactEmail: "", contactPhone: "", maxStudents: 0)
@@ -122,7 +128,7 @@ struct SideView: View {
                 }
                 
                 Button( action: {
-                    tutorMgmtVM.listDriveFiles()
+                    listDriveFiles()
                 }) {
                     Text("List Service Account Files")
                 }

@@ -101,8 +101,7 @@ class DataCounts {
         sheetService.authorizer = currentUser?.fetcherAuthorizer
         
         let range = PgmConstants.dataCountRange
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: referenceFileID, range:range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: referenceFileID, range:range)
 // Load data counts from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {

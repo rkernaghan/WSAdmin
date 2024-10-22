@@ -10,13 +10,13 @@ import Foundation
 @Observable class StudentMgmtVM  {
     
     func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
+        var studentBillingCount: Int = 0
+        var sheetCells = [[String]]()
+        var studentBillingFileName: String = ""
+        var prevMonthName: String = ""
+        var billingYear: String = ""
         
-        let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let startDate = dateFormatter.string(from: Date())
-        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
-        referenceData.students.loadStudent(newStudent: newStudent, referenceData: referenceData)
+        referenceData.students.addNewStudent(studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location, referenceData: referenceData)
         
         referenceData.students.saveStudentData()
         referenceData.dataCounts.increaseTotalStudentCount()
@@ -25,6 +25,43 @@ import Foundation
         let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
         referenceData.locations.locationsList[locationNum].increaseStudentCount()
         referenceData.locations.saveLocationData()
+        
+        (prevMonthName, billingYear) = getPrevMonthYear()
+        
+        if runMode == "PROD" {
+            studentBillingFileName = "Student Billing Summary " + billingYear
+        } else {
+            studentBillingFileName = "Student Billing Summary - TEST " + billingYear
+        }
+ 
+        Task {
+// Get the count of Billed Students in the Billed Students spreadsheet
+            
+            let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+            
+            var sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingCountRange)
+            if let sheetData = sheetData {
+                studentBillingCount = Int(sheetData.values[0][0]) ?? 0
+            }
+// Read in the Billed Students from the Billed Student spreadsheet
+            sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow) + String(studentBillingCount - 1) )
+            
+            if let sheetData = sheetData {
+                sheetCells = sheetData.values
+            }
+// Build the Billed Students list for the month from the data read in
+            let studentBillingMonth = StudentBillingMonth()
+            studentBillingMonth.loadStudentBillingData(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
+            
+// Add new Student to Billed Student list for the month
+            let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+            if billedStudentFound == false {
+                await studentBillingMonth.addNewBilledStudent(studentName: studentName)
+            }
+// Save the updated Billed Student list for the month
+            await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
+            
+        }
     }
     
     func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
@@ -181,6 +218,78 @@ import Foundation
             }
         }
         return(deleteResult, deleteMessage)
+    }
+    
+    func removeBilledStudent(studentName: String) {
+        var prevMonthName: String = ""
+        var prevMonthInt: Int = 0
+        var billingYear: String = ""
+        var studentBillingFileName: String = ""
+        var studentBillingCount: Int = 0
+        var sheetCells = [[String]]()
+        
+        
+        if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
+            var prevMonthInt = monthInt - 2                  // subtract 2 from current month name to get prev month with 0-based array index
+            if prevMonthInt == -1 {
+               prevMonthInt = 11
+            }
+            prevMonthName = monthArray[prevMonthInt]
+        }
+        
+        if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
+            if prevMonthName == monthArray[11] {
+                billingYear = String(yearInt - 1)
+            } else {
+                billingYear = String(yearInt)
+            }
+        }
+
+        if runMode == "PROD" {
+            studentBillingFileName = "Student Billing Summary " + billingYear
+        } else {
+            studentBillingFileName = "Student Billing Summary - TEST " + billingYear
+        }
+        
+        getFileID(fileName: studentBillingFileName) {result in
+            switch result {
+            case .success(let fileID):
+
+                let studentBillingFileID = fileID
+ 
+                Task {
+// Get the count of Billed Students in the Billed Students spreadsheet
+                    var sheetData = try await readSheetCells(fileID: studentBillingFileID, range: "Sept!A2:A2")
+                    if let sheetData = sheetData {
+                        studentBillingCount = Int(sheetData.values[0][0]) ?? 0
+                    }
+// Read in the Billed Students from the Billed Student spreadsheet
+                    sheetData = try await readSheetCells(fileID: studentBillingFileID, range: "Sept!A4:J" + String(PgmConstants.studentBillingStartRow) + String(studentBillingCount - 1) )
+                    
+                    if let sheetData = sheetData {
+                        sheetCells = sheetData.values
+                    }
+// Build the Billed Students list for the month from the data read in
+                    let studentBillingMonth = StudentBillingMonth()
+                    studentBillingMonth.loadStudentBillingData(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
+                    
+// Add new Student to Billed Student list for the month
+                    let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+                    if billedStudentFound == false {
+                        await studentBillingMonth.addNewBilledStudent(studentName: studentName)
+                    }
+// Save the updated Billed Student list for the month
+                    await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
+                    
+                    //               loadStudentBillingMonth(billingMonth: billingMonth, studentBillingFileID: studentBillingFileID)
+                    print ("after load student Billing Month")
+                    //               }
+                    print("After Task for get File ID")
+                }
+            case . failure(let error):
+                print("Error: \(error.localizedDescription)")
+            }
+        }
     }
     
     func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {

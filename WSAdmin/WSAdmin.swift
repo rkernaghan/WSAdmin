@@ -145,6 +145,18 @@ struct PgmConstants {
     static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
     static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
     static let prodTimesheetTemplateFileID: String = "1NwA5A0xvFPqGmpclsgFtQbUALxwHw5kOd8vGJGsqeCg"
+
+    
+    static let tutorDetailsTestFileName: String = "Tutor Details Data - TEST"
+    static let tutorDetailsProdFileName: String = "Tutor Details Data"
+    static let referenceDataTestFileName: String = "ReferenceData - TEST"
+    static let referenceDataProdFileName: String = "ReferenceData"
+    static let studentBillingTestFileNamePrefix: String = "Student Billing Summary - TEST "
+    static let studentBillingProdFileNamePrefix: String = "Student Billing Summary "
+    static let tutorBillingTestFileNamePrefix: String = "Tutor Billing Summary - TEST "
+    static let tutorBillingProdFileNamePrefix: String = "Tutor Billing Summary "
+    static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
+    static let timesheetTemplateProdFileName: String = "Template Timesheet"
     
     static let tutorHeaderArray1 = ["TUTOR", " ", " ", "Service Key", "Timesheet Name", "Invoice Name", "Billing Type", "Cost 1", "Cost 2", "Cost 3", "Price 1", "Price 2", "Price 3", " ", "Student Key", "Student Name", "Client Name", "Client Email", "Client Phone" ]
     static let tutorHeaderArray2 = [" ", " ", " ", "B000", "-", " ", " ", " ", " ", " ", " ", " ", " ", " ", "S0000", "-"]
@@ -154,7 +166,43 @@ struct PgmConstants {
     static let tutorHeader2Range = "!A4:B5"
     static let tutorHeader3Range = "!A2:A3"
     
-
+    static let timesheetStudentCol = 0
+    static let timesheetDateCol = 1
+    static let timesheetDurationCol = 2
+    static let timesheetServiceCol = 3
+    static let timesheetNotesCol = 4
+    static let timesheetCostCol = 5
+    static let timesheetClientNameCol = 6
+    static let timesheetClientEmailCol = 7
+    static let timesheetClientPhoneCol = 8
+    static let timesheetDataRange = "A1:I"
+    
+    static let studentBillingCountRange = "!A2:A2"
+    static let studentBillingRange = "!A4:J"
+    static let studentBillingStartRow = 4
+    static let studentBillingStudentCol = 0
+    static let studentBillingMonthSessionCol = 1
+    static let studentBillingMonthCostCol = 2
+    static let studentBillingMonthRevenueCol = 3
+    static let studentBillingMonthProfitCol = 4
+    static let studentBillingTotalSessionCol = 5
+    static let studentBillingTotalCostCol = 6
+    static let studentBillingTotalRevenueCol = 7
+    static let studentBillingTotalProfitCol = 8
+    static let studentBillingTutorCol = 9
+    
+    static let tutorBillingCountRange = "!A2:A2"
+    static let tutorBillingRange = "!A4:I"
+    static let tutorBillingStartRow = 3
+    static let tutorBillingTutorCol = 0
+    static let tutorBillingMonthSessionCol = 1
+    static let tutorBillingMonthCostCol = 2
+    static let tutorBillingMonthRevenueCol = 3
+    static let tutorBillingMonthProfitCol = 4
+    static let tutorBillingTotalSessionCol = 5
+    static let tutorBillingTotalCostCol = 6
+    static let tutorBillingTotalRevenueCol = 7
+    static let tutorBillingTotalProfitCol = 8
 }
 
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
@@ -208,8 +256,88 @@ enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
     }
 }
 
+enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
+    case January
+    case February
+    case March
+    case April
+    case May
+    case June
+    case July
+    case August
+    case September
+    case October
+    case November
+    case December
+    
+    var id: Self { self }
+
+    var description: String {
+
+        switch self {
+        case .January:
+            return "Jan"
+        case .February:
+            return "Feb"
+        case .March:
+            return "Mar"
+        case .April:
+            return "April"
+        case .May:
+            return "May"
+        case .June:
+            return "June"
+        case .July:
+            return "July"
+        case .August:
+            return "Aug"
+        case .September:
+            return "Sept"
+        case .October:
+            return "Oct"
+        case .November:
+            return "Nov"
+        case .December:
+            return "Dec"
+        }
+    }
+}
+
+enum YearSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
+    case Minor
+    case Adult
+    
+    var id: Self { self }
+
+    var description: String {
+
+        switch self {
+        case .Minor:
+            return "Minor"
+        case .Adult:
+            return "Adult"
+        }
+    }
+}
+
+
+struct SheetData: Decodable {
+    let range: String
+    let majorDimension: String
+    let values: [[String]]
+}
+
+let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030"]
+
 var buttonErrorMsg: String = " "
 var runMode: String = "TEST"
+
+var studentBillingFileNamePrefix: String = ""
+var tutorBillingFileNamePrefix: String = ""
+var referenceDataFileID: String = ""
+var tutorDetailsFileID: String = ""
+var timesheetTemplateFileID: String = ""
 
 @main
 struct WSAdmin: App {

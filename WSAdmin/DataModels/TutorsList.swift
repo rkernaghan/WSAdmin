@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 import GoogleSignIn
 import GoogleAPIClientForREST
 
@@ -64,8 +63,7 @@ import GoogleAPIClientForREST
 
         let range = PgmConstants.tutorRange + String(referenceData.dataCounts.totalTutors + PgmConstants.tutorStartingRowNumber - 1)
 //    print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: referenceFileID, range:range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: referenceFileID, range:range)
 // Load Tutors from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {

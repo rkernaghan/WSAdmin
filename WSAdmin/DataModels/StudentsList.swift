@@ -46,7 +46,17 @@ import GoogleAPIClientForREST
     }
     
     func loadStudent(newStudent: Student, referenceData: ReferenceData) {
+        self.studentsList.append(newStudent)
+    }
+ 
+    func addNewStudent(studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String, referenceData: ReferenceData) {
         
+        let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let startDate = dateFormatter.string(from: Date())
+        
+        let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
         self.studentsList.append(newStudent)
     }
     
@@ -64,8 +74,7 @@ import GoogleAPIClientForREST
 
         let range = PgmConstants.studentRange + String(referenceData.dataCounts.totalStudents + PgmConstants.studentStartingRowNumber - 1)
 //        print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: referenceFileID, range:range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: referenceFileID, range:range)
 // Load Students from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {

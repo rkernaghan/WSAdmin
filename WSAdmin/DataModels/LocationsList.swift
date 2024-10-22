@@ -65,8 +65,7 @@ import GoogleAPIClientForREST
 
         let range = PgmConstants.locationRange + String(referenceData.dataCounts.totalLocations + PgmConstants.locationStartingRowNumber - 1)
 //        print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-            .query(withSpreadsheetId: referenceFileID, range:range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: referenceFileID, range:range)
 // Load Cities from ReferenceData spreadsheet
         sheetService.executeQuery(query) { (ticket, result, error) in
             if let error = error {

@@ -32,7 +32,7 @@ struct StudentView: View {
         VStack {
             HStack {
                 Text("Student Name")
-                TextField("Stuudent Name", text: $studentName)
+                TextField("Student Name", text: $studentName)
                     .frame(width: 150)
                     .textFieldStyle(.roundedBorder)
              }

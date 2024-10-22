@@ -259,7 +259,7 @@ import GTMSessionFetcher
    
     func copyNewTimesheet(tutorName: String) {
         var timesheetTemplateFileID: String = " "
-        var newFileID: String
+        var newFileID: String = ""
         
          print("Copying New Timesheet for \(tutorName)")
         if runMode == "PROD" {
@@ -283,21 +283,15 @@ import GTMSessionFetcher
          driveService.executeQuery(query) { (ticket, file, error) in
              // let sheet = result as? GTLRSheets_Spreadsheet
              if let error = error {
-   //              completionHandler("Error:\n\(error.localizedDescription)")
-                 print("Error in creating the Sheet: \(error)")
+                 print("Error in copying new timesheet for \(tutorName) \(error)")
                  return
              }
              else {
                  if let file = file as? GTLRDrive_File {
-
-//                         newFileID = file.identifier
-
+                     newFileID = file.identifier ?? ""
                  }
-               
-                
-                 print("Spreadsheet id")
-                 
-                 print("Success!")
+                 print("New Timesheet for tutor \(tutorName) is \(newFileID)")
+                 self.addPermissionToDriveFile(fileId: newFileID, tutorEmail: "mkerkinos@gmail.com", role: "writer", type: "user")
              }
          }
      }
@@ -394,39 +388,10 @@ import GTMSessionFetcher
                     print("Tutor Details Header 3 saved for Tutor \(tutorName)")
                 }
             }
- 
-            
         }
     }
     
-    func listDriveFiles() {
-        print("List files available to user")
-        let driveService = GTLRDriveService()
-        let currentUser = GIDSignIn.sharedInstance.currentUser
-        driveService.authorizer = currentUser?.fetcherAuthorizer
-        
-        let dquery = GTLRDriveQuery_FilesList.query()
-        dquery.pageSize = 100
-        
- //       let root = "name = '\(fileName)' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed=false"
- //       dquery.q = root
-        dquery.spaces = "drive"
-        dquery.corpora = "user"
-        dquery.fields = "files(id,name),nextPageToken"
-// Retreive all files
-        driveService.executeQuery(dquery, completionHandler: {(ticket, files, error) in
-            if let error = error {
-                print(error)
-                print("Error with listing files:\(error)")
-                return
-            } else {
-                print("Retrieved list of user files")
-                return()
-            }
-        })
-    }
-    
-    func addPermissionToDriveFile(fileId: String, accessToken: String, role: String, type: String) {
+    func addPermissionToDriveFile(fileId: String, tutorEmail: String, role: String, type: String) {
         let service = GTLRDriveService()
   //      service.authorizer = GTMAppAuthFetcherAuthorization(authState: OAuth2.authState)
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -435,7 +400,7 @@ import GTMSessionFetcher
         let permission = GTLRDrive_Permission()
         permission.role = role  // e.g., "reader", "writer"
         permission.type = type  // e.g., "user", "group", "domain", "anyone"
-        permission.emailAddress = "rskernaghan@gmail.com"
+        permission.emailAddress = tutorEmail
 
         let query = GTLRDriveQuery_PermissionsCreate.query(withObject: permission, fileId: fileId)
         
@@ -443,7 +408,7 @@ import GTMSessionFetcher
             if let error = error {
                 print("Error adding permission: \(error.localizedDescription)")
             } else {
-                print("Permission added successfully")
+                print("Permission added successfully for \(tutorEmail)")
             }
         }
     }
@@ -468,7 +433,6 @@ import GTMSessionFetcher
                 }
             }
         }
-        referenceData.tutors.saveTutorData()
     }
     
     func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) -> TutorServiceCostList {

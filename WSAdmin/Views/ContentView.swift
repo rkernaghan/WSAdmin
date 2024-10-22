@@ -16,6 +16,7 @@ struct ContentView: View {
     let tutorMgmtVM = TutorMgmtVM()
     let serviceMgmtVM = ServiceMgmtVM()
     let locationMgmtVM = LocationMgmtVM()
+    let billingVM = BillingVM()
     
     fileprivate func SignInButton() -> Button<Text> {
         Button(action: {
@@ -53,6 +54,7 @@ struct ContentView: View {
         .environment(tutorMgmtVM)
         .environment(serviceMgmtVM)
         .environment(locationMgmtVM)
+        .environment(billingVM)
     }
 }
 
