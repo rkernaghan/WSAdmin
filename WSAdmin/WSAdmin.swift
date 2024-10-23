@@ -193,7 +193,7 @@ struct PgmConstants {
     
     static let tutorBillingCountRange = "!A2:A2"
     static let tutorBillingRange = "!A4:I"
-    static let tutorBillingStartRow = 3
+    static let tutorBillingStartRow = 4
     static let tutorBillingTutorCol = 0
     static let tutorBillingMonthSessionCol = 1
     static let tutorBillingMonthCostCol = 2

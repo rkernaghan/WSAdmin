@@ -35,6 +35,25 @@ import GTMSessionFetcher
 //        copyDriveFile(timesheetTemplateFileID: "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU", newTimesheetFileName: "new timesheet")
         
 //        addPermissionToDriveFile(fileId: "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU", accessToken: "Token", role: "writer", type: "user")
+        
+        let (prevMonthName, billingYear) = getPrevMonthYear()
+        
+        let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
+   
+        let tutorBillingMonth = TutorBillingMonth()
+        Task {
+// Get the fileID of the Billed Tutor spreadsheet for the year
+            let (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+// Read the data from the Billed Tutor spreadsheet for the previous month
+            await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+// Add new the Tutor to Billed Tutor list for the month
+            let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+            if billedTutorFound == false {
+                tutorBillingMonth.addNewBilledTutor(tutorName: tutorName)
+            }
+// Save the updated Billed Tutor list for the month
+            await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: "Sept")
+        }
     }
     
     func listTutorStudents(indexes: Int, referenceData: ReferenceData) {
@@ -129,6 +148,25 @@ import GTMSessionFetcher
                     referenceData.tutors.tutorsList[tutorNum].markDeleted()
                     referenceData.tutors.saveTutorData()
                     referenceData.dataCounts.decreaseActiveStudentCount()
+// Remove Tutor from Billed Tutor list for the previous month
+                    let (prevMonthName, billingYear) = getPrevMonthYear()
+                    let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
+                    
+                    let tutorBillingMonth = TutorBillingMonth()
+                    Task {
+// Get the File ID of the Billed Tutor spreadsheet for the year
+                        let (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+// Read in the Billed Tutors for the previous month
+                        await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+// Add the new Tutor to Billed Tutor list for the month
+                        let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+                        let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+                        if billedTutorFound != false {
+                            tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
+                        }
+// Save the updated Billed Tutor list for the month
+                        await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: "Sept")
+                    }
                 } else {
                     deleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
                     print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)")

@@ -53,10 +53,14 @@ struct DataMgmtView: View {
                     (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsProdFileName)
                     (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataProdFileName)
                     (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+                    studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
+                    tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
                 } else {
                     (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsTestFileName)
                     (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataTestFileName)
                     (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+                    studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
+                    tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
                 }
                 refDataVM.loadReferenceData(referenceData: referenceData)
             }
@@ -515,6 +519,7 @@ struct StudentsView: View {
 //                  TableColumn("Total Profit", value: \.studentTotalProfit)
 //                  }
                 }
+//                .width(min: 600, ideal: 800)
                 .contextMenu(forSelectionType: Student.ID.self) { items in
                     if items.isEmpty {
                         Button { } label: {
@@ -589,7 +594,9 @@ struct StudentsView: View {
                             Label("Edit Students", systemImage: "heart")
                         }
                         
-                        Button(role: .destructive) {} label: {
+                        Button(role: .destructive) {
+                            let (deleteResult, deleteMessage) = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                        } label: {
                             Label("Delete Students", systemImage: "trash")
                         }
                         

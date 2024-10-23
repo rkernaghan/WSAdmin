@@ -12,9 +12,6 @@ import Foundation
     func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
         var studentBillingCount: Int = 0
         var sheetCells = [[String]]()
-        var studentBillingFileName: String = ""
-        var prevMonthName: String = ""
-        var billingYear: String = ""
         
         referenceData.students.addNewStudent(studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location, referenceData: referenceData)
         
@@ -26,41 +23,22 @@ import Foundation
         referenceData.locations.locationsList[locationNum].increaseStudentCount()
         referenceData.locations.saveLocationData()
         
-        (prevMonthName, billingYear) = getPrevMonthYear()
-        
-        if runMode == "PROD" {
-            studentBillingFileName = "Student Billing Summary " + billingYear
-        } else {
-            studentBillingFileName = "Student Billing Summary - TEST " + billingYear
-        }
- 
+        let (prevMonthName, billingYear) = getPrevMonthYear()
+        let studentBillingFileName = studentBillingFileNamePrefix + billingYear
+   
+        let studentBillingMonth = StudentBillingMonth()
         Task {
-// Get the count of Billed Students in the Billed Students spreadsheet
-            
+// Get the File ID of the Billed Student spreadsheet for the year
             let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
-            
-            var sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingCountRange)
-            if let sheetData = sheetData {
-                studentBillingCount = Int(sheetData.values[0][0]) ?? 0
-            }
-// Read in the Billed Students from the Billed Student spreadsheet
-            sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow) + String(studentBillingCount - 1) )
-            
-            if let sheetData = sheetData {
-                sheetCells = sheetData.values
-            }
-// Build the Billed Students list for the month from the data read in
-            let studentBillingMonth = StudentBillingMonth()
-            studentBillingMonth.loadStudentBillingData(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
-            
-// Add new Student to Billed Student list for the month
+ // Read in the Billed Students for the previous month
+            await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+// Add the new Student to Billed Student list for the month
             let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
             if billedStudentFound == false {
-                await studentBillingMonth.addNewBilledStudent(studentName: studentName)
+                studentBillingMonth.addNewBilledStudent(studentName: studentName)
             }
 // Save the updated Billed Student list for the month
             await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
-            
         }
     }
     
@@ -206,9 +184,29 @@ import Foundation
                     referenceData.students.studentsList[studentNum].markDeleted()
                     referenceData.students.saveStudentData()
                     referenceData.dataCounts.decreaseActiveStudentCount()
+// Decrease the counts of Students at the Location
                     let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
                     referenceData.locations.locationsList[locationNum].decreaseStudentCount()
                     referenceData.locations.saveLocationData()
+// Remove Student from Billed Student list for previous month
+                    let (prevMonthName, billingYear) = getPrevMonthYear()
+                    let studentBillingFileName = studentBillingFileNamePrefix + billingYear
+                    
+                    let studentBillingMonth = StudentBillingMonth()
+                    Task {
+// Get the File ID of the Billed Student spreadsheet for the year
+                        let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+// Read in the Billed Students for the previous month
+                        await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+// Add the new Student to Billed Student list for the month
+                        let studentName = referenceData.students.studentsList[studentNum].studentName
+                        let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+                        if billedStudentFound != false {
+                            studentBillingMonth.deleteBilledStudent(billedStudentNum: billedStudentNum)
+                        }
+// Save the updated Billed Student list for the month
+                        await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
+                    }
                     
                 } else {
                     deleteMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
