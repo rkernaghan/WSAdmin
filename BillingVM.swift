@@ -17,79 +17,101 @@ import GoogleAPIClientForREST
 //    private var errorMessage: String?
 
         
-    func generateInvoice(tutorSet: Set<Tutor.ID>, timesheetYear: String, timesheetMonth: String, referenceData: ReferenceData) -> Invoice {
+    func generateInvoice(tutorSet: Set<Tutor.ID>, timesheetYear: String, timesheetMonth: String, referenceData: ReferenceData) async -> Invoice {
         var invoice = Invoice()
+        var tutorList = [String]()
+        var studentBillingFileID: String = ""
+        var tutorBillingFileID: String = ""
+        var resultFlag: Bool = true
         
         let studentBillingMonth = StudentBillingMonth()
-//        studentBillingMonth.loadStudentBillingData(billingMonth: "Sept", billingYear: "2024")
+        let tutorBillingMonth = TutorBillingMonth()
         
-        for objectID in tutorSet {
-            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-        print("Next Tutorname: \(tutorName)")
-                let timesheet = getTimesheet(tutorName: tutorName, timesheetYear: "2024", timesheetMonth: "Sept")
-            }
+        let (monthName, billingYear) = getCurrentMonthYear()
+        let studentBillingFileName = studentBillingFileNamePrefix + billingYear
+        let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
+        let billArray = BillArray()
+        print ("//")
+        print("//")
+ //       Task {
+            //    print("Before get Student Billing File ID Async")
+        do {
+            (resultFlag, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+        } catch {
+            
         }
-        return(invoice)
+            //    print("After get Student Billing File ID Async")
+            //    print("Before Load Student Billing Month Async \(studentBillingFileID)")
+            await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: monthName, studentBillingFileID: studentBillingFileID)
+            //    print("After Load Student Billing Month Async \(studentBillingFileID)")
+            //    print("Before get Tutor File ID Async")
+        do {
+            (resultFlag, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+        } catch {
+            
+        }
+            //    print("After Get Tutor File ID Async")
+            //    print("Before Load Tutor Billing Month Async \(tutorBillingFileID)")
+            await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: monthName, tutorBillingFileID: tutorBillingFileID)
+            //    print("After Load Tutor Billing Month Async \(tutorBillingFileID)")
+            //    print("Go time")
+            //    print("Go time")
+            for objectID in tutorSet {
+                if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                    let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+                    print("Next Tutorname: \(tutorName)")
+                    tutorList.append(tutorName)
+                    //    print("Before get timesheet \(tutorName)")
+                    let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: timesheetYear, timesheetMonth: timesheetMonth)
+                    //    print("After get timesheet \(tutorName)")
+                    billArray.processTimesheet(timesheet: timesheet)
+                    //    print("After process timesheet")
+                    
+                }
+            }
+            print("Tutor List: \(tutorList)")
+            //            billArray.printBillArray()
+            
+            let (alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
+            
+            if alreadyBilledFlag {
+                print("Already Billed Tutors: \(alreadyBilledTutors)")
+            }
+            
+            invoice = billArray.generateInvoice()
+            
+            
+            //       let result1 = studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+            //       let result2 = tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
+            invoice.printInvoice()
+            return(invoice)
+   //     }
     }
         
-    func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String) -> Timesheet {
+    func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String) async -> Timesheet {
         var timesheet = Timesheet()
-        var timesheetID: String = " "
+        var timesheetFileID: String = " "
+        var result: Bool = true
         
+        print("Start get timesheet" + tutorName)
         let fileName = "Timesheet " + timesheetYear + " " + tutorName
-        getFileID(fileName: fileName) {result in
-            switch result {
-            case .success(let fileID):
-                print("Timesheet File ID for \(tutorName): \(fileID)")
-                timesheetID = fileID
-                Task {
-                    print ("before load timesheet call \(tutorName)")
-                    await self.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetID)
-                    print ("after load timesheet call \(tutorName)")
-                }
-                print("After Task for \(tutorName)")
-            case . failure(let error):
-                print("Error: \(error.localizedDescription)")
-            }
+        do {
+            (result, timesheetFileID) = try await getFileIDAsync(fileName: fileName)
+        } catch {
+            print("Error: could not get timesheet fileID for \(fileName)")
         }
+        print("Before Task LoadTimesheet data " + tutorName)
+//        Task {
+            print("In Task for Get Timesheet " + tutorName)
+            let range = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
+            print("after load timesheet data before print value statement")
+            print("Timesheet Returned" + timesheet.timesheetRows[0].studentName + " " + timesheet.timesheetRows[0].tutorName)
+//        }
         
         return(timesheet)
     }
     
-    func loadTimesheetData(tutorName: String, month: String, timesheetID: String) async {
-           do {
-               let spreadsheetId = timesheetID
-               let range = "\(month)!" + PgmConstants.timesheetDataRange + "102"
-
-               
-// Fetch data from Google Sheets
-               print("Before fetch timesheet call \(tutorName)")
-               let sheetData = try await fetchTimesheetData(tutorName: tutorName, spreadsheetId: spreadsheetId, range: range)
-               print("after fetch timesheet call \(tutorName)")
-               if let sheetData = sheetData {
-                   let entryCount = Int(sheetData.values[2][1]) ?? 0
-                   var rowNum = 4
-                   while rowNum < entryCount + 4 {
-                       let student = sheetData.values[rowNum][PgmConstants.timesheetStudentCol]
-                       let date = sheetData.values[rowNum][PgmConstants.timesheetDateCol]
-                       let duration = Int(sheetData.values[rowNum][PgmConstants.timesheetDurationCol]) ?? 0
-                       let service = sheetData.values[rowNum][PgmConstants.timesheetServiceCol]
-                       let notes = sheetData.values[rowNum][PgmConstants.timesheetDurationCol]
-                       let cost = Float(sheetData.values[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
-                       let clientName = sheetData.values[rowNum][PgmConstants.timesheetClientNameCol]
-                       let clientEmail = sheetData.values[rowNum][PgmConstants.timesheetClientEmailCol]
-                       let clientPhone = sheetData.values[rowNum][PgmConstants.timesheetClientPhoneCol]
-                       let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, serviceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
-                       print(tutorName, student, date, service)
-                       rowNum += 1
-                   }
-               }
-           } catch {
-               let errorMessage = error.localizedDescription
-               print(errorMessage)
-           }
-       }
+ 
 
     func fetchTimesheetData(tutorName: String, spreadsheetId: String, range: String) async throws -> SheetData? {
         var yourOAuthToken: String

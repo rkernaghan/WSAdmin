@@ -269,7 +269,7 @@ import Foundation
                     }
 // Build the Billed Students list for the month from the data read in
                     let studentBillingMonth = StudentBillingMonth()
-                    studentBillingMonth.loadStudentBillingData(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
+                    studentBillingMonth.loadStudentBillingRows(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
                     
 // Add new Student to Billed Student list for the month
                     let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)

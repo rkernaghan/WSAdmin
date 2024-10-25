@@ -48,12 +48,12 @@ class TutorBillingMonth {
                 print("Tutor Billing File ID: \(fileID)")
                 tutorBillingFileID = fileID
                 //               Task {
-                print ("before load tutor Billing Month")
+  //              print ("before load tutor Billing Month")
                 //                   await self.loadTutorBillingMonth(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
                 self.loadTutorBillingMonth(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
-                print ("after load tutor Billing Month")
+  //              print ("after load tutor Billing Month")
                 //               }
-                print("After Task for get File ID")
+  //              print("After Task for get File ID")
             case . failure(let error):
                 print("Error: \(error.localizedDescription)")
             }
@@ -76,18 +76,19 @@ class TutorBillingMonth {
             tutorBillingCount = Int(sheetData.values[0][0]) ?? 0
         }
 // Read in the Billed Tutors from the Billed Tutor spreadsheet
-        do {
-            sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: prevMonthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow) + String(tutorBillingCount - 1) )
-        } catch {
+        if tutorBillingCount > 0 {
+            do {
+                sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: prevMonthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1) )
+            } catch {
+                
+            }
             
-        }
-            
-        if let sheetData = sheetData {
-            sheetCells = sheetData.values
-        }
+            if let sheetData = sheetData {
+                sheetCells = sheetData.values
+            }
 // Build the Billed Tutors list for the month from the data read in
-
-        loadTutorBillingData(tutorBillingCount: tutorBillingCount, sheetCells: sheetCells)
+            loadTutorBillingRows(tutorBillingCount: tutorBillingCount, sheetCells: sheetCells)
+        }
     }
     
     func loadTutorBillingMonth(billingMonth: String, tutorBillingFileID: String) {
@@ -183,7 +184,7 @@ class TutorBillingMonth {
     func saveTutorBillingData(tutorBillingFileID: String, billingMonth: String) async -> Bool {
         var result: Bool = true
 // Write the Tutor Billing rows to the Billed Tutor spreadsheet
-        let updateValues = unloadTutorBillingData()
+        let updateValues = unloadTutorBillingRows()
         let count = updateValues.count
         let range = billingMonth + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + updateValues.count - 1)
         do {
@@ -204,7 +205,7 @@ class TutorBillingMonth {
         return(result)
     }
    
-    func loadTutorBillingData(tutorBillingCount: Int, sheetCells: [[String]]) {
+    func loadTutorBillingRows(tutorBillingCount: Int, sheetCells: [[String]]) {
 
         var tutorBillingIndex = 0
         var rowNumber = 0
@@ -236,7 +237,7 @@ class TutorBillingMonth {
 //                  }
     }
     
-    func unloadTutorBillingData() -> [[String]] {
+    func unloadTutorBillingRows() -> [[String]] {
     
         var updateValues = [[String]]()
     
@@ -259,6 +260,30 @@ class TutorBillingMonth {
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
         updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedTutorNum)
         return(updateValues)
+    }
+    
+    func checkAlreadyBilled(tutorList: [String]) -> (Bool, [String]) {
+        var resultFlag: Bool = false
+        var alreadyBilledTutors = [String]()
+        var tutorName: String = ""
+        
+        let tutorListCount = tutorList.count
+        var tutorListNum = 0
+        let billedTutorCount = self.tutorBillingRows.count
+        if billedTutorCount != 0 {
+            
+            while tutorListNum < tutorListCount {
+                tutorName = tutorList[tutorListNum]
+                let (foundFlag, billedTutorNum) = findBilledTutorByName(billedTutorName: tutorName)
+                if foundFlag {
+                    alreadyBilledTutors.append(tutorName)
+                    resultFlag = true
+                }
+                tutorListNum += 1
+            }
+        }
+        
+        return(resultFlag, alreadyBilledTutors)
     }
     
 }

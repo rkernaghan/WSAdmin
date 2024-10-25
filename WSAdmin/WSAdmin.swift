@@ -166,6 +166,9 @@ struct PgmConstants {
     static let tutorHeader2Range = "!A4:B5"
     static let tutorHeader3Range = "!A2:A3"
     
+    static let timesheetSessionCountRow: Int = 2
+    static let timesheetSessionCountCol: Int = 1
+    static let timesheetFirstSessionRow: Int = 4
     static let timesheetStudentCol = 0
     static let timesheetDateCol = 1
     static let timesheetDurationCol = 2
@@ -175,7 +178,7 @@ struct PgmConstants {
     static let timesheetClientNameCol = 6
     static let timesheetClientEmailCol = 7
     static let timesheetClientPhoneCol = 8
-    static let timesheetDataRange = "A1:I"
+    static let timesheetDataRange = "!A1:I102"
     
     static let studentBillingCountRange = "!A2:A2"
     static let studentBillingRange = "!A4:J"
@@ -203,6 +206,9 @@ struct PgmConstants {
     static let tutorBillingTotalCostCol = 6
     static let tutorBillingTotalRevenueCol = 7
     static let tutorBillingTotalProfitCol = 8
+    
+    static let termsString: String = "Net 15 days"
+    static let taxCodeString: String = "N"
 }
 
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {

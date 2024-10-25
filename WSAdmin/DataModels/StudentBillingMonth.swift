@@ -38,7 +38,7 @@ class StudentBillingMonth {
         self.studentBillingRows.remove(at: billedStudentNum)
     }
 
-    func loadStudentBillingData(studentBillingCount: Int, sheetCells: [[String]]) {
+    func loadStudentBillingRows(studentBillingCount: Int, sheetCells: [[String]]) {
 
         var studentBillingIndex = 0
         var rowNumber = 0
@@ -75,7 +75,7 @@ class StudentBillingMonth {
 //                  }
     }
     
-    func unloadStudentBillingData() -> [[String]] {
+    func unloadStudentBillingRows() -> [[String]] {
     
         var updateValues = [[String]]()
     
@@ -117,18 +117,18 @@ class StudentBillingMonth {
             studentBillingCount = Int(sheetData.values[0][0]) ?? 0
         }
 // Read in the Billed Students from the Billed Student spreadsheet
-        do {
-            sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow) + String(studentBillingCount - 1) )
-        } catch {
-            
+        if studentBillingCount > 0 {
+            do {
+                sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1) )
+            } catch {
+                
+            }
+            if let sheetData = sheetData {
+                sheetCells = sheetData.values
+            }
+    // Build the Billed Students list for the month from the data read in
+            loadStudentBillingRows(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
         }
-            
-        if let sheetData = sheetData {
-            sheetCells = sheetData.values
-        }
-// Build the Billed Students list for the month from the data read in
-
-        loadStudentBillingData(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
     }
     
     func loadStudentBillingMonth(billingMonth: String, studentBillingFileID: String) {
@@ -219,7 +219,7 @@ class StudentBillingMonth {
                     rowNumber += 1
                     studentBillingIndex += 1
                 }
-                print("Loaded Student Billing Data")
+ //               print("Loaded Student Billing Data")
                 let billedStudentCount = self.studentBillingRows.count
                 var billedStudentNum = 0
                 while billedStudentNum < billedStudentCount {
@@ -249,7 +249,7 @@ class StudentBillingMonth {
     func saveStudentBillingData(studentBillingFileID: String, billingMonth: String) async -> Bool {
         var result: Bool = true
 // Write the Student Billing rows to the Billed Student spreadsheet
-        let updateValues = unloadStudentBillingData()
+        let updateValues = unloadStudentBillingRows()
         let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + updateValues.count - 1)
         do {
             result = try await writeSheetCells(fileID: studentBillingFileID, range: range, values: updateValues)

@@ -315,7 +315,7 @@ import GoogleAPIClientForREST
         while tutorStudentNum < tutorStudentTotal {
             studentKey = tutorStudents[tutorStudentNum].studentKey
             studentName = tutorStudents[tutorStudentNum].studentName
-            clientName = tutorStudents[tutorStudentNum].clientPhone
+            clientName = tutorStudents[tutorStudentNum].clientName
             clientEmail = tutorStudents[tutorStudentNum].clientEmail
             clientPhone = tutorStudents[tutorStudentNum].clientPhone
               

@@ -133,11 +133,11 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
 // Use async URLSession to fetch the data
-        print("Before URL Session call \(fileID)")
+    print("Before Read Cells URL Session call \(fileID)")
         let (data, response) = try await URLSession.shared.data(for: request)
-        print("After URL Session call \(fileID)")
+    print("After Read Cells URL Session call \(fileID)")
         if let httpResponse = response as? HTTPURLResponse {
-            print("error \(httpResponse.statusCode)")
+            print("Read Sheet HTTP Result Code: \(httpResponse.statusCode)")
         }
 // Check if the response is successful
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
@@ -194,12 +194,28 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
         
 // Handle the response (if needed)
         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-            print("Response: \(json)")
+            print("writeSheetCells Response: \(json)")
         }
     } else {
         completionFlag = false
     }
     return(completionFlag)
+}
+
+func getCurrentMonthYear() -> (String, String) {
+    var monthName: String = ""
+    var billingYear: String = ""
+    
+    if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
+        var monthInt = monthInt - 1                  // subtract 1 from current month number to get  0-based array index
+        monthName = monthArray[monthInt]
+    }
+    
+    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
+            billingYear = String(yearInt)
+    }
+    
+    return(monthName, billingYear)
 }
 
 func getPrevMonthYear() -> (String, String) {
