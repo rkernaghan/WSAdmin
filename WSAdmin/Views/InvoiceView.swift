@@ -23,26 +23,34 @@ struct InvoiceView: View {
     var body: some View {
         if invoice.isInvoiceLoaded {
             VStack {
-                Table(invoice.invoiceLines) {
-//                    Group {
-                        TableColumn("Invoice Num", value: \.invoiceNum)
+                HStack {
+                    Text("Total Sessions: \(String(invoice.totalSessions))")
+                    Text("Total Cost: \(String(invoice.totalCost))")
+                    Text("Total Price: \(String(invoice.totalRevenue))")
+                    Text("Total Profit: \(String(invoice.totalProfit))")
+                }
+                VStack {
+                    Table(invoice.invoiceLines) {
+                        //                    Group {
+                        //                    TableColumn("Invoice Num", value: \.invoiceNum)
                         TableColumn("Client Name", value: \.clientName)
-                        TableColumn("Client Email", value: \.clientEmail)
-                        TableColumn("Invoice Date", value: \.invoiceDate)
-                        TableColumn("Due Date", value: \.dueDate)
+                        //                        TableColumn("Client Email", value: \.clientEmail)
+                        //                        TableColumn("Invoice Date", value: \.invoiceDate)
+                        // TableColumn("Due Date", value: \.dueDate)
                         TableColumn("Location", value: \.locationName)
                         TableColumn("Terms", value: \.terms)
-  //                  }
-  //                  Group {
+                        //                  }
+                        //                  Group {
                         TableColumn("Tutor Name", value: \.tutorName)
                         TableColumn("Item", value: \.itemName)
                         TableColumn("Description", value: \.description)
-                        //              TableColumn("Quantity", value: \.quantity)
-                        //              TableColumn("Rate", value: \.rate)
-                        //              TableColumn("Amount", value: \.amount)
+                        TableColumn("Quantity", value: \.quantity)
+                        TableColumn("Rate", value: \.rate)
+                        TableColumn("Amount", value: \.amount)
                         //              TableColumn("Tax Code", value: \.taxCode)
-                        //              TableColumn("Service Date", value: \.serviceDate)
-   //                 }
+                        TableColumn("Service Date", value: \.serviceDate)
+                        //                 }
+                    }
                 }
             }
         }

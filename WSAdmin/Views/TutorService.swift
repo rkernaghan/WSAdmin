@@ -38,5 +38,26 @@ class TutorService: Identifiable {
         self.price3 = price3
         self.totalPrice = price1 + price2 + price3
     }
+    
+    func computerSessionCostPrice(duration: Int) -> (Float, Float, Float, Float) {
+        
+        var cost: Float = 0.0
+        var price: Float = 0.0
+        var quantity: Float = 0.0
+        var rate: Float = 0.0
+        
+        rate = price1 + price2
+        if billingType == .Fixed {
+            quantity = 1.0
+            cost = cost1 + cost2 + cost3
+            price = rate
+        } else {
+            quantity = Float(duration) / 60.0
+            cost = quantity * cost1 + cost2 + cost3
+            price = quantity * rate
+        }
+        
+        return(quantity, rate, cost, price)
+    }
  
 }

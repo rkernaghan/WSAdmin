@@ -326,7 +326,6 @@ enum YearSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
     }
 }
 
-
 struct SheetData: Decodable {
     let range: String
     let majorDimension: String
@@ -334,10 +333,10 @@ struct SheetData: Decodable {
 }
 
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
-let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030"]
+let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 
 var buttonErrorMsg: String = " "
-var runMode: String = "TEST"
+var runMode: String = "PROD"
 
 var studentBillingFileNamePrefix: String = ""
 var tutorBillingFileNamePrefix: String = ""

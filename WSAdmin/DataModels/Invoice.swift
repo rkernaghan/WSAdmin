@@ -9,6 +9,10 @@ import Foundation
 
 @Observable class Invoice: Identifiable {
     var invoiceLines = [InvoiceLine]()
+    var totalCost: Float = 0.0
+    var totalRevenue: Float = 0.0
+    var totalProfit: Float = 0.0
+    var totalSessions: Int = 0
     var isInvoiceLoaded: Bool
     
     init() {

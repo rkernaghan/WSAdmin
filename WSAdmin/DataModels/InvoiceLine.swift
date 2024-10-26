@@ -7,7 +7,7 @@
 
 import Foundation
 
-class InvoiceLine: Identifiable {
+struct InvoiceLine: Identifiable {
     var invoiceNum: String
     var clientName: String
     var clientEmail: String

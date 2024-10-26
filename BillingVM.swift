@@ -70,7 +70,7 @@ import GoogleAPIClientForREST
                 }
             }
             print("Tutor List: \(tutorList)")
-            //            billArray.printBillArray()
+  //                      billArray.printBillArray()
             
             let (alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
             
@@ -78,12 +78,12 @@ import GoogleAPIClientForREST
                 print("Already Billed Tutors: \(alreadyBilledTutors)")
             }
             
-            invoice = billArray.generateInvoice()
+        invoice = billArray.generateInvoice(referenceData: referenceData)
             
             
             //       let result1 = studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
             //       let result2 = tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
-            invoice.printInvoice()
+//            invoice.printInvoice()
             return(invoice)
    //     }
     }
@@ -93,19 +93,19 @@ import GoogleAPIClientForREST
         var timesheetFileID: String = " "
         var result: Bool = true
         
-        print("Start get timesheet" + tutorName)
+//        print("Start get timesheet" + tutorName)
         let fileName = "Timesheet " + timesheetYear + " " + tutorName
         do {
             (result, timesheetFileID) = try await getFileIDAsync(fileName: fileName)
         } catch {
             print("Error: could not get timesheet fileID for \(fileName)")
         }
-        print("Before Task LoadTimesheet data " + tutorName)
+//        print("Before Task LoadTimesheet data " + tutorName)
 //        Task {
-            print("In Task for Get Timesheet " + tutorName)
+//            print("In Task for Get Timesheet " + tutorName)
             let range = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
-            print("after load timesheet data before print value statement")
-            print("Timesheet Returned" + timesheet.timesheetRows[0].studentName + " " + timesheet.timesheetRows[0].tutorName)
+//            print("after load timesheet data before print value statement")
+//            print("Timesheet Returned" + timesheet.timesheetRows[0].studentName + " " + timesheet.timesheetRows[0].tutorName)
 //        }
         
         return(timesheet)

@@ -73,6 +73,20 @@ import GoogleAPIClientForREST
         return(serviceFound, tutorServiceNum)
     }
     
+    func findTutorServiceByName(serviceName: String) -> (Bool, Int) {
+        var serviceFound = false
+        var tutorServiceNum = 0
+        
+        while tutorServiceNum < tutorServices.count && !serviceFound {
+            if tutorServices[tutorServiceNum].timesheetServiceName == serviceName {
+                serviceFound = true
+            } else {
+                tutorServiceNum += 1
+            }
+        }
+        return(serviceFound, tutorServiceNum)
+    }
+    
     func loadTutorStudent(newTutorStudent: TutorStudent) {
         tutorStudents.append(newTutorStudent)
     }

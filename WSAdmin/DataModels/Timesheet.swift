@@ -49,7 +49,7 @@ class Timesheet: Identifiable {
             let entryCount = Int(sheetCells[PgmConstants.timesheetSessionCountRow][PgmConstants.timesheetSessionCountCol]) ?? 0
             var entryCounter = 0
             var rowNum = PgmConstants.timesheetFirstSessionRow
-            var rowCounter = rowNum + 12                                                // 12 blank rows allowed
+            var rowCounter = entryCount + 12                                                // 12 blank rows allowed
             while entryCounter < entryCount && rowNum < rowCounter {
                 let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
                 if date != "" && date != " " {

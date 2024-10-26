@@ -31,7 +31,8 @@ class BillArray {
             let serviceName = timesheet.timesheetRows[timesheetNum].serviceName
             let notes = timesheet.timesheetRows[timesheetNum].notes
             let tutorName = timesheet.timesheetRows[timesheetNum].tutorName
-            let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, serviceName: serviceName, notes: notes, tutorName: tutorName)
+            let cost = timesheet.timesheetRows[timesheetNum].cost
+            let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, serviceName: serviceName, notes: notes, cost: cost, tutorName: tutorName)
             self.billClients[billClientNum].billItems.append(newBillItem)
             timesheetNum += 1
         }
@@ -51,8 +52,10 @@ class BillArray {
         return(found, billClientNum)
     }
     
-    func generateInvoice() -> Invoice {
-        var newInvoice = Invoice()
+    func generateInvoice(referenceData: ReferenceData) -> Invoice {
+        let newInvoice = Invoice()
+        var timesheetServiceName: String = ""
+        var duration: Int = 0
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -64,13 +67,28 @@ class BillArray {
  //   print("Client : \(billClients[clientNum].clientName) ")
             var billItemNum = 0
             while billItemNum < billClients[clientNum].billItems.count {
-                let invoiceLine = InvoiceLine(invoiceNum: String(clientNum), clientName:billClients[clientNum].clientName, clientEmail: billClients[clientNum].clientEmail, invoiceDate: invoiceDate, dueDate: dueDate, terms: PgmConstants.termsString, locationName: " ", tutorName: billClients[clientNum].billItems[billItemNum].tutorName, itemName: billClients[clientNum].billItems[billItemNum].serviceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(billClients[clientNum].billItems[billItemNum].duration / 60), rate: "0.0", amount: "0.0", taxCode: PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate )
-                newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
- //               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+                let tutorName = billClients[clientNum].billItems[billItemNum].tutorName
+                let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+                if tutorFound {
+                    timesheetServiceName = billClients[clientNum].billItems[billItemNum].serviceName
+                    let (serviceFound, serviceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
+                    if serviceFound {
+                        duration = billClients[clientNum].billItems[billItemNum].duration
+                        let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].computerSessionCostPrice(duration: duration)
+                        newInvoice.totalRevenue += price
+                        newInvoice.totalCost += cost
+                        newInvoice.totalSessions += 1
+                        let invoiceLine = InvoiceLine(invoiceNum: String(clientNum), clientName: billClients[clientNum].clientName, clientEmail: billClients[clientNum].clientEmail, invoiceDate: invoiceDate, dueDate: dueDate, terms: PgmConstants.termsString, locationName: tutorName, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: String(price), taxCode: PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate )
+                        newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
+         //               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+
+                    }
+                }
                 billItemNum += 1
             }
             clientNum += 1
         }
+        newInvoice.totalProfit = newInvoice.totalRevenue - newInvoice.totalCost
         newInvoice.isInvoiceLoaded = true
 //        newInvoice.printInvoice()
         return(newInvoice)
