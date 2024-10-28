@@ -144,7 +144,7 @@ import GoogleAPIClientForREST
     
     
     func saveStudentData() {
-        var referenceFileID: String
+ 
         var updateValues: [[String]] = []
         
         var studentKey: String = " "
@@ -164,14 +164,8 @@ import GoogleAPIClientForREST
         var studentTotalRevenue: String
         var studentTotalProfit: String
         
-        if runMode == "PROD" {
-            referenceFileID = PgmConstants.prodReferenceDataFileID
-        } else {
-            referenceFileID = PgmConstants.testReferenceDataFileID
-        }
         
         let sheetService = GTLRSheetsService()
-        let spreadsheetID = referenceFileID
         let studentCount = studentsList.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -210,7 +204,7 @@ import GoogleAPIClientForREST
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
         valueRange.range = range
         valueRange.values = updateValues
-        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: referenceDataFileID, range: range)
         query.valueInputOption = "USER_ENTERED"
         sheetService.executeQuery(query) { ticket, object, error in
             if let error = error {

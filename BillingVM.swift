@@ -17,74 +17,56 @@ import GoogleAPIClientForREST
 //    private var errorMessage: String?
 
         
-    func generateInvoice(tutorSet: Set<Tutor.ID>, timesheetYear: String, timesheetMonth: String, referenceData: ReferenceData) async -> Invoice {
+    func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData) async -> (Invoice, TutorBillingMonth, [String]) {
         var invoice = Invoice()
         var tutorList = [String]()
-        var studentBillingFileID: String = ""
         var tutorBillingFileID: String = ""
         var resultFlag: Bool = true
         
-        let studentBillingMonth = StudentBillingMonth()
         let tutorBillingMonth = TutorBillingMonth()
         
-        let (monthName, billingYear) = getCurrentMonthYear()
-        let studentBillingFileName = studentBillingFileNamePrefix + billingYear
+ //       let (monthName, billingYear) = getCurrentMonthYear()
+        let (prevMonthName, prevYearName) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
+
         let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
         let billArray = BillArray()
         print ("//")
         print("//")
  //       Task {
             //    print("Before get Student Billing File ID Async")
-        do {
-            (resultFlag, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
-        } catch {
-            
-        }
-            //    print("After get Student Billing File ID Async")
-            //    print("Before Load Student Billing Month Async \(studentBillingFileID)")
-            await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: monthName, studentBillingFileID: studentBillingFileID)
-            //    print("After Load Student Billing Month Async \(studentBillingFileID)")
-            //    print("Before get Tutor File ID Async")
-        do {
-            (resultFlag, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
-        } catch {
-            
-        }
-            //    print("After Get Tutor File ID Async")
-            //    print("Before Load Tutor Billing Month Async \(tutorBillingFileID)")
-            await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: monthName, tutorBillingFileID: tutorBillingFileID)
-            //    print("After Load Tutor Billing Month Async \(tutorBillingFileID)")
-            //    print("Go time")
-            //    print("Go time")
-            for objectID in tutorSet {
-                if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                    let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-                    print("Next Tutorname: \(tutorName)")
-                    tutorList.append(tutorName)
-                    //    print("Before get timesheet \(tutorName)")
-                    let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: timesheetYear, timesheetMonth: timesheetMonth)
-                    //    print("After get timesheet \(tutorName)")
-                    billArray.processTimesheet(timesheet: timesheet)
-                    //    print("After process timesheet")
-                    
+  
+        for objectID in tutorSet {
+            if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+                let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+    print("Read Timesheet for Tutor: \(tutorName)")
+                tutorList.append(tutorName)
+
+                let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth)
+
+                billArray.processTimesheet(timesheet: timesheet)
+
                 }
             }
-            print("Tutor List: \(tutorList)")
+//            print("Tutor List: \(tutorList)")
   //                      billArray.printBillArray()
             
-            let (alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
+        do {
+            (resultFlag, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+            await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
+        } catch {
             
-            if alreadyBilledFlag {
-                print("Already Billed Tutors: \(alreadyBilledTutors)")
-            }
+        }
+
+        let (alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
             
-        invoice = billArray.generateInvoice(referenceData: referenceData)
+        if alreadyBilledFlag {
+            print("Already Billed Tutors: \(alreadyBilledTutors)")
+        }
             
+        invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
             
-            //       let result1 = studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
-            //       let result2 = tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
 //            invoice.printInvoice()
-            return(invoice)
+            return(invoice, tutorBillingMonth, alreadyBilledTutors)
    //     }
     }
         
@@ -152,4 +134,184 @@ import GoogleAPIClientForREST
             return sheetData
 //        }
     }
+    
+    func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) {
+    
+        var billingMonthStudentFileID: String = ""
+        var billingMonthTutorFileID: String = ""
+
+        var studentBillingMonth = StudentBillingMonth()
+        var resultFlag: Bool = false
+        
+        let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
+
+        let billingMonthStudentFileName = studentBillingFileNamePrefix + billingYear
+        let billingMonthTutorFileName = tutorBillingFileNamePrefix + billingYear
+        let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
+        let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
+        
+        
+        Task {
+            do {
+                (resultFlag, billingMonthStudentFileID) = try await getFileIDAsync(fileName: billingMonthStudentFileName)
+                if resultFlag {
+                    await studentBillingMonth.loadStudentBillingMonthAsync(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
+                }
+            } catch {
+                
+            }
+            
+            await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+            await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+            
+            var invoiceLineNum: Int = 0
+            let invoiceLineCount: Int = invoice.invoiceLines.count
+            while invoiceLineNum < invoiceLineCount {
+                let tutorName = invoice.invoiceLines[invoiceLineNum].tutorName
+                let studentName = invoice.invoiceLines[invoiceLineNum].studentName
+                let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+                let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+                let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+                let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+                
+                if alreadyBilledTutors.contains(tutorName) {
+                    resetTutorBillingStats(billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
+                }
+                let cost = invoice.invoiceLines[invoiceLineNum].cost
+                let revenue = invoice.invoiceLines[invoiceLineNum].amount
+                let profit = revenue - cost
+                
+//    print("Month: \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions) \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost) \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue) ")
+     
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost += cost
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].totalCost += cost
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue += revenue
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].totalRevenue += revenue
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].monthProfit += profit
+                tutorBillingMonth.tutorBillingRows[billedTutorNum].totalProfit += profit
+                
+                studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions += 1
+                studentBillingMonth.studentBillingRows[billedStudentNum].totalSessions += 1
+                studentBillingMonth.studentBillingRows[billedStudentNum].monthCost += cost
+                studentBillingMonth.studentBillingRows[billedStudentNum].totalCost += cost
+                studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue += revenue
+                studentBillingMonth.studentBillingRows[billedStudentNum].totalRevenue += revenue
+                studentBillingMonth.studentBillingRows[billedStudentNum].monthProfit += profit
+                studentBillingMonth.studentBillingRows[billedStudentNum].totalProfit += profit
+                
+                referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
+                referenceData.tutors.tutorsList[tutorNum].tutorTotalCost += cost
+                referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue += revenue
+                referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit += profit
+
+                referenceData.students.studentsList[studentNum].studentSessions += 1
+                referenceData.students.studentsList[studentNum].studentTotalCost += cost
+                referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
+                referenceData.students.studentsList[studentNum].studentTotalProfit += profit
+
+                invoiceLineNum += 1
+            }
+            
+            let result1 = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
+            do {
+                (resultFlag, billingMonthTutorFileID) = try await getFileIDAsync(fileName: billingMonthTutorFileName)
+                if resultFlag {
+                    let result2 = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
+                }
+            } catch {
+                print("Error Saving Tutor Billing Data")
+            }
+            
+            referenceData.tutors.saveTutorData()
+            referenceData.students.saveStudentData()
+        }
+    }
+    
+    func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) -> (Bool, String) {
+        var generationFlag: Bool = true
+        var generationMessage: String = ""
+
+        var resultFlag: Bool = false
+  
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
+        
+        self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
+            
+            do {
+                try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Error creating directory: \(error)")
+            }
+            
+            do {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+                let fileDate = dateFormatter.string(from: Date())
+                
+                let fileName = "CSV Export File \(fileDate).csv"
+                let fileManager = FileManager.default
+                
+// Get the path to the Documents directory
+                guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                    print("Could not find the Documents directory.")
+                    return(false, "Count not find the Documents Directory")
+                }
+                
+// Set the file path
+                let fileURL = documentsDirectory.appendingPathComponent(fileName)
+                
+// Create the file if it doesn't exist
+                if !fileManager.fileExists(atPath: fileURL.path) {
+                    fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+                }
+// Open the file for writing
+                let fileHandle = try FileHandle(forWritingTo: fileURL)
+                
+                var invoiceLineNum = 0
+                let invoiceLineCount = invoice.invoiceLines.count
+                while invoiceLineNum < invoiceLineCount {
+                    let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+                    if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+                        fileHandle.write(data)
+                    }
+                    invoiceLineNum += 1
+                }
+// Close the file when done
+                fileHandle.closeFile()
+                print("Lines written to file successfully.")
+            } catch {
+                print("error write to file: \(error)")
+
+        }
+        return(generationFlag, generationMessage)
+    }
+    
+    func processInvoiceLine(invoiceLine: InvoiceLine) -> String {
+        let invoiceNum = invoiceLine.invoiceNum
+        let invoiceClient = invoiceLine.clientName
+        let invoiceEmail = invoiceLine.clientEmail
+        let invoiceDate = invoiceLine.invoiceDate
+        let invoiceDueDate = invoiceLine.dueDate
+        let invoiceTerm = invoiceLine.terms
+        let invoiceLocation = invoiceLine.locationName
+        let invoiceTutor = invoiceLine.invoiceNum
+        let invoiceItem = invoiceLine.itemName
+        let invoiceDescription = invoiceLine.description
+        let invoiceQuantity = invoiceLine.quantity
+        let invoiceRate = invoiceLine.rate
+        let invoiceAmount = String(invoiceLine.amount)
+        let invoiceTaxCode = invoiceLine.taxCode
+        let invoiceServiceDate = invoiceLine.serviceDate
+        let csvLine = invoiceNum + PgmConstants.CSVSeperator + invoiceClient + PgmConstants.CSVSeperator + invoiceEmail + PgmConstants.CSVSeperator + invoiceDate + PgmConstants.CSVSeperator + invoiceDueDate + PgmConstants.CSVSeperator + invoiceTerm + PgmConstants.CSVSeperator +  invoiceLocation + PgmConstants.CSVSeperator + invoiceTutor + PgmConstants.CSVSeperator + invoiceItem + PgmConstants.CSVSeperator + invoiceDescription + PgmConstants.CSVSeperator + invoiceQuantity + PgmConstants.CSVSeperator + invoiceRate + PgmConstants.CSVSeperator + invoiceAmount + PgmConstants.CSVSeperator + invoiceTaxCode + PgmConstants.CSVSeperator + invoiceServiceDate
+        return(csvLine)
+    }
+    
+    func resetTutorBillingStats(billedTutorNum: Int, billedStudentNum: Int, tutorNum: Int, studentNum: Int, tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData) {
+        
+        
+    }
+    
 }

@@ -60,9 +60,9 @@ func getFileIDAsync(fileName: String) async throws -> (Bool, String) {
 
         let (data, response) = try await URLSession.shared.data(for: request)
    
-        if let httpResponse = response as? HTTPURLResponse {
-            print("Find File ID Error: \(httpResponse.statusCode)")
-        }
+//        if let httpResponse = response as? HTTPURLResponse {
+//            print("Find File ID Error: \(httpResponse.statusCode)")
+//        }
 // Check if the response is successful
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
@@ -202,20 +202,19 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
     return(completionFlag)
 }
 
+
 func getCurrentMonthYear() -> (String, String) {
-    var monthName: String = ""
-    var billingYear: String = ""
-    
+    var currentMonthName: String = ""
+    var currentYearName: String = ""
+      
     if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
-        var monthInt = monthInt - 1                  // subtract 1 from current month number to get  0-based array index
-        monthName = monthArray[monthInt]
+        currentMonthName = monthArray[monthInt - 1]
     }
     
     if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
-            billingYear = String(yearInt)
+        currentYearName = String(yearInt)
     }
-    
-    return(monthName, billingYear)
+    return(currentMonthName, currentYearName)
 }
 
 func getPrevMonthYear() -> (String, String) {
@@ -238,4 +237,28 @@ func getPrevMonthYear() -> (String, String) {
         }
     }
     return(prevMonthName, billingYear)
+}
+
+func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, String) {
+    var prevMonthName: String = ""
+    var prevYearName: String = ""
+    var monthNum: Int = 0
+    
+    if currentMonth == "Jan" {
+        let prevYear = Int(currentYear) ?? 0
+        prevYearName = String(prevYear - 1)
+    } else {
+        prevYearName = currentYear
+    }
+    
+    if let index = monthArray.firstIndex(of: currentMonth) {
+        if index == 0 {
+            monthNum = 11
+        } else {
+            monthNum = index - 1
+        }
+        prevMonthName = monthArray[monthNum]
+    }
+    
+    return(prevMonthName, prevYearName)
 }

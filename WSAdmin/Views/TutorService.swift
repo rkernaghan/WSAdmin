@@ -46,7 +46,7 @@ class TutorService: Identifiable {
         var quantity: Float = 0.0
         var rate: Float = 0.0
         
-        rate = price1 + price2
+        rate = price1 + price2 + price3
         if billingType == .Fixed {
             quantity = 1.0
             cost = cost1 + cost2 + cost3
@@ -54,7 +54,7 @@ class TutorService: Identifiable {
         } else {
             quantity = Float(duration) / 60.0
             cost = quantity * cost1 + cost2 + cost3
-            price = quantity * rate
+            price = quantity * price1 + price2 + price3
         }
         
         return(quantity, rate, cost, price)

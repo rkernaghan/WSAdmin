@@ -45,7 +45,7 @@ import GTMSessionFetcher
 // Get the fileID of the Billed Tutor spreadsheet for the year
             let (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
 // Read the data from the Billed Tutor spreadsheet for the previous month
-            await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+            await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
 // Add new the Tutor to Billed Tutor list for the month
             let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
             if billedTutorFound == false {
@@ -157,7 +157,7 @@ import GTMSessionFetcher
 // Get the File ID of the Billed Tutor spreadsheet for the year
                         let (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
 // Read in the Billed Tutors for the previous month
-                        await tutorBillingMonth.loadTutorBillingMonthAsync(prevMonthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+                        await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
 // Add the new Tutor to Billed Tutor list for the month
                         let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
                         let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
@@ -296,15 +296,11 @@ import GTMSessionFetcher
     }
    
     func copyNewTimesheet(tutorName: String) {
-        var timesheetTemplateFileID: String = " "
+
         var newFileID: String = ""
         
          print("Copying New Timesheet for \(tutorName)")
-        if runMode == "PROD" {
-            timesheetTemplateFileID = PgmConstants.prodTimesheetTemplateFileID
-        } else {
-            timesheetTemplateFileID = PgmConstants.testTimesheetTemplateFileID
-        }
+      
          let driveService = GTLRDriveService()
          let currentUser = GIDSignIn.sharedInstance.currentUser
 //        if let user = GIDSignIn.sharedInstance().currentUser {
@@ -354,13 +350,7 @@ import GTMSessionFetcher
         
         batchUpdate.requests = [request]
         
-        if runMode == "PROD" {
-            spreadsheetID = PgmConstants.prodTutorDataFileID
-        } else {
-            spreadsheetID = PgmConstants.testTutorDataFileID
-        }
-        
-        let createQuery = GTLRSheetsQuery_SpreadsheetsBatchUpdate.query(withObject: batchUpdate, spreadsheetId: spreadsheetID)
+        let createQuery = GTLRSheetsQuery_SpreadsheetsBatchUpdate.query(withObject: batchUpdate, spreadsheetId: tutorDetailsFileID)
         
         sheetService.executeQuery(createQuery) { (ticket, result, err) in
             if let error = err {
@@ -376,7 +366,7 @@ import GTMSessionFetcher
             valueRange1.majorDimension = "ROWS" // Indicates horizontal row insert
             valueRange1.range = range
             valueRange1.values = updateValues
-            let query1 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange1, spreadsheetId: spreadsheetID, range: range)
+            let query1 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange1, spreadsheetId: tutorDetailsFileID, range: range)
             query1.valueInputOption = "USER_ENTERED"
             sheetService.executeQuery(query1) { ticket, object, error in
                 if let error = error {
@@ -395,7 +385,7 @@ import GTMSessionFetcher
             valueRange2.majorDimension = "ROWS" // Indicates horizontal row insert
             valueRange2.range = range
             valueRange2.values = updateValues
-            let query2 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange2, spreadsheetId: spreadsheetID, range: range)
+            let query2 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange2, spreadsheetId: tutorDetailsFileID, range: range)
             query2.valueInputOption = "USER_ENTERED"
             sheetService.executeQuery(query2) { ticket, object, error in
                 if let error = error {
@@ -414,7 +404,7 @@ import GTMSessionFetcher
             valueRange3.majorDimension = "COLUMNS" // Indicates horizontal row insert
             valueRange3.range = range
             valueRange3.values = updateValues
-            let query3 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange3, spreadsheetId: spreadsheetID, range: range)
+            let query3 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange3, spreadsheetId: tutorDetailsFileID, range: range)
             query3.valueInputOption = "USER_ENTERED"
             sheetService.executeQuery(query3) { ticket, object, error in
                 if let error = error {

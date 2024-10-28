@@ -20,12 +20,14 @@ struct InvoiceLine: Identifiable {
     var description: String
     var quantity: String
     var rate: String
-    var amount: String
+    var amount: Float
     var taxCode: String
     var serviceDate: String
+    var studentName: String
+    var cost: Float
     let id = UUID()
     
-    init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, itemName: String, description: String, quantity: String, rate: String, amount: String, taxCode: String, serviceDate: String) {
+    init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, itemName: String, description: String, quantity: String, rate: String, amount: Float, taxCode: String, serviceDate: String, studentName: String, cost: Float) {
         self.invoiceNum = invoiceNum
         self.clientName = clientName
         self.clientEmail = clientEmail
@@ -41,6 +43,8 @@ struct InvoiceLine: Identifiable {
         self.amount = amount
         self.taxCode = taxCode
         self.serviceDate = serviceDate
+        self.studentName = studentName
+        self.cost = cost
     }
     
 }

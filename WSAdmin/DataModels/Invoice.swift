@@ -13,6 +13,7 @@ import Foundation
     var totalRevenue: Float = 0.0
     var totalProfit: Float = 0.0
     var totalSessions: Int = 0
+    var monthName: String = ""
     var isInvoiceLoaded: Bool
     
     init() {

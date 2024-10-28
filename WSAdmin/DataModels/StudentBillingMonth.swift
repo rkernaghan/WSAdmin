@@ -101,14 +101,14 @@ class StudentBillingMonth {
         return(updateValues)
     }
     
-    func loadStudentBillingMonthAsync(prevMonthName: String, studentBillingFileID: String) async {
+    func loadStudentBillingMonthAsync(monthName: String, studentBillingFileID: String) async {
         var studentBillingCount: Int = 0
         var sheetCells = [[String]]()
         var sheetData: SheetData?
         
 // Get the count of Students in the Billed Student spreadsheet
         do {
-            sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingCountRange)
+            sheetData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange)
         } catch {
             
         }
@@ -119,7 +119,7 @@ class StudentBillingMonth {
 // Read in the Billed Students from the Billed Student spreadsheet
         if studentBillingCount > 0 {
             do {
-                sheetData = try await readSheetCells(fileID: studentBillingFileID, range: prevMonthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1) )
+                sheetData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1) )
             } catch {
                 
             }
@@ -340,5 +340,44 @@ class StudentBillingMonth {
         }
     }
     
-    
+    func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async {
+        
+        let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
+        var prevStudentNum: Int = 0
+        let prevStudentBillingMonth = StudentBillingMonth()
+        
+        let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
+        
+        do {
+            let (resultFlag, prevMonthStudentFileID) = try await getFileIDAsync(fileName: prevMonthStudentFileName)
+            if resultFlag {
+                await prevStudentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
+            }
+        } catch {
+            
+        }
+        
+        
+        let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
+        while prevStudentNum < prevStudentCount {
+            let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
+            let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+            if foundFlag {
+                if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+                    let (foundFlag, billedStudentNum) = self.findBilledStudentByName(billedStudentName: studentName)
+                    if !foundFlag {
+                        let totalSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalSessions
+                        let totalCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalCost
+                        let totalRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalRevenue
+                        let totalProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalProfit
+                        let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
+                        let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
+                        self.studentBillingRows.append(newStudentBillingRow)
+                    }
+                }
+            }
+            prevStudentNum += 1
+        }
+    }
+
 }

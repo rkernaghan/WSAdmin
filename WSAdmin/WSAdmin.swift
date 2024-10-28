@@ -139,14 +139,6 @@ struct PgmConstants {
     static let serviceSpecialKeyPrefix = "X"
     static let locationKeyPrefix = "C"
     
-    static let testReferenceDataFileID: String = "1RdR_GPxAWcDUWBU-eytGKw2uzZhy3yR-MdQegmBZNis"
-    static let testTutorDataFileID: String = "1NaSjIe43RrGEa4AdAKHuF343eHlfogzuMuS5SPvowS8"
-    static let testTimesheetTemplateFileID: String = "1MhZOJsyOjijWV_9NYl0cwnMnneD2UHk7Q059Q4vy-TU"
-    static let prodReferenceDataFileID: String = "18GxBUhOAG2arOR0YkTFcv546ujKZ_JyJYkhyawVSMiY"
-    static let prodTutorDataFileID: String = "1W6AUOVc91D1YCm2miloHQeMmcOZc2jjc7nEbE0Gnkmg"
-    static let prodTimesheetTemplateFileID: String = "1NwA5A0xvFPqGmpclsgFtQbUALxwHw5kOd8vGJGsqeCg"
-
-    
     static let tutorDetailsTestFileName: String = "Tutor Details Data - TEST"
     static let tutorDetailsProdFileName: String = "Tutor Details Data"
     static let referenceDataTestFileName: String = "ReferenceData - TEST"
@@ -209,6 +201,7 @@ struct PgmConstants {
     
     static let termsString: String = "Net 15 days"
     static let taxCodeString: String = "N"
+    static let CSVSeperator: String = ","
 }
 
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
@@ -336,13 +329,14 @@ let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "S
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 
 var buttonErrorMsg: String = " "
-var runMode: String = "PROD"
+var runMode: String = "TEST"
 
 var studentBillingFileNamePrefix: String = ""
 var tutorBillingFileNamePrefix: String = ""
 var referenceDataFileID: String = ""
 var tutorDetailsFileID: String = ""
 var timesheetTemplateFileID: String = ""
+
 
 @main
 struct WSAdmin: App {

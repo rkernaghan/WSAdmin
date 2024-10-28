@@ -10,7 +10,7 @@ import SwiftUI
 struct BillingView: View {
 
     var referenceData: ReferenceData
-
+    
     @Environment(BillingVM.self) var billingVM: BillingVM
     
     @State private var selectedTutors = Set<Tutor.ID>()
@@ -21,6 +21,9 @@ struct BillingView: View {
     @State private var showInvoice: Bool = false
     @State private var selectAll: Bool = false
     @State private var invoice = Invoice()
+    @State private var alreadyBilledTutors = [String]()
+    @State private var billedTutorMonth = TutorBillingMonth()
+    
 
     var body: some View {
     
@@ -52,7 +55,7 @@ struct BillingView: View {
                     
                     Button {
                         Task {
-                            invoice = await billingVM.generateInvoice(tutorSet: selectedTutors, timesheetYear: selectedYear, timesheetMonth: selectedMonth, referenceData: referenceData)
+                            (invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData)
                             showInvoice = true
                         }
                     } label: {
@@ -88,7 +91,7 @@ struct BillingView: View {
                 }
             }
             .navigationDestination(isPresented: $showInvoice) {
-                InvoiceView(invoice: invoice)
+                InvoiceView(invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
             }
         }
  

@@ -31,7 +31,7 @@ import Foundation
 // Get the File ID of the Billed Student spreadsheet for the year
             let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
  // Read in the Billed Students for the previous month
-            await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+            await studentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 // Add the new Student to Billed Student list for the month
             let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
             if billedStudentFound == false {
@@ -197,7 +197,7 @@ import Foundation
 // Get the File ID of the Billed Student spreadsheet for the year
                         let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
 // Read in the Billed Students for the previous month
-                        await studentBillingMonth.loadStudentBillingMonthAsync(prevMonthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+                        await studentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 // Add the new Student to Billed Student list for the month
                         let studentName = referenceData.students.studentsList[studentNum].studentName
                         let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)

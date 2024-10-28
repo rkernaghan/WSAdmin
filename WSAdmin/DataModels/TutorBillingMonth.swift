@@ -60,14 +60,14 @@ class TutorBillingMonth {
         }
     }
     
-    func loadTutorBillingMonthAsync(prevMonthName: String, tutorBillingFileID: String) async {
+    func loadTutorBillingMonthAsync(monthName: String, tutorBillingFileID: String) async {
         var tutorBillingCount: Int = 0
         var sheetCells = [[String]]()
         var sheetData: SheetData?
         
 // Get the count of Tutors in the Billed Tutor spreadsheet
         do {
-            sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: prevMonthName + PgmConstants.tutorBillingCountRange)
+            sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange)
         } catch {
             
         }
@@ -78,7 +78,7 @@ class TutorBillingMonth {
 // Read in the Billed Tutors from the Billed Tutor spreadsheet
         if tutorBillingCount > 0 {
             do {
-                sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: prevMonthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1) )
+                sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1) )
             } catch {
                 
             }
@@ -196,7 +196,8 @@ class TutorBillingMonth {
 // Write the count of tutor Billing rows to the Billed tutor spreadsheet
         let billedTutorCount = updateValues.count - 1              // subtract 1 for blank line at end
         do {
-            result = try await writeSheetCells(fileID: tutorBillingFileID, range: billingMonth + PgmConstants.tutorBillingCountRange, values: [[ String(billedTutorCount) ]])
+            let range = billingMonth + PgmConstants.tutorBillingCountRange
+            result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: [[ String(billedTutorCount) ]])
         } catch {
             print ("Error: Saving Billed Tutor count failed")
             result = false
@@ -276,8 +277,10 @@ class TutorBillingMonth {
                 tutorName = tutorList[tutorListNum]
                 let (foundFlag, billedTutorNum) = findBilledTutorByName(billedTutorName: tutorName)
                 if foundFlag {
-                    alreadyBilledTutors.append(tutorName)
-                    resultFlag = true
+                    if tutorBillingRows[billedTutorNum].monthSessions > 0 {
+                        alreadyBilledTutors.append(tutorName)
+                        resultFlag = true
+                    }
                 }
                 tutorListNum += 1
             }
@@ -286,4 +289,42 @@ class TutorBillingMonth {
         return(resultFlag, alreadyBilledTutors)
     }
     
+    func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async {
+        
+        let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
+        var prevTutorNum: Int = 0
+        let prevTutorBillingMonth = TutorBillingMonth()
+       
+        let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
+        
+        do {
+            let (resultFlag, prevMonthTutorFileID) = try await getFileIDAsync(fileName: prevMonthTutorFileName)
+            if resultFlag {
+                await prevTutorBillingMonth.loadTutorBillingMonthAsync(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID)
+            }
+        } catch {
+            
+        }
+        
+        let prevTutorCount = prevTutorBillingMonth.tutorBillingRows.count
+        while prevTutorNum < prevTutorCount {
+            let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
+            let (foundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+            if foundFlag {
+                if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+                    let (foundFlag, billedTutorNum) = self.findBilledTutorByName(billedTutorName: tutorName)
+                    if !foundFlag {
+                        let totalSessions = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalSessions
+                        let totalCost = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalCost
+                        let totalRevenue = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalRevenue
+                        let totalProfit = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalProfit
+                        let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit)
+                        self.tutorBillingRows.append(newTutorBillingRow)
+                    }
+                }
+            }
+ //   print("Month: \(prevTutorNum)\(self.tutorBillingRows[prevTutorNum].monthSessions) \(self.tutorBillingRows[prevTutorNum].monthCost) \(self.tutorBillingRows[prevTutorNum].monthRevenue) ")
+            prevTutorNum += 1
+        }
+    }
 }

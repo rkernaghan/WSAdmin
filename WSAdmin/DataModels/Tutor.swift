@@ -196,20 +196,9 @@ import GoogleAPIClientForREST
     func saveTutorDataCounts() {
         var tutorStudentCount: Int
         var tutorServiceCount: Int
-        var referenceFileID: String
-        var tutorDataFileID: String
         var updateValues: [[String]] = []
         
-        if runMode == "PROD" {
-            referenceFileID = PgmConstants.prodReferenceDataFileID
-            tutorDataFileID = PgmConstants.prodTutorDataFileID
-        } else {
-            referenceFileID = PgmConstants.testReferenceDataFileID
-            tutorDataFileID = PgmConstants.testTutorDataFileID
-        }
-        
         let sheetService = GTLRSheetsService()
-        let spreadsheetID = tutorDataFileID
         let tutorStudentTotal = tutorStudents.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -227,7 +216,7 @@ import GoogleAPIClientForREST
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
         valueRange.range = range
         valueRange.values = updateValues
-        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
         query.valueInputOption = "USER_ENTERED"
         sheetService.executeQuery(query) { ticket, object, error in
             if let error = error {
@@ -297,8 +286,7 @@ import GoogleAPIClientForREST
     
     
     func saveTutorStudents() {
-        var referenceFileID: String
-        var tutorDataFileID: String
+   
         var updateValues: [[String]] = []
         
         var studentKey: String = " "
@@ -307,16 +295,8 @@ import GoogleAPIClientForREST
         var clientEmail: String = " "
         var clientPhone: String = " "
         
-        if runMode == "PROD" {
-            referenceFileID = PgmConstants.prodReferenceDataFileID
-            tutorDataFileID = PgmConstants.prodTutorDataFileID
-        } else {
-            referenceFileID = PgmConstants.testReferenceDataFileID
-            tutorDataFileID = PgmConstants.testTutorDataFileID
-        }
         
         let sheetService = GTLRSheetsService()
-        let spreadsheetID = tutorDataFileID
         let tutorStudentTotal = tutorStudents.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -343,7 +323,7 @@ import GoogleAPIClientForREST
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
         valueRange.range = range
         valueRange.values = updateValues
-        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
         query.valueInputOption = "USER_ENTERED"
         sheetService.executeQuery(query) { ticket, object, error in
             if let error = error {
@@ -417,8 +397,7 @@ import GoogleAPIClientForREST
     }
     
     func saveTutorServices() {
-        var referenceFileID: String
-        var tutorDataFileID: String
+
         var updateValues: [[String]] = []
         
         var serviceKey: String = " "
@@ -431,18 +410,9 @@ import GoogleAPIClientForREST
         var price1: String = " "
         var price2: String = " "
         var price3: String = " "
-
-        
-        if runMode == "PROD" {
-            referenceFileID = PgmConstants.prodReferenceDataFileID
-            tutorDataFileID = PgmConstants.prodTutorDataFileID
-        } else {
-            referenceFileID = PgmConstants.testReferenceDataFileID
-            tutorDataFileID = PgmConstants.testTutorDataFileID
-        }
         
         let sheetService = GTLRSheetsService()
-        let spreadsheetID = tutorDataFileID
+
         let tutorServiceTotal = tutorServices.count
         
         let currentUser = GIDSignIn.sharedInstance.currentUser
@@ -474,7 +444,7 @@ import GoogleAPIClientForREST
         valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
         valueRange.range = range
         valueRange.values = updateValues
-        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: spreadsheetID, range: range)
+        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
         query.valueInputOption = "USER_ENTERED"
         sheetService.executeQuery(query) { ticket, object, error in
             if let error = error {
