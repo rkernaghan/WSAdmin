@@ -22,10 +22,14 @@ import GoogleAPIClientForREST
   
     
    
-    func loadReferenceData(referenceData: ReferenceData)  {
+    func loadReferenceData(referenceData: ReferenceData) async {
 
-        referenceData.dataCounts.loadDataCounts(referenceFileID: referenceDataFileID, tutorDataFileID: tutorDetailsFileID, referenceData: referenceData)
+        await referenceData.dataCounts.fetchDataCounts( referenceData: referenceData )
         if referenceData.dataCounts.isDataCountsLoaded {
+            await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
+            await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
+            await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
+            await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
  
         }
     }

@@ -9,19 +9,19 @@ import Foundation
 
 @Observable class StudentMgmtVM  {
     
-    func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
+    func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async {
         var studentBillingCount: Int = 0
         var sheetCells = [[String]]()
         
         referenceData.students.addNewStudent(studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location, referenceData: referenceData)
         
-        referenceData.students.saveStudentData()
-        referenceData.dataCounts.increaseTotalStudentCount()
-        referenceData.dataCounts.saveDataCounts()
+        await referenceData.students.saveStudentData()
+        await referenceData.dataCounts.increaseTotalStudentCount()
+        await referenceData.dataCounts.saveDataCounts()
         
         let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
         referenceData.locations.locationsList[locationNum].increaseStudentCount()
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
         let (prevMonthName, billingYear) = getPrevMonthYear()
         let studentBillingFileName = studentBillingFileNamePrefix + billingYear
@@ -42,7 +42,7 @@ import Foundation
         }
     }
     
-    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) {
+    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async {
         
         let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
         let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -54,13 +54,13 @@ import Foundation
         referenceData.students.studentsList[studentNum].studentLocation = location
         referenceData.students.studentsList[studentNum].studentType = studentType
         
-        referenceData.students.saveStudentData()
+        await referenceData.students.saveStudentData()
  
         let (originalLocationFound, originalLocationNum) = referenceData.locations.findLocationByName(locationName: originalLocation)
         referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
         let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
         referenceData.locations.locationsList[locationNum].increaseStudentCount()
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
         var tutorNum = 0
         while tutorNum < referenceData.tutors.tutorsList.count {
@@ -70,7 +70,7 @@ import Foundation
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
-                referenceData.tutors.tutorsList[tutorNum].saveTutorStudents()
+                await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData()
                 
             }
             tutorNum += 1
@@ -170,10 +170,12 @@ import Foundation
     }
     
 
-    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 
         var deleteResult: Bool = true
         var deleteMessage: String = " "
+        var result: Bool = true
+        var studentBillingFileID: String = ""
 
         print("deleting Student")
         
@@ -182,20 +184,24 @@ import Foundation
                 if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
                     let studentNum = index
                     referenceData.students.studentsList[studentNum].markDeleted()
-                    referenceData.students.saveStudentData()
-                    referenceData.dataCounts.decreaseActiveStudentCount()
+                    await referenceData.students.saveStudentData()
+                    await referenceData.dataCounts.decreaseActiveStudentCount()
 // Decrease the counts of Students at the Location
                     let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
                     referenceData.locations.locationsList[locationNum].decreaseStudentCount()
-                    referenceData.locations.saveLocationData()
+                    await referenceData.locations.saveLocationData()
 // Remove Student from Billed Student list for previous month
                     let (prevMonthName, billingYear) = getPrevMonthYear()
                     let studentBillingFileName = studentBillingFileNamePrefix + billingYear
                     
                     let studentBillingMonth = StudentBillingMonth()
-                    Task {
+ //                   Task {
 // Get the File ID of the Billed Student spreadsheet for the year
-                        let (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+                    do {
+                        (result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+                    } catch {
+                        
+                    }
 // Read in the Billed Students for the previous month
                         await studentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 // Add the new Student to Billed Student list for the month
@@ -206,7 +212,7 @@ import Foundation
                         }
 // Save the updated Billed Student list for the month
                         await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
-                    }
+//                    }
                     
                 } else {
                     deleteMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
@@ -274,7 +280,7 @@ import Foundation
 // Add new Student to Billed Student list for the month
                     let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
                     if billedStudentFound == false {
-                        await studentBillingMonth.addNewBilledStudent(studentName: studentName)
+                        studentBillingMonth.addNewBilledStudent(studentName: studentName)
                     }
 // Save the updated Billed Student list for the month
                     await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: "Sept")
@@ -290,7 +296,7 @@ import Foundation
         }
     }
     
-    func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var unDeleteResult: Bool = true
         var unDeleteMessage: String = " "
         
@@ -301,11 +307,11 @@ import Foundation
                 if referenceData.students.studentsList[index].studentStatus == "Deleted" {
                     let studentNum = index
                     referenceData.students.studentsList[studentNum].markUndeleted()
-                    referenceData.students.saveStudentData()
-                    referenceData.dataCounts.increaseActiveStudentCount()
+                    await referenceData.students.saveStudentData()
+                    await referenceData.dataCounts.increaseActiveStudentCount()
                     let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
                     referenceData.locations.locationsList[locationNum].increaseStudentCount()
-                    referenceData.locations.saveLocationData()
+                    await referenceData.locations.saveLocationData()
                     
                 } else {
                     unDeleteMessage = "Error: Student \(referenceData.students.studentsList[index].studentName) status is \(referenceData.students.studentsList[index].studentStatus)"
@@ -317,7 +323,7 @@ import Foundation
         return(unDeleteResult, unDeleteMessage)
     }
     
-    func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+    func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async {
         
         for objectID in tutorIndex {
             if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
@@ -325,18 +331,18 @@ import Foundation
                 let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
             
                 referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-                referenceData.students.saveStudentData()
+                await referenceData.students.saveStudentData()
                 
                 let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone )
-                referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-                referenceData.tutors.saveTutorData()                    // increased Student count
+                await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+                await referenceData.tutors.saveTutorData()                    // increased Student count
                 }
             }
             
         }
     
     
-    func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) {
+    func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async {
         
         for objectID in studentIndex {
             if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
@@ -344,19 +350,19 @@ import Foundation
                 let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
             
                 referenceData.students.studentsList[studentNum].unassignTutor()
-                referenceData.students.saveStudentData()
+                await referenceData.students.saveStudentData()
                 
                 let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
                 if foundFlag {
-                    referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
-                    referenceData.tutors.saveTutorData()                    // increased Student count
+                    await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
+                    await referenceData.tutors.saveTutorData()                    // increased Student count
                 }
             }
             
         }
     }
     
-    func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) {
+    func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async {
         
         for objectID in tutorStudentIndex {
             if let tutorStudentNum = referenceData.tutors.tutorsList[tutorNum].tutorStudents.firstIndex(where: {$0.id == objectID} ) {
@@ -365,10 +371,10 @@ import Foundation
                 let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
                 
                 referenceData.students.studentsList[studentNum].unassignTutor()
-                referenceData.students.saveStudentData()
+                await referenceData.students.saveStudentData()
                 
-                referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
-                referenceData.tutors.saveTutorData()                    // increased Student count
+                await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
+                await referenceData.tutors.saveTutorData()                    // increased Student count
                 
             }
             

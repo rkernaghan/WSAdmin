@@ -67,14 +67,14 @@ struct PgmConstants {
     static let tutorTotalRevenuePosition = 12
     static let tutorTotalProfitPosition = 13
     
-    static let tutorDataStudentsStartingRowNumber = 2
+    static let tutorDataStudentsStartingRowNumber = 3
     static let tutorDataStudentKeyPosition = 0
     static let tutorDataStudentNamePosition = 1
     static let tutorDataStudentClientNamePosition = 2
     static let tutorDataStudentClientEmailPosition = 3
     static let tutorDataStudentClientPhonePosition = 4
     
-    static let tutorDataServicesStartingRowNumber = 2
+    static let tutorDataServicesStartingRowNumber = 3
     static let tutorDataServiceKeyPosition = 0
     static let tutorDataServiceTimesheetNamePosition = 1
     static let tutorDataServiceInvoiceNamePosition = 2

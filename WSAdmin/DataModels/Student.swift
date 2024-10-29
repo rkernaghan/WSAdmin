@@ -69,4 +69,10 @@ import Foundation
         self.studentTutorName = " "
     }
     
+    func resetBillingStats(sessionCost: Float, sessionRevenue: Float) {
+        self.studentSessions -= 1
+        self.studentTotalCost -= sessionCost
+        self.studentTotalRevenue -= sessionRevenue
+        self.studentTotalProfit -= sessionRevenue - sessionCost
+    }
 }

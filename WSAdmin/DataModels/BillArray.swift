@@ -78,7 +78,10 @@ class BillArray {
                         newInvoice.totalRevenue += price
                         newInvoice.totalCost += cost
                         newInvoice.totalSessions += 1
-                        let invoiceLine = InvoiceLine(invoiceNum: String(clientNum), clientName: billClients[clientNum].clientName, clientEmail: billClients[clientNum].clientEmail, invoiceDate: invoiceDate, dueDate: dueDate, terms: PgmConstants.termsString, locationName: tutorName, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: billClients[clientNum].billItems[billItemNum].studentName, cost: cost)
+                        let studentName = billClients[clientNum].billItems[billItemNum].studentName
+                        let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+                        let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+                        let invoiceLine = InvoiceLine(invoiceNum: String(clientNum), clientName: billClients[clientNum].clientName, clientEmail: billClients[clientNum].clientEmail, invoiceDate: invoiceDate, dueDate: dueDate, terms: PgmConstants.termsString, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
                         newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
          //               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
 

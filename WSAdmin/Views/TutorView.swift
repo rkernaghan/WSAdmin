@@ -56,28 +56,30 @@ struct TutorView: View {
              }
             
             Button(action: {
-                let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
-                let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
-                let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
-                
-                if updateTutorFlag {
-                    let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
-                    if tutorValidationResult {
-                        tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
-                        dismiss()
-                    } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
-                    }
+                Task {
+                    let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
+                    let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
+                    let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
                     
-                } else {
-                    let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
-                    if tutorValidationResult {
-                        tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
-                        dismiss()
+                    if updateTutorFlag {
+                        let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
+                        if tutorValidationResult {
+                            await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
+                        
                     } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
+                        let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
+                        if tutorValidationResult {
+                            await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
                     }
                 }
                 

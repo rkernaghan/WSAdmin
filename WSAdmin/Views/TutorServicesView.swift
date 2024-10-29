@@ -67,12 +67,14 @@ struct TutorServicesView: View {
                         }
                         
                         Button {
-                            for objectID in items {
-                                if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
-                                    tutorServiceNum = idx
-                                    let (unassignResult, unassignMessage) = tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
-                                    if unassignResult {
-                                        dismiss()
+                            Task {
+                                for objectID in items {
+                                    if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+                                        tutorServiceNum = idx
+                                        let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+                                        if unassignResult {
+                                            dismiss()
+                                        }
                                     }
                                 }
                             }
@@ -95,12 +97,14 @@ struct TutorServicesView: View {
                         }
                         
                         Button {
-                            for objectID in items {
-                                if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
-                                    tutorServiceNum = idx
-                                    let (unassignResult, unassignMessage) = tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
-                                    if unassignResult {
-                                        //                                    dismiss()
+                            Task {
+                                for objectID in items {
+                                    if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+                                        tutorServiceNum = idx
+                                        let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+                                        if unassignResult {
+                                            //                                    dismiss()
+                                        }
                                     }
                                 }
                             }

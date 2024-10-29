@@ -28,5 +28,16 @@ class StudentBillingRow {
         self.totalProfit = totalProfit
         self.tutorName = tutorName
     }
+    
+    func resetBilledStudentMonth(cost: Float, revenue: Float, profit: Float) {
+        self.totalSessions -= 1
+        self.totalCost -= cost
+        self.totalRevenue -= revenue
+        self.totalProfit -= profit
+        self.monthSessions -= 1
+        self.monthCost -= cost
+        self.monthRevenue -= revenue
+        self.monthProfit -= profit
+    }
 }
 

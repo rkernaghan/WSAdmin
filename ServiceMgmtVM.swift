@@ -32,7 +32,7 @@ import Foundation
         referenceData.services.loadService(newService: newService, referenceData: referenceData)
     }
     
-    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
         
         let newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(referenceData.dataCounts.highestServiceKey)
  
@@ -40,9 +40,9 @@ import Foundation
         
         referenceData.services.loadService(newService: newService, referenceData: referenceData)
         
-        referenceData.services.saveServiceData()
-        referenceData.dataCounts.increaseTotalServiceCount()
-        referenceData.dataCounts.saveDataCounts()
+        await referenceData.services.saveServiceData()
+        await referenceData.dataCounts.increaseTotalServiceCount()
+        await referenceData.dataCounts.saveDataCounts()
         let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
         
         if String(describing: serviceType) == "Base" {
@@ -51,14 +51,14 @@ import Foundation
                 while tutorNum < referenceData.tutors.tutorsList.count {
                     if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
                         let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                        referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+                        await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
                         referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
                         referenceData.services.servicesList[serviceNum].serviceStatus = "Assigned"
                     }
                     tutorNum += 1
                 }
-                referenceData.tutors.saveTutorData()
-                referenceData.services.saveServiceData()
+                await referenceData.tutors.saveTutorData()
+                await referenceData.services.saveServiceData()
             }
         }
     }
@@ -101,11 +101,11 @@ import Foundation
         return(validationResult, validationMessage)
     }
     
-    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
         
         referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
-        referenceData.services.saveServiceData()
+        await referenceData.services.saveServiceData()
         
         if String(describing: serviceType) == "Base" {
             if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
@@ -114,7 +114,7 @@ import Foundation
                     if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
                         let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
                         if serviceFound {
-                            referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
+                            await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1Float, cost2: cost2Float, cost3: cost3Float, price1: price1Float, price2: price2Float, price3: price3Float)
                         }
                     }
                     tutorNum += 1
@@ -123,7 +123,7 @@ import Foundation
         }
     }
 
-    func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func deleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var deleteResult: Bool = true
         var deleteMessage: String = " "
 
@@ -133,8 +133,8 @@ import Foundation
             if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.services.servicesList[serviceNum].serviceStatus == "Unassigned" {
                     referenceData.services.servicesList[serviceNum].markDeleted()
-                    referenceData.services.saveServiceData()
-                    referenceData.dataCounts.decreaseActiveServiceCount()
+                    await referenceData.services.saveServiceData()
+                    await referenceData.dataCounts.decreaseActiveServiceCount()
                 } else {
                     deleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
                     print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be deleted")
@@ -145,7 +145,7 @@ import Foundation
         return(deleteResult, deleteMessage)
     }
     
-    func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var unDeleteResult: Bool = true
         var unDeleteMessage: String = " "
         print("UnDeleting Service")
@@ -154,8 +154,8 @@ import Foundation
             if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.services.servicesList[serviceNum].serviceStatus == "Deleted" {
                     referenceData.services.servicesList[serviceNum].markUnDeleted()
-                    referenceData.services.saveServiceData()
-                    referenceData.dataCounts.increaseActiveServiceCount()
+                    await referenceData.services.saveServiceData()
+                    await referenceData.dataCounts.increaseActiveServiceCount()
                 } else {
                     unDeleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
                     print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted")

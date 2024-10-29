@@ -15,7 +15,7 @@ import GTMSessionFetcher
 @Observable class TutorMgmtVM  {
     
     
-    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
+    func addNewTutor(referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) async {
 
         let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
         let dateFormatter = DateFormatter()
@@ -25,8 +25,8 @@ import GTMSessionFetcher
         
         let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorStatus: "Active", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
         referenceData.tutors.loadTutor(newTutor: newTutor)
-        referenceData.tutors.saveTutorData()
-        referenceData.dataCounts.increaseTotalTutorCount()
+        await referenceData.tutors.saveTutorData()
+        await referenceData.dataCounts.increaseTotalTutorCount()
         
         createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey)
         
@@ -67,11 +67,11 @@ import GTMSessionFetcher
 //        }
     }
     
-    func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
+    func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) async {
         
  //       let maxStudentsInt: Int = Int(maxStudents) ?? 0
         referenceData.tutors.tutorsList[tutorNum].updateTutor(contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
-        referenceData.tutors.saveTutorData()
+        await referenceData.tutors.saveTutorData()
 
     }
     
@@ -137,7 +137,7 @@ import GTMSessionFetcher
         return phonePredicate.evaluate(with: phone)
     }
     
-    func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var deleteResult = true
         var deleteMessage = " "
         print("Deleting Tutor")
@@ -146,8 +146,8 @@ import GTMSessionFetcher
             if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
                     referenceData.tutors.tutorsList[tutorNum].markDeleted()
-                    referenceData.tutors.saveTutorData()
-                    referenceData.dataCounts.decreaseActiveStudentCount()
+                    await referenceData.tutors.saveTutorData()
+                    await referenceData.dataCounts.decreaseActiveStudentCount()
 // Remove Tutor from Billed Tutor list for the previous month
                     let (prevMonthName, billingYear) = getPrevMonthYear()
                     let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
@@ -177,7 +177,7 @@ import GTMSessionFetcher
         return(deleteResult, deleteMessage)
     }
 
-    func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var unDeleteResult = true
         var unDeleteMessage = " "
         print("UnDeleting Tutor")
@@ -186,8 +186,8 @@ import GTMSessionFetcher
             if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Deleted" {
                     referenceData.tutors.tutorsList[tutorNum].markUnDeleted()
-                    referenceData.tutors.saveTutorData()
-                    referenceData.dataCounts.increaseActiveTutorCount()
+                    await referenceData.tutors.saveTutorData()
+                    await referenceData.dataCounts.increaseActiveTutorCount()
                 } else {
                     unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)"
                     print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)")
@@ -198,7 +198,7 @@ import GTMSessionFetcher
         return(unDeleteResult, unDeleteMessage)
     }
     
-    func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) {
+    func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async {
         print("Assigning Student to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
  
         for objectID in studentIndex {
@@ -208,16 +208,16 @@ import GTMSessionFetcher
                 print(studentNum, studentNum1)
                 
                 referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-                referenceData.students.saveStudentData()
+                await referenceData.students.saveStudentData()
                 
                 let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone)
-                referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-                referenceData.tutors.saveTutorData()                    // increased Student count
+                await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+                await referenceData.tutors.saveTutorData()                    // increased Student count
             }
         }
     }
 
-    func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) {
+    func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async {
         
         print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor")
  
@@ -229,15 +229,15 @@ import GTMSessionFetcher
  //               referenceData.students.saveStudentData()
                 
                 let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-                referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-                referenceData.tutors.saveTutorData()                    // increased Student count
+                await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+                await referenceData.tutors.saveTutorData()                    // increased Student count
                 referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-                referenceData.services.saveServiceData()
+                await referenceData.services.saveServiceData()
             }
         }
     }
     
-    func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) -> (Bool, String) {
+    func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
         var unassignResult: Bool = true
         var unassignMsg: String = " "
         
@@ -245,8 +245,8 @@ import GTMSessionFetcher
         let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
         if serviceFound {
             referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
-            referenceData.services.saveServiceData()
-            referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
+            await referenceData.services.saveServiceData()
+            await referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
         } else {
             unassignResult = false
             unassignMsg = "Tutor Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
@@ -254,9 +254,9 @@ import GTMSessionFetcher
         return(unassignResult, unassignMsg)
     }
     
-    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
 
-        referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+        await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
     }
     

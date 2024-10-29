@@ -9,23 +9,23 @@ import Foundation
 @Observable class LocationMgmtVM  {
     
   
-    func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) {
+    func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) async {
         
         let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey)
         
         let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
         referenceData.locations.loadLocation(newLocation: newLocation)
         
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
-        referenceData.dataCounts.increaseTotalLocationCount()
-        referenceData.dataCounts.saveDataCounts()
+        await referenceData.dataCounts.increaseTotalLocationCount()
+        await referenceData.dataCounts.saveDataCounts()
     }
     
-    func updateLocation(locationNum: Int, referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) {
+    func updateLocation(locationNum: Int, referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) async {
         
         referenceData.locations.locationsList[locationNum].updateLocation(locationName: locationName)
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
     }
     
@@ -68,7 +68,7 @@ import Foundation
     }
     
 
-    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func deleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var deleteResult: Bool = true
         var deleteMessage: String = " "
 
@@ -79,7 +79,7 @@ import Foundation
             if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
                     referenceData.locations.locationsList[locationNum].markDeleted()
-                    referenceData.dataCounts.decreaseActiveLocationCount()
+                    await referenceData.dataCounts.decreaseActiveLocationCount()
                 } else {
                     deleteMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned"
                     print("Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned")
@@ -87,12 +87,12 @@ import Foundation
                 }
             }
         }
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
         return(deleteResult, deleteMessage)
     }
     
-    func undeleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) -> (Bool, String) {
+    func undeleteLocation(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
         var unDeleteResult: Bool = true
         var unDeleteMessage: String = " "
         
@@ -102,7 +102,7 @@ import Foundation
             if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
                 if referenceData.locations.locationsList[locationNum].locationStatus == "Deleted" {
                     referenceData.locations.locationsList[locationNum].markUndeleted()
-                    referenceData.dataCounts.increaseActiveLocationCount()
+                    await referenceData.dataCounts.increaseActiveLocationCount()
                 } else {
                     unDeleteMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted"
                     print("rror: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted")
@@ -110,7 +110,7 @@ import Foundation
                 }
             }
         }
-        referenceData.locations.saveLocationData()
+        await referenceData.locations.saveLocationData()
         
         return(unDeleteResult, unDeleteMessage)
     }

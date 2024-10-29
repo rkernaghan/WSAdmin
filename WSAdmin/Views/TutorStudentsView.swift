@@ -31,7 +31,9 @@ struct TutorStudentsView: View {
                     VStack {
                         
                         Button {
-                            studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                            Task {
+                                await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Unassign Student", systemImage: "square.and.arrow.up")
                         }
@@ -39,7 +41,9 @@ struct TutorStudentsView: View {
                     
                 } else {
                     Button {
-                        studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                        Task {
+                            await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                        }
                     } label: {
                         Label("Unassign Students", systemImage: "square.and.arrow.up")
                     }

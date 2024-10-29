@@ -51,4 +51,9 @@ import Foundation
         self.locationStudentCount -= 1
     }
     
+    func resetBillingStats(sessionRevenue: Float) {
+        self.locationMonthRevenue -= sessionRevenue
+        self.locationTotalRevenue -= sessionRevenue
+    }
+    
 }

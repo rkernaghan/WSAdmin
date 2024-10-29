@@ -32,19 +32,21 @@ struct LocationView: View {
              }
             
             Button(action: {
-                if updateLocationFlag {
-                    locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-                }
-                else {
-                    let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
-                    if locationValidationResult {
-                        locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-                        dismiss()
-                    } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
+                Task {
+                    if updateLocationFlag {
+                        await locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
                     }
-                    
+                    else {
+                        let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
+                        if locationValidationResult {
+                            await locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
+                        
+                    }
                 }
             }){
                 Text("Add Location")

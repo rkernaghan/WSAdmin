@@ -27,4 +27,28 @@ class TutorBillingRow {
         self.totalRevenue = totalRevenue
         self.totalProfit = totalProfit
     }
+    
+    func resetBilledTutorMonth(cost: Float, revenue: Float, profit: Float) {
+        
+        self.monthSessions -= 1
+        self.monthCost -= cost
+        self.monthRevenue -= revenue
+        self.monthProfit -= profit
+        
+        self.totalSessions -= 1
+        self.totalCost -= cost
+        self.totalRevenue -= revenue
+        self.totalProfit -= profit
+    }
+    
+//    func resetBilledTutorMonth() {
+//        self.totalSessions -= self.monthSessions
+//        self.totalCost -= self.monthCost
+//        self.totalRevenue -= self.monthRevenue
+//        self.totalProfit -= self.monthProfit
+//        self.monthSessions = 0
+//        self.monthCost = 0.0
+//        self.monthRevenue = 0.0
+//        self.monthProfit = 0.0
+//    }
 }

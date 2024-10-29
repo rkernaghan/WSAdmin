@@ -93,11 +93,14 @@ struct TutorServiceView: View {
                     .textFieldStyle(.roundedBorder)
              }
 
-            Button(action: {
-                tutorMgmtVM.updateTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-            }){
-                Text("Edit Service")
-            }
+            Button{
+                Task {
+                    await tutorMgmtVM.updateTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                
+                }
+                } label: {
+                    Label("Edit Service", systemImage: "square.and.arrow.up")
+                }
             .padding()
 //            .background(Color.orange)
 //            .foregroundColor(Color.white)

@@ -62,7 +62,7 @@ struct DataMgmtView: View {
                     studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
                     tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
                 }
-                refDataVM.loadReferenceData(referenceData: referenceData)
+                await refDataVM.loadReferenceData(referenceData: referenceData)
             }
         })
     }
@@ -295,16 +295,19 @@ struct TutorsView: View {
                                 }
                             }
                             
-                            Button(action: {
-                                let (deleteResult, deleteMessage) = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
-                                if deleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = deleteMessage
-//                                    viewChange.toggle()
+                            Button(role: .destructive) {
+                                Task {
+                                    let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                                    
+                                    if deleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = deleteMessage
+                                        //                                    viewChange.toggle()
+                                        }
+                                    }
+                                } label: {
+                                    Label("Delete Tutor", systemImage: "trash")
                                 }
-                            }) {
-                                Text("Delete Tutor")
-                            }
 //                            .alert(buttonErrorMsg, isPresented: $showAlert) {
 //                                Button("OK", role: .cancel) {
 //                                    print("error alert")
@@ -312,11 +315,14 @@ struct TutorsView: View {
 //                            }
                             
                             Button(role: .destructive) {
-                                let (deleteResult, deleteMessage) = tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
-                                if deleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = deleteMessage
- //                                   viewChange.toggle()
+                                Task {
+                                    let (deleteResult, deleteMessage) = await tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
+                                
+                                    if deleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = deleteMessage
+                                        //                                   viewChange.toggle()
+                                    }
                                 }
                             } label: {
                                 Label("Undelete Tutor", systemImage: "trash")
@@ -324,6 +330,7 @@ struct TutorsView: View {
  //                           .alert(buttonErrorMsg, isPresented: $showAlert) {
  //                               Button("OK", role: .cancel) { }
  //                           }
+                            
                         }
                         
                     } else {
@@ -334,7 +341,9 @@ struct TutorsView: View {
                         }
                         
                         Button(role: .destructive) {
-                            let (deleteResult, deleteMessage) = tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                            Task {
+                                let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Delete Tutors", systemImage: "trash")
                         }
@@ -412,7 +421,9 @@ struct StudentSelectionView: View {
                     VStack {
                         
                         Button {
-                            tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                            Task {
+                                await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Assign Student to Tutor", systemImage: "square.and.arrow.up")
                         }
@@ -420,7 +431,9 @@ struct StudentSelectionView: View {
                     
                 } else {
                     Button {
-                        tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                        Task {
+                            await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+                        }
                     } label: {
                         Label("Assign Students to Tutor", systemImage: "square.and.arrow.up")
                     }
@@ -540,16 +553,20 @@ struct StudentsView: View {
                             }
                             
                             Button {
-                                studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                                Task {
+                                    await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                                }
                             } label: {
                                 Label("Unassign Student", systemImage: "square.and.arrow.up")
                             }
                             
                             Button {
-                                for objectID in items {
-                                    if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-                                        studentNumber = idx
-                                        editStudent.toggle()
+                                Task {
+                                    for objectID in items {
+                                        if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+                                            studentNumber = idx
+                                            editStudent.toggle()
+                                        }
                                     }
                                 }
                             } label: {
@@ -563,10 +580,12 @@ struct StudentsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let (deleteResult, deleteMessage) = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-                                if deleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = deleteMessage
+                                Task {
+                                    let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                                    if deleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = deleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("Delete Student", systemImage: "trash")
@@ -576,10 +595,12 @@ struct StudentsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let (unDeleteResult, unDeleteMessage) = studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
-                                if unDeleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = unDeleteMessage
+                                Task {
+                                    let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
+                                    if unDeleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = unDeleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("UnDelete Student", systemImage: "trash")
@@ -595,13 +616,17 @@ struct StudentsView: View {
                         }
                         
                         Button(role: .destructive) {
-                            let (deleteResult, deleteMessage) = studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                            Task {
+                                let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Delete Students", systemImage: "trash")
                         }
                         
                         Button {
-                            studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                            Task {
+                                await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Unassign Students", systemImage: "square.and.arrow.up")
                         }
@@ -651,7 +676,9 @@ struct TutorSelectionView: View {
                     VStack {
                         
                         Button {
-                            studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
+                            Task {
+                                await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
+                            }
                         } label: {
                             Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
                         }
@@ -659,7 +686,9 @@ struct TutorSelectionView: View {
                     
                 } else {
                     Button {
-                        studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
+                        Task {
+                            await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
+                        }
                     } label: {
                         Label("Assign Tutors Student", systemImage: "square.and.arrow.up")
                     }
@@ -801,20 +830,25 @@ struct ServicesView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let (deleteResult, deleteMessage) = serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
-                                if deleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = deleteMessage
+                                Task {
+                                    let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+                                
+                                    if deleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = deleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("Delete Service", systemImage: "trash")
                             }
                             
                             Button(role: .destructive) {
-                                let (unDeleteResult, unDeleteMessage) = serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
-                                if unDeleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = unDeleteMessage
+                                Task {
+                                    let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+                                    if unDeleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = unDeleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("Undelete Service", systemImage: "trash")
@@ -894,25 +928,31 @@ struct TutorServiceSelectionView: View {
             .contextMenu(forSelectionType: Tutor.ID.self) { items in
                 if items.count == 1 {
                     VStack {
-                        
                         Button {
-                            tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                            Task {
+                                await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                            }
+                            
+                            } label: {
+                                Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    
+                    
+                } else {
+                    Button {
+                        Task {
+                            await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+                        }
                         } label: {
                             Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
                         }
                     }
                     
-                } else {
-                    Button {
-                        tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
-                    } label: {
-                        Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
-                    }
-                }
-                    
                 } primaryAction: { items in
                     //              store.favourite(items)
                 }
+                
             }
         }
     }
@@ -967,10 +1007,12 @@ struct LocationsView: View {
                     } else if items.count == 1 {
                         VStack {
                             Button {
-                                for objectID in items {
-                                    if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                                        locationNumber = idx
-                                        editLocation.toggle()
+                                Task {
+                                    for objectID in items {
+                                        if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
+                                            locationNumber = idx
+                                            editLocation.toggle()
+                                        }
                                     }
                                 }
                             } label: {
@@ -978,20 +1020,24 @@ struct LocationsView: View {
                             }
                             
                             Button(role: .destructive) {
-                                let (deleteResult, deleteMessage) = locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
-                                if deleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = deleteMessage
+                                Task {
+                                    let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+                                    if deleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = deleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("Delete Location", systemImage: "trash")
                             }
                             
                             Button(role: .destructive) {
-                                let (unDeleteResult, unDeleteMessage) = locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
-                                if unDeleteResult == false {
-                                    showAlert = true
-                                    buttonErrorMsg = unDeleteMessage
+                                Task {
+                                    let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+                                    if unDeleteResult == false {
+                                        showAlert = true
+                                        buttonErrorMsg = unDeleteMessage
+                                    }
                                 }
                             } label: {
                                 Label("Undelete Location", systemImage: "trash")

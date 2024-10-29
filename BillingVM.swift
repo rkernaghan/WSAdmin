@@ -173,16 +173,18 @@ import GoogleAPIClientForREST
                 let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
                 let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
                 let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-                
-                if alreadyBilledTutors.contains(tutorName) {
-                    resetTutorBillingStats(billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
-                }
+                let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+                let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+               
                 let cost = invoice.invoiceLines[invoiceLineNum].cost
                 let revenue = invoice.invoiceLines[invoiceLineNum].amount
                 let profit = revenue - cost
                 
-//    print("Month: \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions) \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost) \(tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue) ")
-     
+                if alreadyBilledTutors.contains(tutorName) {
+                    resetBillingStats(sessionCost: cost, sessionRevenue: revenue, billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
+                }
+               
+                
                 tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
                 tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
                 tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost += cost
@@ -211,6 +213,9 @@ import GoogleAPIClientForREST
                 referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
                 referenceData.students.studentsList[studentNum].studentTotalProfit += profit
 
+                referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
+                referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
+                
                 invoiceLineNum += 1
             }
             
@@ -224,8 +229,9 @@ import GoogleAPIClientForREST
                 print("Error Saving Tutor Billing Data")
             }
             
-            referenceData.tutors.saveTutorData()
-            referenceData.students.saveStudentData()
+            await referenceData.tutors.saveTutorData()
+            await referenceData.students.saveStudentData()
+            await referenceData.locations.saveLocationData()
         }
     }
     
@@ -309,8 +315,16 @@ import GoogleAPIClientForREST
         return(csvLine)
     }
     
-    func resetTutorBillingStats(billedTutorNum: Int, billedStudentNum: Int, tutorNum: Int, studentNum: Int, tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData) {
+    func resetBillingStats(sessionCost: Float, sessionRevenue: Float, billedTutorNum: Int, billedStudentNum: Int, tutorNum: Int, studentNum: Int, tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData) {
+        tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth(cost: sessionCost, revenue: sessionRevenue, profit: sessionRevenue - sessionCost)
+        studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(cost: sessionCost, revenue: sessionRevenue, profit: sessionRevenue - sessionCost)
         
+        referenceData.tutors.tutorsList[tutorNum].resetBillingStats(sessionCost: sessionCost, sessionRevenue: sessionRevenue)
+        referenceData.students.studentsList[studentNum].resetBillingStats(sessionCost: sessionCost, sessionRevenue: sessionRevenue)
+        
+        let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+        let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+        referenceData.locations.locationsList[locationNum].resetBillingStats(sessionRevenue: sessionRevenue)
         
     }
     

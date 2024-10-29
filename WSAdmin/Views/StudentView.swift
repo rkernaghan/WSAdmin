@@ -83,24 +83,25 @@ struct StudentView: View {
                 let guardianName = guardianName.trimmingCharacters(in: .whitespaces)
                 let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
                 let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
-                
-                if updateStudentFlag {
-                    let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
-                    if studentValidationResult {
-                        studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
-                        dismiss()
+                Task {
+                    if updateStudentFlag {
+                        let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
+                        if studentValidationResult {
+                            await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
                     } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
-                    }
-                } else {
-                    let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
-                    if studentValidationResult {
-                        studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
-                        dismiss()
-                    } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
+                        let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
+                        if studentValidationResult {
+                            await studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
                     }
                 }
             }){

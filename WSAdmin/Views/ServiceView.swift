@@ -112,29 +112,31 @@ struct ServiceView: View {
             .frame(width:200)
             .clipped()
 
-            Button(action: {
-                if updateServiceFlag {
-                    let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                    if validationResult {
-                        serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                        dismiss()
+            Button{
+                Task {
+                    if updateServiceFlag {
+                        let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                        if validationResult {
+                            await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
                     } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
-                    }
-                } else {
-                    let (validationResult, validationMessage) = serviceMgmtVM.validateNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                    if validationResult {
-                        serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                        dismiss()
-                    } else {
-                        buttonErrorMsg = validationMessage
-                        showAlert = true
+                        let (validationResult, validationMessage) = serviceMgmtVM.validateNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                        if validationResult {
+                            await serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+                            dismiss()
+                        } else {
+                            buttonErrorMsg = validationMessage
+                            showAlert = true
+                        }
                     }
                 }
-            }){
-                Text("Add/Update Service")
-            }
+                } label: {
+                    Label("Add/Edit Service", systemImage: "square.and.arrow.up")
+                }
             .alert(buttonErrorMsg, isPresented: $showAlert) {
                 Button("OK", role: .cancel) { }
             }
