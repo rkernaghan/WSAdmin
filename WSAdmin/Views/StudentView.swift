@@ -10,6 +10,7 @@ import SwiftUI
 struct StudentView: View {
     
     var updateStudentFlag: Bool
+    var originalStudentName: String
     var referenceData: ReferenceData
     var studentKey: String
     
@@ -85,9 +86,9 @@ struct StudentView: View {
                 let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
                 Task {
                     if updateStudentFlag {
-                        let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
+                        let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
                         if studentValidationResult {
-                            await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+                            await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
                             dismiss()
                         } else {
                             buttonErrorMsg = validationMessage

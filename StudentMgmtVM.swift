@@ -42,7 +42,7 @@ import Foundation
         }
     }
     
-    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async {
+    func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async {
         
         let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
         let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -70,7 +70,7 @@ import Foundation
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
                 referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
-                await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData()
+		    await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
                 
             }
             tutorNum += 1
@@ -119,14 +119,14 @@ import Foundation
         return(validationResult, validationMessage)
     }
 
-    func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
+    func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
         var validationResult: Bool = true
         var validationMessage: String = " "
         
         let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-        if !studentFoundFlag {
+        if studentFoundFlag && originalStudentName != studentName {
             validationResult = false
-            validationMessage = "Student Name \(studentName) Does Not Exist"
+            validationMessage = "Error: New Student name \(studentName) already exists"
         }
         
         var commaFlag = studentName.contains(",")

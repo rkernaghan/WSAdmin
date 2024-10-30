@@ -10,20 +10,21 @@ import SwiftUI
 struct TutorView: View {
     var updateTutorFlag: Bool
     var tutorNum: Int
+    var originalTutorName: String
     var referenceData: ReferenceData
     
     @State var tutorName: String
-    @State var contactEmail: String
-    @State var contactPhone: String
+    @State var tutorEmail: String
+    @State var tutorPhone: String
     @State var maxStudents: Int
-    
+
     @State private var showAlert = false
     
     @Environment(RefDataVM.self) var refDataVM: RefDataVM
     @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         
         VStack {
@@ -43,14 +44,14 @@ struct TutorView: View {
             
             HStack {
                 Text("Tutor Email")
-                TextField("Contact EMail", text: $contactEmail)
+                TextField("Contact EMail", text: $tutorEmail)
                     .frame(width: 300)
                     .textFieldStyle(.roundedBorder)
              }
             
             HStack {
                 Text("Tutor Phone")
-                TextField("Contact Phone", text: $contactPhone)
+                TextField("Contact Phone", text: $tutorPhone)
                     .frame(width: 120)
                     .textFieldStyle(.roundedBorder)
              }
@@ -58,13 +59,13 @@ struct TutorView: View {
             Button(action: {
                 Task {
                     let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
-                    let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
-                    let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
+                    let contactEmail = tutorEmail.trimmingCharacters(in: .whitespaces)
+                    let contactPhone = tutorPhone.trimmingCharacters(in: .whitespaces)
                     
                     if updateTutorFlag {
-                        let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
+                        let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(originalTutorName: originalTutorName, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
                         if tutorValidationResult {
-                            await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                            await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, originalTutorName: originalTutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
                             dismiss()
                         } else {
                             buttonErrorMsg = validationMessage
@@ -74,7 +75,7 @@ struct TutorView: View {
                     } else {
                         let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
                         if tutorValidationResult {
-                            await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+                            await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents)
                             dismiss()
                         } else {
                             buttonErrorMsg = validationMessage

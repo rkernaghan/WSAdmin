@@ -202,63 +202,294 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
     return(completionFlag)
 }
 
+func renameGoogleDriveFile(fileId: String, newName: String) async throws {
+	    var accessToken: String
+	    
+	    let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)"
+	    
+	    let currentUser = GIDSignIn.sharedInstance.currentUser
+	    if let user = currentUser {
+			accessToken = user.accessToken.tokenString
+		  
+			
+			guard let url = URL(string: urlString) else {
+					throw URLError(.badURL)
+			}
+		
+	    // Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "PATCH"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+	    // Request body with the new name
+			let body: [String: Any] = [
+					"name": newName
+			]
+			request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+		
+	    // Perform the network request using async/await
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+					let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+					throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+
+	    // Handle the response
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+					print("File renamed successfully: \(json)")
+			}
+	    }
+}
+
+// Function to copy a Google Drive file
+func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws -> [String: Any]? {
+	
+	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"
+	let currentUser = GIDSignIn.sharedInstance.currentUser
+	if let user = currentUser {
+		let accessToken = user.accessToken.tokenString
+		
+		guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
+		}
+		
+		// Set up the request
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+		// Request body with the new file name
+		let body: [String: Any] = [
+				"name": newFileName
+		]
+		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+		
+		// Perform the network request asynchronously
+		let (data, response) = try await URLSession.shared.data(for: request)
+		
+		// Check for HTTP response status
+		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+		}
+		
+		// Parse and return the response JSON
+		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("File copied successfully: \(json)")
+				return json
+		}
+	}
+	return nil
+}
+
+
+// Function to get the sheet ID based on sheet name using spreadsheets.get
+func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> Int? {
+	    var accessToken: String
+	    
+	    let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)?fields=sheets.properties"
+	    let currentUser = GIDSignIn.sharedInstance.currentUser
+	    if let user = currentUser {
+			accessToken = user.accessToken.tokenString
+			
+			guard let url = URL(string: urlString) else {
+			    throw URLError(.badURL)
+			}
+		
+// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "GET"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		
+// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+		
+// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				    throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+		
+// Parse the response JSON to find the sheet ID
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+				   let sheets = json["sheets"] as? [[String: Any]] {
+				    
+				    for sheet in sheets {
+						if let properties = sheet["properties"] as? [String: Any],
+								let title = properties["title"] as? String,
+								let sheetId = properties["sheetId"] as? Int,
+								title == sheetName {
+								return sheetId // Return the sheet ID if the name matches
+						}
+				    }
+			}
+	    }
+// If the sheet name was not found, return nil
+	    return nil
+}
+
+
+// Function to rename a specific sheet in a Google Sheets spreadsheet
+func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws {
+	    
+	let currentUser = GIDSignIn.sharedInstance.currentUser
+	if let user = currentUser {
+		let accessToken = user.accessToken.tokenString
+		 
+			
+		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+		
+		guard let url = URL(string: urlString) else {
+		    throw URLError(.badURL)
+		}
+        
+// Set up the request
+	var request = URLRequest(url: url)
+	request.httpMethod = "POST"
+	request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+	request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+// Request body with batchUpdate to rename the sheet
+	let body: [String: Any] = [
+		"requests": [
+			[
+			    "updateSheetProperties": [
+				"properties": [
+				    "sheetId": sheetId,
+				    "title": newSheetName
+				],
+				"fields": "title"
+				]
+			]
+		]
+	]
+	
+	request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+        
+// Perform the network request asynchronously
+	let (data, response) = try await URLSession.shared.data(for: request)
+        
+// Check for HTTP response status
+	guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+		let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+		throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+	}
+        
+// Handle the response
+		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+		    print("Sheet renamed successfully: \(json)")
+		}
+	}
+}
+
+// Function to add a permission to a Google Drive file
+func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
+	
+	let currentUser = GIDSignIn.sharedInstance.currentUser
+	if let user = currentUser {
+		let accessToken = user.accessToken.tokenString
+		
+		let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
+		
+		guard let url = URL(string: urlString) else {
+			throw URLError(.badURL)
+		}
+		
+// Set up the request
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+// Request body for the permission
+		var body: [String: Any] = [
+			"role": role,   // e.g., "reader" or "writer"
+			"type": type    // e.g., "user", "group", "domain", "anyone"
+		]
+		if let email = emailAddress, type == "user" || type == "group" {
+			body["emailAddress"] = email
+		}
+		
+		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+		
+// Perform the network request asynchronously
+		let (data, response) = try await URLSession.shared.data(for: request)
+		
+// Check for HTTP response status
+		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+		}
+		
+// Parse and return the response JSON
+		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+			print("Permission added successfully: \(json)")
+			return json
+		}
+	}
+	return nil
+}
 
 func getCurrentMonthYear() -> (String, String) {
-    var currentMonthName: String = ""
-    var currentYearName: String = ""
-      
-    if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
-        currentMonthName = monthArray[monthInt - 1]
-    }
-    
-    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
-        currentYearName = String(yearInt)
-    }
-    return(currentMonthName, currentYearName)
+	    var currentMonthName: String = ""
+	    var currentYearName: String = ""
+	      
+	    if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
+		    currentMonthName = monthArray[monthInt - 1]
+	    }
+	    
+	    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
+		    currentYearName = String(yearInt)
+	    }
+	    return(currentMonthName, currentYearName)
 }
 
 func getPrevMonthYear() -> (String, String) {
-    var prevMonthName: String = ""
-    var billingYear: String = ""
-    
-    if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
-        var prevMonthInt = monthInt - 2                  // subtract 2 from current month name to get prev month with 0-based array index
-        if prevMonthInt == -1 {
-           prevMonthInt = 11
-        }
-        prevMonthName = monthArray[prevMonthInt]
-    }
-    
-    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
-        if prevMonthName == monthArray[11] {            // if month is December than use previous year
-            billingYear = String(yearInt - 1)
-        } else {
-            billingYear = String(yearInt)
-        }
-    }
-    return(prevMonthName, billingYear)
+	    var prevMonthName: String = ""
+	    var billingYear: String = ""
+	    
+	    if let monthInt = Calendar.current.dateComponents([.month], from: Date()).month {
+			var prevMonthInt = monthInt - 2                  // subtract 2 from current month name to get prev month with 0-based array index
+			if prevMonthInt == -1 {
+				prevMonthInt = 11
+			}
+			prevMonthName = monthArray[prevMonthInt]
+	    }
+	    
+	    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
+			if prevMonthName == monthArray[11] {            // if month is December than use previous year
+				billingYear = String(yearInt - 1)
+			} else {
+				billingYear = String(yearInt)
+			}
+	    }
+	    return(prevMonthName, billingYear)
 }
 
 func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, String) {
-    var prevMonthName: String = ""
-    var prevYearName: String = ""
-    var monthNum: Int = 0
-    
-    if currentMonth == "Jan" {
-        let prevYear = Int(currentYear) ?? 0
-        prevYearName = String(prevYear - 1)
-    } else {
-        prevYearName = currentYear
-    }
-    
-    if let index = monthArray.firstIndex(of: currentMonth) {
-        if index == 0 {
-            monthNum = 11
-        } else {
-            monthNum = index - 1
-        }
-        prevMonthName = monthArray[monthNum]
-    }
-    
-    return(prevMonthName, prevYearName)
+	    var prevMonthName: String = ""
+	    var prevYearName: String = ""
+	    var monthNum: Int = 0
+	    
+	    if currentMonth == "Jan" {
+			let prevYear = Int(currentYear) ?? 0
+			prevYearName = String(prevYear - 1)
+	    } else {
+			prevYearName = currentYear
+	    }
+	    
+	    if let index = monthArray.firstIndex(of: currentMonth) {
+			if index == 0 {
+				monthNum = 11
+			} else {
+				monthNum = index - 1
+			}
+			prevMonthName = monthArray[monthNum]
+	    }
+	    
+	    return(prevMonthName, prevYearName)
 }

@@ -108,13 +108,13 @@ struct SideView: View {
                 }
                 
                 NavigationLink {
-                    TutorView(updateTutorFlag: false, tutorNum: 0, referenceData: referenceData, tutorName: "", contactEmail: "", contactPhone: "", maxStudents: 0)
+                    TutorView( updateTutorFlag: false, tutorNum: 0, originalTutorName: "", referenceData: referenceData, tutorName: "", tutorEmail: "", tutorPhone: "", maxStudents: 0)
                 } label: {
                     Label("Add Tutor", systemImage: "person")
                 }
                 
                 NavigationLink {
-                    StudentView(updateStudentFlag: false, referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
+                    StudentView(updateStudentFlag: false, originalStudentName: " ", referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
                 } label: {
                     Label("Add Student", systemImage: "graduationcap")
                 }
@@ -366,7 +366,7 @@ struct TutorsView: View {
                 TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
             }
             .navigationDestination(isPresented: $editTutor) {
-                TutorView(updateTutorFlag: true, tutorNum: tutorNumber, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, contactEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, contactPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
+                TutorView( updateTutorFlag: true, tutorNum: tutorNumber, originalTutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, tutorEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, tutorPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
             }
         }
     }
@@ -644,7 +644,7 @@ struct StudentsView: View {
                 TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
             }
             .navigationDestination(isPresented: $editStudent) {
-                StudentView(updateStudentFlag: true, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
+                StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
                             studentType: referenceData.students.studentsList[studentNumber].studentType )
             }
         }
@@ -986,16 +986,28 @@ struct LocationsView: View {
                 
                 Table(locationArray, selection: $selectedLocations, sortOrder: $sortOrder) {
                     TableColumn("Location Name", value: \.locationName)
+			.width(min: 60, ideal: 80, max: 120)
+			
                     TableColumn("Student Count", value: \.locationStudentCount) {data in
                         Text(String(data.locationStudentCount))
+				    .frame(alignment: .center)
                     }
+		    .width(min: 30, ideal: 60, max: 120)
+			
                     TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
                         Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
+				    .frame(alignment: .center)
                     }
+		    .width(min: 30, ideal: 60, max: 120)
+			
                     TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
                         Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
+				    .frame(alignment: .center)
                     }
+		    .width(min: 30, ideal: 60, max: 120)
+
                     TableColumn("Location Status", value: \.locationStatus)
+			.width(min: 40, ideal: 60, max: 80)
                 }
                 .contextMenu(forSelectionType: Location.ID.self) { items in
                     if items.isEmpty {
