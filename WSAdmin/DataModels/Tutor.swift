@@ -174,6 +174,14 @@ import GoogleAPIClientForREST
  
 	}
         
+	func suspendTutor() {
+		self.tutorStatus = "Suspended"
+	}
+	
+	func unsuspendTutor() {
+		self.tutorStatus = "Unassigned"
+	}
+	
 	func resetBillingStats(sessionCost: Float, sessionRevenue: Float) {
 		self.tutorTotalSessions -= 1
 		self.tutorTotalCost -= sessionCost

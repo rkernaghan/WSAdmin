@@ -35,15 +35,37 @@ struct DataMgmtView: View {
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(SystemVM.self) var systemVM: SystemVM
     
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()
 	@State var referenceData = ReferenceData()
     
 	var body: some View {
-
+		
 		SideView(referenceData: referenceData)
 			.frame(minWidth: 100, minHeight: 100)
+			.toolbar {
+				ToolbarItemGroup {
+					
+					Button(role: .destructive) {
+					    Task {
+						    await systemVM.validateSystem(referenceData: referenceData)
+					    }
+					} label: {
+					    Label("Validate System", systemImage: "trash")
+					}
+					
+					Button(role: .destructive) {
+					    Task {
+						await systemVM.backupSystem()
+					    }
+					} label: {
+					    Label("Backup System", systemImage: "trash")
+					}
+				}
+			}
+		
 			.onAppear(perform: {
 				Task {
 					if runMode == "PROD" {
@@ -62,6 +84,8 @@ struct DataMgmtView: View {
 					await refDataVM.loadReferenceData(referenceData: referenceData)
 				}
 			})
+		
+			
 	}
 }
 
@@ -73,7 +97,6 @@ struct SideView: View {
 	var body: some View {
  
 		List {
-                
 			NavigationLink {
 				TutorsView(referenceData: referenceData)
 			} label: {
@@ -146,6 +169,7 @@ struct SideView: View {
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))
 	}
+
 }
 
 struct TutorsView: View {
@@ -158,214 +182,260 @@ struct TutorsView: View {
 	@State private var assignStudent:Bool = false
 	@State private var listTutorStudents: Bool = false
 	@State private var listTutorServices: Bool = false
-	@State private var addService: Bool = false
+	@State private var assignService: Bool = false
 	@State private var editService: Bool = false
-	@State private var removeService: Bool = false
 	@State private var editTutor: Bool = false
     
 	@State private var tutorNumber: Int = 0
+	@State private var showAssigned: Bool = true
+	@State private var showUnassigned: Bool = true
 	@State private var showDeleted: Bool = false
-	@State private var showUnassigned: Bool = false
+	@State private var showSuspended: Bool = false
     
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
-    var body: some View {
-        if referenceData.tutors.isTutorDataLoaded {
+	var body: some View {
+		if referenceData.tutors.isTutorDataLoaded {
 
-            var tutorArray: [Tutor] {
-                if showDeleted {
-                    return referenceData.tutors.tutorsList
-                } else if showUnassigned {
-                    return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
-                } else {
-                    return referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted"}
-                }
-            }
+			var tutorArray: [Tutor] {
+				if showDeleted && showSuspended && showAssigned && showUnassigned {
+					return referenceData.tutors.tutorsList
+				} else if showUnassigned {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
+				} else if showDeleted {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Deleted"}
+				} else if showSuspended {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended"}
+				} else {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned" || $0.tutorStatus == "Assigned" }
+				}
+			}
 
-            VStack {
-                HStack {
-                    Toggle("Show Deleted", isOn: $showDeleted)
-                    Toggle("Show Unassigned", isOn: $showUnassigned)
-                    Text("     Tutor Count: ")
-                    Text(String(tutorArray.count))
-                }
+			VStack {
+				HStack {
+					Toggle("Show Assigned", isOn: $showAssigned)
+					Toggle("Show Unassigned", isOn: $showUnassigned)
+					Toggle("Show Suspended", isOn: $showSuspended)
+					Toggle("Show Deleted", isOn: $showDeleted)
+					Text("     Tutor Count: ")
+					Text(String(tutorArray.count))
+				}
  
-                Table(tutorArray,selection: $selectedTutors, sortOrder: $sortOrder) {
-                    TableColumn("Tutor Name", value: \.tutorName)
-                        .width(min: 100, ideal: 120, max: 240)
+				Table(tutorArray,selection: $selectedTutors, sortOrder: $sortOrder) {
+					TableColumn("Tutor Name", value: \.tutorName)
+						.width(min: 100, ideal: 120, max: 240)
                     
-                    TableColumn("Phone", value: \.tutorPhone)
-                        .width(min: 100, ideal: 120, max: 120)
+					TableColumn("Phone", value: \.tutorPhone)
+						.width(min: 80, ideal: 80, max: 100)
                     
-                    TableColumn("Email", value: \.tutorEmail)
-                        .width(min: 150, ideal: 180, max: 260)
+					TableColumn("Email", value: \.tutorEmail)
+						.width(min: 150, ideal: 180, max: 260)
                     
-                    TableColumn("Start Date", value: \.tutorStartDate)
-                        .width(min: 90, ideal: 100, max: 100)
+					TableColumn("Start Date", value: \.tutorStartDate)
+						.width(min: 60, ideal: 80, max: 80)
                     
-                    TableColumn("End Date", value: \.tutorEndDate)
-                        .width(min: 90, ideal: 100, max: 100)
+					TableColumn("End Date", value: \.tutorEndDate)
+						.width(min: 60, ideal: 80, max: 80)
                     
-                    TableColumn("Status", value: \.tutorStatus)
-                        .width(min: 40, ideal: 60, max: 70)
+					TableColumn("Status", value: \.tutorStatus)
+						.width(min: 50, ideal: 70, max: 80)
                     
-                    TableColumn("Max\nStudents", value: \.tutorMaxStudents) { data in
-                        Text(String(data.tutorMaxStudents))
-                    }
-                    .width(min: 40, ideal: 70, max: 80)
+					TableColumn("Max\nStudents", value: \.tutorMaxStudents) { data in
+						Text(String(data.tutorMaxStudents))
+					}
+					.width(min: 50, ideal: 60, max: 60)
                     
-                    TableColumn("Student\nCount", value: \.tutorStudentCount) {data in
-                        Text(String(data.tutorStudentCount))
-                    }
-                    .width(min: 40, ideal: 70, max: 80)
-                    
-                    TableColumn("Service\nCount", value: \.tutorServiceCount) {data in
-                        Text(String(data.tutorServiceCount))
-                    }
-                    .width(min: 40, ideal: 70, max: 80)
+					TableColumn("Student\nCount", value: \.tutorStudentCount) {data in
+						Text(String(data.tutorStudentCount))
+					}
+					.width(min: 40, ideal: 50, max: 50)
+					
+					TableColumn("Service\nCount", value: \.tutorServiceCount) {data in
+						Text(String(data.tutorServiceCount))
+					}
+					.width(min: 50, ideal: 60, max: 60)
                     //                    TableColumn("Total Cost", value: \.tutorTotalCost)
                     //                    TableColumn("Total Revenue", value: \.tutorTotalRevenue)
   //                  TableColumn("Total Profit", value: \.tutorTotalProfit) { data in
   //                      Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(2)))))
   //                  }
-                }
-                .contextMenu(forSelectionType: Tutor.ID.self) { items in
-                    if items.isEmpty {
-                        VStack {
-                            Button {
-                                print("empty selected Tutor")
-                            } label: {
-                                Label("New Tutor", systemImage: "plus")
-                            }
-                        }
-                    } else if items.count == 1 {
-                        VStack {
+				}
+				.contextMenu(forSelectionType: Tutor.ID.self) { items in
+					if items.isEmpty {
+						VStack {
+							Button {
+								print("empty selected Tutor")
+							} label: {
+								Label("New Tutor", systemImage: "plus")
+							}
+						}
+					} else if items.count == 1 {
+						VStack {
+							
+							Button("Assign Student to Tutor") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										assignStudent = true
+									}
+								}
+							}
                             
-                            Button("Assign Student to Tutor") {
-                                for objectID in items {
-                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                                        tutorNumber = idx
-                                        assignStudent = true
-                                    }
-                                }
-                            }
-                            
-                            Button("List Tutor Students") {
-                               for objectID in items {
-                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                                        tutorNumber = idx
-                                        listTutorStudents.toggle()
-                                    }
-                                }
- //                               listStudents.toggle()
-                            }
-                            
-                            Button("List Tutor Services") {
-                                for objectID in items {
-                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                                        tutorNumber = idx
-                                        listTutorServices.toggle()
-                                    }
-                                }
-                            }
-                            
- //                           Button("Add Service to Tutor") {
- //                               addService.toggle()
- //                           }
-                            
-                            Button("Edit Service Costs for Tutor") {
-                                editService.toggle()
-                            }
-                            
-                            Button("Remove Service from Tutor") {
-                                removeService.toggle()
-                            }
-
-                            Button("Edit Tutor") {
-                                for objectID in items {
-                                    if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                                        tutorNumber = idx
-                                        editTutor.toggle()
-                                    }
-                                }
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
-                                    
-                                    if deleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = deleteMessage
-                                        //                                    viewChange.toggle()
-                                        }
-                                    }
-                                } label: {
-                                    Label("Delete Tutor", systemImage: "trash")
-                                }
-//                            .alert(buttonErrorMsg, isPresented: $showAlert) {
-//                                Button("OK", role: .cancel) {
-//                                    print("error alert")
-//                                }
-//                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (deleteResult, deleteMessage) = await tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
-                                
-                                    if deleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = deleteMessage
-                                        //                                   viewChange.toggle()
-                                    }
-                                }
-                            } label: {
-                                Label("Undelete Tutor", systemImage: "trash")
-                            }
- //                           .alert(buttonErrorMsg, isPresented: $showAlert) {
- //                               Button("OK", role: .cancel) { }
- //                           }
-                            
-                        }
-                        
-                    } else {
-                        Button {
-                            
-                        } label: {
-                            Label("Edit Tutors", systemImage: "heart")
-                        }
-                        
-                        Button(role: .destructive) {
-                            Task {
-                                let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
-                            }
-                        } label: {
-                            Label("Delete Tutors", systemImage: "trash")
-                        }
-                    }
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-            }
-            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                Button("OK", role: .cancel) { }
-            }
-
-            .navigationDestination(isPresented: $assignStudent) {
-                StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
-            }
-            .navigationDestination(isPresented: $listTutorStudents) {
-                TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)
-            }
-            .navigationDestination(isPresented: $listTutorServices) {
-                TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
-            }
-            .navigationDestination(isPresented: $editTutor) {
-                TutorView( updateTutorFlag: true, tutorNum: tutorNumber, originalTutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, tutorEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, tutorPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
-            }
-        }
-    }
+							Button("List Tutor Students") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										listTutorStudents.toggle()
+									}
+								}
+							}
+							
+							Button("List Tutor Services") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										listTutorServices.toggle()
+									}
+								}
+							}
+							
+							Button("Add Service to Tutor") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										assignService.toggle()
+									}
+								}
+							}
+							
+							Button("Edit Service Costs for Tutor") {
+								editService.toggle()
+							}
+							
+							Button("Edit Tutor") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										editTutor.toggle()
+									}
+								}
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+									
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+										//                                    viewChange.toggle()
+									}
+								}
+							} label: {
+								Label("Delete Tutor", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) {
+									print("error alert")
+								}
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (deleteResult, deleteMessage) = await tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
+									
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+										//                                   viewChange.toggle()
+									}
+								}
+							} label: {
+								Label("Undelete Tutor", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutor(tutorIndex: items, referenceData: referenceData)
+									
+									if suspendResult == false {
+										showAlert = true
+										buttonErrorMsg = suspendMessage
+										//                                    viewChange.toggle()
+									}
+								}
+							} label: {
+								Label("Suspend Tutor", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) {
+									print("error alert")
+								}
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unsuspendResult, unsuspendMessage) = await tutorMgmtVM.unsuspendTutor(tutorIndex: items, referenceData: referenceData)
+									
+									if unsuspendResult == false {
+										showAlert = true
+										buttonErrorMsg = unsuspendMessage
+										//                                   viewChange.toggle()
+									}
+								}
+							} label: {
+								Label("UnSuspend Tutor", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+						}
+						
+					} else {
+						Button {
+							
+						} label: {
+							Label("Edit Tutors", systemImage: "heart")
+						}
+						
+						Button(role: .destructive) {
+							Task {
+								let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+							}
+						} label: {
+							Label("Delete Tutors", systemImage: "trash")
+						}
+					}
+				} primaryAction: { items in
+					//              store.favourite(items)
+				}
+			}
+			.alert(buttonErrorMsg, isPresented: $showAlert) {
+				Button("OK", role: .cancel) { }
+			}
+			
+			.navigationDestination(isPresented: $assignService) {
+				ServiceSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
+			}
+			
+			.navigationDestination(isPresented: $assignStudent) {
+				StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
+			}
+			.navigationDestination(isPresented: $listTutorStudents) {
+				TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)
+			}
+			.navigationDestination(isPresented: $listTutorServices) {
+				TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
+			}
+			.navigationDestination(isPresented: $editTutor) {
+				TutorView( updateTutorFlag: true, tutorNum: tutorNumber, originalTutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, tutorEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, tutorPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
+			}
+		}
+	}
 }
 
 struct TutorStudentsList: View {
@@ -441,6 +511,59 @@ struct StudentSelectionView: View {
             }
         }
     }
+
+struct ServiceSelectionView: View {
+	@Binding var tutorNum: Int
+	var referenceData: ReferenceData
+	
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	
+	@State private var selectedServices = Set<Service.ID>()
+	@State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
+	@State private var showAlert = false
+	@State private var viewChange: Bool = false
+	
+	var body: some View {
+		
+		VStack {
+			Table(referenceData.services.servicesList.filter{$0.serviceType == .Special}, selection: $selectedServices, sortOrder: $sortOrder) {
+				
+				TableColumn("Timesheet Name", value: \.serviceTimesheetName)
+				TableColumn("BillingType") {data in
+					Text(data.serviceBillingType.rawValue)
+				}
+				.width(min: 50, ideal: 70, max: 80)
+			}
+			
+			.contextMenu(forSelectionType: Tutor.ID.self) { items in
+				if items.count == 1 {
+					VStack {
+						
+						Button {
+							Task {
+								await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							}
+						} label: {
+							Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+						}
+					}
+					
+				} else {
+					Button {
+						Task {
+							await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+						}
+					} label: {
+						Label("Assign Services to Tutor", systemImage: "square.and.arrow.up")
+					}
+				}
+				
+			} primaryAction: { items in
+				//              store.favourite(items)
+			}
+		}
+	}
+}
 
 
 struct StudentsView: View {
@@ -575,6 +698,37 @@ struct StudentsView: View {
                                 Label("ReAssign Student", systemImage: "square.and.arrow.up")
                             }
                             
+				Button(role: .destructive) {
+				    Task {
+					let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+					if suspendResult == false {
+					    showAlert = true
+					    buttonErrorMsg = suspendMessage
+					}
+				    }
+				} label: {
+				    Label("Suspend Student", systemImage: "trash")
+				}
+				.alert(buttonErrorMsg, isPresented: $showAlert) {
+				    Button("OK", role: .cancel) { }
+				}
+				
+				Button(role: .destructive) {
+				    Task {
+					let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+					if unsuspendResult == false {
+					    showAlert = true
+					    buttonErrorMsg = unsuspendMessage
+					}
+				    }
+				} label: {
+				    Label("UnSuspend Student", systemImage: "trash")
+				}
+				.alert(buttonErrorMsg, isPresented: $showAlert) {
+				    Button("OK", role: .cancel) { }
+				}
+				
+				
                             Button(role: .destructive) {
                                 Task {
                                     let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)

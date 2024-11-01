@@ -350,33 +350,8 @@ struct WSAdmin: App {
 		WindowGroup {
 			ContentView()
 		}
-		.commands {
-			CommandMenu("System") {
-				Button(role: .destructive) {
-				    Task {
-					await systemVM.validateSystem()
-				    }
-				} label: {
-				    Label("Validate System", systemImage: "trash")
-				}
-				
-				Button(role: .destructive) {
-				    Task {
-					await systemVM.backupSystem()
-				    }
-				} label: {
-				    Label("Backup System", systemImage: "trash")
-				}
-			}
-			CommandMenu("Students") {
-		    
-			}
-			CommandMenu("Services") {
-                
-			}
-			CommandMenu("Tutors") {
-                
-			}
-		}
+		.environment(systemVM)
+		
+
 	}
 }

@@ -336,6 +336,29 @@ import GTMSessionFetcher
 		}
 	}
 
+	func assignService(serviceIndex: Set<Tutor.ID>, tutorNum: Int, referenceData: ReferenceData) async {
+		
+		for objectID in serviceIndex {
+			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+			print(referenceData.services.servicesList[serviceNum].serviceTimesheetName)
+		
+				print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				//               referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+				//               referenceData.students.saveStudentData()
+				let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: referenceData.services.servicesList[serviceNum].serviceTimesheetName)
+				if !tutorServiceFound {
+					let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+					await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+					await referenceData.tutors.saveTutorData()                    // increased Student count
+					referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+					await referenceData.services.saveServiceData()
+				} else {
+					print("Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) already assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				}
+			}
+		}
+	}
+	
 	func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async {
         
 		print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor")
@@ -376,6 +399,43 @@ import GTMSessionFetcher
 	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
 
 		await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+	}
+	
+	func suspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		var suspendResult: Bool = true
+		var suspendMessage: String = ""
+		
+		for objectID in tutorIndex {
+			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" {
+					referenceData.tutors.tutorsList[tutorNum].suspendTutor()
+					await referenceData.tutors.saveTutorData()
+				} else {
+					suspendResult = false
+					suspendMessage += "Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Assigned or Deleted \n"
+				}
+			}
+		}
+		return(suspendResult, suspendMessage)
+	}
+	
+	func unsuspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		var unsuspendResult: Bool = true
+		var unsuspendMessage: String = ""
+		
+		for objectID in tutorIndex {
+			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Suspended" {
+					referenceData.tutors.tutorsList[tutorNum].unsuspendTutor()
+					await referenceData.tutors.saveTutorData()
+				} else {
+					unsuspendResult = false
+					unsuspendMessage += "Student \(referenceData.tutors.tutorsList[tutorNum].tutorName) not Suspended \n"
+					
+				}
+			}
+		}
+		return(unsuspendResult, unsuspendMessage)
 	}
     
    

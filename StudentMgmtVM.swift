@@ -291,7 +291,6 @@ import Foundation
                     await referenceData.tutors.saveTutorData()                    // increased Student count
                 }
             }
-            
         }
     }
     
@@ -313,5 +312,41 @@ import Foundation
             
         }
     }
-    
+	
+	func suspendStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		var suspendResult: Bool = true
+		var suspendMessage: String = ""
+		
+		for objectID in studentIndex {
+			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+				if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
+					referenceData.students.studentsList[studentNum].suspendStudent()
+					await referenceData.students.saveStudentData()
+				} else {
+					suspendResult = false
+					suspendMessage += "Student \(referenceData.students.studentsList[studentNum].studentName) Assigned or Deleted \n"
+				}
+			}
+		}
+		return(suspendResult, suspendMessage)
+	}
+	
+	func unsuspendStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		var unsuspendResult: Bool = true
+		var unsuspendMessage: String = ""
+		
+		for objectID in studentIndex {
+			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+				if referenceData.students.studentsList[studentNum].studentStatus == "Suspended" {
+					referenceData.students.studentsList[studentNum].unsuspendStudent()
+					await referenceData.students.saveStudentData()
+				} else {
+					unsuspendResult = false
+					unsuspendMessage += "Student \(referenceData.students.studentsList[studentNum].studentName) not Suspended \n"
+					
+				}
+			}
+		}
+		return(unsuspendResult, unsuspendMessage)
+	}
 }
