@@ -47,7 +47,7 @@ struct PgmConstants {
     static let locationRange = "Master!BA3:BF"
     
     static let tutorCountsRange = "!A1:B5"
-    static let tutorStudentsRange = "!O3:S"
+    static let tutorStudentsRange = "!O3:T"
     static let tutorServicesRange = "!D3:M"
     static let tutorDataCountsRange = "!B4:B5"
 	static let tutorDataTutorNameCell = "!A3:A3"
@@ -74,6 +74,7 @@ struct PgmConstants {
     static let tutorDataStudentClientNamePosition = 2
     static let tutorDataStudentClientEmailPosition = 3
     static let tutorDataStudentClientPhonePosition = 4
+	static let tutorDataStudentAssignedDatePosition = 5
     
     static let tutorDataServicesStartingRowNumber = 3
     static let tutorDataServiceKeyPosition = 0
@@ -151,13 +152,13 @@ struct PgmConstants {
     static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
     static let timesheetTemplateProdFileName: String = "Template Timesheet"
     
-    static let tutorHeaderArray1 = ["TUTOR", " ", " ", "Service Key", "Timesheet Name", "Invoice Name", "Billing Type", "Cost 1", "Cost 2", "Cost 3", "Price 1", "Price 2", "Price 3", " ", "Student Key", "Student Name", "Client Name", "Client Email", "Client Phone" ]
+    static let tutorHeaderArray1 = ["TUTOR", " ", " ", "Service Key", "Timesheet Name", "Invoice Name", "Billing Type", "Cost 1", "Cost 2", "Cost 3", "Price 1", "Price 2", "Price 3", " ", "Student Key", "Student Name", "Client Name", "Client Email", "Client Phone","Assigned Date"]
     static let tutorHeaderArray2 = [" ", " ", " ", "B000", "-", " ", " ", " ", " ", " ", " ", " ", " ", " ", "S0000", "-"]
-    static let tutorHeader1Range = "!A1:S2"
+    static let tutorHeader1Range = "!A1:T2"
     static let tutorHeader1Array = [tutorHeaderArray1, tutorHeaderArray2]
     static let tutorHeader2Array = [["Student Count", "0"], ["Service Count", "0"]]
     static let tutorHeader2Range = "!A4:B5"
-    static let tutorHeader3Range = "!A2:A3"
+    static let tutorHeader3Range = "!A2:B2"
     
     static let timesheetSessionCountRow: Int = 2
     static let timesheetSessionCountCol: Int = 1
@@ -342,22 +343,40 @@ var timesheetTemplateFileID: String = ""
 
 @main
 struct WSAdmin: App {
-    
-    var body: some Scene {
+	let systemVM = SystemVM()
+	
+	var body: some Scene {
        
-        WindowGroup {
-            ContentView()
-        }
-        .commands {
-            CommandMenu("Students") {
-            
-            }
-            CommandMenu("Services") {
+		WindowGroup {
+			ContentView()
+		}
+		.commands {
+			CommandMenu("System") {
+				Button(role: .destructive) {
+				    Task {
+					await systemVM.validateSystem()
+				    }
+				} label: {
+				    Label("Validate System", systemImage: "trash")
+				}
+				
+				Button(role: .destructive) {
+				    Task {
+					await systemVM.backupSystem()
+				    }
+				} label: {
+				    Label("Backup System", systemImage: "trash")
+				}
+			}
+			CommandMenu("Students") {
+		    
+			}
+			CommandMenu("Services") {
                 
-            }
-            CommandMenu("Tutors") {
+			}
+			CommandMenu("Tutors") {
                 
-            }
-        }
-    }
+			}
+		}
+	}
 }

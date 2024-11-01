@@ -33,6 +33,7 @@ struct LocationView: View {
             
             Button(action: {
                 Task {
+			let locationName = locationName.trimmingCharacters(in: .whitespaces)
                     if updateLocationFlag {
                         await locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
                     }

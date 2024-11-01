@@ -8,51 +8,52 @@
 import SwiftUI
 
 struct TutorStudentsView: View {
-    @Binding var tutorNum: Int
-    var referenceData: ReferenceData
+	@Binding var tutorNum: Int
+	var referenceData: ReferenceData
     
-    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
-    @State private var selectedStudents: Set<Student.ID> = []
+	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+	@State private var selectedStudents: Set<Student.ID> = []
     
-    var body: some View {
-        VStack {
-            Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents, selection: $selectedStudents) {
-                TableColumn("Student Name", value: \.studentName)
-                TableColumn("Phone", value: \.clientName)
-                TableColumn("Email", value: \.clientEmail)
-                TableColumn("Status", value: \.clientPhone)
-            }
-            .contextMenu(forSelectionType: Student.ID.self) { items in
-                if items.isEmpty {
-                    Button { } label: {
-                        Label("New Student", systemImage: "plus")
-                    }
-                } else if items.count == 1 {
-                    VStack {
+	var body: some View {
+		VStack {
+			Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents, selection: $selectedStudents) {
+				TableColumn("Student Name", value: \.studentName)
+				TableColumn("Phone", value: \.clientName)
+				TableColumn("Email", value: \.clientEmail)
+				TableColumn("Status", value: \.clientPhone)
+				TableColumn("Assigned Date", value: \.assignedDate)
+			}
+			.contextMenu(forSelectionType: Student.ID.self) { items in
+				if items.isEmpty {
+					Button { } label: {
+						Label("New Student", systemImage: "plus")
+					}
+				} else if items.count == 1 {
+					VStack {
                         
-                        Button {
-                            Task {
-                                await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-                            }
-                        } label: {
-                            Label("Unassign Student", systemImage: "square.and.arrow.up")
-                        }
-                    }
+						Button {
+							Task {
+								await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							}
+						} label: {
+							Label("Unassign Student", systemImage: "square.and.arrow.up")
+						}
+					}
                     
-                } else {
-                    Button {
-                        Task {
-                            await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-                        }
-                    } label: {
-                        Label("Unassign Students", systemImage: "square.and.arrow.up")
-                    }
-                }
-            } primaryAction: { items in
-                //              store.favourite(items)
-            }
-        }
-    }
+				} else {
+					Button {
+						Task {
+							await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+						}
+					} label: {
+						Label("Unassign Students", systemImage: "square.and.arrow.up")
+					}
+				}
+			} primaryAction: { items in
+				//              store.favourite(items)
+			}
+		}
+	}
     
 }
 

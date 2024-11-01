@@ -10,55 +10,54 @@ import GoogleSignIn
 
 struct ContentView: View {
 
-    let authVM = UserAuthVM()
-    let refDataVM = RefDataVM()
-    let studentMgmtVM = StudentMgmtVM()
-    let tutorMgmtVM = TutorMgmtVM()
-    let serviceMgmtVM = ServiceMgmtVM()
-    let locationMgmtVM = LocationMgmtVM()
-    let billingVM = BillingVM()
+	let authVM = UserAuthVM()
+	let refDataVM = RefDataVM()
+	let studentMgmtVM = StudentMgmtVM()
+	let tutorMgmtVM = TutorMgmtVM()
+	let serviceMgmtVM = ServiceMgmtVM()
+	let locationMgmtVM = LocationMgmtVM()
+	let billingVM = BillingVM()
     
-    fileprivate func SignInButton() -> Button<Text> {
-        Button(action: {
-            authVM.signIn()
-        }) {
-            Text("Sign In")
-        }
-    }
+	fileprivate func SignInButton() -> Button<Text> {
+		Button(action: {
+			authVM.signIn()
+		}) {
+			Text("Sign In")
+		}
+	}
     
-    fileprivate func SignOutButton() -> Button<Text> {
-        Button(action: {
-            authVM.signOut()
-        }) {
-            Text("Sign Out")
-        }
-    }
+	fileprivate func SignOutButton() -> Button<Text> {
+		Button(action: {
+			authVM.signOut()
+		}) {
+			Text("Sign Out")
+		}
+	}
     
 
-    var body: some View {
-        NavigationStack {
-            VStack{
-                
-                if (authVM.isLoggedIn) {
-                    DataMgmtView()
-                } else {
-                    SignInView()
-                }
-                Text(authVM.errorMessage)
-            }
-        }
-        .navigationTitle("Write Seattle Administration")
-        .environment(refDataVM)
-        .environment(authVM)
-        .environment(studentMgmtVM)
-        .environment(tutorMgmtVM)
-        .environment(serviceMgmtVM)
-        .environment(locationMgmtVM)
-        .environment(billingVM)
-    }
+	var body: some View {
+		NavigationStack {
+			VStack{
+				if (authVM.isLoggedIn) {
+					DataMgmtView()
+				} else {
+					SignInView()
+				}
+				Text(authVM.errorMessage)
+			}
+		}
+		.navigationTitle("Write Seattle Administration")
+		.environment(refDataVM)
+		.environment(authVM)
+		.environment(studentMgmtVM)
+		.environment(tutorMgmtVM)
+		.environment(serviceMgmtVM)
+		.environment(locationMgmtVM)
+		.environment(billingVM)
+	}
 }
 
 #Preview {
-    ContentView()
+	ContentView()
 }
 

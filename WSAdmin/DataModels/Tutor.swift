@@ -200,15 +200,14 @@ import GoogleAPIClientForREST
 		var updateValues = [[String]]()
         
 		let range = tutorName + PgmConstants.tutorDataCountsRange
-        print("Tutor Data Counts Save Range", range)
+        print("Tutor Data Counts Save Range:\(range)")
   
 		tutorStudentCount = tutorStudents.count
 		tutorServiceCount = tutorServices.count
-                      
 		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
 
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
 			print ("Error: Saving Tutor Data Counts failed")
 			result = false
@@ -217,27 +216,27 @@ import GoogleAPIClientForREST
     
    
 
-    func fetchTutorStudentData(tutorName: String, tutorStudentCount: Int) async {
+	func fetchTutorStudentData(tutorName: String, tutorStudentCount: Int) async {
  
-        var sheetCells = [[String]]()
-        var sheetData: SheetData?
+		var sheetCells = [[String]]()
+		var sheetData: SheetData?
         
 // Read in the Tutor Students data from the Tutor Details spreadsheet
-        if tutorStudentCount > 0 {
-            do {
-                let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
-                sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
-            } catch {
+		if tutorStudentCount > 0 {
+			do {
+				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+			} catch {
                 
-            }
+			}
             
-            if let sheetData = sheetData {
-                sheetCells = sheetData.values
-            }
+			if let sheetData = sheetData {
+			    sheetCells = sheetData.values
+			}
 // Build the Tutor Students list from the cells read in
-            loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
-        }
-    }
+			loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
+		}
+	}
     
 	func saveTutorStudentData(tutorName: String) async -> Bool {
 		var result: Bool = true
@@ -252,49 +251,51 @@ import GoogleAPIClientForREST
 			result = false
 		}
         
-        return(result)
-    }
+		return(result)
+	}
     
-    func loadTutorStudentRows(tutorStudentCount: Int, sheetCells: [[String]] ) {
-        var rowNum = 0
-        var studentNum = 0
-        while studentNum < tutorStudentCount {
-            let studentKey = sheetCells[rowNum][PgmConstants.tutorDataStudentKeyPosition]
-            let studentName = sheetCells[rowNum][PgmConstants.tutorDataStudentNamePosition]
-            let clientName = sheetCells[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
-            let clientEmail = sheetCells[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
-            let clientPhone = sheetCells[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
+	func loadTutorStudentRows(tutorStudentCount: Int, sheetCells: [[String]] ) {
+		var rowNum = 0
+		var studentNum = 0
+		while studentNum < tutorStudentCount {
+			let studentKey = sheetCells[rowNum][PgmConstants.tutorDataStudentKeyPosition]
+			let studentName = sheetCells[rowNum][PgmConstants.tutorDataStudentNamePosition]
+			let clientName = sheetCells[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
+			let clientEmail = sheetCells[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
+			let clientPhone = sheetCells[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
+			let assignedDate = sheetCells[rowNum][PgmConstants.tutorDataStudentAssignedDatePosition]
             
-            let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
+			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, assignedDate: assignedDate)
             
-            self.loadTutorStudent( newTutorStudent: newTutorStudent)
-            rowNum += 1
-            studentNum += 1
-        }
+			self.loadTutorStudent( newTutorStudent: newTutorStudent)
+			rowNum += 1
+			studentNum += 1
+		}
  //       print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-    }
+	}
     
-    func unloadTutorStudentRows() -> [[String]] {
+	func unloadTutorStudentRows() -> [[String]] {
         
-        var updateValues = [[String]]()
+		var updateValues = [[String]]()
         
-        var tutorStudentNum = 0
-        let tutorStudentCount = tutorStudents.count
-        while tutorStudentNum < tutorStudentCount {
-            let studentKey = tutorStudents[tutorStudentNum].studentKey
-            let studentName = tutorStudents[tutorStudentNum].studentName
-            let clientName = tutorStudents[tutorStudentNum].clientName
-            let clientEmail = tutorStudents[tutorStudentNum].clientEmail
-            let clientPhone = tutorStudents[tutorStudentNum].clientPhone
+		var tutorStudentNum = 0
+		let tutorStudentCount = tutorStudents.count
+		while tutorStudentNum < tutorStudentCount {
+			let studentKey = tutorStudents[tutorStudentNum].studentKey
+			let studentName = tutorStudents[tutorStudentNum].studentName
+			let clientName = tutorStudents[tutorStudentNum].clientName
+			let clientEmail = tutorStudents[tutorStudentNum].clientEmail
+			let clientPhone = tutorStudents[tutorStudentNum].clientPhone
+			let assignedDate = tutorStudents[tutorStudentNum].assignedDate
               
-            updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone], at: tutorStudentNum)
-            tutorStudentNum += 1
-        }
+			updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone], at: tutorStudentNum)
+			tutorStudentNum += 1
+		}
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-        updateValues.insert([" ", " ", " ", " ", " "], at: tutorStudentNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " "], at: tutorStudentNum)
         
-        return(updateValues)
-    }
+		return(updateValues)
+	}
     
     func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async {
  
@@ -319,20 +320,20 @@ import GoogleAPIClientForREST
     }
     
 	func saveTutorServiceData(tutorName: String) async -> Bool {
-        var result: Bool = true
+		var result: Bool = true
 // Write the Tutor Services rows to the Tutor Details spreadsheet
-        let updateValues = unloadTutorServiceRows()
-        let count = updateValues.count
-        let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
-        do {
-            result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
-        } catch {
-            print ("Error: Saving Tutor Services data rows failed")
-           result = false
-        }
+		let updateValues = unloadTutorServiceRows()
+		let count = updateValues.count
+		let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
+		do {
+			result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+		} catch {
+			print ("Error: Saving Tutor Services data rows failed")
+			result = false
+		}
         
-        return(result)
-    }
+		return(result)
+	}
     
     
     func loadTutorServiceRows(tutorServiceCount: Int, sheetCells: [[String]] ) {
@@ -430,9 +431,9 @@ import GoogleAPIClientForREST
 			let clientEmail = stringRows[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
 			let clientPhone = stringRows[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
 			
-			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
+//			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
 			
-			self.loadTutorStudent( newTutorStudent: newTutorStudent)
+//			self.loadTutorStudent( newTutorStudent: newTutorStudent)
 			rowNum += 1
 			studentNum += 1
 		    }

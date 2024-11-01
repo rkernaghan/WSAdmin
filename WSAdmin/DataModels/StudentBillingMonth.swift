@@ -131,104 +131,7 @@ class StudentBillingMonth {
         }
     }
     
-    func loadStudentBillingMonth(billingMonth: String, studentBillingFileID: String) {
-        var studentBillingCount: Int = 0
-        
-        let sheetService = GTLRSheetsService()
-        let currentUser = GIDSignIn.sharedInstance.currentUser
-        sheetService.authorizer = currentUser?.fetcherAuthorizer
-        let range = PgmConstants.studentBillingCountRange
-//         print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: studentBillingFileID, range:range)
-// Load the count of Student Billing entries from the Student Billing spreadsheet
-        sheetService.executeQuery(query) { (ticket, result, error) in
-            if let error = error {
-                print(error)
-                print("Failed to read Student Billing data:\(error.localizedDescription)")
-                return
-            }
-            guard let result = result as? GTLRSheets_ValueRange else {
-                return
-            }
-            
-            let rows = result.values!
-            var stringRows = rows as! [[String]]
-            
-            for row in stringRows {
-                stringRows.append(row)
-                studentBillingCount = Int(stringRows[0][0]) ?? 0
-            }
-            
-            if rows.isEmpty {
-                print("No data found.")
-                return
-            }
-            // Load the Billed Students from the Billed Student spreadsheet
-            let sheetService = GTLRSheetsService()
-            let currentUser = GIDSignIn.sharedInstance.currentUser
-            sheetService.authorizer = currentUser?.fetcherAuthorizer
-            let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1)
-            print("range is \(range)")
-            let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: studentBillingFileID, range:range)
-            sheetService.executeQuery(query) { (ticket, result, error) in
-                if let error = error {
-                    print(error)
-                    print("Failed to read Student Billing data:\(error.localizedDescription)")
-                    return
-                }
-                guard let result = result as? GTLRSheets_ValueRange else {
-                    return
-                }
-                
-                let rows = result.values!
-                var stringRows = rows as! [[String]]
-                
-                for row in stringRows {
-                    stringRows.append(row)
-                }
-                
-                if rows.isEmpty {
-                    print("No data found.")
-                    return
-                }
-                
-                var studentBillingIndex = 0
-                var rowNumber = 0
-                while studentBillingIndex < studentBillingCount {
-                    
-                    let studentName = stringRows[rowNumber][PgmConstants.studentBillingStudentCol]
-                    let monthSessions: Int = Int(stringRows[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
-                    let monthCost: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthCostCol]) ?? 0.0
-                    let monthRevenue: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthRevenueCol]) ?? 0.0
-                    let monthProfit: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthProfitCol]) ?? 0.0
-                    
-                    let totalSessions: Int = Int(stringRows[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
-                    let totalCost: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
-                    let totalRevenue: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
-                    let totalProfit: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
-                    let rowSize = stringRows[rowNumber].count
-                    var tutorName = ""
-                    if rowSize == PgmConstants.studentBillingTutorCol + 1 {
-                        tutorName = stringRows[rowNumber][PgmConstants.studentBillingTutorCol]
-                    }
-                    
-                    let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
-                    
-                    self.insertBilledStudentRow(studentBillingRow: newStudentBillingRow)
-                    
-                    rowNumber += 1
-                    studentBillingIndex += 1
-                }
- //               print("Loaded Student Billing Data")
-                let billedStudentCount = self.studentBillingRows.count
-                var billedStudentNum = 0
-                while billedStudentNum < billedStudentCount {
-                    print("Billed Student " + self.studentBillingRows[0].studentName)
-                    billedStudentNum += 1
-                }
-            }
-        }
-    }
+ 
     
 //    func saveStudentBillingData(billingMonth: String, billingYear: String) async {
 //        var studentBillingFileID = " "
@@ -269,76 +172,7 @@ class StudentBillingMonth {
         return(result)
     }
     
-    func saveStudentBillingMonth(billingMonth: String, studentBillingFileID: String) {
- 
-        var updateValues: [[String]] = []
-        
-        let sheetService = GTLRSheetsService()
-        let billedStudentCount = studentBillingRows.count
-        
-        let currentUser = GIDSignIn.sharedInstance.currentUser
-        sheetService.authorizer = currentUser?.fetcherAuthorizer
-
-        let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + billedStudentCount)
-        print("Billed Student Data Save Range", range)
   
-        var billedStudentNum = 0
-        while billedStudentNum < billedStudentCount {
-            let studentName: String = studentBillingRows[billedStudentNum].studentName
-            let monthSessions: String = String(studentBillingRows[billedStudentNum].monthSessions)
-            let monthCost: String = String(studentBillingRows[billedStudentNum].monthCost)
-            let monthRevenue: String = String(studentBillingRows[billedStudentNum].monthRevenue)
-            let monthProfit: String = String(studentBillingRows[billedStudentNum].monthProfit)
-            let totalSessions: String = String(studentBillingRows[billedStudentNum].totalSessions)
-            let totalCost: String = String(studentBillingRows[billedStudentNum].totalCost)
-            let totalRevenue: String = String(studentBillingRows[billedStudentNum].totalRevenue)
-            let totalProfit: String = String(studentBillingRows[billedStudentNum].totalProfit)
-            let tutorName: String = studentBillingRows[billedStudentNum].tutorName
-            
-            updateValues.insert([studentName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalCost, totalProfit, tutorName], at: billedStudentNum)
-            billedStudentNum += 1
-        }
-// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-        updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
-        
-        let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-        valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
-        valueRange.range = range
-        valueRange.values = updateValues
-        let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: studentBillingFileID, range: range)
-        query.valueInputOption = "USER_ENTERED"
-        sheetService.executeQuery(query) { ticket, object, error in
-            if let error = error {
-                print(error)
-                print("Failed to save data:\(error.localizedDescription)")
-                return
-            }
-            else {
-                print("Billed Students Rows saved")
-                
-                let sheetService = GTLRSheetsService()
-                let currentUser = GIDSignIn.sharedInstance.currentUser
-                sheetService.authorizer = currentUser?.fetcherAuthorizer
-
-                let range = billingMonth + PgmConstants.studentBillingCountRange
-                valueRange.range = range
-                valueRange.values = [[ String(billedStudentCount) ]]
-                
-                let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: studentBillingFileID, range: range)
-                query.valueInputOption = "USER_ENTERED"
-                sheetService.executeQuery(query) { ticket, object, error in
-                    if let error = error {
-                        print(error)
-                        print("Failed to save data:\(error.localizedDescription)")
-                        return
-                    }
-                    else {
-                        print("Billed Student Count saved")
-                    }
-                }
-            }
-        }
-    }
     
     func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async {
         
@@ -356,7 +190,6 @@ class StudentBillingMonth {
         } catch {
             
         }
-        
         
         let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
         while prevStudentNum < prevStudentCount {
@@ -379,5 +212,174 @@ class StudentBillingMonth {
             prevStudentNum += 1
         }
     }
+	
+	func loadStudentBillingMonthOLD(billingMonth: String, studentBillingFileID: String) {
+	    var studentBillingCount: Int = 0
+	    
+	    let sheetService = GTLRSheetsService()
+	    let currentUser = GIDSignIn.sharedInstance.currentUser
+	    sheetService.authorizer = currentUser?.fetcherAuthorizer
+	    let range = PgmConstants.studentBillingCountRange
+    //         print("range is \(range)")
+	    let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: studentBillingFileID, range:range)
+    // Load the count of Student Billing entries from the Student Billing spreadsheet
+	    sheetService.executeQuery(query) { (ticket, result, error) in
+		if let error = error {
+		    print(error)
+		    print("Failed to read Student Billing data:\(error.localizedDescription)")
+		    return
+		}
+		guard let result = result as? GTLRSheets_ValueRange else {
+		    return
+		}
+		
+		let rows = result.values!
+		var stringRows = rows as! [[String]]
+		
+		for row in stringRows {
+		    stringRows.append(row)
+		    studentBillingCount = Int(stringRows[0][0]) ?? 0
+		}
+		
+		if rows.isEmpty {
+		    print("No data found.")
+		    return
+		}
+		// Load the Billed Students from the Billed Student spreadsheet
+		let sheetService = GTLRSheetsService()
+		let currentUser = GIDSignIn.sharedInstance.currentUser
+		sheetService.authorizer = currentUser?.fetcherAuthorizer
+		let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1)
+		print("range is \(range)")
+		let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: studentBillingFileID, range:range)
+		sheetService.executeQuery(query) { (ticket, result, error) in
+		    if let error = error {
+			print(error)
+			print("Failed to read Student Billing data:\(error.localizedDescription)")
+			return
+		    }
+		    guard let result = result as? GTLRSheets_ValueRange else {
+			return
+		    }
+		    
+		    let rows = result.values!
+		    var stringRows = rows as! [[String]]
+		    
+		    for row in stringRows {
+			stringRows.append(row)
+		    }
+		    
+		    if rows.isEmpty {
+			print("No data found.")
+			return
+		    }
+		    
+		    var studentBillingIndex = 0
+		    var rowNumber = 0
+		    while studentBillingIndex < studentBillingCount {
+			
+			let studentName = stringRows[rowNumber][PgmConstants.studentBillingStudentCol]
+			let monthSessions: Int = Int(stringRows[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
+			let monthCost: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthCostCol]) ?? 0.0
+			let monthRevenue: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthRevenueCol]) ?? 0.0
+			let monthProfit: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingMonthProfitCol]) ?? 0.0
+			
+			let totalSessions: Int = Int(stringRows[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
+			let totalCost: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
+			let totalRevenue: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
+			let totalProfit: Float = Float(stringRows[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
+			let rowSize = stringRows[rowNumber].count
+			var tutorName = ""
+			if rowSize == PgmConstants.studentBillingTutorCol + 1 {
+			    tutorName = stringRows[rowNumber][PgmConstants.studentBillingTutorCol]
+			}
+			
+			let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
+			
+			self.insertBilledStudentRow(studentBillingRow: newStudentBillingRow)
+			
+			rowNumber += 1
+			studentBillingIndex += 1
+		    }
+     //               print("Loaded Student Billing Data")
+		    let billedStudentCount = self.studentBillingRows.count
+		    var billedStudentNum = 0
+		    while billedStudentNum < billedStudentCount {
+			print("Billed Student " + self.studentBillingRows[0].studentName)
+			billedStudentNum += 1
+		    }
+		}
+	    }
+	}
+	
+	func saveStudentBillingMonthOLD(billingMonth: String, studentBillingFileID: String) {
+     
+	    var updateValues: [[String]] = []
+	    
+	    let sheetService = GTLRSheetsService()
+	    let billedStudentCount = studentBillingRows.count
+	    
+	    let currentUser = GIDSignIn.sharedInstance.currentUser
+	    sheetService.authorizer = currentUser?.fetcherAuthorizer
 
+	    let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + billedStudentCount)
+	    print("Billed Student Data Save Range", range)
+      
+	    var billedStudentNum = 0
+	    while billedStudentNum < billedStudentCount {
+		let studentName: String = studentBillingRows[billedStudentNum].studentName
+		let monthSessions: String = String(studentBillingRows[billedStudentNum].monthSessions)
+		let monthCost: String = String(studentBillingRows[billedStudentNum].monthCost)
+		let monthRevenue: String = String(studentBillingRows[billedStudentNum].monthRevenue)
+		let monthProfit: String = String(studentBillingRows[billedStudentNum].monthProfit)
+		let totalSessions: String = String(studentBillingRows[billedStudentNum].totalSessions)
+		let totalCost: String = String(studentBillingRows[billedStudentNum].totalCost)
+		let totalRevenue: String = String(studentBillingRows[billedStudentNum].totalRevenue)
+		let totalProfit: String = String(studentBillingRows[billedStudentNum].totalProfit)
+		let tutorName: String = studentBillingRows[billedStudentNum].tutorName
+		
+		updateValues.insert([studentName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalCost, totalProfit, tutorName], at: billedStudentNum)
+		billedStudentNum += 1
+	    }
+    // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
+	    updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
+	    
+	    let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
+	    valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
+	    valueRange.range = range
+	    valueRange.values = updateValues
+	    let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: studentBillingFileID, range: range)
+	    query.valueInputOption = "USER_ENTERED"
+	    sheetService.executeQuery(query) { ticket, object, error in
+		if let error = error {
+		    print(error)
+		    print("Failed to save data:\(error.localizedDescription)")
+		    return
+		}
+		else {
+		    print("Billed Students Rows saved")
+		    
+		    let sheetService = GTLRSheetsService()
+		    let currentUser = GIDSignIn.sharedInstance.currentUser
+		    sheetService.authorizer = currentUser?.fetcherAuthorizer
+
+		    let range = billingMonth + PgmConstants.studentBillingCountRange
+		    valueRange.range = range
+		    valueRange.values = [[ String(billedStudentCount) ]]
+		    
+		    let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: studentBillingFileID, range: range)
+		    query.valueInputOption = "USER_ENTERED"
+		    sheetService.executeQuery(query) { ticket, object, error in
+			if let error = error {
+			    print(error)
+			    print("Failed to save data:\(error.localizedDescription)")
+			    return
+			}
+			else {
+			    print("Billed Student Count saved")
+			}
+		    }
+		}
+	    }
+	}
 }

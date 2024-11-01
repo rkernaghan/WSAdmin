@@ -10,30 +10,7 @@ import GoogleSignIn
 import GoogleAPIClientForREST
 import GTMSessionFetcher
 
-func getFileID(fileName: String, completion: @escaping (Result<String, Error>) -> Void) {
-        
-//         print("Getting fileID for \(fileName)")
-         let driveService = GTLRDriveService()
-         let currentUser = GIDSignIn.sharedInstance.currentUser
-//        if let user = GIDSignIn.sharedInstance().currentUser {
-            driveService.authorizer = currentUser?.fetcherAuthorizer
-//        }
- 
-        let query = GTLRDriveQuery_FilesList.query()
-        query.q = "name = '\(fileName)' and trashed=false"
-        query.fields = "files(id, name)"
-         driveService.executeQuery(query) { (ticket, result, error) in
 
-             if let error = error {
-                 completion(.failure(error))
-             } else if let fileList = result as? GTLRDrive_FileList, let files = fileList.files, let file = files.first {
-                 print("FileID returned")
-                     completion(.success(file.identifier ?? ""))
-                 } else {
-                     completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "File not found"])))
-                 }
-             }
-         }
 
 func getFileIDAsync(fileName: String) async throws -> (Bool, String) {
     var fileID:String = ""
@@ -332,6 +309,57 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 	    return nil
 }
 
+// Function to add a new sheet to a Google Sheets spreadsheet
+func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) async throws -> [String: Any]? {
+	
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+    
+	guard let url = URL(string: urlString) else {
+		throw URLError(.badURL)
+	}
+	
+	let currentUser = GIDSignIn.sharedInstance.currentUser
+	if let user = currentUser {
+		let accessToken = user.accessToken.tokenString
+		// Set up the request
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+		// Request body for creating a new sheet
+		let body: [String: Any] = [
+			"requests": [
+				[
+					"addSheet": [
+						"properties": [
+							"title": sheetTitle
+						]
+					]
+				]
+			]
+		]
+		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+		
+		// Perform the network request asynchronously
+		let (data, response) = try await URLSession.shared.data(for: request)
+		
+		// Check for HTTP response status
+		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+		}
+		
+		// Parse and return the response JSON
+		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+			print("Sheet created successfully: \(json)")
+			return json
+		}
+	}
+    
+	return nil
+}
+
 
 // Function to rename a specific sheet in a Google Sheets spreadsheet
 func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws {
@@ -493,3 +521,28 @@ func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, St
 	    
 	    return(prevMonthName, prevYearName)
 }
+
+func getFileIDOLD(fileName: String, completion: @escaping (Result<String, Error>) -> Void) {
+	
+//         print("Getting fileID for \(fileName)")
+	 let driveService = GTLRDriveService()
+	 let currentUser = GIDSignIn.sharedInstance.currentUser
+//        if let user = GIDSignIn.sharedInstance().currentUser {
+	    driveService.authorizer = currentUser?.fetcherAuthorizer
+//        }
+ 
+	let query = GTLRDriveQuery_FilesList.query()
+	query.q = "name = '\(fileName)' and trashed=false"
+	query.fields = "files(id, name)"
+	 driveService.executeQuery(query) { (ticket, result, error) in
+
+	     if let error = error {
+		 completion(.failure(error))
+	     } else if let fileList = result as? GTLRDrive_FileList, let files = fileList.files, let file = files.first {
+		 print("FileID returned")
+		     completion(.success(file.identifier ?? ""))
+		 } else {
+		     completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "File not found"])))
+		 }
+	     }
+	 }

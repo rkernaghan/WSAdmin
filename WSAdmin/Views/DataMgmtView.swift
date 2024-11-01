@@ -8,171 +8,167 @@ import Foundation
 import SwiftUI
 
 struct Option: Hashable {
-    let title: String
-    let imageName: String
+	let title: String
+	let imageName: String
 }
 
 class FileData {
 //    var fileID: String = " "
-    var testTutorBillingFile: String = " "
-    var testStudentBillingFile: String = " "
+	var testTutorBillingFile: String = " "
+	var testStudentBillingFile: String = " "
     
-    var prodTutorBillingFile: String = " "
-    var prodStudentBillingFile: String = " "
-    }
+	var prodTutorBillingFile: String = " "
+	var prodStudentBillingFile: String = " "
+	}
 
 
 class ReferenceData {
-    var tutors = TutorsList()
-    var students = StudentsList()
-    var services = ServicesList()
-    var locations = LocationsList()
-    var dataCounts = DataCounts()
+	var tutors = TutorsList()
+	var students = StudentsList()
+	var services = ServicesList()
+	var locations = LocationsList()
+	var dataCounts = DataCounts()
 }
 
 struct DataMgmtView: View {
 
-    @Environment(RefDataVM.self) var refDataVM: RefDataVM
-    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(RefDataVM.self) var refDataVM: RefDataVM
+	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
-    var fileIDs = FileData()
-    var dataCounts = DataCounts()
-    @State var referenceData = ReferenceData()
+	var fileIDs = FileData()
+	var dataCounts = DataCounts()
+	@State var referenceData = ReferenceData()
     
-    var body: some View {
+	var body: some View {
 
-            SideView(referenceData: referenceData)
-
-        .frame(minWidth: 100, minHeight: 100)
-        .onAppear(perform: {
-            print("Start OnAppear")
-            
-            Task {
-                if runMode == "PROD" {
-                    (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsProdFileName)
-                    (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataProdFileName)
-                    (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
-                    studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
-                    tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-                } else {
-                    (_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsTestFileName)
-                    (_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataTestFileName)
-                    (_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
-                    studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
-                    tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
-                }
-                await refDataVM.loadReferenceData(referenceData: referenceData)
-            }
-        })
-    }
+		SideView(referenceData: referenceData)
+			.frame(minWidth: 100, minHeight: 100)
+			.onAppear(perform: {
+				Task {
+					if runMode == "PROD" {
+						(_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsProdFileName)
+						(_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataProdFileName)
+						(_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+						studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
+						tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
+					} else {
+						(_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsTestFileName)
+						(_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataTestFileName)
+						(_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+						studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
+						tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
+					}
+					await refDataVM.loadReferenceData(referenceData: referenceData)
+				}
+			})
+	}
 }
 
 struct SideView: View {
-    var referenceData: ReferenceData
-    @Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	var referenceData: ReferenceData
+	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
         
-    var body: some View {
- //       NavigationStack {
-            List {
+	var body: some View {
+ 
+		List {
                 
-                NavigationLink {
-                    TutorsView(referenceData: referenceData)
-                } label: {
-                    Label("Tutors", systemImage: "person")
-                }
+			NavigationLink {
+				TutorsView(referenceData: referenceData)
+			} label: {
+				Label("Tutors", systemImage: "person")
+			}
                 
-                NavigationLink {
-                    StudentsView(referenceData: referenceData)
-                } label: {
-                    Label("Students", systemImage: "graduationcap")
-                }
+			NavigationLink {
+				StudentsView(referenceData: referenceData)
+			} label: {
+				Label("Students", systemImage: "graduationcap")
+			}
                 
-                NavigationLink {
-                    ServicesView(referenceData: referenceData)
-                } label: {
-                    Label("Services", systemImage: "list.bullet")
-                }
+			NavigationLink {
+				ServicesView(referenceData: referenceData)
+			} label: {
+				Label("Services", systemImage: "list.bullet")
+			}
                 
-                NavigationLink {
-                    LocationsView(referenceData: referenceData)
-                } label: {
-                    Label("Locations", systemImage: "building")
-                }
+			NavigationLink {
+				LocationsView(referenceData: referenceData)
+			} label: {
+				Label("Locations", systemImage: "building")
+			}
 
-                NavigationLink {
-                    BillingView(referenceData: referenceData)
-                } label: {
-                    Label("Billing", systemImage: "person")
-                }
+			NavigationLink {
+				BillingView(referenceData: referenceData)
+			} label: {
+				Label("Billing", systemImage: "person")
+			}
                 
-                NavigationLink {
-                    TutorView( updateTutorFlag: false, tutorNum: 0, originalTutorName: "", referenceData: referenceData, tutorName: "", tutorEmail: "", tutorPhone: "", maxStudents: 0)
-                } label: {
-                    Label("Add Tutor", systemImage: "person")
-                }
+			NavigationLink {
+				TutorView( updateTutorFlag: false, tutorNum: 0, originalTutorName: "", referenceData: referenceData, tutorName: "", tutorEmail: "", tutorPhone: "", maxStudents: 0)
+			} label: {
+				Label("Add Tutor", systemImage: "person")
+			}
                 
-                NavigationLink {
-                    StudentView(updateStudentFlag: false, originalStudentName: " ", referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
-                } label: {
-                    Label("Add Student", systemImage: "graduationcap")
-                }
+			NavigationLink {
+				StudentView(updateStudentFlag: false, originalStudentName: " ", referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
+			} label: {
+				Label("Add Student", systemImage: "graduationcap")
+			}
                 
-                NavigationLink {
-                    ServiceView(updateServiceFlag: false, serviceNum: 0, referenceData: referenceData, serviceKey: " ", timesheetName: "", invoiceName: "", serviceType: .Base, billingType: .Fixed, serviceCount: 0, cost1: 0.0, cost2: 0.0, cost3: 0.0, price1: 0.0, price2: 0.0, price3: 0.0 )
-                } label: {
-                    Label("Add Service", systemImage: "list.bullet")
-                }
+			NavigationLink {
+				ServiceView(updateServiceFlag: false, serviceNum: 0, originalTimesheetName: "", referenceData: referenceData, serviceKey: " ", timesheetName: "", invoiceName: "", serviceType: .Base, billingType: .Fixed, serviceCount: 0, cost1: 0.0, cost2: 0.0, cost3: 0.0, price1: 0.0, price2: 0.0, price3: 0.0 )
+			} label: {
+				Label("Add Service", systemImage: "list.bullet")
+			}
                 
-                NavigationLink {
-                    LocationView(updateLocationFlag: false, locationNum: 0, referenceData: referenceData, locationName: " ")
-                } label: {
-                    Label("Add Location", systemImage: "building")
-                }
+			NavigationLink {
+				LocationView(updateLocationFlag: false, locationNum: 0, referenceData: referenceData, locationName: " ")
+			} label: {
+				Label("Add Location", systemImage: "building")
+			}
                 
-                Button( action: {
-                    listDriveFiles()
-                }) {
-                    Text("List Service Account Files")
-                }
-            }
-//            .listStyle(SidebarListStyle())
-            .navigationTitle("Sidebar")
+			Button( action: {
+				listDriveFiles()
+			}) {
+				Text("List Service Account Files")
+			}
+		}
+//            	.listStyle(SidebarListStyle())
+		.navigationTitle("Sidebar")
             
-           Button(action: {
-                userAuthVM.signOut()
+		Button(action: {
+			userAuthVM.signOut()
                 //                dismiss() }) {
-            }) {
-                Text("Sign Out")
-            }
-            .padding()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-//    }
+		}) {
+			Text("Sign Out")
+		}
+		.padding()
+		.clipShape(RoundedRectangle(cornerRadius: 10))
+	}
 }
 
 struct TutorsView: View {
-    @State var referenceData: ReferenceData
+	@State var referenceData: ReferenceData
     
-    @State private var selectedTutors: Set<Tutor.ID> = []
-    @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
-    @State private var showAlert: Bool = false
-    @State private var viewChange: Bool = false
-    @State private var assignStudent:Bool = false
-    @State private var listTutorStudents: Bool = false
-    @State private var listTutorServices: Bool = false
-    @State private var addService: Bool = false
-    @State private var editService: Bool = false
-    @State private var removeService: Bool = false
-    @State private var editTutor: Bool = false
+	@State private var selectedTutors: Set<Tutor.ID> = []
+	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
+	@State private var showAlert: Bool = false
+	@State private var viewChange: Bool = false
+	@State private var assignStudent:Bool = false
+	@State private var listTutorStudents: Bool = false
+	@State private var listTutorServices: Bool = false
+	@State private var addService: Bool = false
+	@State private var editService: Bool = false
+	@State private var removeService: Bool = false
+	@State private var editTutor: Bool = false
     
-    @State private var tutorNumber: Int = 0
-    @State private var showDeleted: Bool = false
-    @State private var showUnassigned: Bool = false
+	@State private var tutorNumber: Int = 0
+	@State private var showDeleted: Bool = false
+	@State private var showUnassigned: Bool = false
     
-    @Environment(RefDataVM.self) var refDataModel: RefDataVM
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(RefDataVM.self) var refDataModel: RefDataVM
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
     
     var body: some View {
         if referenceData.tutors.isTutorDataLoaded {
@@ -448,23 +444,23 @@ struct StudentSelectionView: View {
 
 
 struct StudentsView: View {
-    var referenceData: ReferenceData
+	var referenceData: ReferenceData
+	var studentArray = [Student]()
     
-    @Environment(RefDataVM.self) var refDataModel: RefDataVM
-    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+	@Environment(RefDataVM.self) var refDataModel: RefDataVM
+	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     
-    @State private var selectedStudents: Set<Student.ID> = []
-    @State private var sortOrder = [KeyPathComparator(\Student.studentName)]
-    @State private var showAlert = false
-    var studentArray = [Student]()
+	@State private var selectedStudents: Set<Student.ID> = []
+	@State private var sortOrder = [KeyPathComparator(\Student.studentName)]
+	@State private var showAlert = false
 
-    @State private var assignTutor = false
-    @State private var unassignTutor = false
-    @State private var editStudent = false
-    @State private var showDeleted = false
-    @State private var showUnassigned = false
+	@State private var assignTutor = false
+	@State private var unassignTutor = false
+	@State private var editStudent = false
+	@State private var showDeleted = false
+	@State private var showUnassigned = false
     
-    @State private var studentNumber: Int = 0
+	@State private var studentNumber: Int = 0
     
     var body: some View {
         if referenceData.students.isStudentDataLoaded {
@@ -652,15 +648,15 @@ struct StudentsView: View {
 }
 
 struct TutorSelectionView: View {
-    @Binding var studentNum: Int
-    var referenceData: ReferenceData
+	@Binding var studentNum: Int
+	var referenceData: ReferenceData
 
-    @Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     
-    @State private var selectedTutor = Set<Tutor.ID>()
-    @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
-    @State private var showAlert = false
-    @State private var viewChange: Bool = false
+	@State private var selectedTutor = Set<Tutor.ID>()
+	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
+	@State private var showAlert = false
+	@State private var viewChange: Bool = false
 
     var body: some View {
     
@@ -892,7 +888,7 @@ struct ServicesView: View {
                 }
                 .navigationDestination(isPresented: $editService) {
                     if referenceData.services.servicesList.count > 0 {
-                        ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+			    ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
                     }
                 }
                 .navigationDestination(isPresented: $listServiceCosts) {

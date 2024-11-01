@@ -9,28 +9,30 @@ import Foundation
 import SwiftUI
 
 struct ServiceView: View {
-    var updateServiceFlag: Bool
-    var serviceNum: Int
-    var referenceData: ReferenceData
-    var serviceKey: String
-    @State var timesheetName: String
-    @State var invoiceName: String
-    @State var serviceType: ServiceTypeOption
-    @State var billingType: BillingTypeOption
-    @State var serviceCount: Int
-    @State var cost1: Float
-    @State var cost2: Float
-    @State var cost3: Float
-    @State var price1: Float
-    @State var price2: Float
-    @State var price3: Float
+	var updateServiceFlag: Bool
+	var serviceNum: Int
+	var originalTimesheetName: String
+	var referenceData: ReferenceData
+	var serviceKey: String
+	
+	@State var timesheetName: String
+	@State var invoiceName: String
+	@State var serviceType: ServiceTypeOption
+	@State var billingType: BillingTypeOption
+	@State var serviceCount: Int
+	@State var cost1: Float
+	@State var cost2: Float
+	@State var cost3: Float
+	@State var price1: Float
+	@State var price2: Float
+	@State var price3: Float
     
-    @State private var showAlert:Bool = false
+	@State private var showAlert:Bool = false
     
-    @Environment(RefDataVM.self) var refDataVM: RefDataVM
-    @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
-    @Environment(\.dismiss) var dismiss
+	@Environment(RefDataVM.self) var refDataVM: RefDataVM
+	@Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(\.dismiss) var dismiss
     
     var body: some View {
                 
@@ -114,10 +116,13 @@ struct ServiceView: View {
 
             Button{
                 Task {
+			timesheetName = timesheetName.trimmingCharacters(in: .whitespaces)
+			invoiceName = invoiceName.trimmingCharacters(in: .whitespaces)
+
                     if updateServiceFlag {
-                        let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+			    let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
                         if validationResult {
-                            await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+				await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
                             dismiss()
                         } else {
                             buttonErrorMsg = validationMessage

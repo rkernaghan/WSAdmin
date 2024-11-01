@@ -38,28 +38,7 @@ class TutorBillingMonth {
         self.tutorBillingRows.remove(at: billedTutorNum)
     }
     
-    func loadTutorBillingData(billingMonth: String, billingYear: String) {
-        var tutorBillingFileID = " "
-        
-        let tutorBillingFileName = "Tutor Billing Summary - TEST " + billingYear
-        getFileID(fileName: tutorBillingFileName) {result in
-            switch result {
-            case .success(let fileID):
-                print("Tutor Billing File ID: \(fileID)")
-                tutorBillingFileID = fileID
-                //               Task {
-  //              print ("before load tutor Billing Month")
-                //                   await self.loadTutorBillingMonth(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
-                self.loadTutorBillingMonth(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
-  //              print ("after load tutor Billing Month")
-                //               }
-  //              print("After Task for get File ID")
-            case . failure(let error):
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-    }
-    
+   
     func loadTutorBillingMonthAsync(monthName: String, tutorBillingFileID: String) async {
         var tutorBillingCount: Int = 0
         var sheetCells = [[String]]()
@@ -91,94 +70,7 @@ class TutorBillingMonth {
         }
     }
     
-    func loadTutorBillingMonth(billingMonth: String, tutorBillingFileID: String) {
-        var tutorBillingCount: Int = 0
-        
-        let sheetService = GTLRSheetsService()
-        let currentUser = GIDSignIn.sharedInstance.currentUser
-        sheetService.authorizer = currentUser?.fetcherAuthorizer
-        let range = PgmConstants.tutorBillingCountRange
-//         print("range is \(range)")
-        let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: tutorBillingFileID, range:range)
-// Load the count of Tutor Billing entries from the Tutor Billing spreadsheet
-        sheetService.executeQuery(query) { (ticket, result, error) in
-            if let error = error {
-                print(error)
-                print("Failed to read Tutor Billing data:\(error.localizedDescription)")
-                return
-            }
-            guard let result = result as? GTLRSheets_ValueRange else {
-                return
-            }
-            
-            let rows = result.values!
-            var stringRows = rows as! [[String]]
-            
-            for row in stringRows {
-                stringRows.append(row)
-                tutorBillingCount = Int(stringRows[0][0]) ?? 0
-            }
-            
-            if rows.isEmpty {
-                print("No data found.")
-                return
-            }
-            // Load the Billed Tutors from the Billed Tutor spreadsheet
-            let sheetService = GTLRSheetsService()
-            let currentUser = GIDSignIn.sharedInstance.currentUser
-            sheetService.authorizer = currentUser?.fetcherAuthorizer
-            let range = billingMonth + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1)
-            print("range is \(range)")
-            let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: tutorBillingFileID, range:range)
-            sheetService.executeQuery(query) { (ticket, result, error) in
-                if let error = error {
-                    print(error)
-                    print("Failed to read Tutor Billing data:\(error.localizedDescription)")
-                    return
-                }
-                guard let result = result as? GTLRSheets_ValueRange else {
-                    return
-                }
-                
-                let rows = result.values!
-                var stringRows = rows as! [[String]]
-                
-                for row in stringRows {
-                    stringRows.append(row)
-                }
-                
-                if rows.isEmpty {
-                    print("No data found.")
-                    return
-                }
-                
-                var tutorBillingIndex = 0
-                var rowNumber = 0
-                while tutorBillingIndex < tutorBillingCount {
-                    
-                    let tutorName = stringRows[rowNumber][PgmConstants.tutorBillingTutorCol]
-                    let monthSessions: Int = Int(stringRows[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
-                    let monthCost: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthCostCol]) ?? 0.0
-                    let monthRevenue: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
-                    let monthProfit: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
-                    
-                    let totalSessions: Int = Int(stringRows[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
-                    let totalCost: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
-                    let totalRevenue: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
-                    let totalProfit: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
-                    let rowSize = stringRows[rowNumber].count
-                    
-                    let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit)
-                    
-                    self.insertBilledTutorRow(tutorBillingRow: newTutorBillingRow)
-                    
-                    rowNumber += 1
-                    tutorBillingIndex += 1
-                }
-                print("Loaded Tutor Billing Data")
-            }
-        }
-    }
+   
     
     
     func saveTutorBillingData(tutorBillingFileID: String, billingMonth: String) async -> Bool {
@@ -327,4 +219,116 @@ class TutorBillingMonth {
             prevTutorNum += 1
         }
     }
+	
+	func loadTutorBillingDataOLD(billingMonth: String, billingYear: String) {
+	    var tutorBillingFileID = " "
+	    
+	    let tutorBillingFileName = "Tutor Billing Summary - TEST " + billingYear
+	    getFileIDOLD(fileName: tutorBillingFileName) {result in
+		switch result {
+		case .success(let fileID):
+		    print("Tutor Billing File ID: \(fileID)")
+		    tutorBillingFileID = fileID
+		    //               Task {
+      //              print ("before load tutor Billing Month")
+		    //                   await self.loadTutorBillingMonth(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
+		    self.loadTutorBillingMonthOLD(billingMonth: billingMonth, tutorBillingFileID: tutorBillingFileID)
+      //              print ("after load tutor Billing Month")
+		    //               }
+      //              print("After Task for get File ID")
+		case . failure(let error):
+		    print("Error: \(error.localizedDescription)")
+		}
+	    }
+	}
+	
+	
+	func loadTutorBillingMonthOLD(billingMonth: String, tutorBillingFileID: String) {
+	    var tutorBillingCount: Int = 0
+	    
+	    let sheetService = GTLRSheetsService()
+	    let currentUser = GIDSignIn.sharedInstance.currentUser
+	    sheetService.authorizer = currentUser?.fetcherAuthorizer
+	    let range = PgmConstants.tutorBillingCountRange
+    //         print("range is \(range)")
+	    let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: tutorBillingFileID, range:range)
+    // Load the count of Tutor Billing entries from the Tutor Billing spreadsheet
+	    sheetService.executeQuery(query) { (ticket, result, error) in
+		if let error = error {
+		    print(error)
+		    print("Failed to read Tutor Billing data:\(error.localizedDescription)")
+		    return
+		}
+		guard let result = result as? GTLRSheets_ValueRange else {
+		    return
+		}
+		
+		let rows = result.values!
+		var stringRows = rows as! [[String]]
+		
+		for row in stringRows {
+		    stringRows.append(row)
+		    tutorBillingCount = Int(stringRows[0][0]) ?? 0
+		}
+		
+		if rows.isEmpty {
+		    print("No data found.")
+		    return
+		}
+		// Load the Billed Tutors from the Billed Tutor spreadsheet
+		let sheetService = GTLRSheetsService()
+		let currentUser = GIDSignIn.sharedInstance.currentUser
+		sheetService.authorizer = currentUser?.fetcherAuthorizer
+		let range = billingMonth + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1)
+		print("range is \(range)")
+		let query = GTLRSheetsQuery_SpreadsheetsValuesGet.query(withSpreadsheetId: tutorBillingFileID, range:range)
+		sheetService.executeQuery(query) { (ticket, result, error) in
+		    if let error = error {
+			print(error)
+			print("Failed to read Tutor Billing data:\(error.localizedDescription)")
+			return
+		    }
+		    guard let result = result as? GTLRSheets_ValueRange else {
+			return
+		    }
+		    
+		    let rows = result.values!
+		    var stringRows = rows as! [[String]]
+		    
+		    for row in stringRows {
+			stringRows.append(row)
+		    }
+		    
+		    if rows.isEmpty {
+			print("No data found.")
+			return
+		    }
+		    
+		    var tutorBillingIndex = 0
+		    var rowNumber = 0
+		    while tutorBillingIndex < tutorBillingCount {
+			
+			let tutorName = stringRows[rowNumber][PgmConstants.tutorBillingTutorCol]
+			let monthSessions: Int = Int(stringRows[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
+			let monthCost: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthCostCol]) ?? 0.0
+			let monthRevenue: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
+			let monthProfit: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
+			
+			let totalSessions: Int = Int(stringRows[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
+			let totalCost: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
+			let totalRevenue: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
+			let totalProfit: Float = Float(stringRows[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
+			let rowSize = stringRows[rowNumber].count
+			
+			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit)
+			
+			self.insertBilledTutorRow(tutorBillingRow: newTutorBillingRow)
+			
+			rowNumber += 1
+			tutorBillingIndex += 1
+		    }
+		    print("Loaded Tutor Billing Data")
+		}
+	    }
+	}
 }
