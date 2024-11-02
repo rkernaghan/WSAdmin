@@ -246,6 +246,29 @@ import GoogleAPIClientForREST
 		}
 	}
     
+	func fetchTutorDataCounts(tutorName: String) async -> (Int, Int){
+		var sheetCells = [[String]]()
+		var sheetData: SheetData?
+		
+// Read in the Tutor Data counts from the Tutor Details spreadsheet
+		
+		do {
+			let range = tutorName + PgmConstants.tutorDataCountsRange
+			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+		} catch {
+			
+		}
+		
+		if let sheetData = sheetData {
+			sheetCells = sheetData.values
+		}
+		
+		let studentCount = Int( sheetCells[0][0] ) ?? 0
+		let serviceCount = Int( sheetCells[1][0] ) ?? 0
+						   
+		return(studentCount, serviceCount )
+	}
+						   
 	func saveTutorStudentData(tutorName: String) async -> Bool {
 		var result: Bool = true
 // Write the Tutor Student rows to the Tutor Details spreadsheet

@@ -10,12 +10,29 @@ import Foundation
 	
 	
 	func validateSystem(referenceData: ReferenceData) async {
+		print ("//")
 		print("Validating System - Stand By for Adventure!")
-
+		print("//")
+		
+		let (prevMonthName, prevMonthYear) = getPrevMonthYear()
+		let prevBilledStudentMonth = await buildBilledStudentMonth(monthName: prevMonthName, yearName: prevMonthYear)
+		let prevBilledTutorMonth = await buildBilledTutorMonth(monthName: prevMonthName, yearName: prevMonthYear)
+				
+		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
+		let currentBilledStudentMonth = await buildBilledStudentMonth(monthName: currentMonthName, yearName: currentMonthYear)
+		let currentBilledTutorMonth = await buildBilledTutorMonth(monthName: currentMonthName, yearName: currentMonthYear)
+	
+		var locationRevenue: Float = 0.0
+		var studentRevenue: Float = 0.0
+		var tutorRevenue: Float = 0.0
+		
+		var tutorStudentCount: Int = 0
+		var assignedStudentCount = 0
+		
 // Check if any Students assigned to more than one Tutor
 
 		
-// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
+
 
 		
 // Validate that each Tutor has a Timesheet
@@ -35,18 +52,38 @@ import Foundation
 		var studentNum = 0
 		let studentCount = referenceData.students.studentsList.count
 		while studentNum < studentCount {
+			let studentName = referenceData.students.studentsList[studentNum].studentName
+			
 			switch referenceData.students.studentsList[studentNum].studentStatus {
-			case "Unassigned", "Assigned", "Suspended":
+			case "Assigned":
+				activeStudents += 1
+				assignedStudentCount += 1
+			case "Unassigned", "Suspended":
 				activeStudents += 1
 			case "Deleted":
 				deletedStudents += 1
 			default:
-				print("Invalid Status for Student \(referenceData.students.studentsList[studentNum].studentName)")
+				print("Validation Error: Invalid Status for Student \(studentName)")
 			}
 			totalStudents += 1
+			studentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
+// Check if Student found in Billed Student List for previous month
+			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+				let (studentFoundFlag, billedStudentNum) = prevBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				if !studentFoundFlag {
+					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(prevMonthName)")
+				}
+// If current Billed Student Month populated (i.e. billing has started for this month), check if Student is in current month Billed Student List
+				if currentBilledStudentMonth.studentBillingRows.count > 0 {
+					let (studentFoundFlag, billedStudentNum) = currentBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					if !studentFoundFlag {
+						print("Validation Error: Student \(studentName) not found in Billed Student Month for \(currentMonthName)")
+					}
+				}
+			}
 			studentNum += 1
 		}
-		print("Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)")
+		print("          Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)")
 
 		if totalStudents != referenceData.dataCounts.totalStudents {
 			print("Validation Error: Reference Data Count for Total Students \(referenceData.dataCounts.totalStudents) does not match actual count in Reference Data Students list of \(totalStudents)")
@@ -76,9 +113,10 @@ import Foundation
 				print("Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 			}
 			totalServices += 1
+			
 			serviceNum += 1
 		}
-		print("Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)")
+		print("          Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)")
 		if totalServices != referenceData.dataCounts.totalServices {
 			print("Validation Error: Reference Data Count for Total Services \(referenceData.dataCounts.totalServices) does not match actual count in Reference Data Services list of \(totalServices)")
 		}
@@ -104,13 +142,15 @@ import Foundation
 			case "Deleted":
 				deletedLocations += 1
 			default:
-				print("Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)")
+				print("Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)")
 			}
 			locationStudents += referenceData.locations.locationsList[locationNum].locationStudentCount
 			totalLocations += 1
+			locationRevenue += referenceData.locations.locationsList[locationNum].locationTotalRevenue
+			
 			locationNum += 1
 		}
-		print("Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
+		print("          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
 		
 		if locationStudents != totalStudents {
 			print("Validation Error: Counts of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(totalStudents)")
@@ -135,28 +175,66 @@ import Foundation
 		var tutorNum = 0
 		let tutorCount = referenceData.tutors.tutorsList.count
 		while tutorNum < tutorCount {
+			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			switch referenceData.tutors.tutorsList[tutorNum].tutorStatus {
-			case "Unassigned", "Assigned", "Suspended":
+			case "Assigned":
 				activeTutors += 1
+				tutorStudentCount += referenceData.tutors.tutorsList[tutorNum].tutorStudentCount
+			case "Unassigned", "Suspended":
+				activeTutors += 1
+				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
+					print("Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned")
+				}
 			case "Deleted":
 				deletedTutors += 1
+				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
+					print("Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned")
+				}
 			default:
-				print("Invalid Tutor Status for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				print("Validation Error: Invalid Tutor Status for Tutor \(tutorName)")
 			}
+// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
 			do {
-				sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: referenceData.tutors.tutorsList[tutorNum].tutorName )
+				sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
 			} catch {
-				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
 			}
 			if sheetNum == nil {
-				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
 			}
+			
+// Check if Tutor found in Billed Tutor List for previous month
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				let (tutorFoundFlag, billedTutorNum) = prevBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+				if !tutorFoundFlag {
+					print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(prevMonthName)")
+				}
+// If current Billed Tutor Month populated (i.e. billing has started for this month), check if Tutor is in current month Billed Tutor List
+				if currentBilledTutorMonth.tutorBillingRows.count > 0 {
+					let (tutorFoundFlag, billedTutorNum) = currentBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+					if !tutorFoundFlag {
+						print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(currentMonthName)")
+					}
+				}
+			}
+// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
+			let (studentCount, serviceCount) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
+			if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
+				print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)")
+			}
+			
+			if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
+				print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)")
+			}
+			
 			totalTutors += 1
+			tutorRevenue += referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
+			
 			tutorNum += 1
 		}
-		print("Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
+		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
 		
-		print("Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
+		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
 		if totalTutors != referenceData.dataCounts.totalTutors {
 			print("Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)")
 		}
@@ -172,11 +250,17 @@ import Foundation
 // Validate that the Tutor names in the Master Reference worksheet match the tutor names in the Tutors Billing spreadsheet
 		
 
-// Validate that the Student names in the Master Reference worksheet match the tutor names in the Student Billing spreadsheet
+// Validate that the Student names in the Master Reference worksheet match the student names in the Student Billing spreadsheet
 		
 
 // Validate that the sum of the Tutors total billing equals Student total billing equals City total billing
-
+		if tutorRevenue != studentRevenue || studentRevenue != locationRevenue || tutorRevenue != locationRevenue {
+			print("Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue) and Location revenue \(locationRevenue) do not match")
+		}
+		
+		if tutorStudentCount != assignedStudentCount {
+			print("Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount)")
+		}
 
 // Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template
 
@@ -221,5 +305,45 @@ import Foundation
 		}
 		
 	}
+
+	func buildBilledTutorMonth(monthName: String, yearName: String) async -> TutorBillingMonth {
+		var tutorBillingFileName = tutorBillingFileNamePrefix + yearName
+		var result: Bool = true
+		var tutorBillingFileID = ""
+		
+		let tutorBillingMonth = TutorBillingMonth()
+		
+		// Get the fileID of the previous month Billed Tutor spreadsheet for the year
+		do {
+			(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+		} catch {
+			print("Could not get FileID for file: \(tutorBillingFileName)")
+		}
+		// Read the data from the Billed Tutor spreadsheet for the previous month
+		await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		
+		return(tutorBillingMonth)
+	}
+	
+	func buildBilledStudentMonth(monthName: String, yearName: String) async -> StudentBillingMonth {
+		var studentBillingFileName = studentBillingFileNamePrefix + yearName
+		var result: Bool = true
+		var studentBillingFileID = ""
+		
+		let studentBillingMonth = StudentBillingMonth()
+		
+		// Get the fileID of the previous month Billed Student spreadsheet for the year
+		do {
+			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+		} catch {
+			print("Could not get FileID for file: \(studentBillingFileName)")
+		}
+		// Read the data from the Billed Student spreadsheet for the previous month
+		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: monthName, studentBillingFileID: studentBillingFileID)
+		
+		return(studentBillingMonth)
+	}
 	
 }
+
+

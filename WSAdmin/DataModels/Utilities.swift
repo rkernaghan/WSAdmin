@@ -114,7 +114,9 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
         let (data, response) = try await URLSession.shared.data(for: request)
 //    print("After Read Cells URL Session call \(fileID)")
         if let httpResponse = response as? HTTPURLResponse {
-            print("Read Sheet HTTP Result Code: \(httpResponse.statusCode)")
+		if httpResponse.statusCode != 200 {
+			print("Read Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+		}
         }
 // Check if the response is successful
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {

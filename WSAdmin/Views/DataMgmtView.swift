@@ -36,6 +36,8 @@ struct DataMgmtView: View {
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	@Environment(SystemVM.self) var systemVM: SystemVM
+	@Environment(BilledTutorVM.self) var billedTutorVM: BilledTutorVM
+	@Environment(BilledStudentVM.self) var billedStudentVM: BilledStudentVM
     
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()

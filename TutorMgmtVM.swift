@@ -63,19 +63,19 @@ import GTMSessionFetcher
        
             let tutorBillingMonth = TutorBillingMonth()
            
-    // Get the fileID of the Billed Tutor spreadsheet for the year
+// Get the fileID of the Billed Tutor spreadsheet for the year
             do {
                     (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
             } catch {
                     print("Could not get FileID for file: \(tutorBillingFileName)")
             }
-    // Read the data from the Billed Tutor spreadsheet for the previous month
+// Read the data from the Billed Tutor spreadsheet for the previous month
             await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-    // Add new the Tutor to Billed Tutor list for the month
+// Add new the Tutor to Billed Tutor list for the month
             let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
             if !billedTutorFound {
                     tutorBillingMonth.addNewBilledTutor(tutorName: tutorName)
-    // Save the updated Billed Tutor list for the month
+// Save the updated Billed Tutor list for the month
                     await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
             }
     }

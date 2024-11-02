@@ -199,7 +199,7 @@ import GoogleAPIClientForREST
 		}
 	    
     // Load the Tutors
-    //            referenceData.tutorsList.removeAll()          // empty the array before loading as this could be a refresh
+
 		
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy-MM-dd"
