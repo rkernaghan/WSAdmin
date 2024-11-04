@@ -136,7 +136,7 @@ struct SideView: View {
 			}
                 
 			NavigationLink {
-				StudentView(updateStudentFlag: false, originalStudentName: " ", referenceData: referenceData, studentKey: " ", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
+				StudentView(updateStudentFlag: false, originalStudentName: "", referenceData: referenceData, studentKey: "", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
 			} label: {
 				Label("Add Student", systemImage: "graduationcap")
 			}
@@ -148,16 +148,11 @@ struct SideView: View {
 			}
                 
 			NavigationLink {
-				LocationView(updateLocationFlag: false, locationNum: 0, referenceData: referenceData, locationName: " ")
+				LocationView(updateLocationFlag: false, locationNum: 0, originalLocationName: "" , referenceData: referenceData, locationName: "")
 			} label: {
 				Label("Add Location", systemImage: "building")
 			}
                 
-			Button( action: {
-				listDriveFiles()
-			}) {
-				Text("List Service Account Files")
-			}
 		}
 //            	.listStyle(SidebarListStyle())
 		.navigationTitle("Sidebar")
@@ -331,7 +326,6 @@ struct TutorsView: View {
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
-										//                                    viewChange.toggle()
 									}
 								}
 							} label: {
@@ -350,7 +344,6 @@ struct TutorsView: View {
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
-										//                                   viewChange.toggle()
 									}
 								}
 							} label: {
@@ -367,7 +360,6 @@ struct TutorsView: View {
 									if suspendResult == false {
 										showAlert = true
 										buttonErrorMsg = suspendMessage
-										//                                    viewChange.toggle()
 									}
 								}
 							} label: {
@@ -587,220 +579,265 @@ struct StudentsView: View {
     
 	@State private var studentNumber: Int = 0
     
-    var body: some View {
-        if referenceData.students.isStudentDataLoaded {
-            
-            var studentArray: [Student] {
-                if showDeleted {
-                    return referenceData.students.studentsList
-                } else if showUnassigned {
-                    return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
-                } else {
-                    return referenceData.students.studentsList.filter{$0.studentStatus != "Deleted"}
-                }
-            }
-            
-            VStack {
-             
-                HStack {
-                    Toggle("Show Deleted", isOn: $showDeleted)
-                    Toggle("Show Unassigned", isOn: $showUnassigned)
-                    Text("     Student Count: ")
-                    Text(String(studentArray.count))
-                }
-                
-                Table(studentArray, selection: $selectedStudents) {
-                    //               Group {
-                    TableColumn("Student Name", value: \Student.studentName)
-                        .width(min: 90, ideal: 149, max: 260)
-                    
-                    TableColumn("Guardian", value: \Student.studentGuardian)
-                        .width(min: 90, ideal: 140, max: 260)
-                    
-                    TableColumn("Phone", value: \Student.studentPhone)
-                        .width(min: 100, ideal: 120, max: 120)
-                    
-                    TableColumn("EMail", value: \Student.studentEmail)
-                        .width(min: 100, ideal: 120, max: 200)
-                    
-                    TableColumn("Student\nType") {data in
-                        Text(data.studentType.rawValue)
-                    }
-                    .width(min: 50, ideal: 70, max: 90)
-                    //             }
-                    //           Group {
-                    TableColumn("Start Date", value: \Student.studentStartDate)
-                        .width(min: 80, ideal: 90, max: 90)
-                    
-                    TableColumn("End Date", value: \Student.studentEndDate)
-                        .width(min: 80, ideal: 90, max: 90)
-                    
-                    TableColumn("Status", value: \Student.studentStatus)
-                        .width(min: 70, ideal: 80, max: 90)
-
-                    TableColumn("Tutor Name",value: \Student.studentTutorName)
-                        .width(min: 100, ideal: 150, max: 240)
-                    
-                    TableColumn("Location", value: \Student.studentLocation)
-                        .width(min: 80, ideal: 1200, max: 160)
-//                  }
-//                  TableColumn("Location", value: \.studentLocation)
-//                  TableColumn("Sessions", value: \.studentSessions) {data in
-//                  Text("\(data.studentTotalSessions)")
-//                  }
-//                  TableColumn("Total Cost", value: \.studentTotalCost)
-//                  TableColumn("Total Revenue", value: \.studentTotalRevenue)
-//                  TableColumn("Total Profit", value: \.studentTotalProfit)
-//                  }
-                }
-//                .width(min: 600, ideal: 800)
-                .contextMenu(forSelectionType: Student.ID.self) { items in
-                    if items.isEmpty {
-                        Button { } label: {
-                            Label("New Student", systemImage: "plus")
-                        }
-                    } else if items.count == 1 {
-                        VStack {
-
-                            Button {
-                                for objectID in items {
-                                    if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-                                        studentNumber = idx
-                                        assignTutor.toggle()
-                                    }
-                                }
-                            } label: {
-                                Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                Task {
-                                    await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
-                                }
-                            } label: {
-                                Label("Unassign Student", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                Task {
-                                    for objectID in items {
-                                        if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-                                            studentNumber = idx
-                                            editStudent.toggle()
-                                        }
-                                    }
-                                }
-                            } label: {
-                                Label("Edit Student", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                
-                            } label: {
-                                Label("ReAssign Student", systemImage: "square.and.arrow.up")
-                            }
-                            
-				Button(role: .destructive) {
-				    Task {
-					let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
-					if suspendResult == false {
-					    showAlert = true
-					    buttonErrorMsg = suspendMessage
+	var body: some View {
+		if referenceData.students.isStudentDataLoaded {
+			
+			var studentArray: [Student] {
+				if showDeleted {
+					return referenceData.students.studentsList
+				} else if showUnassigned {
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
+				} else {
+					return referenceData.students.studentsList.filter{$0.studentStatus != "Deleted"}
+				}
+			}
+			
+			VStack {
+				
+				HStack {
+					Toggle("Show Deleted", isOn: $showDeleted)
+					Toggle("Show Unassigned", isOn: $showUnassigned)
+					Text("     Student Count: ")
+					Text(String(studentArray.count))
+				}
+				
+				Table(studentArray, selection: $selectedStudents) {
+					//               Group {
+					TableColumn("Student Name", value: \Student.studentName)
+						.width(min: 90, ideal: 149, max: 260)
+					
+					TableColumn("Guardian", value: \Student.studentGuardian)
+						.width(min: 90, ideal: 140, max: 260)
+					
+					TableColumn("Phone", value: \Student.studentPhone)
+						.width(min: 100, ideal: 120, max: 120)
+					
+					TableColumn("EMail", value: \Student.studentEmail)
+						.width(min: 100, ideal: 120, max: 200)
+					
+					TableColumn("Student\nType") {data in
+						Text(data.studentType.rawValue)
 					}
-				    }
-				} label: {
-				    Label("Suspend Student", systemImage: "trash")
+					.width(min: 50, ideal: 70, max: 90)
+					//             }
+					//           Group {
+					TableColumn("Start Date", value: \Student.studentStartDate)
+						.width(min: 80, ideal: 90, max: 90)
+					
+					TableColumn("End Date", value: \Student.studentEndDate)
+						.width(min: 80, ideal: 90, max: 90)
+					
+					TableColumn("Status", value: \Student.studentStatus)
+						.width(min: 70, ideal: 80, max: 90)
+					
+					TableColumn("Tutor Name",value: \Student.studentTutorName)
+						.width(min: 100, ideal: 150, max: 240)
+					
+					TableColumn("Location", value: \Student.studentLocation)
+						.width(min: 80, ideal: 1200, max: 160)
+	//                  }
+	//                  TableColumn("Location", value: \.studentLocation)
+	//                  TableColumn("Sessions", value: \.studentSessions) {data in
+	//                  Text("\(data.studentTotalSessions)")
+	//                  }
+	//                  TableColumn("Total Cost", value: \.studentTotalCost)
+	//                  TableColumn("Total Revenue", value: \.studentTotalRevenue)
+	//                  TableColumn("Total Profit", value: \.studentTotalProfit)
+	//                  }
 				}
-				.alert(buttonErrorMsg, isPresented: $showAlert) {
-				    Button("OK", role: .cancel) { }
-				}
-				
-				Button(role: .destructive) {
-				    Task {
-					let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
-					if unsuspendResult == false {
-					    showAlert = true
-					    buttonErrorMsg = unsuspendMessage
+				//                .width(min: 600, ideal: 800)
+				.contextMenu(forSelectionType: Student.ID.self) { items in
+					if items.isEmpty {
+						Button { } label: {
+							Label("New Student", systemImage: "plus")
+						}
+					} else if items.count == 1 {
+						VStack {
+							
+							Button {
+								for objectID in items {
+									if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+										studentNumber = idx
+										assignTutor.toggle()
+									}
+								}
+							} label: {
+								Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
+							}
+							
+							Button {
+								Task {
+									let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+									if !unassignResult {
+										showAlert = true
+										buttonErrorMsg = unassignMessage
+									}
+								}
+							} label: {
+								Label("Unassign Student", systemImage: "square.and.arrow.up")
+							}
+							
+							Button {
+								Task {
+									for objectID in items {
+										if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+											studentNumber = idx
+											editStudent.toggle()
+										}
+									}
+								}
+							} label: {
+								Label("Edit Student", systemImage: "square.and.arrow.up")
+							}
+							
+							Button {
+								
+							} label: {
+								Label("ReAssign Student", systemImage: "square.and.arrow.up")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+									if suspendResult == false {
+										showAlert = true
+										buttonErrorMsg = suspendMessage
+									}
+								}
+							} label: {
+								Label("Suspend Student", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+									if unsuspendResult == false {
+										showAlert = true
+										buttonErrorMsg = unsuspendMessage
+									}
+								}
+							} label: {
+								Label("UnSuspend Student", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+							
+							
+							Button(role: .destructive) {
+								Task {
+									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+									}
+								}
+							} label: {
+								Label("Delete Student", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
+									if unDeleteResult == false {
+										showAlert = true
+										buttonErrorMsg = unDeleteMessage
+									}
+								}
+							} label: {
+								Label("UnDelete Student", systemImage: "trash")
+							}
+							.alert(buttonErrorMsg, isPresented: $showAlert) {
+								Button("OK", role: .cancel) { }
+							}
+						}
+						
+					} else {
+						
+						Button(role: .destructive) {
+							Task {
+								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+								if deleteResult == false {
+									showAlert = true
+									buttonErrorMsg = deleteMessage
+								}
+							}
+						} label: {
+							Label("Delete Multiple Students", systemImage: "trash")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
+						
+						Button {
+							Task {
+								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+								if !unassignResult {
+									showAlert = true
+									buttonErrorMsg = unassignMessage
+								}
+							}
+						} label: {
+							Label("Unassign Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
+						
+						Button {
+							Task {
+								let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+								if suspendResult == false {
+									showAlert = true
+									buttonErrorMsg = suspendMessage
+								}
+							}
+						} label: {
+							Label("Suspend Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
+						
+						Button {
+							Task {
+								let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+								if unsuspendResult == false {
+									showAlert = true
+									buttonErrorMsg = unsuspendMessage
+								}
+							}
+						} label: {
+							Label("UnSuspend Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
 					}
-				    }
-				} label: {
-				    Label("UnSuspend Student", systemImage: "trash")
-				}
-				.alert(buttonErrorMsg, isPresented: $showAlert) {
-				    Button("OK", role: .cancel) { }
+				} primaryAction: { items in
+					//              store.favourite(items)
 				}
 				
-				
-                            Button(role: .destructive) {
-                                Task {
-                                    let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-                                    if deleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = deleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("Delete Student", systemImage: "trash")
-                            }
-                            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                                Button("OK", role: .cancel) { }
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
-                                    if unDeleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = unDeleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("UnDelete Student", systemImage: "trash")
-                            }
-                            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                                Button("OK", role: .cancel) { }
-                            }
-                        }
-                        
-                    } else {
-                        Button {} label: {
-                            Label("Edit Students", systemImage: "heart")
-                        }
-                        
-                        Button(role: .destructive) {
-                            Task {
-                                let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-                            }
-                        } label: {
-                            Label("Delete Students", systemImage: "trash")
-                        }
-                        
-                        Button {
-                            Task {
-                                await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
-                            }
-                        } label: {
-                            Label("Unassign Students", systemImage: "square.and.arrow.up")
-                        }
-                    }
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-                
-            }
-            .alert(buttonErrorMsg, isPresented: $showAlert) {
-                Button("OK", role: .cancel) { }
-            }
-            
-            .navigationDestination(isPresented: $assignTutor) {
-                TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
-            }
-            .navigationDestination(isPresented: $editStudent) {
-                StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
-                            studentType: referenceData.students.studentsList[studentNumber].studentType )
-            }
-        }
-    }
+			}
+			.alert(buttonErrorMsg, isPresented: $showAlert) {
+				Button("OK", role: .cancel) { }
+			}
+			
+			.navigationDestination(isPresented: $assignTutor) {
+				TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
+			}
+			.navigationDestination(isPresented: $editStudent) {
+				StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
+					    studentType: referenceData.students.studentsList[studentNumber].studentType )
+			}
+		}
+	}
 }
 
 struct TutorSelectionView: View {
@@ -809,446 +846,454 @@ struct TutorSelectionView: View {
 
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     
-	@State private var selectedTutor = Set<Tutor.ID>()
+	@State private var selectedTutor: Tutor.ID? = nil
 	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
 	@State private var showAlert = false
 	@State private var viewChange: Bool = false
 
-    var body: some View {
-    
-        VStack {
-            Table(referenceData.tutors.tutorsList, selection: $selectedTutor, sortOrder: $sortOrder) {
-                
-                TableColumn("Tutor Name", value: \.tutorName)
-                TableColumn("Tutor Status", value: \.tutorStatus)
-            }
-            
-            .contextMenu(forSelectionType: Tutor.ID.self) { items in
-                if items.count == 1 {
-                    VStack {
-                        
-                        Button {
-                            Task {
-                                await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
-                            }
-                        } label: {
-                            Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
-                        }
-                    }
-                    
-                } else {
-                    Button {
-                        Task {
-                            await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
-                        }
-                    } label: {
-                        Label("Assign Tutors Student", systemImage: "square.and.arrow.up")
-                    }
-                }
-                    
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-            }
-        }
-    }
+	var body: some View {
+		
+		var activeTutors: [Tutor] {
+				return referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted" && $0.tutorStatus != "Suspended"}
+			}
+			
+		VStack {
+			Table(activeTutors, selection: $selectedTutor, sortOrder: $sortOrder) {
+				
+				TableColumn("Tutor Name", value: \.tutorName)
+				TableColumn("Tutor Status", value: \.tutorStatus)
+			}
+			
+			.contextMenu(forSelectionType: Tutor.ID.self) { items in
+				if items.count == 1 {
+					VStack {
+						
+						Button {
+							Task {
+								if let selectedTutor = selectedTutor {
+									let (assignResult, assignMessage) = await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: selectedTutor, referenceData: referenceData)
+									if !assignResult {
+										showAlert = true
+										buttonErrorMsg = assignMessage
+									}
+								}
+							}
+						} label: {
+							Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
+					}
+					
+				} 
+				
+			} primaryAction: { items in
+				//              store.favourite(items)
+			}
+			.alert(buttonErrorMsg, isPresented: $showAlert) {
+				Button("OK", role: .cancel) { }
+			}
+		}
+	}
+}
 
 struct ServicesView: View {
-    var referenceData: ReferenceData
-    
-    @Environment(RefDataVM.self) var refDataModel: RefDataVM
-    @Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
-    
-    @State private var selectedServices = Set<Service.ID>()
-    @State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
-    
-    @State private var assignService: Bool = false
-    @State private var editService: Bool = false
-    @State private var listServiceCosts: Bool = false
-    @State private var showDeleted: Bool = false
-    @State private var showUnassigned: Bool = false
-    @State private var showAlert: Bool = false
-    
-    @State private var serviceNumber: Int = 0
-    @State private var serviceCostList = TutorServiceCostList()
-    
-    
-    var body: some View {
-        if referenceData.services.isServiceDataLoaded {
-
-            var serviceArray: [Service] {
-                if showDeleted {
-                    return referenceData.services.servicesList
-                } else if showUnassigned {
-                    return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
-                } else {
-                    return referenceData.services.servicesList.filter{$0.serviceStatus != "Deleted"}
-                }
-            }
- 
-            VStack {
-                HStack {
-                    Toggle("Show Deleted", isOn: $showDeleted)
-                    Toggle("Show Unassigned", isOn: $showUnassigned)
-                    Text("     Service Count: ")
-                    Text(String(serviceArray.count))
-                }
-                
-                Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
-                    //               Group {
-                    TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
-                        .width(min: 120, ideal: 150, max: 240)
-                    
-                    TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
-                        .width(min: 120, ideal: 150, max: 240)
-                    
-                    TableColumn("Service\nType") {data in
-                        Text(data.serviceType.rawValue)
-                    }
-                    .width(min: 50, ideal: 70, max: 80)
-                    
-                    TableColumn("Billing\nType") {data in
-                        Text(data.serviceBillingType.rawValue)
-                    }
-                    .width(min: 50, ideal: 70, max: 80)
-                    
-                    TableColumn("Service\nStatus", value: \Service.serviceStatus)
-                        .width(min: 50, ideal: 70, max: 80)
-                    
-                    TableColumn("Assigned\nTutors" ) { data in
-                        Text(String(data.serviceCount))
-                    }
-                    .width(min: 40, ideal: 60, max: 70)
-                    
-                    TableColumn("Cost 1") { data in
-                        Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
-                    }
-                    .width(min: 40, ideal: 50, max: 50)
-                    
-                    TableColumn("Cost 2", value: \Service.serviceCost2) { data in
-                        Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
-                    }
-                    .width(min: 40, ideal: 50, max: 50)
-                    
-                    TableColumn("Cost 3", value: \Service.serviceCost3) { data in
-                        Text(String(data.serviceCost3.formatted(.number.precision(.fractionLength(2)))))
-                    }
-                    .width(min: 40, ideal: 50, max: 50)
-                    
-                    TableColumn("Price 1", value: \Service.servicePrice1) { data in
-                        Text(String(data.servicePrice1.formatted(.number.precision(.fractionLength(2)))))
-                    }
-                    .width(min: 40, ideal: 50, max: 50)
-                    
-//                    TableColumn("Price 2", value: \Service.servicePrice2) { data in
-//                        Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
-//                    }
-                    //                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
-                    //                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
-                    //                   }
-                    //               }
-                    
-                }
-                .contextMenu(forSelectionType: Service.ID.self) { items in
-                    if items.isEmpty {
-                        Button {
-                            //                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
-                        } label: {
-                            Label("New Service", systemImage: "plus")
-                        }
-                    } else if items.count == 1 {
-                        VStack {
-                            Button {
-                                for objectID in items {
-                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                                        serviceNumber = idx
-                                        assignService.toggle()
-                                    }
-                                }
-                            } label: {
-                                Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button {
-                                for objectID in items {
-                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                                        serviceNumber = idx
-                                        editService.toggle()
-                                    }
-                                }
-                            } label: {
-                                Label("Edit Service", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
-                                
-                                    if deleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = deleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("Delete Service", systemImage: "trash")
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
-                                    if unDeleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = unDeleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("Undelete Service", systemImage: "trash")
-                            }
-                            
-                            Button(role: .destructive) {
-                                for objectID in items {
-                                    if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-                                        serviceNumber = idx
-                                        listServiceCosts.toggle()
-                                        serviceCostList = tutorMgmtVM.buildServiceCostArray(serviceNum: serviceNumber, referenceData: referenceData)
-                                    }
-                                }
-                            } label: {
-                                Label("List Individual Tutor Costs", systemImage: "trash")
-                            }
-                        }
-                        
-                    } else {
-                        Button {
-                            
-                        } label: {
-                            Label("Edit Services", systemImage: "heart")
-                        }
-                        Button(role: .destructive) {
-                            
-                        } label: {
-                            Label("Delete Selected", systemImage: "trash")
-                        }
-                    }
-                    
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-                .alert(buttonErrorMsg, isPresented: $showAlert) {
-                    Button("OK", role: .cancel) { }
-                }
-                
-                .navigationDestination(isPresented: $assignService) {
-                    TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
-                }
-                .navigationDestination(isPresented: $editService) {
-                    if referenceData.services.servicesList.count > 0 {
-			    ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
-                    }
-                }
-                .navigationDestination(isPresented: $listServiceCosts) {
-                    if $serviceCostList.tutorServiceCostList.count > 0 {
-                        TutorServiceCostView(serviceNum: $serviceNumber, serviceCostList: $serviceCostList, referenceData: referenceData)
-                    }
-                }
-            }
-        }
-    }
+	var referenceData: ReferenceData
+	
+	@Environment(RefDataVM.self) var refDataModel: RefDataVM
+	@Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	
+	@State private var selectedServices = Set<Service.ID>()
+	@State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
+	
+	@State private var assignService: Bool = false
+	@State private var editService: Bool = false
+	@State private var listServiceCosts: Bool = false
+	@State private var showDeleted: Bool = false
+	@State private var showUnassigned: Bool = false
+	@State private var showAlert: Bool = false
+	
+	@State private var serviceNumber: Int = 0
+	@State private var serviceCostList = TutorServiceCostList()
+	
+	
+	var body: some View {
+		if referenceData.services.isServiceDataLoaded {
+			
+			var serviceArray: [Service] {
+				if showDeleted {
+					return referenceData.services.servicesList
+				} else if showUnassigned {
+					return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
+				} else {
+					return referenceData.services.servicesList.filter{$0.serviceStatus != "Deleted"}
+				}
+			}
+			
+			VStack {
+				HStack {
+					Toggle("Show Deleted", isOn: $showDeleted)
+					Toggle("Show Unassigned", isOn: $showUnassigned)
+					Text("     Service Count: ")
+					Text(String(serviceArray.count))
+				}
+				
+				Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
+					//               Group {
+					TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
+						.width(min: 120, ideal: 150, max: 240)
+					
+					TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
+						.width(min: 120, ideal: 150, max: 240)
+					
+					TableColumn("Service\nType") {data in
+						Text(data.serviceType.rawValue)
+					}
+					.width(min: 50, ideal: 70, max: 80)
+					
+					TableColumn("Billing\nType") {data in
+						Text(data.serviceBillingType.rawValue)
+					}
+					.width(min: 50, ideal: 70, max: 80)
+					
+					TableColumn("Service\nStatus", value: \Service.serviceStatus)
+						.width(min: 50, ideal: 70, max: 80)
+					
+					TableColumn("Assigned\nTutors" ) { data in
+						Text(String(data.serviceCount))
+					}
+					.width(min: 40, ideal: 60, max: 70)
+					
+					TableColumn("Cost 1") { data in
+						Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
+					}
+					.width(min: 40, ideal: 50, max: 50)
+					
+					TableColumn("Cost 2", value: \Service.serviceCost2) { data in
+						Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
+					}
+					.width(min: 40, ideal: 50, max: 50)
+					
+					TableColumn("Cost 3", value: \Service.serviceCost3) { data in
+						Text(String(data.serviceCost3.formatted(.number.precision(.fractionLength(2)))))
+					}
+					.width(min: 40, ideal: 50, max: 50)
+					
+					TableColumn("Price 1", value: \Service.servicePrice1) { data in
+						Text(String(data.servicePrice1.formatted(.number.precision(.fractionLength(2)))))
+					}
+					.width(min: 40, ideal: 50, max: 50)
+					
+		//                    TableColumn("Price 2", value: \Service.servicePrice2) { data in
+		//                        Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
+		//                    }
+		//                   TableColumn("Price 3", value: \Service.servicePrice3) { data in
+		//                       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
+		//                   }
+		//               }
+					
+				}
+				.contextMenu(forSelectionType: Service.ID.self) { items in
+					if items.isEmpty {
+						Button {
+							//                     AddService(referenceData: referenceData, timesheetName: " ", invoiceName: " ", serviceType: " ", billingType: " ")
+						} label: {
+							Label("New Service", systemImage: "plus")
+						}
+					} else if items.count == 1 {
+						VStack {
+							Button {
+								for objectID in items {
+									if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+										serviceNumber = idx
+										assignService.toggle()
+									}
+								}
+							} label: {
+								Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+							}
+							
+							Button {
+								for objectID in items {
+									if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+										serviceNumber = idx
+										editService.toggle()
+									}
+								}
+							} label: {
+								Label("Edit Service", systemImage: "square.and.arrow.up")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
+									
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+									}
+								}
+							} label: {
+								Label("Delete Service", systemImage: "trash")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteService(indexes: items, referenceData: referenceData)
+									if unDeleteResult == false {
+										showAlert = true
+										buttonErrorMsg = unDeleteMessage
+									}
+								}
+							} label: {
+								Label("Undelete Service", systemImage: "trash")
+							}
+							
+							Button(role: .destructive) {
+								for objectID in items {
+									if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+										serviceNumber = idx
+										listServiceCosts.toggle()
+										serviceCostList = tutorMgmtVM.buildServiceCostArray(serviceNum: serviceNumber, referenceData: referenceData)
+									}
+								}
+							} label: {
+								Label("List Individual Tutor Costs", systemImage: "trash")
+							}
+						}
+						
+					} else {
+						Button {
+							
+						} label: {
+							Label("Edit Services", systemImage: "heart")
+						}
+						Button(role: .destructive) {
+							
+						} label: {
+							Label("Delete Selected", systemImage: "trash")
+						}
+					}
+					
+				} primaryAction: { items in
+					//              store.favourite(items)
+				}
+				.alert(buttonErrorMsg, isPresented: $showAlert) {
+					Button("OK", role: .cancel) { }
+				}
+				
+				.navigationDestination(isPresented: $assignService) {
+					TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
+				}
+				.navigationDestination(isPresented: $editService) {
+					if referenceData.services.servicesList.count > 0 {
+						ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+					}
+				}
+				.navigationDestination(isPresented: $listServiceCosts) {
+					if $serviceCostList.tutorServiceCostList.count > 0 {
+						TutorServiceCostView(serviceNum: $serviceNumber, serviceCostList: $serviceCostList, referenceData: referenceData)
+					}
+				}
+			}
+		}
+	}
 }
 
 struct TutorServiceSelectionView: View {
-    @Binding var serviceNum: Int
-    var referenceData: ReferenceData
-
-    @Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
-    
-    @State private var selectedTutor = Set<Tutor.ID>()
-    @State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
-    @State private var showAlert = false
-    @State private var viewChange: Bool = false
-
-    var body: some View {
-    
-        VStack {
-            Table(referenceData.tutors.tutorsList, selection: $selectedTutor, sortOrder: $sortOrder) {
-                
-                TableColumn("Tutor Name", value: \.tutorName)
-                TableColumn("Tutor Status", value: \.tutorStatus)
-            }
-            
-            .contextMenu(forSelectionType: Tutor.ID.self) { items in
-                if items.count == 1 {
-                    VStack {
-                        Button {
-                            Task {
-                                await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
-                            }
-                            
-                            } label: {
-                                Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
-                            }
-                        }
-                    
-                    
-                } else {
-                    Button {
-                        Task {
-                            await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
-                        }
-                        } label: {
-                            Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
-                        }
-                    }
-                    
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-                
-            }
-        }
-    }
+	@Binding var serviceNum: Int
+	var referenceData: ReferenceData
+	
+	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	
+	@State private var selectedTutor = Set<Tutor.ID>()
+	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
+	@State private var showAlert = false
+	@State private var viewChange: Bool = false
+	
+	var body: some View {
+		
+		VStack {
+			Table(referenceData.tutors.tutorsList, selection: $selectedTutor, sortOrder: $sortOrder) {
+				
+				TableColumn("Tutor Name", value: \.tutorName)
+				TableColumn("Tutor Status", value: \.tutorStatus)
+			}
+			
+			.contextMenu(forSelectionType: Tutor.ID.self) { items in
+				if items.count == 1 {
+					VStack {
+						Button {
+							Task {
+								await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+							}
+							
+						} label: {
+							Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+						}
+					}
+					
+					
+				} else {
+					Button {
+						Task {
+							await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+						}
+					} label: {
+						Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+					}
+				}
+				
+			} primaryAction: { items in
+				//              store.favourite(items)
+			}
+			
+		}
+	}
+}
 
 struct LocationsView: View {
-    var referenceData: ReferenceData
-    
-    @Environment(RefDataVM.self) var refDataModel: RefDataVM
-    @Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
-    @State private var selectedLocations = Set<Location.ID>()
-    @State private var sortOrder = [KeyPathComparator(\Location.locationName)]
-    @State private var listStudents: Bool = false
-    @State private var editLocation: Bool = false
-    @State private var locationNumber: Int = 0
-    @State private var showDeleted: Bool = false
-    @State private var showAlert: Bool = false
-    
-    var body: some View {
-        if referenceData.locations.isLocationDataLoaded {
-            
-            var locationArray: [Location] {
-                if showDeleted {
-                    return referenceData.locations.locationsList
-                } else {
-                    return referenceData.locations.locationsList.filter{$0.locationStatus != "Deleted"}
-                }
-            }
-            
-            VStack {
-                Toggle("Show Deleted", isOn: $showDeleted)
-                
-                Table(locationArray, selection: $selectedLocations, sortOrder: $sortOrder) {
-                    TableColumn("Location Name", value: \.locationName)
-			.width(min: 60, ideal: 80, max: 120)
+	var referenceData: ReferenceData
+	
+	@Environment(RefDataVM.self) var refDataModel: RefDataVM
+	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
+	@State private var selectedLocations = Set<Location.ID>()
+	@State private var sortOrder = [KeyPathComparator(\Location.locationName)]
+	@State private var listStudents: Bool = false
+	@State private var editLocation: Bool = false
+	@State private var locationNumber: Int = 0
+	@State private var showDeleted: Bool = false
+	@State private var showAlert: Bool = false
+	
+	var body: some View {
+		if referenceData.locations.isLocationDataLoaded {
 			
-                    TableColumn("Student Count", value: \.locationStudentCount) {data in
-                        Text(String(data.locationStudentCount))
-				    .frame(alignment: .center)
-                    }
-		    .width(min: 30, ideal: 60, max: 120)
+			var locationArray: [Location] {
+				if showDeleted {
+					return referenceData.locations.locationsList
+				} else {
+					return referenceData.locations.locationsList.filter{$0.locationStatus != "Deleted"}
+				}
+			}
 			
-                    TableColumn("Location Month Revenue", value: \Location.locationMonthRevenue) { data in
-                        Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
-				    .frame(alignment: .center)
-                    }
-		    .width(min: 30, ideal: 60, max: 120)
-			
-                    TableColumn("Location Total Revenue", value: \Location.locationTotalRevenue) { data in
-                        Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
-				    .frame(alignment: .center)
-                    }
-		    .width(min: 30, ideal: 60, max: 120)
-
-                    TableColumn("Location Status", value: \.locationStatus)
-			.width(min: 40, ideal: 60, max: 80)
-                }
-                .contextMenu(forSelectionType: Location.ID.self) { items in
-                    if items.isEmpty {
-                        Button {
-                            //                       let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-                        } label: {
-                            Label("New Service", systemImage: "plus")
-                        }
-                    } else if items.count == 1 {
-                        VStack {
-                            Button {
-                                Task {
-                                    for objectID in items {
-                                        if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-                                            locationNumber = idx
-                                            editLocation.toggle()
-                                        }
-                                    }
-                                }
-                            } label: {
-                                Label("Edit Location", systemImage: "square.and.arrow.up")
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
-                                    if deleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = deleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("Delete Location", systemImage: "trash")
-                            }
-                            
-                            Button(role: .destructive) {
-                                Task {
-                                    let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
-                                    if unDeleteResult == false {
-                                        showAlert = true
-                                        buttonErrorMsg = unDeleteMessage
-                                    }
-                                }
-                            } label: {
-                                Label("Undelete Location", systemImage: "trash")
-                            }
-                        }
-                        
-                    } else {
-                        VStack {
-                            Button {
-                                
-                            } label: {
-                                Label("Edit Locations", systemImage: "heart")
-                            }
-                            Button(role: .destructive) {
-                                
-                            } label: {
-                                Label("Delete Selected Locations", systemImage: "trash")
-                            }
-                        }
-                    }
-                    
-                } primaryAction: { items in
-                    //              store.favourite(items)
-                }
-                .alert(buttonErrorMsg, isPresented: $showAlert) {
-                    Button("OK", role: .cancel) { }
-                }
-                
-                .navigationDestination(isPresented: $editLocation) {
-                    LocationView(updateLocationFlag: true, locationNum: locationNumber, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName)
-                }
-            }
-        }
-    }
+			VStack {
+				Toggle("Show Deleted", isOn: $showDeleted)
+				
+				Table(locationArray, selection: $selectedLocations, sortOrder: $sortOrder) {
+					TableColumn("Location Name", value: \.locationName)
+						.width(min: 60, ideal: 80, max: 120)
+					
+					TableColumn("Student\nCount", value: \.locationStudentCount) {data in
+						Text(String(data.locationStudentCount))
+							.frame(alignment: .center)
+					}
+					.width(min: 30, ideal: 60, max: 120)
+					
+					TableColumn("Location\nMonth Revenue", value: \Location.locationMonthRevenue) { data in
+						Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(2)))))
+							.frame(alignment: .center)
+					}
+					.width(min: 30, ideal: 60, max: 120)
+					
+					TableColumn("Location\nTotal Revenue", value: \Location.locationTotalRevenue) { data in
+						Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(2)))))
+							.frame(alignment: .center)
+					}
+					.width(min: 30, ideal: 60, max: 120)
+					
+					TableColumn("Location\nStatus", value: \.locationStatus)
+						.width(min: 50, ideal: 70, max: 80)
+				}
+				.contextMenu(forSelectionType: Location.ID.self) { items in
+					if items.isEmpty {
+						Button {
+							//                       let result = AddLocation(referenceData: referenceData, locationName: " ", locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+						} label: {
+							Label("New Service", systemImage: "plus")
+						}
+					} else if items.count == 1 {
+						VStack {
+							Button {
+								Task {
+									for objectID in items {
+										if let idx = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
+											locationNumber = idx
+											editLocation.toggle()
+										}
+									}
+								}
+							} label: {
+								Label("Edit Location", systemImage: "square.and.arrow.up")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+									}
+								}
+							} label: {
+								Label("Delete Location", systemImage: "trash")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+									if unDeleteResult == false {
+										showAlert = true
+										buttonErrorMsg = unDeleteMessage
+									}
+								}
+							} label: {
+								Label("Undelete Location", systemImage: "trash")
+							}
+						}
+						
+					} else {
+						VStack {
+							Button {
+								
+							} label: {
+								Label("Edit Locations", systemImage: "heart")
+							}
+							Button(role: .destructive) {
+								
+							} label: {
+								Label("Delete Selected Locations", systemImage: "trash")
+							}
+						}
+					}
+					
+				} primaryAction: { items in
+					//              store.favourite(items)
+				}
+				.alert(buttonErrorMsg, isPresented: $showAlert) {
+					Button("OK", role: .cancel) { }
+				}
+				
+				.navigationDestination(isPresented: $editLocation) {
+					LocationView(updateLocationFlag: true, locationNum: locationNumber, originalLocationName: referenceData.locations.locationsList[locationNumber].locationName, referenceData: referenceData, locationName: referenceData.locations.locationsList[locationNumber].locationName )
+				}
+			}
+		}
+	}
 }
 
 struct MainView: View {
-    var referenceData: ReferenceData
-    
-    @Environment(RefDataVM.self) var refDataVM: RefDataVM
-        
-    var body: some View {
-       
-        Text(" Main View")
-    }
+	var referenceData: ReferenceData
+	
+	@Environment(RefDataVM.self) var refDataVM: RefDataVM
+	
+	var body: some View {
+		
+		Text(" Main View")
+	}
 }
 
 #Preview {
-    DataMgmtView()
+	DataMgmtView()
 }

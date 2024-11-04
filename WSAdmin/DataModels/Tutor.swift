@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import GoogleSignIn
-import GoogleAPIClientForREST
 
 @Observable class Tutor: Identifiable {
     var tutorKey: String
@@ -249,14 +247,20 @@ import GoogleAPIClientForREST
 	func fetchTutorDataCounts(tutorName: String) async -> (Int, Int){
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
+		var range: String
 		
 // Read in the Tutor Data counts from the Tutor Details spreadsheet
 		
 		do {
-			let range = tutorName + PgmConstants.tutorDataCountsRange
+			range = tutorName + PgmConstants.tutorDataCountsRange
 			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
 		} catch {
-			
+			print("Error: could not read Tutor Data Counts for Tutor \(tutorName), will try again")
+			do {
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+			} catch {
+				print("Error: could not Tutor Data Counts for Tutor \(tutorName) on second attempt")
+			}
 		}
 		
 		if let sheetData = sheetData {
@@ -319,7 +323,7 @@ import GoogleAPIClientForREST
 			let clientPhone = tutorStudents[tutorStudentNum].clientPhone
 			let assignedDate = tutorStudents[tutorStudentNum].assignedDate
               
-			updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone], at: tutorStudentNum)
+			updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone, assignedDate], at: tutorStudentNum)
 			tutorStudentNum += 1
 		}
 // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
@@ -418,288 +422,4 @@ import GoogleAPIClientForREST
         return(updateValues)
     }
    
-	
-	func loadTutorStudentsOLD(tutorNum: Int, tutorDataFileID: String, studentCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService) {
-	    
-	    print("Loading \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-	    let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-		
-	    let range = tutorName + PgmConstants.tutorStudentsRange + String(studentCount + PgmConstants.tutorDataStudentsStartingRowNumber)
-    //            print("Tutor Students Load range is '\(range)")
-		let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-		    .query(withSpreadsheetId: tutorDataFileID, range:range)
-		// Load data counts from ReferenceData spreadsheet
-		sheetService.executeQuery(query) { (ticket, result, error) in
-		    if let error = error {
-			print("Error loading Tutor Students Data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-			print(error)
-			print("Failed to read data:\(error.localizedDescription)")
-			return
-		    }
-		    guard let result = result as? GTLRSheets_ValueRange else {
-			return
-		    }
-		    
-		    let rows = result.values!
-		    var stringRows = rows as! [[String]]
-		    
-		    for row in stringRows {
-			stringRows.append(row)
-			//               print(row)
-		    }
-		    
-		    if rows.isEmpty {
-			print("No data found.")
-			return
-		    }
-		    
-		    var rowNum = 0
-		    var studentNum = 0
-		    while studentNum < studentCount {
-			let studentKey = stringRows[rowNum][PgmConstants.tutorDataStudentKeyPosition]
-			let studentName = stringRows[rowNum][PgmConstants.tutorDataStudentNamePosition]
-			let clientName = stringRows[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
-			let clientEmail = stringRows[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
-			let clientPhone = stringRows[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
-			
-//			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone)
-			
-//			self.loadTutorStudent( newTutorStudent: newTutorStudent)
-			rowNum += 1
-			studentNum += 1
-		    }
-		    print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-		}
-	    }
-	
-	
-	func saveTutorStudentsOLD() {
-       
-	    var updateValues: [[String]] = []
-	    
-	    var studentKey: String = " "
-	    var studentName: String = " "
-	    var clientName: String = " "
-	    var clientEmail: String = " "
-	    var clientPhone: String = " "
-	    
-	    
-	    let sheetService = GTLRSheetsService()
-	    let tutorStudentTotal = tutorStudents.count
-	    
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    sheetService.authorizer = currentUser?.fetcherAuthorizer
-
-	    let range = tutorName + PgmConstants.tutorStudentsRange + String(tutorStudentTotal + PgmConstants.tutorDataStudentsStartingRowNumber + 1)              //One extra row for blanking line at end
-	    print("Tutor Data Save Range", range)
-      
-	    var tutorStudentNum = 0
-	    while tutorStudentNum < tutorStudentTotal {
-		studentKey = tutorStudents[tutorStudentNum].studentKey
-		studentName = tutorStudents[tutorStudentNum].studentName
-		clientName = tutorStudents[tutorStudentNum].clientName
-		clientEmail = tutorStudents[tutorStudentNum].clientEmail
-		clientPhone = tutorStudents[tutorStudentNum].clientPhone
-		  
-		updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone], at: tutorStudentNum)
-		tutorStudentNum += 1
-	    }
-    // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-	    updateValues.insert([" ", " ", " ", " ", " "], at: tutorStudentNum)
-	    
-	    let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-	    valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
-	    valueRange.range = range
-	    valueRange.values = updateValues
-	    let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
-	    query.valueInputOption = "USER_ENTERED"
-	    sheetService.executeQuery(query) { ticket, object, error in
-		if let error = error {
-		    print(error)
-		    print("Failed to save data:\(error.localizedDescription)")
-		    return
-		}
-		else {
-		    print("Tutor Students saved")
-		}
-	    }
-	}
-	
-	
-	func loadTutorServicesOLD(tutorNum: Int, tutorDataFileID: String, serviceCount: Int, referenceData: ReferenceData, sheetService: GTLRSheetsService ) {
-	   
-	    print("Loading \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-	    let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-		
-	    let range = tutorName + PgmConstants.tutorServicesRange + String(serviceCount + PgmConstants.tutorDataServicesStartingRowNumber)
-     //           print("Tutor Services Load range is '\(range)")
-		let query = GTLRSheetsQuery_SpreadsheetsValuesGet
-		    .query(withSpreadsheetId: tutorDataFileID, range:range)
-		// Load data counts from ReferenceData spreadsheet
-		sheetService.executeQuery(query) { (ticket, result, error) in
-		    if let error = error {
-			print("Error loading Tutor Services Data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-			print(error)
-			print("Failed to read data:\(error.localizedDescription)")
-			return
-		    }
-		    guard let result = result as? GTLRSheets_ValueRange else {
-			return
-		    }
-		    
-		    let rows = result.values!
-		    var stringRows = rows as! [[String]]
-		    
-		    for row in stringRows {
-			stringRows.append(row)
-			//               print(row)
-		    }
-		    
-		    if rows.isEmpty {
-			print("No data found.")
-			return
-		    }
-		    
-		    var rowNum = 0
-		    var serviceNum = 0
-		    while serviceNum < serviceCount {
-			let serviceKey = stringRows[rowNum][PgmConstants.tutorDataServiceKeyPosition]
-			let timesheetName = stringRows[rowNum][PgmConstants.tutorDataServiceTimesheetNamePosition]
-			let invoiceName = stringRows[rowNum][PgmConstants.tutorDataServiceInvoiceNamePosition]
-			let billingType: BillingTypeOption = BillingTypeOption(rawValue: stringRows[rowNum][PgmConstants.tutorDataServiceBillingTypePosition]) ?? .Fixed
-			let cost1 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost1Position]) ?? 0.0
-			let cost2 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost2Position]) ?? 0.0
-			let cost3 = Float(stringRows[rowNum][PgmConstants.tutorDataServiceCost3Position]) ?? 0.0
-			let price1 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice1Position]) ?? 0.0
-			let price2 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice2Position]) ?? 0.0
-					   let price3 = Float(stringRows[rowNum][PgmConstants.tutorDataServicePrice3Position]) ?? 0.0
-			
-			let newTutorService = TutorService(serviceKey: serviceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-			
-			self.loadTutorService( newTutorService: newTutorService)
-			rowNum += 1
-			serviceNum += 1
-		    }
-		    print("Loaded \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-		}
-	}
-	
-	func saveTutorServicesOLD() {
-
-	    var updateValues: [[String]] = []
-	    
-	    var serviceKey: String = " "
-	    var timesheetName: String = " "
-	    var invoiceName: String = " "
-	    var billingType: String = " "
-	    var cost1: String = " "
-	    var cost2: String = " "
-	    var cost3: String = " "
-	    var price1: String = " "
-	    var price2: String = " "
-	    var price3: String = " "
-	    
-	    let sheetService = GTLRSheetsService()
-
-	    let tutorServiceTotal = tutorServices.count
-	    
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    sheetService.authorizer = currentUser?.fetcherAuthorizer
-
-	    let range = tutorName + PgmConstants.tutorServicesRange + String(tutorServiceTotal + PgmConstants.tutorDataServicesStartingRowNumber + 1)              //One extra row for blanking line at end
-	    print("Tutor Services Save Range", range)
-      
-	    var tutorServiceNum = 0
-	    while tutorServiceNum < tutorServiceTotal {
-		serviceKey = tutorServices[tutorServiceNum].serviceKey
-		timesheetName = tutorServices[tutorServiceNum].timesheetServiceName
-		invoiceName = tutorServices[tutorServiceNum].invoiceServiceName
-		billingType = String(describing: tutorServices[tutorServiceNum].billingType)
-		cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
-		cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
-		cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))
-		price1 = String(tutorServices[tutorServiceNum].price1.formatted(.number.precision(.fractionLength(2))))
-		price2 = String(tutorServices[tutorServiceNum].price2.formatted(.number.precision(.fractionLength(2))))
-		price3 = String(tutorServices[tutorServiceNum].price3.formatted(.number.precision(.fractionLength(2))))
-
-		updateValues.insert([serviceKey, timesheetName, invoiceName, billingType, cost1, cost2, cost3, price1, price2, price3], at: tutorServiceNum)
-		tutorServiceNum += 1
-	    }
-    // Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-	    updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: tutorServiceNum)
-	    
-	    let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-	    valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
-	    valueRange.range = range
-	    valueRange.values = updateValues
-	    let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
-	    query.valueInputOption = "USER_ENTERED"
-	    sheetService.executeQuery(query) { ticket, object, error in
-		if let error = error {
-		    print(error)
-		    print("Failed to save data:\(error.localizedDescription)")
-		    return
-		}
-		else {
-		    print("Tutor Services saved")
-		}
-	    }
-	}
-	
-	func saveTutorDataCountsOLD() {
-	    var tutorStudentCount: Int
-	    var tutorServiceCount: Int
-	    var updateValues: [[String]] = []
-	    
-	    let sheetService = GTLRSheetsService()
-	    let tutorStudentTotal = tutorStudents.count
-	    
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    sheetService.authorizer = currentUser?.fetcherAuthorizer
-
-	    let range = tutorName + PgmConstants.tutorDataCountsRange
-	    print("Tutor Data Counts Save Range", range)
-      
-	    tutorStudentCount = tutorStudents.count
-	    tutorServiceCount = tutorServices.count
-			  
-	    updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
-
-	    let valueRange = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-	    valueRange.majorDimension = "ROWS" // Indicates horizontal row insert
-	    valueRange.range = range
-	    valueRange.values = updateValues
-	    let query = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange, spreadsheetId: tutorDetailsFileID, range: range)
-	    query.valueInputOption = "USER_ENTERED"
-	    sheetService.executeQuery(query) { ticket, object, error in
-		if let error = error {
-		    print(error)
-		    print("Failed to save data:\(error.localizedDescription)")
-		    return
-		}
-		else {
-		    print("Tutor Data Counts saved")
-		}
-	    }
-	}
-	
-	func loadTutorDetailsOld(tutorNum: Int, tutorDataFileID: String, referenceData: ReferenceData) {
-	    
-	    let sheetService = GTLRSheetsService()
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    sheetService.authorizer = currentUser?.fetcherAuthorizer
-	    
-	    let tutorStudentCount = tutorStudentCount
-	    let tutorServiceCount = tutorServiceCount
-	    
-	    print("Tutor \(tutorName) Students: \(tutorStudentCount) Services: \(tutorServiceCount)")
-	    
-	    if tutorServiceCount > 0 {
-		self.loadTutorServicesOLD(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, serviceCount: tutorServiceCount, referenceData: referenceData, sheetService: sheetService)
-	    }
-
-	    if tutorStudentCount > 0 {
-		self.loadTutorStudentsOLD(tutorNum: tutorNum, tutorDataFileID: tutorDataFileID, studentCount: tutorStudentCount, referenceData: referenceData, sheetService: sheetService)
-	    }
-	}
 }

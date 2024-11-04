@@ -7,10 +7,6 @@
 
 import Foundation
 import GoogleSignIn
-import GoogleAPIClientForREST
-import GTMSessionFetcher
-
-
 
 func getFileIDAsync(fileName: String) async throws -> (Bool, String) {
     var fileID:String = ""
@@ -59,34 +55,6 @@ func getFileIDAsync(fileName: String) async throws -> (Bool, String) {
     else {
         return(false, "")
     }
-}
-
-
-func listDriveFiles() {
-    print("List files available to user")
-    let driveService = GTLRDriveService()
-    let currentUser = GIDSignIn.sharedInstance.currentUser
-    driveService.authorizer = currentUser?.fetcherAuthorizer
-    
-    let dquery = GTLRDriveQuery_FilesList.query()
-    dquery.pageSize = 100
-    
-//       let root = "name = '\(fileName)' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed=false"
-//       dquery.q = root
-    dquery.spaces = "drive"
-    dquery.corpora = "user"
-    dquery.fields = "files(id,name),nextPageToken"
-// Retrieve all files
-    driveService.executeQuery(dquery, completionHandler: {(ticket, files, error) in
-        if let error = error {
-            print(error)
-            print("Error with listing files:\(error)")
-            return
-        } else {
-            print("Retrieved list of user files")
-            return()
-        }
-    })
 }
 
 func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
@@ -173,7 +141,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
         
 // Handle the response (if needed)
         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-            print("writeSheetCells Response: \(json)")
+ //           print("writeSheetCells Response: \(json)")
         }
     } else {
         completionFlag = false
@@ -260,6 +228,54 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
 				print("File copied successfully: \(json)")
 				return json
+		}
+	}
+	return nil
+}
+
+// Function to add a permission to a Google Drive file
+func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
+	
+	let currentUser = GIDSignIn.sharedInstance.currentUser
+	if let user = currentUser {
+		let accessToken = user.accessToken.tokenString
+		
+		let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
+		
+		guard let url = URL(string: urlString) else {
+			throw URLError(.badURL)
+		}
+		
+		// Set up the request
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+		// Request body for the permission
+		var body: [String: Any] = [
+			"role": role,   // e.g., "reader" or "writer"
+			"type": type    // e.g., "user", "group", "domain", "anyone"
+		]
+		if let email = emailAddress, type == "user" || type == "group" {
+			body["emailAddress"] = email
+		}
+		
+		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+		
+		// Perform the network request asynchronously
+		let (data, response) = try await URLSession.shared.data(for: request)
+		
+		// Check for HTTP response status
+		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+		}
+		
+		// Parse and return the response JSON
+		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+			print("Permission added successfully: \(json)")
+			return json
 		}
 	}
 	return nil
@@ -369,8 +385,7 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 	let currentUser = GIDSignIn.sharedInstance.currentUser
 	if let user = currentUser {
 		let accessToken = user.accessToken.tokenString
-		 
-			
+		 			
 		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
 		
 		guard let url = URL(string: urlString) else {
@@ -416,48 +431,46 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 	}
 }
 
-// Function to add a permission to a Google Drive file
-func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
+// Function to delete a sheet from a Google Sheets spreadsheet
+func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: Any]? {
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
 	
+	guard let url = URL(string: urlString) else {
+		throw URLError(.badURL)
+	}
 	let currentUser = GIDSignIn.sharedInstance.currentUser
 	if let user = currentUser {
 		let accessToken = user.accessToken.tokenString
-		
-		let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
-		
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-// Set up the request
+		// Set up the request
 		var request = URLRequest(url: url)
 		request.httpMethod = "POST"
 		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 		
-// Request body for the permission
-		var body: [String: Any] = [
-			"role": role,   // e.g., "reader" or "writer"
-			"type": type    // e.g., "user", "group", "domain", "anyone"
+		// Request body to delete a sheet
+		let body: [String: Any] = [
+			"requests": [
+				[
+					"deleteSheet": [
+						"sheetId": sheetId
+					]
+				]
+			]
 		]
-		if let email = emailAddress, type == "user" || type == "group" {
-			body["emailAddress"] = email
-		}
-		
 		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
 		
-// Perform the network request asynchronously
+		// Perform the network request asynchronously
 		let (data, response) = try await URLSession.shared.data(for: request)
 		
-// Check for HTTP response status
+		// Check for HTTP response status
 		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
 			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
 		}
 		
-// Parse and return the response JSON
+		// Parse and return the response JSON
 		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			print("Permission added successfully: \(json)")
+			print("Sheet deleted successfully: \(json)")
 			return json
 		}
 	}
@@ -524,27 +537,4 @@ func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, St
 	    return(prevMonthName, prevYearName)
 }
 
-func getFileIDOLD(fileName: String, completion: @escaping (Result<String, Error>) -> Void) {
-	
-//         print("Getting fileID for \(fileName)")
-	 let driveService = GTLRDriveService()
-	 let currentUser = GIDSignIn.sharedInstance.currentUser
-//        if let user = GIDSignIn.sharedInstance().currentUser {
-	    driveService.authorizer = currentUser?.fetcherAuthorizer
-//        }
- 
-	let query = GTLRDriveQuery_FilesList.query()
-	query.q = "name = '\(fileName)' and trashed=false"
-	query.fields = "files(id, name)"
-	 driveService.executeQuery(query) { (ticket, result, error) in
 
-	     if let error = error {
-		 completion(.failure(error))
-	     } else if let fileList = result as? GTLRDrive_FileList, let files = fileList.files, let file = files.first {
-		 print("FileID returned")
-		     completion(.success(file.identifier ?? ""))
-		 } else {
-		     completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "File not found"])))
-		 }
-	     }
-	 }

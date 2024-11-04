@@ -44,7 +44,7 @@ struct PgmConstants {
     static let tutorRange = "Master!D2:Q"
     static let studentRange = "Master!T3:AI"
     static let serviceRange = "Master!AL3:AX"
-    static let locationRange = "Master!BA3:BF"
+    static let locationRange = "Master!BA2:BF"
     
     static let tutorCountsRange = "!A1:B5"
     static let tutorStudentsRange = "!O3:T"
@@ -121,7 +121,7 @@ struct PgmConstants {
     static let servicePrice2Position = 11
     static let servicePrice3Position = 12
     
-    static let locationStartingRowNumber = 3
+    static let locationStartingRowNumber = 2
     static let locationKeyPosition = 0
     static let locationNamePosition = 1
     static let locationMonthRevenuePosition = 2

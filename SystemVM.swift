@@ -80,6 +80,11 @@ import Foundation
 						print("Validation Error: Student \(studentName) not found in Billed Student Month for \(currentMonthName)")
 					}
 				}
+// Validate the Location Name for the Student
+				let (findResult, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
+				if !findResult {
+					print("Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List")
+				}
 			}
 			studentNum += 1
 		}
@@ -153,7 +158,7 @@ import Foundation
 		print("          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
 		
 		if locationStudents != totalStudents {
-			print("Validation Error: Counts of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(totalStudents)")
+			print("Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)")
 		}
 		if totalLocations != referenceData.dataCounts.totalLocations {
 			print("Validation Error: Reference Data Count for Total Locations \(referenceData.dataCounts.totalLocations) does not match actual count in Reference Data Locations list of \(totalLocations)")
@@ -193,38 +198,42 @@ import Foundation
 			default:
 				print("Validation Error: Invalid Tutor Status for Tutor \(tutorName)")
 			}
-// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
-			do {
-				sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
-			} catch {
-				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
-			}
-			if sheetNum == nil {
-				print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
-			}
 			
-// Check if Tutor found in Billed Tutor List for previous month
+
 			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
+				do {
+					sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
+				} catch {
+					print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
+				}
+				if sheetNum == nil {
+					print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
+				}
+				
+				// Check if Tutor found in Billed Tutor List for previous month
 				let (tutorFoundFlag, billedTutorNum) = prevBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 				if !tutorFoundFlag {
 					print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(prevMonthName)")
 				}
-// If current Billed Tutor Month populated (i.e. billing has started for this month), check if Tutor is in current month Billed Tutor List
+				
+				// If current Billed Tutor Month populated (i.e. billing has started for this month), check if Tutor is in current month Billed Tutor List
 				if currentBilledTutorMonth.tutorBillingRows.count > 0 {
 					let (tutorFoundFlag, billedTutorNum) = currentBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
 						print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(currentMonthName)")
 					}
 				}
-			}
-// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
-			let (studentCount, serviceCount) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
-			if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
-				print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)")
-			}
-			
-			if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
-				print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)")
+				
+				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
+				let (studentCount, serviceCount) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
+				if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
+					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)")
+				}
+				
+				if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
+					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)")
+				}
 			}
 			
 			totalTutors += 1
@@ -232,7 +241,6 @@ import Foundation
 			
 			tutorNum += 1
 		}
-		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
 		
 		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
 		if totalTutors != referenceData.dataCounts.totalTutors {
@@ -264,8 +272,19 @@ import Foundation
 
 // Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template
 
+// Validate that the total number of Tutors in the previous month Billed Tutor List is equal to the number of active Tutors
+		
+		if prevBilledTutorMonth.tutorBillingRows.count != activeTutors {
+			print("Validation Error: Active Tutor count \(activeTutors) does not match number of Tutors in \(prevMonthName) Billed Tutor list \(prevBilledTutorMonth.tutorBillingRows.count)")
+		}
 
+		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students\
+		
+		if prevBilledStudentMonth.studentBillingRows.count != activeStudents {
+			print("Validation Error: Active Student count \(activeStudents) does not match number of Students in \(prevMonthName) Billed Student list \(prevBilledStudentMonth.studentBillingRows.count)")
+		}
 
+		
 	}
 	
 	func backupSystem() async {

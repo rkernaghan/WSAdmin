@@ -8,8 +8,7 @@
 import Foundation
 import SwiftUI
 import GoogleSignIn
-import GoogleAPIClientForREST
-import GTMSessionFetcher
+
 
 
 @Observable class TutorMgmtVM  {
@@ -19,7 +18,7 @@ import GTMSessionFetcher
             var result: Bool = true
             var tutorBillingFileID: String = ""
             
-	    await referenceData.dataCounts.increaseTotalTutorCount()
+	    referenceData.dataCounts.increaseTotalTutorCount()
 	    await referenceData.dataCounts.saveDataCounts()
 	    
             let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
@@ -30,8 +29,7 @@ import GTMSessionFetcher
             
             let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
             referenceData.tutors.loadTutor(newTutor: newTutor)
-            await referenceData.tutors.saveTutorData()
-            
+
 // Create a new Tutor Details sheet for the new Tutor
             await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey)
 // Create a new Timesheet for the Tutor
@@ -51,8 +49,7 @@ import GTMSessionFetcher
 		    }
 		    serviceNum += 1
 	    }
-	    
-        
+	    await referenceData.tutors.saveTutorData()
     }
   
     func addTutorToBilledTutorMonth(tutorName: String, monthName: String, yearName: String) async {
@@ -249,6 +246,8 @@ import GTMSessionFetcher
 		var deleteResult = true
 		var deleteMessage = " "
 		var tutorBillingFileID: String = ""
+		var result: Bool = true
+		var tutorSheetID: Int
 		
 		print("Deleting Tutor")
 		
@@ -257,7 +256,7 @@ import GTMSessionFetcher
 				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
 					referenceData.tutors.tutorsList[tutorNum].markDeleted()
 					await referenceData.tutors.saveTutorData()
-					await referenceData.dataCounts.decreaseActiveStudentCount()
+					referenceData.dataCounts.decreaseActiveTutorCount()
 // Remove Tutor from Billed Tutor list for the previous month
 					let (prevMonthName, billingYear) = getPrevMonthYear()
 					let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
@@ -266,7 +265,7 @@ import GTMSessionFetcher
                     
 // Get the File ID of the Billed Tutor spreadsheet for the year
 					do {
-						let (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+						(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
 					} catch {
 						print("ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)")
 					}
@@ -279,7 +278,17 @@ import GTMSessionFetcher
 						tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
 					}
 // Save the updated Billed Tutor list for the month
-					await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: "Sept")
+					await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName)
+					
+// Delete the Tutor Details sheet for the Tutor
+					do {
+						if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName) {
+							tutorSheetID = sheetID
+							try await deleteSheet(spreadsheetId: tutorDetailsFileID, sheetId: tutorSheetID)
+						}
+					} catch {
+						print("Error: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet")
+					}
 					
 				} else {
 					deleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
@@ -289,6 +298,8 @@ import GTMSessionFetcher
 				}
 			}
 		}
+		await referenceData.dataCounts.saveDataCounts()
+		
 		return(deleteResult, deleteMessage)
 	}
         
@@ -302,7 +313,7 @@ import GTMSessionFetcher
 				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Deleted" {
 					referenceData.tutors.tutorsList[tutorNum].markUnDeleted()
 					await referenceData.tutors.saveTutorData()
-					await referenceData.dataCounts.increaseActiveTutorCount()
+					referenceData.dataCounts.increaseActiveTutorCount()
 				} else {
 					unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)"
 					print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)")
@@ -310,6 +321,8 @@ import GTMSessionFetcher
 				}
 			}
 		}
+		await referenceData.dataCounts.saveDataCounts()
+		
 		return(unDeleteResult, unDeleteMessage)
 	}
     
@@ -564,115 +577,4 @@ import GTMSessionFetcher
         return(tutorServiceCostList)
     }
     
-	func createNewDetailsSheetOLD(tutorName: String, tutorKey: String) {
-	    
-	    var spreadsheetID: String
-	    var updateValues: [[String]] = []
-	    
-	    let batchUpdate = GTLRSheets_BatchUpdateSpreadsheetRequest.init()
-	    let request = GTLRSheets_Request.init()
-	    let sheetService = GTLRSheetsService()
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    
-	    sheetService.authorizer = currentUser?.fetcherAuthorizer
-	    let properties = GTLRSheets_SheetProperties.init()
-	    properties.title = tutorName
-	    
-	    let sheetRequest = GTLRSheets_AddSheetRequest.init()
-	    sheetRequest.properties = properties
-	    
-	    request.addSheet = sheetRequest
-	    
-	    batchUpdate.requests = [request]
-	    
-	    let createQuery = GTLRSheetsQuery_SpreadsheetsBatchUpdate.query(withObject: batchUpdate, spreadsheetId: tutorDetailsFileID)
-	    
-	    sheetService.executeQuery(createQuery) { (ticket, result, err) in
-		if let error = err {
-		    print(error)
-		    print("Error with creating Tutor Details sheet for tutor \(tutorName):\(error.localizedDescription)")
-		} else {
-		    print("Tutor Details Sheet added for tutor \(tutorName)")
-		}
-	       
-		var range = tutorName + PgmConstants.tutorHeader1Range
-		updateValues = PgmConstants.tutorHeader1Array
-		let valueRange1 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-		valueRange1.majorDimension = "ROWS" // Indicates horizontal row insert
-		valueRange1.range = range
-		valueRange1.values = updateValues
-		let query1 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange1, spreadsheetId: tutorDetailsFileID, range: range)
-		query1.valueInputOption = "USER_ENTERED"
-		sheetService.executeQuery(query1) { ticket, object, error in
-		    if let error = error {
-			print(error)
-			print("Failed to save Tutor Details Header 1 data for Tutor \(tutorName):\(error.localizedDescription)")
-			return
-		    }
-		    else {
-			print("Tutor Details Header 1 saved for tutor \(tutorName)")
-		    }
-		}
-		
-		range = tutorName + PgmConstants.tutorHeader2Range
-		updateValues = PgmConstants.tutorHeader2Array
-		let valueRange2 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-		valueRange2.majorDimension = "ROWS" // Indicates horizontal row insert
-		valueRange2.range = range
-		valueRange2.values = updateValues
-		let query2 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange2, spreadsheetId: tutorDetailsFileID, range: range)
-		query2.valueInputOption = "USER_ENTERED"
-		sheetService.executeQuery(query2) { ticket, object, error in
-		    if let error = error {
-			print(error)
-			print("Failed to save Tutor Details Header 2 data for Tutor \(tutorName):\(error.localizedDescription)")
-			return
-		    }
-		    else {
-			print("Tutor Details Header 2 saved tutor \(tutorName)")
-		    }
-		}
-		
-		range = tutorName + PgmConstants.tutorHeader3Range
-		updateValues = [[tutorKey, tutorName]]
-		let valueRange3 = GTLRSheets_ValueRange() // GTLRSheets_ValueRange holds the updated values and other params
-		valueRange3.majorDimension = "COLUMNS" // Indicates horizontal row insert
-		valueRange3.range = range
-		valueRange3.values = updateValues
-		let query3 = GTLRSheetsQuery_SpreadsheetsValuesUpdate.query(withObject: valueRange3, spreadsheetId: tutorDetailsFileID, range: range)
-		query3.valueInputOption = "USER_ENTERED"
-		sheetService.executeQuery(query3) { ticket, object, error in
-		    if let error = error {
-			print(error)
-			print("Failed to save Tutor Details Header 3 data for tutor \(tutorName):\(error.localizedDescription)")
-			return
-		    }
-		    else {
-			print("Tutor Details Header 3 saved for Tutor \(tutorName)")
-		    }
-		}
-	    }
-	}
-	
-	func addPermissionToDriveFileOLD(fileId: String, tutorEmail: String, role: String, type: String) {
-	    let service = GTLRDriveService()
-      //      service.authorizer = GTMAppAuthFetcherAuthorization(authState: OAuth2.authState)
-	    let currentUser = GIDSignIn.sharedInstance.currentUser
-	    service.authorizer = currentUser?.fetcherAuthorizer
-
-	    let permission = GTLRDrive_Permission()
-	    permission.role = role  // e.g., "reader", "writer"
-	    permission.type = type  // e.g., "user", "group", "domain", "anyone"
-	    permission.emailAddress = tutorEmail
-
-	    let query = GTLRDriveQuery_PermissionsCreate.query(withObject: permission, fileId: fileId)
-	    
-	    service.executeQuery(query) { ticket, permission, error in
-		if let error = error {
-		    print("Error adding permission: \(error.localizedDescription)")
-		} else {
-		    print("Permission added successfully for \(tutorEmail)")
-		}
-	    }
-	}
 }
