@@ -48,6 +48,9 @@ import Foundation
 	}
     
 	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async {
+		var prevBilledStudentMonthName: String = ""
+		var billedStudentFileID: String = ""
+		var fileIDFound: Bool = true
 		
 		let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -60,25 +63,52 @@ import Foundation
 		referenceData.students.studentsList[studentNum].studentType = studentType
 		
 		await referenceData.students.saveStudentData()
+
+// Update the Locations count of Students at each Location if the Student's Location was changed in the update
+		if location != originalLocation {
+			let (originalLocationFound, originalLocationNum) = referenceData.locations.findLocationByName(locationName: originalLocation)
+			referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
+			let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
+			referenceData.locations.locationsList[locationNum].increaseStudentCount()
+			await referenceData.locations.saveLocationData()
+		}
 		
-		let (originalLocationFound, originalLocationNum) = referenceData.locations.findLocationByName(locationName: originalLocation)
-		referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
-		let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
-		referenceData.locations.locationsList[locationNum].increaseStudentCount()
-		await referenceData.locations.saveLocationData()
-		
-		var tutorNum = 0
-		while tutorNum < referenceData.tutors.tutorsList.count {
-			let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
-			if tutorStudentFound {
-				referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName = studentName
-				referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
-				referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
-				referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
-				await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
-				
+		if studentName != originalStudentName {
+// Change the Student Name in any Tutors that Students is assigned to (in case Student assigned to more than one in a month)
+			var tutorNum = 0
+			while tutorNum < referenceData.tutors.tutorsList.count {
+				let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
+				if tutorStudentFound {
+					referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName = studentName
+					referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
+					referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
+					referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
+					await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
+					
+				}
+				tutorNum += 1
 			}
-			tutorNum += 1
+// Update Student Name in Billed Student list
+			let (prevMonthName, prevMonthYear) = getPrevMonthYear()
+			let prevStudentBillingMonth = StudentBillingMonth()
+			if runMode == "PROD" {
+				prevBilledStudentMonthName = PgmConstants.studentBillingProdFileNamePrefix + prevMonthYear
+			} else {
+				prevBilledStudentMonthName = PgmConstants.studentBillingTestFileNamePrefix + prevMonthYear
+			}
+			do {
+				(fileIDFound, billedStudentFileID) = try await getFileIDAsync(fileName: prevBilledStudentMonthName )
+			} catch {
+				print("Could not get FileID for Billed Student Month \(prevBilledStudentMonthName)")
+			}
+			await prevStudentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: billedStudentFileID)
+			let (billedStudentFound, billedStudentNum) = prevStudentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
+			if billedStudentFound {
+				prevStudentBillingMonth.studentBillingRows[billedStudentNum].studentName = studentName
+				await prevStudentBillingMonth.saveStudentBillingData(studentBillingFileID: billedStudentFileID, billingMonth: prevMonthName)
+			} else {
+				print("Could not find Student \(originalStudentName) in Billed Student File for month \(prevMonthName)")
+			}
 		}
 	}
     
@@ -254,8 +284,6 @@ import Foundation
 	}
 	
     
-    
-    
 	func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unDeleteResult: Bool = true
 		var unDeleteMessage: String = " "
@@ -285,27 +313,28 @@ import Foundation
 		return(unDeleteResult, unDeleteMessage)
 	}
     
-	func assignStudent(studentNum: Int, tutorIndex: Tutor.ID, referenceData: ReferenceData) async -> (Bool, String){
+	func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var assignResult: Bool = true
 		var assignMessage: String = ""
 		
-		
-		if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
-			let studentName = referenceData.students.studentsList[studentNum].studentName
-			if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
-				let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
-				
-				referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-				await referenceData.students.saveStudentData()
-				let dateFormatter = DateFormatter()
-				dateFormatter.dateFormat = "yyyy-MM-dd"
-				let assignedDate = dateFormatter.string(from: Date())
-				let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
-				await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-				await referenceData.tutors.saveTutorData()                    // increased Student count
-			} else {
-				assignResult = false
-				assignMessage = "Student \(studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+		for objectID in tutorIndex {
+			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+				let studentName = referenceData.students.studentsList[studentNum].studentName
+				if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
+					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
+					
+					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+					await referenceData.students.saveStudentData()
+					let dateFormatter = DateFormatter()
+					dateFormatter.dateFormat = "yyyy-MM-dd"
+					let assignedDate = dateFormatter.string(from: Date())
+					let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
+					await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+					await referenceData.tutors.saveTutorData()                    // increased Student count
+				} else {
+					assignResult = false
+					assignMessage = "Student \(studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+				}
 			}
 		}
 	

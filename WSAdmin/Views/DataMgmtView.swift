@@ -846,7 +846,7 @@ struct TutorSelectionView: View {
 
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
     
-	@State private var selectedTutor: Tutor.ID? = nil
+	@State private var selectedTutor: Tutor.ID?
 	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
 	@State private var showAlert = false
 	@State private var viewChange: Bool = false
@@ -864,19 +864,19 @@ struct TutorSelectionView: View {
 				TableColumn("Tutor Status", value: \.tutorStatus)
 			}
 			
-			.contextMenu(forSelectionType: Tutor.ID.self) { items in
-				if items.count == 1 {
+			.contextMenu(forSelectionType: Tutor.ID.self) {items in
+//				if items.count == 1 {
 					VStack {
 						
 						Button {
 							Task {
-								if let selectedTutor = selectedTutor {
-									let (assignResult, assignMessage) = await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: selectedTutor, referenceData: referenceData)
+//								if let items = items {
+									let (assignResult, assignMessage) = await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
 									if !assignResult {
 										showAlert = true
 										buttonErrorMsg = assignMessage
 									}
-								}
+//								}
 							}
 						} label: {
 							Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
@@ -886,7 +886,7 @@ struct TutorSelectionView: View {
 						}
 					}
 					
-				} 
+//				}
 				
 			} primaryAction: { items in
 				//              store.favourite(items)

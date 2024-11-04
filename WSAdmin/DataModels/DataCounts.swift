@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import GoogleSignIn
-
 
 class DataCounts {
 	var totalStudents: Int = 0
@@ -32,7 +30,6 @@ class DataCounts {
 		totalStudents += 1
 		activeStudents += 1
 		highestStudentKey += 1
-		
 	}
 
 	func increaseActiveStudentCount() {
@@ -158,6 +155,5 @@ class DataCounts {
 		
 		return(updateValues)
 	}
-    
     
 }
