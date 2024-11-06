@@ -86,7 +86,7 @@ class DataCounts {
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		
-// Read in the Data Counts from the Reference Data spreadsheet
+		// Read in the Data Counts from the Reference Data spreadsheet
 		
 		do {
 			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange  )
@@ -98,7 +98,11 @@ class DataCounts {
 			sheetCells = sheetData.values
 		}
 		// Build the Billed Tutors list for the month from the data read in
-		loadDataCountRows(sheetCells: sheetCells)
+		if sheetCells.count > 0 {
+			loadDataCountRows(sheetCells: sheetCells)
+		} else {
+			print("Error: could not read Data Counts")
+		}
 	}
 	
 	

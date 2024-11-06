@@ -328,6 +328,20 @@ struct SheetData: Decodable {
     let values: [[String]]
 }
 
+struct OAuthToken {
+	var accessToken: String
+	var refreshToken: String
+	var expiresAt: Date
+}
+
+class OAuth2Token{
+	var accessToken: String?
+	var refreshToken: String?
+	var expiresAt: Date?
+	var clientID: String?
+	
+}
+
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 
@@ -340,6 +354,14 @@ var referenceDataFileID: String = ""
 var tutorDetailsFileID: String = ""
 var timesheetTemplateFileID: String = ""
 
+var accessOAuthToken: String = ""
+var refreshOAuthToken: String = ""
+var clientOAuthID: String = ""
+var tokenExpiryTime: Date = Date.now
+
+var oauthToken: OAuthToken?
+
+let oauth2Token = OAuth2Token()
 
 @main
 struct WSAdmin: App {

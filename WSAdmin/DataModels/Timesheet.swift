@@ -57,7 +57,7 @@ class Timesheet: Identifiable {
                     let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
                     let duration = Int(sheetCells[rowNum][PgmConstants.timesheetDurationCol]) ?? 0
                     let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
-                    let notes = sheetCells[rowNum][PgmConstants.timesheetDurationCol]
+                    let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
                     let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
                     let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
                     let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]

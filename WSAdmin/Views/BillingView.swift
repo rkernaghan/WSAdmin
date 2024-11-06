@@ -29,12 +29,35 @@ struct BillingView: View {
     
         VStack {
             
-            Toggle("Select All", isOn: $selectAll)
-            
+ //           Toggle("Select All", isOn: $selectAll)
+		var tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
+		
+		Toggle(isOn: Binding(
+			get: { selectedTutors.count == tutorList.count && !tutorList.isEmpty },
+			set: { isSelectAll in
+				if isSelectAll {
+					// Select all rows by adding all row IDs to selectedRows
+					selectedTutors = Set(tutorList.map { $0.id })
+				} else {
+					// Deselect all rows by clearing selectedRows
+					selectedTutors.removeAll()
+				}
+			}
+		)) {
+			Text("Select All")
+		}
+		.padding()
             HStack {
-                Table(referenceData.tutors.tutorsList, selection: $selectedTutors, sortOrder: $sortOrder) {
+		    Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}, selection: $selectedTutors, sortOrder: $sortOrder) {
                     
                     TableColumn("Tutor Name", value: \.tutorName)
+		    .width(min: 120, ideal: 140, max: 200)
+			    
+		    TableColumn("Student\nCount") {data in
+			    Text(String(data.tutorStudentCount))
+		    }
+		    .width(min: 60, ideal: 80, max: 100)
+			    
                     TableColumn("Tutor Status", value: \.tutorStatus)
                 }
                 

@@ -18,10 +18,10 @@ struct TutorStudentsView: View {
 		VStack {
 			Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents, selection: $selectedStudents) {
 				TableColumn("Student Name", value: \.studentName)
-				TableColumn("Phone", value: \.clientName)
-				TableColumn("Email", value: \.clientEmail)
-				TableColumn("Status", value: \.clientPhone)
+				TableColumn("Client Name", value: \.clientName)
 				TableColumn("Assigned Date", value: \.assignedDate)
+				TableColumn("Phone", value: \.clientPhone)
+				TableColumn("Email", value: \.clientEmail)
 			}
 			.contextMenu(forSelectionType: Student.ID.self) { items in
 				if items.isEmpty {

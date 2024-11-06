@@ -20,23 +20,6 @@ struct ContentView: View {
 	let billedTutorVM = BilledTutorVM()
 	let billedStudentVM = BilledStudentVM()
     
-	fileprivate func SignInButton() -> Button<Text> {
-		Button(action: {
-			authVM.signIn()
-		}) {
-			Text("Sign In")
-		}
-	}
-    
-	fileprivate func SignOutButton() -> Button<Text> {
-		Button(action: {
-			authVM.signOut()
-		}) {
-			Text("Sign Out")
-		}
-	}
-    
-
 	var body: some View {
 		NavigationStack {
 			VStack{
@@ -45,7 +28,6 @@ struct ContentView: View {
 				} else {
 					SignInView()
 				}
-				Text(authVM.errorMessage)
 			}
 		}
 		.navigationTitle("Write Seattle Administration")

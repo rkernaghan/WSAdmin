@@ -38,7 +38,7 @@ class TutorService: Identifiable {
         self.totalPrice = price1 + price2 + price3
     }
     
-    func computerSessionCostPrice(duration: Int) -> (Float, Float, Float, Float) {
+    func computeSessionCostPrice(duration: Int) -> (Float, Float, Float, Float) {
         
         var cost: Float = 0.0
         var price: Float = 0.0

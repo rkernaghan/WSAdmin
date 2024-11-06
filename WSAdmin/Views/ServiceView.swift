@@ -36,7 +36,7 @@ struct ServiceView: View {
 	
 	var body: some View {
 		
-		VStack {
+		VStack(alignment: .leading) {
 			HStack {
 				Text("Timesheet Name")
 				TextField("Timesheet Name", text: $timesheetName)
@@ -140,14 +140,16 @@ struct ServiceView: View {
 					}
 				}
 			} label: {
-				Label("Add/Edit Service", systemImage: "square.and.arrow.up")
+				if updateServiceFlag {
+					Label("Update Service", systemImage: "square.and.arrow.up")
+				} else {
+					Label("Add New Service", systemImage: "square.and.arrow.up")
+				}
 			}
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}
 			.padding()
-			//            .background(Color.orange)
-			//            .foregroundColor(Color.white)
 			.clipShape(RoundedRectangle(cornerRadius: 10))
 			
 			Spacer()

@@ -46,10 +46,12 @@ import GoogleSignIn
 		    if referenceData.services.servicesList[serviceNum].serviceType == .Base {
 			    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
 			    await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+			    referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 		    }
 		    serviceNum += 1
 	    }
 	    await referenceData.tutors.saveTutorData()
+	    await referenceData.services.saveServiceData()
     }
   
     func addTutorToBilledTutorMonth(tutorName: String, monthName: String, yearName: String) async {
@@ -425,7 +427,7 @@ import GoogleSignIn
 					await referenceData.tutors.saveTutorData()
 				} else {
 					suspendResult = false
-					suspendMessage += "Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Assigned or Deleted \n"
+					suspendMessage += "Cannot Suspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus) \n"
 				}
 			}
 		}
@@ -443,7 +445,7 @@ import GoogleSignIn
 					await referenceData.tutors.saveTutorData()
 				} else {
 					unsuspendResult = false
-					unsuspendMessage += "Student \(referenceData.tutors.tutorsList[tutorNum].tutorName) not Suspended \n"
+					unsuspendMessage += "Cannot Unsuspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is not Suspended \n"
 					
 				}
 			}

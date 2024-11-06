@@ -42,7 +42,6 @@ import GoogleSignIn
 				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth)
 				
 				billArray.processTimesheet(timesheet: timesheet)
-				
 			}
 		}
 //            print("Tutor List: \(tutorList)")
@@ -300,7 +299,7 @@ import GoogleSignIn
 		let invoiceDueDate = invoiceLine.dueDate
 		let invoiceTerm = invoiceLine.terms
 		let invoiceLocation = invoiceLine.locationName
-		let invoiceTutor = invoiceLine.invoiceNum
+		let invoiceTutor = invoiceLine.tutorName
 		let invoiceItem = invoiceLine.itemName
 		let invoiceDescription = invoiceLine.description
 		let invoiceQuantity = invoiceLine.quantity

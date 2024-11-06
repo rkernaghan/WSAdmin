@@ -248,28 +248,41 @@ import Foundation
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		var range: String
+		var studentCount: Int
+		var serviceCount: Int
 		
 // Read in the Tutor Data counts from the Tutor Details spreadsheet
 		
 		do {
 			range = tutorName + PgmConstants.tutorDataCountsRange
 			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+			
+			if let sheetData = sheetData {
+				sheetCells = sheetData.values
+			}
+			
+			studentCount = Int( sheetCells[0][0] ) ?? 0
+			serviceCount = Int( sheetCells[1][0] ) ?? 0
+			
 		} catch {
 			print("Error: could not read Tutor Data Counts for Tutor \(tutorName), will try again")
 			do {
 				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+				
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+				}
+				
+				studentCount = Int( sheetCells[0][0] ) ?? 0
+				serviceCount = Int( sheetCells[1][0] ) ?? 0
+				
 			} catch {
 				print("Error: could not Tutor Data Counts for Tutor \(tutorName) on second attempt")
+				studentCount = 0
+				serviceCount = 0
 			}
 		}
 		
-		if let sheetData = sheetData {
-			sheetCells = sheetData.values
-		}
-		
-		let studentCount = Int( sheetCells[0][0] ) ?? 0
-		let serviceCount = Int( sheetCells[1][0] ) ?? 0
-						   
 		return(studentCount, serviceCount )
 	}
 						   

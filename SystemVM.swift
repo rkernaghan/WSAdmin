@@ -157,7 +157,7 @@ import Foundation
 		}
 		print("          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
 		
-		if locationStudents != totalStudents {
+		if locationStudents != activeStudents {
 			print("Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)")
 		}
 		if totalLocations != referenceData.dataCounts.totalLocations {
