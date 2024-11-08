@@ -186,7 +186,7 @@ class StudentBillingMonth {
                 await prevStudentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
             }
         } catch {
-            
+            print("ERROR: Could not load \(prevMonth) Student Billing Data")
         }
         
         let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count

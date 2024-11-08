@@ -74,7 +74,7 @@ import Foundation
 		}
 		
 		if studentName != originalStudentName {
-// Change the Student Name in any Tutors that Students is assigned to (in case Student assigned to more than one in a month)
+			// Change the Student Name in any Tutors that Students is assigned to (in case Student assigned to more than one in a month)
 			var tutorNum = 0
 			while tutorNum < referenceData.tutors.tutorsList.count {
 				let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
@@ -88,30 +88,44 @@ import Foundation
 				}
 				tutorNum += 1
 			}
-// Update Student Name in Billed Student list
-			let (prevMonthName, prevMonthYear) = getPrevMonthYear()
-			let prevStudentBillingMonth = StudentBillingMonth()
-			if runMode == "PROD" {
-				prevBilledStudentMonthName = PgmConstants.studentBillingProdFileNamePrefix + prevMonthYear
-			} else {
-				prevBilledStudentMonthName = PgmConstants.studentBillingTestFileNamePrefix + prevMonthYear
-			}
-			do {
-				(fileIDFound, billedStudentFileID) = try await getFileIDAsync(fileName: prevBilledStudentMonthName )
-			} catch {
-				print("Could not get FileID for Billed Student Month \(prevBilledStudentMonthName)")
-			}
-			await prevStudentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: billedStudentFileID)
-			let (billedStudentFound, billedStudentNum) = prevStudentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
-			if billedStudentFound {
-				prevStudentBillingMonth.studentBillingRows[billedStudentNum].studentName = studentName
-				await prevStudentBillingMonth.saveStudentBillingData(studentBillingFileID: billedStudentFileID, billingMonth: prevMonthName)
-			} else {
-				print("Could not find Student \(originalStudentName) in Billed Student File for month \(prevMonthName)")
-			}
+			
+		// Change the name in the Student Billing spreadsheet for the previous month and current month (in case this month already billed and Student in this month's Student Tutor sheet)
+		let (prevMonthName, prevMonthYear) = getPrevMonthYear()
+		await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: prevMonthName, yearName: prevMonthYear)
+		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
+		await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: currentMonthName, yearName: currentMonthYear)
+		
 		}
 	}
     
+	func renameStudentInBilledStudentMonth(originalStudentName: String, newStudentName: String, monthName: String, yearName: String) async {
+		var result: Bool = false
+		var studentBillingFileID: String = ""
+		
+		let studentBillingFileName = studentBillingFileNamePrefix + yearName
+		
+		let studentBillingMonth = StudentBillingMonth()
+		
+		// Get the fileID of the Billed Student spreadsheet for the year
+		do {
+			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+		} catch {
+			print("Could not get FileID for file: \(studentBillingFileName)")
+		}
+		// Read the data from the Billed Student spreadsheet for the previous month
+		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: monthName, studentBillingFileID: studentBillingFileID)
+		// Add new the Student to Billed Student list for the month
+		let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
+		if billedStudentFound {
+			studentBillingMonth.studentBillingRows[billedStudentNum].studentName = newStudentName
+			// Save the updated Billed Student list for the month
+			await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+		} else {
+			print("WARNING: Billed Student \(originalStudentName) not found in Billed Student sheet for \(monthName) \(yearName)")
+		}
+	}
+	
+	
 	func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "

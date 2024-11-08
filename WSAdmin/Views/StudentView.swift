@@ -107,7 +107,7 @@ struct StudentView: View {
 				}
 			}){
 				if updateStudentFlag {
-					Text("Update Student \(studentName)")
+					Text("Update Student \(originalStudentName)")
 				} else {
 					Text("Add New Student")
 				}

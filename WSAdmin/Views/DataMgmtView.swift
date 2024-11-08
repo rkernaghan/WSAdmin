@@ -63,7 +63,15 @@ struct DataMgmtView: View {
 						await systemVM.backupSystem()
 					    }
 					} label: {
-					    Label("Backup System", systemImage: "trash")
+					    Label("Backup System", systemImage: "building")
+					}
+					
+					Button(role: .destructive) {
+						Task {
+							await systemVM.generateNewYearFiles(referenceData: referenceData)
+						}
+					} label: {
+						Label("Generate New Year Files", systemImage: "person")
 					}
 				}
 			}

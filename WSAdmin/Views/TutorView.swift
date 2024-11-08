@@ -61,7 +61,7 @@ struct TutorView: View {
 					let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
 					let contactEmail = tutorEmail.trimmingCharacters(in: .whitespaces)
 					let contactPhone = tutorPhone.trimmingCharacters(in: .whitespaces)
-	// Updates an existing Tutor
+	// Update an existing Tutor
 					if updateTutorFlag {
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(originalTutorName: originalTutorName, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
@@ -71,7 +71,7 @@ struct TutorView: View {
 							buttonErrorMsg = validationMessage
 							showAlert = true
 						}
-	// Adds a new Tutor
+	// Add a new Tutor
 					} else {
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
@@ -88,7 +88,7 @@ struct TutorView: View {
 				
 			}){
 				if updateTutorFlag {
-					Text("Update Tutor \(tutorName)")
+					Text("Update Tutor \(originalTutorName)")
 				} else {
 					Text("Add New Tutor")
 				}

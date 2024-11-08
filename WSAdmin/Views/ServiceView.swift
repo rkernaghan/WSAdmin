@@ -53,43 +53,43 @@ struct ServiceView: View {
 			
 			HStack {
 				Text("Cost 1")
-				TextField("Cost 1", value: $cost1, format: .number)
-					.frame(width: 80)
+				TextField("Cost 1", value: $cost1, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
 				Text("Cost 2")
-				TextField("Cost 2", value: $cost2, format: .number)
-					.frame(width: 80)
+				TextField("Cost 2", value: $cost2, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
 				Text("Cost 3")
-				TextField("Cost 3", value: $cost3, format: .number)
-					.frame(width: 80)
+				TextField("Cost 3", value: $cost3, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
 				Text("Price 1")
-				TextField("Price 1", value: $price1, format: .number)
-					.frame(width: 80)
+				TextField("Price 1", value: $price1, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
 				Text("Price 2")
-				TextField("Price 2", value: $price2, format: .number)
-					.frame(width: 80)
+				TextField("Price 2", value: $price2, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
 				Text("Price 3")
-				TextField("Price 3", value: $price3, format: .number)
-					.frame(width: 80)
+				TextField("Price 3", value: $price3, format: .number.precision(.fractionLength(2)))
+					.frame(width: 80, alignment: .center)
 					.textFieldStyle(.roundedBorder)
 			}
 			

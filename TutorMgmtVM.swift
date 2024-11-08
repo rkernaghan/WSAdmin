@@ -79,33 +79,6 @@ import GoogleSignIn
             }
     }
 
-    func renameTutorInBilledTutorMonth(originalTutorName: String, newTutorName: String, monthName: String, yearName: String) async {
-            var result: Bool = false
-            var tutorBillingFileID: String = ""
-            
-            let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
-       
-            let tutorBillingMonth = TutorBillingMonth()
-           
-    // Get the fileID of the Billed Tutor spreadsheet for the year
-            do {
-                    (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
-            } catch {
-                    print("Could not get FileID for file: \(tutorBillingFileName)")
-            }
-    // Read the data from the Billed Tutor spreadsheet for the previous month
-            await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-    // Add new the Tutor to Billed Tutor list for the month
-            let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: originalTutorName)
-            if billedTutorFound {
-                    tutorBillingMonth.tutorBillingRows[billedTutorNum].tutorName = newTutorName
-    // Save the updated Billed Tutor list for the month
-                    await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
-            } else {
-                    print("WARNING: Billed Tutor \(originalTutorName) not found in Billed Tutor sheet for \(monthName) \(yearName)")
-            }
-    }
-    
     func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, originalTutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) async {
             var tutorSheetID: Int = 0
 // Check if Tutor name has changed with this update
@@ -181,7 +154,35 @@ import GoogleSignIn
             let saveResult = await referenceData.tutors.saveTutorData()
 
         }
-    
+
+	func renameTutorInBilledTutorMonth(originalTutorName: String, newTutorName: String, monthName: String, yearName: String) async {
+		var result: Bool = false
+		var tutorBillingFileID: String = ""
+		
+		let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
+		
+		let tutorBillingMonth = TutorBillingMonth()
+		
+		// Get the fileID of the Billed Tutor spreadsheet for the year
+		do {
+			(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+		} catch {
+			print("Could not get FileID for file: \(tutorBillingFileName)")
+		}
+		// Read the data from the Billed Tutor spreadsheet for the previous month
+		await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		// Add new the Tutor to Billed Tutor list for the month
+		let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: originalTutorName)
+		if billedTutorFound {
+			tutorBillingMonth.tutorBillingRows[billedTutorNum].tutorName = newTutorName
+			// Save the updated Billed Tutor list for the month
+			await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
+		} else {
+			print("WARNING: Billed Tutor \(originalTutorName) not found in Billed Tutor sheet for \(monthName) \(yearName)")
+		}
+	}
+	
+	
 	func validateNewTutor(tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData)->(Bool, String) {
 		var validationResult = true
 		var validationMessage = " "
@@ -532,51 +533,51 @@ import GoogleSignIn
 	}
  
     
-    func printTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {
-        print("Printing Tutor")
-        
-        for objectID in indexes {
-            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-                print("Tutor Name: \(referenceData.tutors.tutorsList[idx].tutorName)")
-                print("Tutor Student Count: \(referenceData.tutors.tutorsList[idx].tutorStudentCount)")
-                var studentNum = 0
-                while studentNum < referenceData.tutors.tutorsList[idx].tutorStudentCount {
-                    print("Tutor Student: \(referenceData.tutors.tutorsList[idx].tutorStudents[studentNum].studentName)")
-                    studentNum += 1
-                }
-                print("Tutor Service Count: \(referenceData.tutors.tutorsList[idx].tutorServiceCount)")
-                var serviceNum = 0
-                while serviceNum < referenceData.tutors.tutorsList[idx].tutorServiceCount {
-                    print("Tutor Service: \(referenceData.tutors.tutorsList[idx].tutorServices[serviceNum].timesheetServiceName)")
-                    serviceNum += 1
-                }
-            }
-        }
+	func printTutor(indexes: Set<Service.ID>, referenceData: ReferenceData) {
+		print("Printing Tutor")
+		
+		for objectID in indexes {
+			if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+				print("Tutor Name: \(referenceData.tutors.tutorsList[idx].tutorName)")
+				print("Tutor Student Count: \(referenceData.tutors.tutorsList[idx].tutorStudentCount)")
+				var studentNum = 0
+				while studentNum < referenceData.tutors.tutorsList[idx].tutorStudentCount {
+					print("Tutor Student: \(referenceData.tutors.tutorsList[idx].tutorStudents[studentNum].studentName)")
+					studentNum += 1
+				}
+				print("Tutor Service Count: \(referenceData.tutors.tutorsList[idx].tutorServiceCount)")
+				var serviceNum = 0
+				while serviceNum < referenceData.tutors.tutorsList[idx].tutorServiceCount {
+					print("Tutor Service: \(referenceData.tutors.tutorsList[idx].tutorServices[serviceNum].timesheetServiceName)")
+					serviceNum += 1
+				}
+			}
+		}
     }
     
-    func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) -> TutorServiceCostList {
-       let tutorServiceCostList = TutorServiceCostList()
-        
-        let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
-        var tutorNum = 0
-        while tutorNum < referenceData.tutors.tutorsList.count {
-            let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
-            if serviceFound {
-                let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
-                let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-                let cost1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1
-                let cost2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2
-                let cost3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3
-                let price1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1
-                let price2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2
-                let price3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3
-                
-                let newTutorServiceCost = TutorServiceCost(tutorKey: tutorKey, tutorName: tutorName, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-                tutorServiceCostList.addTutorServiceCost(newTutorServiceCost: newTutorServiceCost, referenceData: referenceData)
-            }
-            tutorNum += 1
-        }
-        return(tutorServiceCostList)
-    }
+	func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) -> TutorServiceCostList {
+		let tutorServiceCostList = TutorServiceCostList()
+		
+		let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+		var tutorNum = 0
+		while tutorNum < referenceData.tutors.tutorsList.count {
+			let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
+			if serviceFound {
+				let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+				let cost1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1
+				let cost2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2
+				let cost3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3
+				let price1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1
+				let price2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2
+				let price3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3
+				
+				let newTutorServiceCost = TutorServiceCost(tutorKey: tutorKey, tutorName: tutorName, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+				tutorServiceCostList.addTutorServiceCost(newTutorServiceCost: newTutorServiceCost, referenceData: referenceData)
+			}
+			tutorNum += 1
+		}
+		return(tutorServiceCostList)
+	}
     
 }

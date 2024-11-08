@@ -155,7 +155,7 @@ import GoogleSignIn
 					await studentBillingMonth.loadStudentBillingMonthAsync(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
 				}
 			} catch {
-				
+				print("Could not get File ID for Student Billing File \(billingMonthStudentFileName)")
 			}
 			
 			await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
@@ -216,10 +216,13 @@ import GoogleSignIn
 			}
 			
 			let result1 = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
+			
 			do {
 				(resultFlag, billingMonthTutorFileID) = try await getFileIDAsync(fileName: billingMonthTutorFileName)
 				if resultFlag {
 					let result2 = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
+				} else {
+					print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
 				}
 			} catch {
 				print("Error Saving Tutor Billing Data")

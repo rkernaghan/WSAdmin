@@ -138,7 +138,12 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 		
 		// Perform the network request asynchronously using async/await
 		let (data, response) = try await URLSession.shared.data(for: request)
-		
+	
+		if let httpResponse = response as? HTTPURLResponse {
+			if httpResponse.statusCode != 200 {
+				print("Write Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+			}
+		}
 		// Check for HTTP response status
 		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
