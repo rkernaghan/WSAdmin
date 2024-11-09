@@ -8,6 +8,14 @@ import Foundation
 
 @Observable class SystemVM {
 	
+	//
+	// This function does an integrity assessment of the data in the system by ensuring that counts and totals are equal across the system.  It does the following tests:
+	//	- that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+	//	- that the number of Services in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+	//	- that the number of Locations in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+	//	- that the number of Tutors in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+	//	- that there is one Tutor Details sheet for each Tutor
+	//	- that the count of Tutor Details sheets equals the number of non-deleted Tutors
 	
 	func validateSystem(referenceData: ReferenceData) async {
 		print ("//")
@@ -44,7 +52,7 @@ import Foundation
 // Check if the count of Services in the Tutor Details sheet matches the count for the Tutor in the Reference Data
 		
 
-// Check that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+		// Check that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalStudents = 0
 		var activeStudents = 0
 		var deletedStudents = 0
@@ -67,20 +75,20 @@ import Foundation
 			}
 			totalStudents += 1
 			studentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
-// Check if Student found in Billed Student List for previous month
+			// Check if Student found in Billed Student List for previous month
 			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
 				let (studentFoundFlag, billedStudentNum) = prevBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
 				if !studentFoundFlag {
 					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(prevMonthName)")
 				}
-// If current Billed Student Month populated (i.e. billing has started for this month), check if Student is in current month Billed Student List
+				// If current Billed Student Month populated (i.e. billing has started for this month), check if Student is in current month Billed Student List
 				if currentBilledStudentMonth.studentBillingRows.count > 0 {
 					let (studentFoundFlag, billedStudentNum) = currentBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
 					if !studentFoundFlag {
 						print("Validation Error: Student \(studentName) not found in Billed Student Month for \(currentMonthName)")
 					}
 				}
-// Validate the Location Name for the Student
+				// Validate the Location Name for the Student
 				let (findResult, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
 				if !findResult {
 					print("Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List")
@@ -101,7 +109,7 @@ import Foundation
 		//		}
 
 		
-// Check that the number of Services in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+		// Check that the number of Services in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalServices = 0
 		var activeServices = 0
 		var deletedServices = 0
@@ -132,7 +140,7 @@ import Foundation
 //			print("Validation Error: Reference Data Count for Deleted Services \(referenceData.dataCounts.deletedServices) does not match actual count in Reference Data Services list of \(deletedServices)")
 //		}
 		
-// Check that the number of Locations in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+		// Check that the number of Locations in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalLocations = 0
 		var activeLocations = 0
 		var deletedLocations = 0
@@ -171,7 +179,7 @@ import Foundation
 		//		}
 
 		
-// Check that the number of Tutors in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
+		// Check that the number of Tutors in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalTutors = 0
 		var activeTutors = 0
 		var deletedTutors = 0
@@ -243,6 +251,16 @@ import Foundation
 		}
 		
 		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
+		
+		do {
+			let tutorDetailsSheetCount = try await getSheetCount(spreadsheetId: tutorDetailsFileID)
+			if (tutorDetailsSheetCount - 1) != activeTutors {	// Subtract 1 from sheet count for shared RefData sheet
+				print("Validation Error - count of active tutors: \(activeTutors) does not equal number of Tutor Details sheets: \(tutorDetailsSheetCount)")
+			}
+		} catch {
+			print("ERROR: could get get count of TutorDetails sheets")
+		}
+		
 		if totalTutors != referenceData.dataCounts.totalTutors {
 			print("Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)")
 		}
@@ -286,7 +304,14 @@ import Foundation
 
 		
 	}
-	
+	//
+	// This function creates backup copies of the key Google Drive spreadsheets for the system.  Copied files are suffixed with current date and time.  If the system is running
+	// against the production files, they are backed up. If its running against the test files, those are backed up.
+	//	1) The ReferenceData spreadsheet
+	//	2) The TutorDetails spreadsheet
+	//	3) The Billed Tutor spreadsheet for the current year
+	//	4) The Billed Student spreadsheet for the current year
+	//
 	func backupSystem() async {
 		print("Backing up system")
 		
@@ -300,23 +325,23 @@ import Foundation
 		let currentYear = dateFormatter.string(from: Date())
 
 		do {
-// Copy the Reference Data spreadsheet
+			// Copy the Reference Data spreadsheet
 			try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: PgmConstants.referenceDataProdFileName + " Backup " + backupDate)
 			print("Reference Data spreadsheet copied to file: \(PgmConstants.referenceDataProdFileName + " Backup " + backupDate)")
 			
-// Copy the Tutor Details spreadsheet
+			// Copy the Tutor Details spreadsheet
 			try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)
 			print("Tutor Details spreadsheet copied to file: \(PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)")
 			
-// Copy the Tutor Billing spreadsheet
+			// Copy the Tutor Billing spreadsheet
 			tutorBillingFileName = tutorBillingFileNamePrefix + currentYear
-			let (tutorFileFound, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+			let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			try await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: tutorBillingFileName + " Backup " + backupDate)
 			print("Billed Tutor spreadsheet copied to file: \(tutorBillingFileName + " Backup " + backupDate)")
 			
-// Copy the Student Billing spreadsheet
+			// Copy the Student Billing spreadsheet
 			studentBillingFileName = studentBillingFileNamePrefix + currentYear
-			let (studentFileFound, studentBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			try await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: studentBillingFileName + " Backup " + backupDate)
 			print("Billed Student spreadsheet copied to file: \(studentBillingFileName + " Backup " + backupDate)")
 		} catch {
@@ -324,42 +349,54 @@ import Foundation
 		}
 		
 	}
-
+	//
+	// This function creates a new Billed Tutor object for a month, reads in the data for that month and returns that new Billed Tutor object
+	//		monthName: the month to load the Billed Tutor data for
+	//		yearName: the year of the month to load the Billed Tutor data for
+	//
 	func buildBilledTutorMonth(monthName: String, yearName: String) async -> TutorBillingMonth {
-		var tutorBillingFileName = tutorBillingFileNamePrefix + yearName
-		var result: Bool = true
+		let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
+		var fileIdResult: Bool = true
 		var tutorBillingFileID = ""
-		
 		let tutorBillingMonth = TutorBillingMonth()
 		
-		// Get the fileID of the previous month Billed Tutor spreadsheet for the year
+		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
 		do {
-			(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+			(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(tutorBillingFileName)")
 		}
-		// Read the data from the Billed Tutor spreadsheet for the previous month
-		await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-		
+		// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
+		if fileIdResult {
+			await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		} else {
+			print("ERROR: could notget FileID for file: \(tutorBillingFileName)")
+		}
 		return(tutorBillingMonth)
 	}
-	
+	//
+	// This function creates a new Billed Student object for a month, reads in the data for that month and returns that new Billed Student object
+	//		monthName: the month to load the Billed Student data for
+	//		yearName: the year of the month to load the Billed Student data for
+	//
 	func buildBilledStudentMonth(monthName: String, yearName: String) async -> StudentBillingMonth {
-		var studentBillingFileName = studentBillingFileNamePrefix + yearName
-		var result: Bool = true
+		let studentBillingFileName = studentBillingFileNamePrefix + yearName
+		var fileIdResult: Bool = true
 		var studentBillingFileID = ""
-		
 		let studentBillingMonth = StudentBillingMonth()
 		
-		// Get the fileID of the previous month Billed Student spreadsheet for the year
+		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
 		do {
-			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+			(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(studentBillingFileName)")
 		}
-		// Read the data from the Billed Student spreadsheet for the previous month
-		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: monthName, studentBillingFileID: studentBillingFileID)
-		
+		// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
+		if fileIdResult {
+			await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+		} else {
+			print("ERROR: could notget FileID for file: \(studentBillingFileName)")
+		}
 		return(studentBillingMonth)
 	}
 	
@@ -375,7 +412,7 @@ import Foundation
 			let tutorBillingTemplateFileName = PgmConstants.billedTutorTemplateFileName
 			
 			do {
-				let (fileFound, tutorBillingTemplateFileID) = try await getFileIDAsync(fileName: tutorBillingTemplateFileName)
+				let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
 				if fileFound {
 					do {
 						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingProdFileName) {
@@ -414,7 +451,7 @@ import Foundation
 			let studentBillingTemplateFileName = PgmConstants.billedStudentTemplateFileName
 			
 			do {
-				let (fileFound, studentBillingTemplateFileID) = try await getFileIDAsync(fileName: studentBillingTemplateFileName)
+				let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
 				if fileFound {
 					do {
 						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingProdFileName) {

@@ -99,7 +99,7 @@ class StudentBillingMonth {
         return(updateValues)
     }
     
-    func loadStudentBillingMonthAsync(monthName: String, studentBillingFileID: String) async {
+    func loadStudentBillingMonth(monthName: String, studentBillingFileID: String) async {
         var studentBillingCount: Int = 0
         var sheetCells = [[String]]()
         var sheetData: SheetData?
@@ -181,9 +181,9 @@ class StudentBillingMonth {
         let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
         
         do {
-            let (resultFlag, prevMonthStudentFileID) = try await getFileIDAsync(fileName: prevMonthStudentFileName)
+            let (resultFlag, prevMonthStudentFileID) = try await getFileID(fileName: prevMonthStudentFileName)
             if resultFlag {
-                await prevStudentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
+                await prevStudentBillingMonth.loadStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
             }
         } catch {
             print("ERROR: Could not load \(prevMonth) Student Billing Data")

@@ -8,7 +8,7 @@
 import Foundation
 import GoogleSignIn
 
-func getFileIDAsync(fileName: String) async throws -> (Bool, String) {
+func getFileID(fileName: String) async throws -> (Bool, String) {
 	var fileID: String = ""
 	var fileFound: Bool = false
 //	var accessToken: String
@@ -483,17 +483,77 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 	return nil
 }
 
+struct GoogleSheetsResponse: Codable {
+	struct Sheet: Codable {
+		let properties: Properties
+	}
+	
+	struct Properties: Codable {
+		let title: String
+		let sheetId: Int
+	}
+	
+	let sheets: [Sheet]
+}
+
+func getSheetCount(spreadsheetId: String) async throws -> Int {
+	var sheetCount: Int = 0
+	
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)"
+	guard let url = URL(string: urlString) else {
+		throw NSError(domain: "Invalid URL", code: -1, userInfo: nil)
+	}
+	let (tokenFound, accessToken) = await getAccessToken()
+	if tokenFound {
+		var request = URLRequest(url: url)
+		request.httpMethod = "GET"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+//		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		
+		// Send the request with async/await
+		let (data, response) = try await URLSession.shared.data(for: request)
+		
+		// Check for HTTP errors
+		if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+			throw NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil)
+		}
+		
+		// Parse the JSON response
+		let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
+		sheetCount = googleSheetsResponse.sheets.count
+	}
+	// Return the count of sheets
+	return sheetCount
+		
+}
+
+
 func getAccessToken() async -> (Bool, String) {
 	var returnResult: Bool = true
 	var returnToken: String = ""
 	
 	let accessToken = oauth2Token.accessToken
-	if let accessToken = accessToken {
 	
+	if let accessToken = accessToken {
+//		print("Access Token before check \(accessToken)")
 		if isTokenExpired() {
+			print("access token expired")
 			do {
-				returnToken = try await refreshAccessToken()
-				oauth2Token.accessToken = returnToken
+				let time = Date()
+				let timeFormatter = DateFormatter()
+				timeFormatter.dateFormat = "HH:mm"
+				let stringDate = timeFormatter.string(from: time)
+				print("Refreshing Access Token at \(stringDate)")
+				let (newExpiryDate, newAccessToken) = try await refreshAccessToken()
+				if newAccessToken != accessToken {
+					print("Returned Access Token changed")
+				}
+				
+				oauth2Token.expiresAt = newExpiryDate
+				print("New Token expires at \(oauth2Token.expiresAt!)")
+				oauth2Token.accessToken = newAccessToken
+//				print("Access Token after refresh \(oauth2Token.accessToken!)")
+//				print("Refresh Token after refresh \(oauth2Token.refreshToken!)")
 			} catch {
 				print("Could not refresh access Token")
 			}
@@ -503,6 +563,7 @@ func getAccessToken() async -> (Bool, String) {
 		}
 	} else {
 		returnResult = false
+		print("ERROR: Access Token is nil in getAccessToken")
 	}
 	
 	return(returnResult, returnToken)
@@ -513,6 +574,12 @@ func isTokenExpired() -> Bool {
 	if let token = token {
 		let tokenExpiry = oauth2Token.expiresAt
 		if let tokenExpiry = tokenExpiry {
+			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
+			if Date() >= tokenExpiry {
+				print("Token Time Expiry Test Failed")
+			} else {
+				print("Token not expired")
+			}
 			return Date() >= tokenExpiry
 		} else {
 			return true
@@ -522,7 +589,10 @@ func isTokenExpired() -> Bool {
 	}
 }
 
-func refreshAccessToken() async throws -> String {
+func refreshAccessToken() async throws -> (Date?, String?) {
+	var newAccessToken: String?
+	var newTokenExpiryDate: Date?
+	
 	var bodyParameters = [String: String]()
 	let url = URL(string: "https://oauth2.googleapis.com/token")!
 	
@@ -554,20 +624,24 @@ func refreshAccessToken() async throws -> String {
 			}
 			
 			// Parse the response JSON to retrieve the new access token
-			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-			   let accessToken = json["access_token"] as? String {
-				return accessToken
-			} else {
-				throw NSError(domain: "Parsing Error", code: -1, userInfo: nil)
+			guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+			      let newAccessToken = json["access_token"] as? String,
+			      let expiresIn = json["expires_in"] as? Double
+			else {
+				throw NSError(domain: "Invalid JSON structure", code: -1, userInfo: nil)
 			}
+			let newExpirationDate = Date().addingTimeInterval(expiresIn)
+			return(newExpirationDate, newAccessToken)
 		} else {
 			print("Error: Client ID is nil")
-			return ""
+	
 		}
 	} else {
 		print("Error: Refresh Token is nil")
-		return ""
+		
 	}
+	return(newTokenExpiryDate, newAccessToken)
+	
 }
 
 func getCurrentMonthYear() -> (String, String) {

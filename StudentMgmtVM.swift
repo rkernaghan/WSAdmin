@@ -32,12 +32,12 @@ import Foundation
 		
 // Get the File ID of the Billed Student spreadsheet for the year
 		do {
-			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+			(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 		} catch {
 			print("Error: Could not get fileID for file: \(studentBillingFileName)")
 		}
 // Read in the Billed Students for the previous month
-		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+		await studentBillingMonth.loadStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 // Add the new Student to Billed Student list for the month
 		let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
 		if billedStudentFound == false {
@@ -108,12 +108,12 @@ import Foundation
 		
 		// Get the fileID of the Billed Student spreadsheet for the year
 		do {
-			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+			(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(studentBillingFileName)")
 		}
 		// Read the data from the Billed Student spreadsheet for the previous month
-		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: monthName, studentBillingFileID: studentBillingFileID)
+		await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 		// Add new the Student to Billed Student list for the month
 		let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
 		if billedStudentFound {
@@ -269,12 +269,12 @@ import Foundation
 
 					// Get the File ID of the Billed Student spreadsheet for the year
 					do {
-						(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+						(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 					} catch {
 						
 					}
 					// Read in the Billed Students for the previous month
-					await studentBillingMonth.loadStudentBillingMonthAsync(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+					await studentBillingMonth.loadStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 					// Remove the Student from the Billed Student list for the month
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)

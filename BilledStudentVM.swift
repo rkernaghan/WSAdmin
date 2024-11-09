@@ -7,8 +7,10 @@
 import Foundation
 
 @Observable class BilledStudentVM {
-	
-	func buildBilledStudentMonth(monthName: String, yearName: String) async -> StudentBillingMonth {
+//
+//		NOT USED??
+//
+	func buildBilledStudentMonthxx(monthName: String, yearName: String) async -> StudentBillingMonth {
 		var studentBillingFileName = studentBillingFileNamePrefix + yearName
 		var result: Bool = true
 		var studentBillingFileID = ""
@@ -17,12 +19,12 @@ import Foundation
 		
 		// Get the fileID of the previous month Billed Student spreadsheet for the year
 		do {
-			(result, studentBillingFileID) = try await getFileIDAsync(fileName: studentBillingFileName)
+			(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(studentBillingFileName)")
 		}
 		// Read the data from the Billed Student spreadsheet for the previous month
-		await studentBillingMonth.loadStudentBillingMonthAsync(monthName: monthName, studentBillingFileID: studentBillingFileID)
+		await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 		
 		return(studentBillingMonth)
 	}

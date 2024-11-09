@@ -17,8 +17,6 @@ struct ContentView: View {
 	let serviceMgmtVM = ServiceMgmtVM()
 	let locationMgmtVM = LocationMgmtVM()
 	let billingVM = BillingVM()
-	let billedTutorVM = BilledTutorVM()
-	let billedStudentVM = BilledStudentVM()
     
 	var body: some View {
 		NavigationStack {
@@ -38,8 +36,7 @@ struct ContentView: View {
 		.environment(serviceMgmtVM)
 		.environment(locationMgmtVM)
 		.environment(billingVM)
-		.environment(billedTutorVM)
-		.environment(billedStudentVM)
+
 	}
 }
 

@@ -7,23 +7,31 @@
 import Foundation
 
 @Observable class BilledTutorVM {
+//
+//			NOT USED??
 	
-	func buildBilledTutorMonth(monthName: String, yearName: String) async -> TutorBillingMonth {
-		var tutorBillingFileName = tutorBillingFileNamePrefix + yearName
-		var result: Bool = true
+// This function creates a new Billed Tutor object for a month, reads in the data for that month and returns that new Billed Tutor object
+//		monthName: the month to load the Billed Tutor data for
+//		yearName: the year of the month to load the Billed Tutor data for
+//
+	func buildBilledTutorMonthxx(monthName: String, yearName: String) async -> TutorBillingMonth {
+		let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
+		var fileIdResult: Bool = true
 		var tutorBillingFileID = ""
-		
 		let tutorBillingMonth = TutorBillingMonth()
 		
-		// Get the fileID of the previous month Billed Tutor spreadsheet for the year
+		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
 		do {
-			(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+			(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(tutorBillingFileName)")
 		}
-		// Read the data from the Billed Tutor spreadsheet for the previous month
-		await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-		
+		// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
+		if fileIdResult {
+			await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		} else {
+			print("ERROR: could notget FileID for file: \(tutorBillingFileName)")
+		}
 		return(tutorBillingMonth)
 	}
 	

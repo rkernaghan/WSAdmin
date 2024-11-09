@@ -36,8 +36,7 @@ struct DataMgmtView: View {
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	@Environment(SystemVM.self) var systemVM: SystemVM
-	@Environment(BilledTutorVM.self) var billedTutorVM: BilledTutorVM
-	@Environment(BilledStudentVM.self) var billedStudentVM: BilledStudentVM
+
     
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()
@@ -79,15 +78,15 @@ struct DataMgmtView: View {
 			.onAppear(perform: {
 				Task {
 					if runMode == "PROD" {
-						(_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsProdFileName)
-						(_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataProdFileName)
-						(_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+						(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
+						(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
+						(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
 						studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
 						tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
 					} else {
-						(_, tutorDetailsFileID) = try await getFileIDAsync(fileName: PgmConstants.tutorDetailsTestFileName)
-						(_, referenceDataFileID) = try await getFileIDAsync(fileName: PgmConstants.referenceDataTestFileName)
-						(_, timesheetTemplateFileID) = try await getFileIDAsync(fileName: PgmConstants.timesheetTemplateTestFileName)
+						(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
+						(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
+						(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
 						studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
 						tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
 					}

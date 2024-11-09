@@ -48,8 +48,8 @@ import GoogleSignIn
 //                      billArray.printBillArray()
 		
 		do {
-			(resultFlag, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
-			await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
+			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
+			await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
 		} catch {
 			
 		}
@@ -72,21 +72,16 @@ import GoogleSignIn
 		var timesheetFileID: String = " "
 		var result: Bool = true
 		
-//        print("Start get timesheet" + tutorName)
+
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
 		do {
-			(result, timesheetFileID) = try await getFileIDAsync(fileName: fileName)
+			(result, timesheetFileID) = try await getFileID(fileName: fileName)
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
 		}
-//        print("Before Task LoadTimesheet data " + tutorName)
-//        Task {
-//            print("In Task for Get Timesheet " + tutorName)
-		let range = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
-//            print("after load timesheet data before print value statement")
-//            print("Timesheet Returned" + timesheet.timesheetRows[0].studentName + " " + timesheet.timesheetRows[0].tutorName)
-//        }
-		
+
+		await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
+
 		return(timesheet)
 	}
 	
@@ -150,9 +145,9 @@ import GoogleSignIn
 		
 		Task {
 			do {
-				(resultFlag, billingMonthStudentFileID) = try await getFileIDAsync(fileName: billingMonthStudentFileName)
+				(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 				if resultFlag {
-					await studentBillingMonth.loadStudentBillingMonthAsync(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
+					await studentBillingMonth.loadStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
 				}
 			} catch {
 				print("Could not get File ID for Student Billing File \(billingMonthStudentFileName)")
@@ -218,7 +213,7 @@ import GoogleSignIn
 			let result1 = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
 			
 			do {
-				(resultFlag, billingMonthTutorFileID) = try await getFileIDAsync(fileName: billingMonthTutorFileName)
+				(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
 				if resultFlag {
 					let result2 = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
 				} else {

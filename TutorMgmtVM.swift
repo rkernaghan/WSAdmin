@@ -64,12 +64,12 @@ import GoogleSignIn
            
 // Get the fileID of the Billed Tutor spreadsheet for the year
             do {
-                    (result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+                    (result, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
             } catch {
                     print("Could not get FileID for file: \(tutorBillingFileName)")
             }
 // Read the data from the Billed Tutor spreadsheet for the previous month
-            await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+            await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
 // Add new the Tutor to Billed Tutor list for the month
             let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
             if !billedTutorFound {
@@ -125,7 +125,7 @@ import GoogleSignIn
                     let currentTimesheetName = "Timesheet " + currentYear + " " + originalTutorName
                     
                     do {
-                            let (_, tutorTimesheetFileID) = try await getFileIDAsync(fileName: currentTimesheetName)
+                            let (_, tutorTimesheetFileID) = try await getFileID(fileName: currentTimesheetName)
                             let range = PgmConstants.timesheetTutorNameCell
 			    try await writeSheetCells(fileID: tutorTimesheetFileID, range:range, values: [[tutorName]])
                             try await renameGoogleDriveFile(fileId: tutorTimesheetFileID, newName: newTutorTimesheetName)
@@ -165,12 +165,12 @@ import GoogleSignIn
 		
 		// Get the fileID of the Billed Tutor spreadsheet for the year
 		do {
-			(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+			(result, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 		} catch {
 			print("Could not get FileID for file: \(tutorBillingFileName)")
 		}
 		// Read the data from the Billed Tutor spreadsheet for the previous month
-		await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
 		// Add new the Tutor to Billed Tutor list for the month
 		let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: originalTutorName)
 		if billedTutorFound {
@@ -268,12 +268,12 @@ import GoogleSignIn
                     
 // Get the File ID of the Billed Tutor spreadsheet for the year
 					do {
-						(result, tutorBillingFileID) = try await getFileIDAsync(fileName: tutorBillingFileName)
+						(result, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 					} catch {
 						print("ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)")
 					}
 // Read in the Billed Tutors for the previous month
-					await tutorBillingMonth.loadTutorBillingMonthAsync(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+					await tutorBillingMonth.loadTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
 // Add the new Tutor to Billed Tutor list for the month
 					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 					let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
