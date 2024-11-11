@@ -39,7 +39,28 @@ import Foundation
 		
 // Check if any Students assigned to more than one Tutor
 
-		
+		var studentNum = 0
+		let studentCount = referenceData.students.studentsList.count
+		while studentNum < studentCount {
+			let studentKey = referenceData.students.studentsList[studentNum].studentKey
+			let studentName = referenceData.students.studentsList[studentNum].studentName
+			var tutorNum:Int = 0
+			var assignedCount:Int = 0
+			var assignedTutors:String = ""
+			let tutorCount = referenceData.tutors.tutorsList.count
+			while tutorNum < tutorCount {
+				let (studentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
+				if studentFound {
+					assignedCount += 1
+					assignedTutors += referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
+				}
+				tutorNum += 1
+			}
+			if assignedCount > 1 {
+				print("Validation Warning: \(studentName) assigned to Tutors \(assignedTutors)")
+			}
+			studentNum += 1
+		}
 
 
 		
@@ -57,8 +78,8 @@ import Foundation
 		var activeStudents = 0
 		var deletedStudents = 0
 		
-		var studentNum = 0
-		let studentCount = referenceData.students.studentsList.count
+		studentNum = 0
+//		studentCount = referenceData.students.studentsList.count
 		while studentNum < studentCount {
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			
@@ -285,7 +306,7 @@ import Foundation
 		}
 		
 		if tutorStudentCount != assignedStudentCount {
-			print("Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount)")
+			print("Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) -- could be due to re-assignment")
 		}
 
 // Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template

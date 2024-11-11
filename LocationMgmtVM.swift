@@ -16,17 +16,17 @@ import Foundation
 		let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
 		referenceData.locations.loadLocation(newLocation: newLocation)
 		
-		await referenceData.locations.saveLocationData()
+		let saveLocationDataResult = await referenceData.locations.saveLocationData()
 		
 		referenceData.dataCounts.increaseTotalLocationCount()
 		referenceData.dataCounts.increaseActiveLocationCount()
-		await referenceData.dataCounts.saveDataCounts()
+		let saveCountsResult = await referenceData.dataCounts.saveDataCounts()
 	}
 	
 	func updateLocation(locationNum: Int, referenceData: ReferenceData, newLocationName: String, originalLocationName: String) async {
 		
 		referenceData.locations.locationsList[locationNum].updateLocation(locationName: newLocationName)
-		await referenceData.locations.saveLocationData()
+		let saveLocationDataResult = await referenceData.locations.saveLocationData()
 // Update the Location Name for any Students at that Location
 		var studentNum = 0
 		let studentCount = referenceData.students.studentsList.count

@@ -107,25 +107,25 @@ struct SideView: View {
  
 		List {
 			NavigationLink {
-				TutorsView(referenceData: referenceData)
+				TutorListView(referenceData: referenceData)
 			} label: {
 				Label("Tutors", systemImage: "person")
 			}
                 
 			NavigationLink {
-				StudentsView(referenceData: referenceData)
+				StudentListView(referenceData: referenceData)
 			} label: {
 				Label("Students", systemImage: "graduationcap")
 			}
                 
 			NavigationLink {
-				ServicesView(referenceData: referenceData)
+				ServiceListView(referenceData: referenceData)
 			} label: {
 				Label("Services", systemImage: "list.bullet")
 			}
                 
 			NavigationLink {
-				LocationsView(referenceData: referenceData)
+				LocationListView(referenceData: referenceData)
 			} label: {
 				Label("Locations", systemImage: "building")
 			}

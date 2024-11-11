@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TutorsView: View {
+struct TutorListView: View {
 	@State var referenceData: ReferenceData
 	
 	@State private var selectedTutors: Set<Tutor.ID> = []

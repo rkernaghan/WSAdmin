@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-struct StudentsView: View {
+struct StudentListView: View {
 	var referenceData: ReferenceData
 	var studentArray = [Student]()
 	

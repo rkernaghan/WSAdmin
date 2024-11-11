@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ServicesView: View {
+struct ServiceListView: View {
 	var referenceData: ReferenceData
 	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM

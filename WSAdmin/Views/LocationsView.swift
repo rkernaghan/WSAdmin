@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LocationsView: View {
+struct LocationListView: View {
 	var referenceData: ReferenceData
 	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM

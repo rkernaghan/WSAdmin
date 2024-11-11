@@ -17,42 +17,45 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 //	if let user = currentUser {
 //		accessToken = user.accessToken.tokenString
 		
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		// URL for Google Sheets API
-		let urlString = "https://www.googleapis.com/drive/v3/files?q=name='\(fileName)'&fields=files(id,name)"
-		guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
-			print("Invalid URL")
-			return(false, " ")
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			// URL for Google Sheets API
+			let urlString = "https://www.googleapis.com/drive/v3/files?q=name='\(fileName)'&fields=files(id,name)"
+			guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
+				print("Invalid URL")
+				return(false, " ")
+			}
+			
+			// Set up the request with OAuth 2.0 token
+			var request = URLRequest(url: url)
+			request.httpMethod = "GET"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			
+			// Use async URLSession to fetch the data
+			
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			//        if let httpResponse = response as? HTTPURLResponse {
+			//            print("Find File ID Error: \(httpResponse.statusCode)")
+			//        }
+			// Check if the response is successful
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Parse the JSON response
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+			   let files = json["files"] as? [[String: Any]], !files.isEmpty,
+			   let fileId = files.first?["id"] as? String {
+				return (true, fileId)
+			} else {
+				return (false, "")
+			}
 		}
-		
-		// Set up the request with OAuth 2.0 token
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		
-		// Use async URLSession to fetch the data
-		
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		//        if let httpResponse = response as? HTTPURLResponse {
-		//            print("Find File ID Error: \(httpResponse.statusCode)")
-		//        }
-		// Check if the response is successful
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		} 
-		
-		// Parse the JSON response
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-		   let files = json["files"] as? [[String: Any]], !files.isEmpty,
-		   let fileId = files.first?["id"] as? String {
-			return (true, fileId)
-		} else {
-			return (false, "")
-		}
-		
+		return (false, "")
 	}
 	else {
 		return(false, "")
@@ -67,36 +70,38 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 //	if let user = currentUser {
 //		accessToken = user.accessToken.tokenString
 		
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		
-		// URL for Google Sheets API
-		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)"
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-		// Set up the request with OAuth 2.0 token
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		
-		// Use async URLSession to fetch the data
-		//    print("Before Read Cells URL Session call \(fileID)")
-		let (data, response) = try await URLSession.shared.data(for: request)
-		//    print("After Read Cells URL Session call \(fileID)")
-		if let httpResponse = response as? HTTPURLResponse {
-			if httpResponse.statusCode != 200 {
-				print("Read Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			// URL for Google Sheets API
+			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)"
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
 			}
+			
+			// Set up the request with OAuth 2.0 token
+			var request = URLRequest(url: url)
+			request.httpMethod = "GET"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			
+			// Use async URLSession to fetch the data
+			//    print("Before Read Cells URL Session call \(fileID)")
+			let (data, response) = try await URLSession.shared.data(for: request)
+			//    print("After Read Cells URL Session call \(fileID)")
+			if let httpResponse = response as? HTTPURLResponse {
+				if httpResponse.statusCode != 200 {
+					print("Read Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+				}
+			}
+			// Check if the response is successful
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				throw URLError(.badServerResponse)
+			}
+			
+			// Decode the JSON data into the SheetData structure
+			sheetData = try JSONDecoder().decode(SheetData.self, from: data)
 		}
-		// Check if the response is successful
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			throw URLError(.badServerResponse)
-		}
-		
-		// Decode the JSON data into the SheetData structure
-		sheetData = try JSONDecoder().decode(SheetData.self, from: data)
 		
 	}
 	//        if let sheetData = sheetData {
@@ -113,46 +118,48 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 //	if let user = currentUser {
 //		accessToken = user.accessToken.tokenString
 
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-		// Prepare the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "PUT"  // Using PUT to update the values in the sheet
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Prepare the request body with the data to write
-		let body: [String: Any] = [
-			"range": range,
-			"majorDimension": "ROWS",  // Writing row by row
-			"values": values            // The 2D array of values to write
-		]
-		
-		request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
-		
-		
-		// Perform the network request asynchronously using async/await
-		let (data, response) = try await URLSession.shared.data(for: request)
-	
-		if let httpResponse = response as? HTTPURLResponse {
-			if httpResponse.statusCode != 200 {
-				print("Write Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
 			}
-		}
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Handle the response (if needed)
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			//           print("writeSheetCells Response: \(json)")
+			
+			// Prepare the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "PUT"  // Using PUT to update the values in the sheet
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Prepare the request body with the data to write
+			let body: [String: Any] = [
+				"range": range,
+				"majorDimension": "ROWS",  // Writing row by row
+				"values": values            // The 2D array of values to write
+			]
+			
+			request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+			
+			
+			// Perform the network request asynchronously using async/await
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			if let httpResponse = response as? HTTPURLResponse {
+				if httpResponse.statusCode != 200 {
+					print("Write Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+				}
+			}
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Handle the response (if needed)
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				//           print("writeSheetCells Response: \(json)")
+			}
 		}
 	} else {
 		completionFlag = false
@@ -165,37 +172,39 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws {
 	    
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)"
 	    
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-	
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "PATCH"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Request body with the new name
-		let body: [String: Any] = [
-			"name": newName
-		]
-		request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
-		
-		// Perform the network request using async/await
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Handle the response
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			print("File renamed successfully: \(json)")
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
+			}
+			
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "PATCH"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body with the new name
+			let body: [String: Any] = [
+				"name": newName
+			]
+			request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request using async/await
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Handle the response
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("File renamed successfully: \(json)")
+			}
 		}
 	}
 }
@@ -205,38 +214,40 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 	
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"
 	
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		
-		guard let url = URL(string: urlString) else {
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			guard let url = URL(string: urlString) else {
 				throw URLError(.badURL)
-		}
-		
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Request body with the new file name
-		let body: [String: Any] = [
+			}
+			
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "POST"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body with the new file name
+			let body: [String: Any] = [
 				"name": newFileName
-		]
-		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-		
-		// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+			]
+			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Parse and return the response JSON
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+			}
+			
+			// Parse and return the response JSON
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
 				print("File copied successfully: \(json)")
 				return json
+			}
 		}
 	}
 	return nil
@@ -245,45 +256,48 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 // Function to add a permission to a Google Drive file
 func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
 	
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		
-		let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
-		
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Request body for the permission
-		var body: [String: Any] = [
-			"role": role,   // e.g., "reader" or "writer"
-			"type": type    // e.g., "user", "group", "domain", "anyone"
-		]
-		if let email = emailAddress, type == "user" || type == "group" {
-			body["emailAddress"] = email
-		}
-		
-		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-		
-		// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Parse and return the response JSON
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			print("Permission added successfully: \(json)")
-			return json
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			
+			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
+			
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
+			}
+			
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "POST"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body for the permission
+			var body: [String: Any] = [
+				"role": role,   // e.g., "reader" or "writer"
+				"type": type    // e.g., "user", "group", "domain", "anyone"
+			]
+			if let email = emailAddress, type == "user" || type == "group" {
+				body["emailAddress"] = email
+			}
+			
+			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Parse and return the response JSON
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("Permission added successfully: \(json)")
+				return json
+			}
 		}
 	}
 	return nil
@@ -296,37 +310,40 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 	    
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)?fields=sheets.properties"
 	
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		
-		guard let url = URL(string: urlString) else {
-			throw URLError(.badURL)
-		}
-		
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		
-		// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Parse the response JSON to find the sheet ID
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-		   let sheets = json["sheets"] as? [[String: Any]] {
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
 			
-			for sheet in sheets {
-				if let properties = sheet["properties"] as? [String: Any],
-				   let title = properties["title"] as? String,
-				   let sheetId = properties["sheetId"] as? Int,
-				   title == sheetName {
-					return sheetId // Return the sheet ID if the name matches
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
+			}
+			
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "GET"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Parse the response JSON to find the sheet ID
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+			   let sheets = json["sheets"] as? [[String: Any]] {
+				
+				for sheet in sheets {
+					if let properties = sheet["properties"] as? [String: Any],
+					   let title = properties["title"] as? String,
+					   let sheetId = properties["sheetId"] as? Int,
+					   title == sheetName {
+						return sheetId // Return the sheet ID if the name matches
+					}
 				}
 			}
 		}
@@ -344,42 +361,44 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 		throw URLError(.badURL)
 	}
 	
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Request body for creating a new sheet
-		let body: [String: Any] = [
-			"requests": [
-				[
-					"addSheet": [
-						"properties": [
-							"title": sheetTitle
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "POST"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body for creating a new sheet
+			let body: [String: Any] = [
+				"requests": [
+					[
+						"addSheet": [
+							"properties": [
+								"title": sheetTitle
+							]
 						]
 					]
 				]
 			]
-		]
-		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-		
-		// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Parse and return the response JSON
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			print("Sheet created successfully: \(json)")
-			return json
+			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Parse and return the response JSON
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("Sheet created successfully: \(json)")
+				return json
+			}
 		}
 	}
     
@@ -390,50 +409,53 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 // Function to rename a specific sheet in a Google Sheets spreadsheet
 func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws {
 	    
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		 			
-		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
-		
-		guard let url = URL(string: urlString) else {
-		    throw URLError(.badURL)
-		}
-        
-// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-// Request body with batchUpdate to rename the sheet
-		let body: [String: Any] = [
-			"requests": [
-				[
-					"updateSheetProperties": [
-						"properties": [
-							"sheetId": sheetId,
-							"title": newSheetName
-						],
-						"fields": "title"
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {
+			
+			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+			
+			guard let url = URL(string: urlString) else {
+				throw URLError(.badURL)
+			}
+			
+			// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "POST"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body with batchUpdate to rename the sheet
+			let body: [String: Any] = [
+				"requests": [
+					[
+						"updateSheetProperties": [
+							"properties": [
+								"sheetId": sheetId,
+								"title": newSheetName
+							],
+							"fields": "title"
+						]
 					]
 				]
 			]
-		]
-		
-		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-        
-// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-        
-// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-        
-// Handle the response
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-		    print("Sheet renamed successfully: \(json)")
+			
+			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Handle the response
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("Sheet renamed successfully: \(json)")
+			}
 		}
 	}
 }
@@ -445,39 +467,41 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 	guard let url = URL(string: urlString) else {
 		throw URLError(.badURL)
 	}
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		// Set up the request
-		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Request body to delete a sheet
-		let body: [String: Any] = [
-			"requests": [
-				[
-					"deleteSheet": [
-						"sheetId": sheetId
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {		// Set up the request
+			var request = URLRequest(url: url)
+			request.httpMethod = "POST"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Request body to delete a sheet
+			let body: [String: Any] = [
+				"requests": [
+					[
+						"deleteSheet": [
+							"sheetId": sheetId
+						]
 					]
 				]
 			]
-		]
-		request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-		
-		// Perform the network request asynchronously
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP response status
-		guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-			let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
-		}
-		
-		// Parse and return the response JSON
-		if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-			print("Sheet deleted successfully: \(json)")
-			return json
+			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+			
+			// Perform the network request asynchronously
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP response status
+			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			}
+			
+			// Parse and return the response JSON
+			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+				print("Sheet deleted successfully: \(json)")
+				return json
+			}
 		}
 	}
 	return nil
@@ -503,24 +527,29 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 	guard let url = URL(string: urlString) else {
 		throw NSError(domain: "Invalid URL", code: -1, userInfo: nil)
 	}
-	let (tokenFound, accessToken) = await getAccessToken()
+	let tokenFound = await getAccessToken()
 	if tokenFound {
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-//		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		
-		// Send the request with async/await
-		let (data, response) = try await URLSession.shared.data(for: request)
-		
-		// Check for HTTP errors
-		if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-			throw NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil)
+		let accessToken = oauth2Token.accessToken
+		if let accessToken = accessToken {		let accessToken = oauth2Token.accessToken
+			if let accessToken = accessToken {
+				var request = URLRequest(url: url)
+				request.httpMethod = "GET"
+				request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+				//		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+				
+				// Send the request with async/await
+				let (data, response) = try await URLSession.shared.data(for: request)
+				
+				// Check for HTTP errors
+				if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+					throw NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil)
+				}
+				
+				// Parse the JSON response
+				let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
+				sheetCount = googleSheetsResponse.sheets.count
+			}
 		}
-		
-		// Parse the JSON response
-		let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
-		sheetCount = googleSheetsResponse.sheets.count
 	}
 	// Return the count of sheets
 	return sheetCount
@@ -528,9 +557,8 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 }
 
 
-func getAccessToken() async -> (Bool, String) {
+func getAccessToken() async -> (Bool) {
 	var returnResult: Bool = true
-	var returnToken: String = ""
 	
 	let accessToken = oauth2Token.accessToken
 	
@@ -545,9 +573,6 @@ func getAccessToken() async -> (Bool, String) {
 				let stringDate = timeFormatter.string(from: time)
 				print("Refreshing Access Token at \(stringDate)")
 				let (newExpiryDate, newAccessToken) = try await refreshAccessToken()
-				if newAccessToken != accessToken {
-					print("Returned Access Token changed")
-				}
 				
 				oauth2Token.expiresAt = newExpiryDate
 				print("New Token expires at \(oauth2Token.expiresAt!)")
@@ -558,7 +583,6 @@ func getAccessToken() async -> (Bool, String) {
 				print("Could not refresh access Token")
 			}
 		} else {
-			returnToken = accessToken
 			returnResult = true
 		}
 	} else {
@@ -566,7 +590,7 @@ func getAccessToken() async -> (Bool, String) {
 		print("ERROR: Access Token is nil in getAccessToken")
 	}
 	
-	return(returnResult, returnToken)
+	return(returnResult)
 }
 	
 func isTokenExpired() -> Bool {
@@ -574,11 +598,11 @@ func isTokenExpired() -> Bool {
 	if let token = token {
 		let tokenExpiry = oauth2Token.expiresAt
 		if let tokenExpiry = tokenExpiry {
-			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
+//			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
 			if Date() >= tokenExpiry {
 				print("Token Time Expiry Test Failed")
 			} else {
-				print("Token not expired")
+//				print("Token not expired")
 			}
 			return Date() >= tokenExpiry
 		} else {
@@ -603,8 +627,9 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 	
 	// HTTP request body with URL-encoded parameters
 	let refreshToken = oauth2Token.refreshToken
-	let clientID = oauth2Token.clientID
+	
 	if let refreshToken = refreshToken {
+		let clientID = oauth2Token.clientID
 		if let clientID = clientID {
 			bodyParameters = [
 				"client_id": clientID,
