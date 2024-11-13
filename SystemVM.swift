@@ -416,94 +416,162 @@ import Foundation
 		if fileIdResult {
 			await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 		} else {
-			print("ERROR: could notget FileID for file: \(studentBillingFileName)")
+			print("ERROR: could not get FileID for file: \(studentBillingFileName)")
 		}
 		return(studentBillingMonth)
 	}
 	
-	func generateNewYearFiles(referenceData: ReferenceData) async {
+	// This function generates the next year's spreadsheets (Tutor Billing, Student Billing) and a new Timesheet for each Tutor
+	//
+	func generateNewYearFiles(referenceData: ReferenceData) async -> (Bool, String) {
+		var generateResult: Bool = true
+		var generateMessage: String = ""
+		
 		var nextYear: String = ""
 		var newTimesheetFileID: String = ""
 		
+	
 		if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
 			nextYear = String(yearInt + 1)
+			
+			// Create the next year's Production Tutor Billing spreadsheet
 			
 			let newTutorBillingProdFileName = PgmConstants.tutorBillingProdFileNamePrefix + nextYear
 			let newTutorBillingTestFileName = PgmConstants.tutorBillingTestFileNamePrefix + nextYear
 			let tutorBillingTemplateFileName = PgmConstants.billedTutorTemplateFileName
 			
 			do {
-				let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
-				if fileFound {
-					do {
-						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingProdFileName) {
-							
-							if let fileID = copiedFileData["id"] as? String {
-								newTimesheetFileID = fileID
-							} else {
-								print("No valid string found for the key 'name'")
+				let (fileFound, fileID) = try await getFileID(fileName: newTutorBillingProdFileName)
+				if !fileFound {
+					let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
+					if fileFound {
+						do {
+							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingProdFileName) {
+								
+								if let fileID = copiedFileData["id"] as? String {
+									newTimesheetFileID = fileID
+								} else {
+									print("No valid string found for the key 'name'")
+								}
 							}
+						} catch {
+							generateResult = false
+							generateMessage += "ERROR: Could create Tutor Billing Prod file: \(newTutorBillingProdFileName)\n"
 						}
-					} catch {
-						print("ERROR:  Could not create Billed Tutor Prod file: \(newTutorBillingProdFileName)")
-					}
-					
-					do {
-						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingTestFileName) {
-							
-							if let fileID = copiedFileData["id"] as? String {
-								newTimesheetFileID = fileID
-							} else {
-								print("No valid string found for the key 'name'")
-							}
-						}
-					} catch {
-						print("ERROR:  Could not create Billed Tutor Test file: \(newTutorBillingTestFileName)")
+					} else {
+						generateResult = false
+						generateMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
 					}
 				} else {
-					print("ERROR: Could not get File ID for Tutor Billing Template file \(tutorBillingTemplateFileName)")
+					generateResult = false
+					generateMessage += "ERROR: \(newTutorBillingProdFileName) already exists\n"
 				}
 			} catch {
-				print("ERROR: Could not get File ID for \(tutorBillingTemplateFileName)")
+				generateResult = false
+				generateMessage += "ERROR: could not create \(newTutorBillingProdFileName)\n"
 			}
+			
+			// Create the next year's Test Tutor Billing spreadsheet
+			do {
+				let (fileFound, fileID) = try await getFileID(fileName: newTutorBillingTestFileName)
+				if !fileFound {
+					let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
+					if fileFound {
+						do {
+							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingTestFileName) {
+								
+								if let fileID = copiedFileData["id"] as? String {
+									newTimesheetFileID = fileID
+								} else {
+									print("No valid string found for the key 'name'")
+								}
+							}
+						} catch {
+							generateResult = false
+							generateMessage += "ERROR: Could create Tutor Billing Test file: \(newTutorBillingTestFileName)\n"
+						}
+					} else {
+						generateResult = false
+						generateMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+					}
+				} else {
+					generateResult = false
+					generateMessage += "ERROR: \(newTutorBillingTestFileName) already exists\n"
+				}
+				
+			} catch {
+				generateResult = false
+				generateMessage += "ERROR: could not create \(newTutorBillingTestFileName) \n"
+			}
+				
+			// Create the next year's Production Student Billing spreadsheets
 			
 			let newStudentBillingProdFileName = PgmConstants.studentBillingProdFileNamePrefix + nextYear
 			let newStudentBillingTestFileName = PgmConstants.studentBillingTestFileNamePrefix + nextYear
 			let studentBillingTemplateFileName = PgmConstants.billedStudentTemplateFileName
 			
 			do {
-				let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
-				if fileFound {
-					do {
-						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingProdFileName) {
-							
-							if let fileID = copiedFileData["id"] as? String {
-								newTimesheetFileID = fileID
-							} else {
-								print("No valid string found for the key 'name'")
+				let (fileFound, fileID) = try await getFileID(fileName: newStudentBillingProdFileName)
+				if !fileFound {
+					let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
+					if fileFound {
+						do {
+							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingProdFileName) {
+								
+								if let fileID = copiedFileData["id"] as? String {
+									newTimesheetFileID = fileID
+								} else {
+									print("No valid string found for the key 'name'")
+								}
 							}
+						} catch {
+							generateResult = false
+							generateMessage += "ERROR:  Could not create Billed Student Prod file: \(newStudentBillingProdFileName)\n"
 						}
-					} catch {
-						print("ERROR:  Could not create Billed Student Prod file: \(newStudentBillingProdFileName)")
-					}
-					
-					do {
-						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingTestFileName) {
-							
-							if let fileID = copiedFileData["id"] as? String {
-								newTimesheetFileID = fileID
-							} else {
-								print("No valid string found for the key 'name'")
-							}
-						}
-					} catch {
-						print("ERROR:  Could not create Billed Student Test file: \(newStudentBillingTestFileName)")
+					} else {
+						generateResult = false
+						generateMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
 					}
 				} else {
-					print("ERROR: Could not get File ID for Student Billing Template file \(studentBillingTemplateFileName)")
+					generateResult = false
+					generateMessage += "ERROR: \(newStudentBillingProdFileName) already exists \n"
 				}
 			} catch {
-				print("ERROR: Could not get File ID for \(studentBillingTemplateFileName)")
+				generateResult = false
+				generateMessage += "ERROR: could not create \(newStudentBillingProdFileName)\n"
+			}
+			
+			// Create the next year's Test Student Billing spreadsheets
+			do {
+				let (fileFound, fileID) = try await getFileID(fileName: newStudentBillingTestFileName)
+				if !fileFound {
+					let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
+					if fileFound {
+						do {
+							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingTestFileName) {
+								
+								if let fileID = copiedFileData["id"] as? String {
+									newTimesheetFileID = fileID
+								} else {
+									print("No valid string found for the key 'name'")
+								}
+							}
+						} catch {
+							generateResult = false
+							generateMessage += "ERROR:  Could not create Billed Student Test file: \(newStudentBillingTestFileName)\n"
+						}
+					} else {
+						generateResult = false
+						generateMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+					}
+						
+				} else {
+					generateResult = false
+					generateMessage += "ERROR: \(newStudentBillingTestFileName) already exists\n"
+				}
+			} catch {
+				generateResult = false
+				generateMessage += "ERROR: could not create \(newStudentBillingTestFileName)\n"
 			}
 			
 			var tutorNum = 0
@@ -514,26 +582,32 @@ import Foundation
 					let tutorEmail = referenceData.tutors.tutorsList[tutorNum].tutorEmail
 					let newTutorTimesheetName = "Timesheet " + nextYear + " " + tutorName
 					do {
-						if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTutorTimesheetName) {
-							
-							if let fileID = copiedFileData["id"] as? String {
-								newTimesheetFileID = fileID
-								try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail)
-							} else {
-								print("No valid string found for the key 'name'")
+						let (fileFound, fileID) = try await getFileID(fileName: newTutorTimesheetName)
+						if !fileFound {
+							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTutorTimesheetName) {
+								
+								if let fileID = copiedFileData["id"] as? String {
+									newTimesheetFileID = fileID
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail)
+								} else {
+									print("No valid string found for the key 'name'")
+								}
 							}
-							
+						} else {
+							generateResult = false
+							generateMessage += "ERROR: Timesheet: \(newTutorTimesheetName) already exists\n"
 						}
+						
 					} catch {
+						generateResult = false
+						generateMessage += "ERROR:  Could not create Timesheet for Tutor: \(tutorName)"
 						print("ERROR:  Could not create Timesheet for Tutor: \(tutorName)")
 					}
 				}
 				tutorNum += 1
 			}
 		}
-		
-		
-		
+	return(generateResult, generateMessage)
 	}
 }
 

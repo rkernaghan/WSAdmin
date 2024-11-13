@@ -204,9 +204,11 @@ struct PgmConstants {
 	static let tutorBillingTotalRevenueCol = 7
 	static let tutorBillingTotalProfitCol = 8
 	
-	static let termsString: String = "Net 15 days"
+	static let termsString: String = "Net 14 days"
 	static let taxCodeString: String = "N"
-	static let CSVSeperator: String = ","
+	static let csvSeperator: String = ","
+	static let crlf: String = "\r\n"
+	static let csvHeader: String = "InvoiceNo,Customer,CustomerEmail,*InvoiceDate,*DueDate,Term,Location,TutorName,Item(Product/Service),ItemDescrip,ItemQuantity,ItemRate,*ItemAmount,*ItemTaxCode,ServiceDate"
 	
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"
 	static let writeSeattleEmail: String = "info@writeseattle.com"
@@ -379,7 +381,5 @@ struct WSAdmin: App {
 			ContentView()
 		}
 		.environment(systemVM)
-		
-		
 	}
 }

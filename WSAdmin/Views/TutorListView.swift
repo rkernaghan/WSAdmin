@@ -27,25 +27,45 @@ struct TutorListView: View {
 	@State private var showDeleted: Bool = true
 	@State private var showSuspended: Bool = true
 	
+	@State private var emptyArray = [Tutor]()
+	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	
 	var body: some View {
 		if referenceData.tutors.isTutorDataLoaded {
 			
-			var tutorArray: [Tutor] {
-				if showDeleted && showSuspended && showAssigned && showUnassigned {
-					return referenceData.tutors.tutorsList
-				} else if showUnassigned {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
-				} else if showDeleted {
+			var deletedArray: [Tutor] {
+				if showDeleted  {
 					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Deleted"}
-				} else if showSuspended {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended"}
 				} else {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned" || $0.tutorStatus == "Assigned" }
+					return emptyArray
 				}
 			}
+			var unassignedArray: [Tutor] {
+				if showUnassigned {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
+				} else {
+					return emptyArray
+				}
+			}
+			var suspendedArray: [Tutor] {
+				if showSuspended  {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended]"}
+				} else {
+					return emptyArray
+				}
+			}
+			var assignedArray: [Tutor] {
+				if showAssigned {
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
+				} else {
+					return emptyArray
+				}
+			}
+			
+			var tutorArray: [Tutor] = assignedArray + unassignedArray + suspendedArray + deletedArray
+				
 			
 			VStack {
 				HStack {
@@ -194,27 +214,19 @@ struct TutorListView: View {
 							} label: {
 								Label("Delete Tutor", systemImage: "trash")
 							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) {
-									print("error alert")
-								}
-							}
 							
-							Button(role: .destructive) {
-								Task {
-									let (deleteResult, deleteMessage) = await tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
-									
-									if deleteResult == false {
-										showAlert = true
-										buttonErrorMsg = deleteMessage
-									}
-								}
-							} label: {
-								Label("Undelete Tutor", systemImage: "trash")
-							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
-							}
+//							Button(role: .destructive) {
+//								Task {
+//									let (deleteResult, deleteMessage) = await tutorMgmtVM.unDeleteTutor(indexes: items, referenceData: referenceData)
+//
+//									if deleteResult == false {
+//										showAlert = true
+//										buttonErrorMsg = deleteMessage
+//									}
+//								}
+//							} label: {
+//								Label("Undelete Tutor", systemImage: "trash")
+//							}
 							
 							Button(role: .destructive) {
 								Task {
@@ -227,11 +239,10 @@ struct TutorListView: View {
 							} label: {
 								Label("Suspend Tutor", systemImage: "trash")
 							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) {
-									print("error alert")
-								}
-							}
+//							.alert(buttonErrorMsg, isPresented: $showAlert) {
+//								Button("OK", role: .cancel) {
+//								}
+//							}
 							
 							Button(role: .destructive) {
 								Task {
@@ -244,9 +255,6 @@ struct TutorListView: View {
 								}
 							} label: {
 								Label("UnSuspend Tutor", systemImage: "trash")
-							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
 							}
 						}
 						

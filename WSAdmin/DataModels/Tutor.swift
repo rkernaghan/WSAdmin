@@ -159,7 +159,7 @@ import Foundation
 	func markDeleted() {
 		tutorStatus = "Deleted"
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 		tutorEndDate = dateFormatter.string(from: Date())
 	}
     

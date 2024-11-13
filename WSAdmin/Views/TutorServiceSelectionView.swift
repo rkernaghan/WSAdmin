@@ -33,7 +33,11 @@ struct TutorServiceSelectionView: View {
 					VStack {
 						Button {
 							Task {
-								await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+								let (assignResult, assignMessage) = await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+								if !assignResult {
+									showAlert.toggle()
+									buttonErrorMsg = assignMessage
+								}
 							}
 							
 						} label: {
@@ -56,6 +60,9 @@ struct TutorServiceSelectionView: View {
 				//              store.favourite(items)
 			}
 			
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
 }

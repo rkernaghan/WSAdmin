@@ -17,32 +17,59 @@ struct StudentListView: View {
 	@State private var sortOrder = [KeyPathComparator(\Student.studentName)]
 	@State private var showAlert = false
 	
-	@State private var assignTutor = false
-	@State private var unassignTutor = false
-	@State private var editStudent = false
-	@State private var showDeleted = false
-	@State private var showUnassigned = false
+	@State private var assignTutor: Bool = false
+	@State private var unassignTutor: Bool = false
+	@State private var editStudent: Bool = false
+	@State private var reassignStudent: Bool = false
+	@State private var showDeleted: Bool = false
+	@State private var showUnassigned: Bool = true
+	@State private var showAssigned: Bool = true
+	@State private var showSuspended: Bool = false
 	
+	@State private var emptyArray = [Student]()
 	@State private var studentNumber: Int = 0
 	
 	var body: some View {
 		if referenceData.students.isStudentDataLoaded {
-			
-			var studentArray: [Student] {
-				if showDeleted {
-					return referenceData.students.studentsList
-				} else if showUnassigned {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
+
+			var deletedArray: [Student] {
+				if showDeleted  {
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Deleted"}
 				} else {
-					return referenceData.students.studentsList.filter{$0.studentStatus != "Deleted"}
+					return emptyArray
 				}
 			}
+			var unassignedArray: [Student] {
+				if showUnassigned {
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
+				} else {
+					return emptyArray
+				}
+			}
+			var suspendedArray: [Student] {
+				if showSuspended  {
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Suspended]"}
+				} else {
+					return emptyArray
+				}
+			}
+			var assignedArray: [Student] {
+				if showAssigned {
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Assigned"}
+				} else {
+					return emptyArray
+				}
+			}
+			
+			var studentArray: [Student] = assignedArray + unassignedArray + suspendedArray + deletedArray
 			
 			VStack {
 				
 				HStack {
-					Toggle("Show Deleted", isOn: $showDeleted)
+					Toggle("Show Assigned", isOn: $showAssigned)
 					Toggle("Show Unassigned", isOn: $showUnassigned)
+					Toggle("Show Suspended", isOn: $showSuspended)
+					Toggle("Show Deleted", isOn: $showDeleted)
 					Text("     Student Count: ")
 					Text(String(studentArray.count))
 				}
@@ -116,7 +143,7 @@ struct StudentListView: View {
 
 					}
 				}
-				//                .width(min: 600, ideal: 800)
+				.frame(minWidth: 600, idealWidth: 1200)
 				.contextMenu(forSelectionType: Student.ID.self) { items in
 					if items.isEmpty {
 						Button { } label: {
@@ -162,7 +189,14 @@ struct StudentListView: View {
 							}
 							
 							Button {
-								
+								Task {
+									for objectID in items {
+										if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+											studentNumber = idx
+											reassignStudent.toggle()
+										}
+									}
+								}
 							} label: {
 								Label("ReAssign Student", systemImage: "square.and.arrow.up")
 							}
@@ -303,6 +337,11 @@ struct StudentListView: View {
 			.navigationDestination(isPresented: $assignTutor) {
 				TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
 			}
+			
+			.navigationDestination(isPresented: $reassignStudent) {
+				TutorSelectionView(studentNum: $studentNumber, referenceData: referenceData)
+			}
+			
 			.navigationDestination(isPresented: $editStudent) {
 				StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
 					    studentType: referenceData.students.studentsList[studentNumber].studentType )

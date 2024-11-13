@@ -33,6 +33,8 @@ struct LocationListView: View {
 			
 			VStack {
 				Toggle("Show Deleted", isOn: $showDeleted)
+				Text("     Location Count: ")
+				Text(String(locationArray.count))
 				
 				Table(locationArray, selection: $selectedLocations, sortOrder: $sortOrder) {
 					TableColumn("Location Name", value: \.locationName)

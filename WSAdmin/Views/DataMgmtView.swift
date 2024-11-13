@@ -45,63 +45,39 @@ struct DataMgmtView: View {
 	var body: some View {
 		
 		SideView(referenceData: referenceData)
-			.frame(minWidth: 100, minHeight: 100)
-			.toolbar {
-				ToolbarItemGroup {
-					
-					Button(role: .destructive) {
-					    Task {
-						    await systemVM.validateSystem(referenceData: referenceData)
-					    }
-					} label: {
-					    Label("Validate System", systemImage: "trash")
-					}
-					
-					Button(role: .destructive) {
-					    Task {
-						await systemVM.backupSystem()
-					    }
-					} label: {
-					    Label("Backup System", systemImage: "building")
-					}
-					
-					Button(role: .destructive) {
-						Task {
-							await systemVM.generateNewYearFiles(referenceData: referenceData)
-						}
-					} label: {
-						Label("Generate New Year Files", systemImage: "person")
-					}
+		.frame(minWidth: 100, minHeight: 140)
+			
+		.onAppear(perform: {
+			Task {
+				if runMode == "PROD" {
+					(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
+					(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
+					(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
+					studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
+					tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
+				} else {
+					(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
+					(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
+					(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
+					studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
+					tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
 				}
+				await refDataVM.loadReferenceData(referenceData: referenceData)
 			}
-		
-			.onAppear(perform: {
-				Task {
-					if runMode == "PROD" {
-						(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
-						(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
-						(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
-						studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
-						tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-					} else {
-						(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
-						(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
-						(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
-						studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
-						tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
-					}
-					await refDataVM.loadReferenceData(referenceData: referenceData)
-				}
-			})
+		})
 		
 			
 	}
+	
 }
 
 struct SideView: View {
 	var referenceData: ReferenceData
+	@State private var showAlert: Bool = false
+	
 	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(SystemVM.self) var systemVM: SystemVM
         
 	var body: some View {
  
@@ -159,8 +135,31 @@ struct SideView: View {
 			} label: {
 				Label("Add Location", systemImage: "building")
 			}
+			
+			Spacer()
+			
+			Button("Validate System") {
+				Task {
+					await systemVM.validateSystem(referenceData: referenceData)
+				}
+			}
+			Button("Backup System") {
+				Task {
+					await systemVM.backupSystem()
+				}
+			}
+			Button("Create Next Years Files") {
+				Task {
+					let (generateResult, generateMessage) = await systemVM.generateNewYearFiles(referenceData: referenceData)
+					if !generateResult {
+						showAlert.toggle()
+						buttonErrorMsg = generateMessage
+					}
+				}
+			}
                 
 		}
+		
 //            	.listStyle(SidebarListStyle())
 		.navigationTitle("Sidebar")
             
@@ -170,9 +169,13 @@ struct SideView: View {
 		}) {
 			Text("Sign Out")
 		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
+		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))
 	}
+	
 
 }
 

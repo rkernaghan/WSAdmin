@@ -20,10 +20,13 @@ struct ServiceListView: View {
 	@State private var assignService: Bool = false
 	@State private var editService: Bool = false
 	@State private var listServiceCosts: Bool = false
+	
+	@State private var showAssigned: Bool = true
+	@State private var showUnassigned: Bool = true
 	@State private var showDeleted: Bool = false
-	@State private var showUnassigned: Bool = false
 	@State private var showAlert: Bool = false
 	
+	@State private var emptyArray = [Service]()
 	@State private var serviceNumber: Int = 0
 	@State private var serviceCostList = TutorServiceCostList()
 	
@@ -31,20 +34,37 @@ struct ServiceListView: View {
 	var body: some View {
 		if referenceData.services.isServiceDataLoaded {
 			
-			var serviceArray: [Service] {
-				if showDeleted {
-					return referenceData.services.servicesList
-				} else if showUnassigned {
-					return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
+			var deletedArray: [Service] {
+				if showDeleted  {
+					return referenceData.services.servicesList.filter{$0.serviceStatus == "Deleted"}
 				} else {
-					return referenceData.services.servicesList.filter{$0.serviceStatus != "Deleted"}
+					return emptyArray
 				}
 			}
 			
+			var unassignedArray: [Service] {
+				if showUnassigned {
+					return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
+				} else {
+					return emptyArray
+				}
+			}
+
+			var assignedArray: [Service] {
+				if showAssigned {
+					return referenceData.services.servicesList.filter{$0.serviceStatus == "Assigned"}
+				} else {
+					return emptyArray
+				}
+			}
+			
+			var serviceArray: [Service] = assignedArray + unassignedArray + deletedArray
+			
 			VStack {
 				HStack {
-					Toggle("Show Deleted", isOn: $showDeleted)
+					Toggle("Show Assigned", isOn: $showAssigned)
 					Toggle("Show Unassigned", isOn: $showUnassigned)
+					Toggle("Show Deleted", isOn: $showDeleted)
 					Text("     Service Count: ")
 					Text(String(serviceArray.count))
 				}

@@ -23,7 +23,7 @@ import GoogleSignIn
 	    
             let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.dateFormat = "yyyy/MM/dd"
             let startDate = dateFormatter.string(from: Date())
             //       let maxStudentsInt = Int(maxStudents) ?? 0
             
@@ -81,17 +81,17 @@ import GoogleSignIn
 
     func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, originalTutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) async {
             var tutorSheetID: Int = 0
-// Check if Tutor name has changed with this update
+	    // Check if Tutor name has changed with this update
             if originalTutorName != tutorName {
  
-// Change the name in the Tutor Billing spreadsheet for the previous month and current month (in case this month already billed and Tutor in this month's Billed Tutor sheet)
+		    // Change the name in the Tutor Billing spreadsheet for the previous month and current month (in case this month already billed and Tutor in this month's Billed Tutor sheet)
                     let (prevMonthName, prevMonthYear) = getPrevMonthYear()
                     await self.renameTutorInBilledTutorMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
                     let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
                     await self.renameTutorInBilledTutorMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: currentMonthName, yearName: currentMonthYear)
             
-// Change the sheet name of the Tutor Details sheet and the name in the tutor's sheet
-// First get the sheet ID in the spreadsheet
+		// Change the sheet name of the Tutor Details sheet and the name in the tutor's sheet
+		// First get the sheet ID in the spreadsheet
                     do {
                             if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: originalTutorName) {
                                     print("Found sheet ID: \(sheetID)")
@@ -102,7 +102,7 @@ import GoogleSignIn
                     } catch {
                             print("Error retrieving Tutor Details sheet ID - Error: \(error)")
                     }
-// Then rename the Tutor's sheet in the Tutor Details spreadsheet and change the Tutor name in the Timesheet
+		    // Then rename the Tutor's sheet in the Tutor Details spreadsheet and change the Tutor name in the Timesheet
 		    let range = originalTutorName + PgmConstants.tutorDataTutorNameCell
 		    do {
 			    try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: [[tutorName]])
@@ -117,7 +117,7 @@ import GoogleSignIn
                             print("Error renaming Tutor Details sheet - Error: \(error)")
                     }
 		    
-// Change the name of the Tutor's timesheet and the Tutor name within the Timesheet RefData sheet
+		    // Change the name of the Tutor's timesheet and the Tutor name within the Timesheet RefData sheet
                     let formatter = DateFormatter()
                     formatter.setLocalizedDateFormatFromTemplate("YYYY")
                     let currentYear = formatter.string(from: Date.now)
@@ -133,7 +133,7 @@ import GoogleSignIn
                     } catch {
                             print("Error renaming Timesheet - Error: \(error)")
                     }
-// Change the Tutor name for any Students the updated Tutor is assigned to
+		    // Change the Tutor name for any Students the updated Tutor is assigned to
 		    var tutorFound: Bool = false
 		    var studentNum = 0
 		    let studentCount = referenceData.students.studentsList.count
@@ -149,7 +149,7 @@ import GoogleSignIn
 			    await referenceData.students.saveStudentData()
 		    }
             }
-// Change the name in the Tutors list in the Reference Data sheet and save it
+	    // Change the name in the Tutors list in the Reference Data sheet and save it
             referenceData.tutors.tutorsList[tutorNum].updateTutor(tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
             let saveResult = await referenceData.tutors.saveTutorData()
 
@@ -260,30 +260,30 @@ import GoogleSignIn
 					referenceData.tutors.tutorsList[tutorNum].markDeleted()
 					await referenceData.tutors.saveTutorData()
 					referenceData.dataCounts.decreaseActiveTutorCount()
-// Remove Tutor from Billed Tutor list for the previous month
+					// Remove Tutor from Billed Tutor list for the previous month
 					let (prevMonthName, billingYear) = getPrevMonthYear()
 					let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
                     
 					let tutorBillingMonth = TutorBillingMonth()
                     
-// Get the File ID of the Billed Tutor spreadsheet for the year
+					// Get the File ID of the Billed Tutor spreadsheet for the year
 					do {
 						(result, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 					} catch {
 						print("ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)")
 					}
-// Read in the Billed Tutors for the previous month
+					// Read in the Billed Tutors for the previous month
 					await tutorBillingMonth.loadTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
-// Add the new Tutor to Billed Tutor list for the month
+					// Add the new Tutor to Billed Tutor list for the month
 					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 					let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if billedTutorFound != false {
 						tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
 					}
-// Save the updated Billed Tutor list for the month
+					// Save the updated Billed Tutor list for the month
 					await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName)
 					
-// Delete the Tutor Details sheet for the Tutor
+					// Delete the Tutor Details sheet for the Tutor
 					do {
 						if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName) {
 							tutorSheetID = sheetID
@@ -342,7 +342,7 @@ import GoogleSignIn
 				
 				await referenceData.students.saveStudentData()
 				let dateFormatter = DateFormatter()
-				dateFormatter.dateFormat = "yyyy-MM-dd"
+				dateFormatter.dateFormat = "yyyy/MM/dd"
 				let assignedDate = dateFormatter.string(from: Date())
 				
 				let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
@@ -375,24 +375,32 @@ import GoogleSignIn
 		}
 	}
 	
-	func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async {
-        
+	func assignTutorService(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		var assignResult: Bool = true
+		var assignMessage: String = ""
+		
 		print("Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor")
  
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				print(referenceData.tutors.tutorsList[tutorNum].tutorName)
-				
-		 //               referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-		 //               referenceData.students.saveStudentData()
-				
-				let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-				await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-				await referenceData.tutors.saveTutorData()                    // increased Student count
-				referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-				await referenceData.services.saveServiceData()
+				let (tutorServiceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
+				if !tutorServiceFound {
+					//               referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+					//               referenceData.students.saveStudentData()
+					
+					let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+					await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+					await referenceData.tutors.saveTutorData()                    // increased Student count
+					referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+					await referenceData.services.saveServiceData()
+				} else {
+					assignResult = false
+					assignMessage = "Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) already assigned Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				}
 			}
 		}
+		return(assignResult, assignMessage)
 	}
     
 	func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) async -> (Bool, String) {

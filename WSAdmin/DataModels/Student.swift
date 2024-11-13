@@ -48,7 +48,7 @@ import Foundation
 	func markDeleted() {
 		self.studentStatus = "Deleted"
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentEndDate = dateFormatter.string(from: Date())
 	}
     

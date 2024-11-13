@@ -39,31 +39,41 @@ struct TutorSelectionView: View {
 					
 					Button {
 						Task {
-							
 							let (assignResult, assignMessage) = await studentMgmtVM.assignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
 							if !assignResult {
 								showAlert = true
 								buttonErrorMsg = assignMessage
+							} else {
+								dismiss()
 							}
-							dismiss()
-							
 						}
 					} label: {
 						Label("Assign Tutor to \(referenceData.students.studentsList[studentNum].studentName)", systemImage: "square.and.arrow.up")
 					}
-					.alert(buttonErrorMsg, isPresented: $showAlert) {
-						Button("OK", role: .cancel) { }
+					
+					Button {
+						Task {
+							let (assignResult, assignMessage) = await studentMgmtVM.reassignStudent(studentNum: studentNum, tutorIndex: items, referenceData: referenceData)
+							if !assignResult {
+								showAlert = true
+								buttonErrorMsg = assignMessage
+							} else {
+								dismiss()
+							}
+						}
+					} label: {
+						Label("Reassign Tutor to \(referenceData.students.studentsList[studentNum].studentName)", systemImage: "square.and.arrow.up")
 					}
 				}
 				
-				//				}
 				
 			} primaryAction: { items in
 				//              store.favourite(items)
 			}
-			.alert(buttonErrorMsg, isPresented: $showAlert) {
-				Button("OK", role: .cancel) { }
-			}
+			
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
 }

@@ -32,14 +32,14 @@ import Foundation
 	func markDeleted() {
 		locationStatus = "Deleted"
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())
 	}
 	
 	func markUndeleted() {
 		locationStatus = "Active"
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())
 	}
 	

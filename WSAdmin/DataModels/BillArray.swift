@@ -58,15 +58,25 @@ class BillArray {
 		var clientInvoiceDate: String = ""
 		var clientDueDate: String = ""
 		var clientTerms: String = ""
+		var dueDateStr: String = ""
 		
 		let newInvoice = Invoice()
 		var timesheetServiceName: String = ""
 		var duration: Int = 0
 		
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let invoiceDate = dateFormatter.string(from: Date())
-		let dueDate = invoiceDate
+		
+		let calendar = Calendar.current
+		let now = Date()
+		var dueDate = calendar.date(byAdding: .day, value: 14, to: now)
+		if let dueDate = dueDate {
+			dueDateStr = dateFormatter.string(from: dueDate)
+		} else {
+			dueDateStr = invoiceDate
+		}
+		
 		var prevClientName = ""
 		var clientNum = 0
 		while clientNum < billClients.count {
@@ -99,12 +109,12 @@ class BillArray {
 							clientTerms = " "
 						} else {
 							prevClientName = clientName
-							clientDueDate = dueDate
+							clientDueDate = dueDateStr
 							clientTerms = PgmConstants.termsString
 							clientInvoiceDate = invoiceDate
 						}
 							
-						let invoiceLine = InvoiceLine(invoiceNum: String(clientNum), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
+						let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
 						newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 						//               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
 						

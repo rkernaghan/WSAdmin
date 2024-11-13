@@ -340,7 +340,7 @@ import Foundation
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
 					await referenceData.students.saveStudentData()
 					let dateFormatter = DateFormatter()
-					dateFormatter.dateFormat = "yyyy-MM-dd"
+					dateFormatter.dateFormat = "yyyy/MM/dd"
 					let assignedDate = dateFormatter.string(from: Date())
 					let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
 					await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
@@ -354,7 +354,34 @@ import Foundation
 	
 		return(assignResult, assignMessage)
 	}
-    
+
+	func reassignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
+		var reassignResult: Bool = true
+		var reassignMessage: String = ""
+		
+		for objectID in tutorIndex {
+			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+				let studentName = referenceData.students.studentsList[studentNum].studentName
+				if referenceData.students.studentsList[studentNum].studentStatus == "Assigned" {
+					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
+					
+					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+					await referenceData.students.saveStudentData()
+					let dateFormatter = DateFormatter()
+					dateFormatter.dateFormat = "yyyy/MM/dd"
+					let assignedDate = dateFormatter.string(from: Date())
+					let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
+					await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+					await referenceData.tutors.saveTutorData()                    // increased Student count
+				} else {
+					reassignResult = false
+					reassignMessage = "Student \(studentName) can not be reassigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+				}
+			}
+		}
+		
+		return(reassignResult, reassignMessage)
+	}
     
 	func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var unassignResult: Bool = true

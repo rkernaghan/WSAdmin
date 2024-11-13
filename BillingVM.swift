@@ -270,6 +270,11 @@ import GoogleSignIn
 			// Open the file for writing
 			let fileHandle = try FileHandle(forWritingTo: fileURL)
 			
+			let csvLine = PgmConstants.csvHeader
+			if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+				fileHandle.write(data)
+			}
+			
 			var invoiceLineNum = 0
 			let invoiceLineCount = invoice.invoiceLines.count
 			while invoiceLineNum < invoiceLineCount {
@@ -281,7 +286,7 @@ import GoogleSignIn
 			}
 			// Close the file when done
 			fileHandle.closeFile()
-			print("Lines written to file successfully.")
+			print("Lines written to CSV file successfully.")
 		} catch {
 			print("error write to file: \(error)")
 			
@@ -305,7 +310,7 @@ import GoogleSignIn
 		let invoiceAmount = String(invoiceLine.amount)
 		let invoiceTaxCode = invoiceLine.taxCode
 		let invoiceServiceDate = invoiceLine.serviceDate
-		let csvLine = invoiceNum + PgmConstants.CSVSeperator + invoiceClient + PgmConstants.CSVSeperator + invoiceEmail + PgmConstants.CSVSeperator + invoiceDate + PgmConstants.CSVSeperator + invoiceDueDate + PgmConstants.CSVSeperator + invoiceTerm + PgmConstants.CSVSeperator +  invoiceLocation + PgmConstants.CSVSeperator + invoiceTutor + PgmConstants.CSVSeperator + invoiceItem + PgmConstants.CSVSeperator + invoiceDescription + PgmConstants.CSVSeperator + invoiceQuantity + PgmConstants.CSVSeperator + invoiceRate + PgmConstants.CSVSeperator + invoiceAmount + PgmConstants.CSVSeperator + invoiceTaxCode + PgmConstants.CSVSeperator + invoiceServiceDate
+		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceTerm + PgmConstants.csvSeperator +  invoiceLocation + PgmConstants.csvSeperator + invoiceTutor + PgmConstants.csvSeperator + invoiceItem + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator + invoiceRate + PgmConstants.csvSeperator + invoiceAmount + PgmConstants.csvSeperator + invoiceTaxCode + PgmConstants.csvSeperator + invoiceServiceDate 
 		return(csvLine)
 	}
 	

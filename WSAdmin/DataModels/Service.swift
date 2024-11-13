@@ -42,7 +42,7 @@ import Foundation
 	func markDeleted() {
 		serviceStatus = "Deleted"
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd"
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())
 	}
     
