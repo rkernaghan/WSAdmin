@@ -1,5 +1,5 @@
 //
-//  TutorServiceCostView.swift
+//  ServiceCostByTutorView.swift
 //  WSAdmin
 //
 //  Created by Russell Kernaghan on 2024-10-07.
@@ -7,7 +7,7 @@
 import Foundation
 import SwiftUI
 
-struct TutorServiceCostView: View {
+struct ServiceCostByTutorView: View {
 	@Binding var serviceNum: Int
 	@Binding var serviceCostList: TutorServiceCostList
 	var referenceData: ReferenceData

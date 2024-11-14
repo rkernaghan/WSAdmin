@@ -32,9 +32,9 @@ struct InvoiceView: View {
             VStack {
                 HStack {
                     Text("Total Sessions: \(String(invoice.totalSessions))")
-                    Text("Total Cost: \(String(invoice.totalCost))")
-                    Text("Total Price: \(String(invoice.totalRevenue))")
-                    Text("Total Profit: \(String(invoice.totalProfit))")
+                    Text("Total Cost: \(String(invoice.totalCost.formatted(.number.precision(.fractionLength(2)))))")
+                    Text("Total Price: \(String(invoice.totalRevenue.formatted(.number.precision(.fractionLength(2)))))")
+                    Text("Total Profit: \(String(invoice.totalProfit.formatted(.number.precision(.fractionLength(2)))))")
                 }
                 VStack {
                     Table(invoice.invoiceLines) {

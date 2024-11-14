@@ -30,25 +30,31 @@ struct TutorServiceView: View {
 	
 	var body: some View {
 		
-		VStack {
+		VStack(alignment: .leading) {
 			HStack {
-				Text("Timesheet Name")
+				Text("Timesheet Name: ")
+					.frame(width: 110)
+					.textFieldStyle(.roundedBorder)
 				Text(timesheetName)
-					.frame(width: 300)
+					.frame(width: 120)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
-				Text("Invoice Name")
+				Text("Invoice Name: ")
+					.frame(width: 100)
+					.textFieldStyle(.roundedBorder)
 				Text(invoiceName)
-					.frame(width: 300)
+					.frame(width: 120)
 					.textFieldStyle(.roundedBorder)
 			}
 			
 			HStack {
-				Text("Billing Type")
+				Text("Billing Type: ")
+					.frame(width: 80)
+					.textFieldStyle(.roundedBorder)
 				Text(billingType.rawValue)
-					.frame(width: 150)
+					.frame(width: 80)
 					.textFieldStyle(.roundedBorder)
 			}
 			

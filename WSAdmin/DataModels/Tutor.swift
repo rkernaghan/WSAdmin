@@ -233,14 +233,13 @@ import Foundation
 				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
 				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
 			} catch {
-                
+				print("ERROR: could not read Tutor Student sheet cells for \(tutorName)")
 			}
-            
+			// Build the Tutor Students list from the cells read in
 			if let sheetData = sheetData {
-			    sheetCells = sheetData.values
+				sheetCells = sheetData.values
+				loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
 			}
-// Build the Tutor Students list from the cells read in
-			loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
 		}
 	}
     
@@ -259,10 +258,13 @@ import Foundation
 			
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
+				
+				studentCount = Int( sheetCells[0][0] ) ?? 0
+				serviceCount = Int( sheetCells[1][0] ) ?? 0
+			} else {
+				studentCount = 0
+				serviceCount = 0
 			}
-			
-			studentCount = Int( sheetCells[0][0] ) ?? 0
-			serviceCount = Int( sheetCells[1][0] ) ?? 0
 			
 		} catch {
 			print("Error: could not read Tutor Data Counts for Tutor \(tutorName), will try again")
@@ -271,10 +273,12 @@ import Foundation
 				
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
+					studentCount = Int( sheetCells[0][0] ) ?? 0
+					serviceCount = Int( sheetCells[1][0] ) ?? 0
+				} else {
+					studentCount = 0
+					serviceCount = 0
 				}
-				
-				studentCount = Int( sheetCells[0][0] ) ?? 0
-				serviceCount = Int( sheetCells[1][0] ) ?? 0
 				
 			} catch {
 				print("Error: could not Tutor Data Counts for Tutor \(tutorName) on second attempt")
@@ -345,27 +349,26 @@ import Foundation
 		return(updateValues)
 	}
     
-    func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async {
- 
-        var sheetCells = [[String]]()
-        var sheetData: SheetData?
-        
-// Read in the Tutor Services data from the Tutor Details spreadsheet
-        if tutorServiceCount > 0 {
-            do {
-                let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
-                sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range) 
-            } catch {
-                
-            }
-            
-            if let sheetData = sheetData {
-                sheetCells = sheetData.values
-            }
-// Build the Tutor Services list from the cells read in
-            loadTutorServiceRows(tutorServiceCount: tutorServiceCount, sheetCells: sheetCells)
-        }
-    }
+	func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async {
+		
+		var sheetCells = [[String]]()
+		var sheetData: SheetData?
+		
+		// Read in the Tutor Services data from the Tutor Details spreadsheet
+		if tutorServiceCount > 0 {
+			do {
+				let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range)
+			} catch {
+				print("ERROR: could not read Tutor Services sheet cells for \(tutorName)")
+			}
+			// Build the Tutor Services list from the cells read in
+			if let sheetData = sheetData {
+				sheetCells = sheetData.values
+				loadTutorServiceRows(tutorServiceCount: tutorServiceCount, sheetCells: sheetCells)
+			}
+		}
+	}
     
 	func saveTutorServiceData(tutorName: String) async -> Bool {
 		var result: Bool = true

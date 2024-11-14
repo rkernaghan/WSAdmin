@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TutorService: Identifiable {
+@Observable class TutorService: Identifiable {
     
     var serviceKey: String
     var timesheetServiceName: String

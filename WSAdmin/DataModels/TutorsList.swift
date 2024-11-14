@@ -66,12 +66,11 @@ import Foundation
 			} catch {
 				print("ERROR: Could not read in Tutor data from ReferenceData spreadsheet")
 			}
-			
+			// Build the Tutor list from the cells read in
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
+				await loadTutorRows(tutorCount: tutorCount, sheetCells: sheetCells)
 			}
-			// Build the Tutor list from the cells read in
-			await loadTutorRows(tutorCount: tutorCount, sheetCells: sheetCells)
 		}
 	}
 	//

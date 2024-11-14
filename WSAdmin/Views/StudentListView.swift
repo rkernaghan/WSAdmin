@@ -212,9 +212,9 @@ struct StudentListView: View {
 							} label: {
 								Label("Suspend Student", systemImage: "trash")
 							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
-							}
+//							.alert(buttonErrorMsg, isPresented: $showAlert) {
+//								Button("OK", role: .cancel) { }
+//							}
 							
 							Button(role: .destructive) {
 								Task {
@@ -227,9 +227,9 @@ struct StudentListView: View {
 							} label: {
 								Label("UnSuspend Student", systemImage: "trash")
 							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
-							}
+//							.alert(buttonErrorMsg, isPresented: $showAlert) {
+//								Button("OK", role: .cancel) { }
+//							}
 							
 							
 							Button(role: .destructive) {
@@ -243,24 +243,24 @@ struct StudentListView: View {
 							} label: {
 								Label("Delete Student", systemImage: "trash")
 							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
-							}
+//							.alert(buttonErrorMsg, isPresented: $showAlert) {
+//								Button("OK", role: .cancel) { }
+//							}
 							
-							Button(role: .destructive) {
-								Task {
-									let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
-									if unDeleteResult == false {
-										showAlert = true
-										buttonErrorMsg = unDeleteMessage
-									}
-								}
-							} label: {
-								Label("UnDelete Student", systemImage: "trash")
-							}
-							.alert(buttonErrorMsg, isPresented: $showAlert) {
-								Button("OK", role: .cancel) { }
-							}
+//							Button(role: .destructive) {
+//								Task {
+//									let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
+//									if unDeleteResult == false {
+//										showAlert = true
+//										buttonErrorMsg = unDeleteMessage
+//									}
+//								}
+//							} label: {
+//								Label("UnDelete Student", systemImage: "trash")
+//							}
+//							.alert(buttonErrorMsg, isPresented: $showAlert) {
+//								Button("OK", role: .cancel) { }
+//							}
 						}
 						
 					} else {

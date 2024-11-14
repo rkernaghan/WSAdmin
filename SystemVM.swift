@@ -32,7 +32,12 @@ import Foundation
 	
 		var locationRevenue: Float = 0.0
 		var studentRevenue: Float = 0.0
+		var studentCost: Float = 0.0
 		var tutorRevenue: Float = 0.0
+		var tutorCost: Float = 0.0
+		
+		var tutorSessions: Int = 0
+		var studentSessions: Int = 0
 		
 		var tutorStudentCount: Int = 0
 		var assignedStudentCount = 0
@@ -96,6 +101,9 @@ import Foundation
 			}
 			totalStudents += 1
 			studentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
+			studentCost += referenceData.students.studentsList[studentNum].studentTotalCost
+			studentSessions += referenceData.students.studentsList[studentNum].studentSessions
+			
 			// Check if Student found in Billed Student List for previous month
 			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
 				let (studentFoundFlag, billedStudentNum) = prevBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
@@ -267,6 +275,8 @@ import Foundation
 			
 			totalTutors += 1
 			tutorRevenue += referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
+			tutorCost += referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
+			tutorSessions += referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions
 			
 			tutorNum += 1
 		}
@@ -298,11 +308,48 @@ import Foundation
 		
 
 // Validate that the Student names in the Master Reference worksheet match the student names in the Student Billing spreadsheet
+		// Get the session count, total cost and total revenue for the previous Billed Student month (current month may not be done yet)
+		var billedStudentSessionCount: Int  = 0
+		var billedStudentTotalCost: Float = 0.0
+		var billedStudentTotalRevenue: Float = 0.0
+		var billedStudentNum = 0
+		let billedStudentCount = prevBilledStudentMonth.studentBillingRows.count
+		while billedStudentNum < billedStudentCount {
+			billedStudentSessionCount += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalSessions
+			billedStudentTotalRevenue += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalRevenue
+			billedStudentTotalCost += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalCost
+			
+			billedStudentNum += 1
+		}
 		
-
-// Validate that the sum of the Tutors total billing equals Student total billing equals City total billing
-		if tutorRevenue != studentRevenue || studentRevenue != locationRevenue || tutorRevenue != locationRevenue {
-			print("Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue) and Location revenue \(locationRevenue) do not match")
+		// Get the session count, total cost and total revenue for the previous Bill Tutor month (current month may not be done yet)
+		var billedTutorSessionCount: Int  = 0
+		var billedTutorTotalCost: Float = 0.0
+		var billedTutorTotalRevenue: Float = 0.0
+		var billedTutorNum = 0
+		let billedTutorCount = prevBilledTutorMonth.tutorBillingRows.count
+		while billedTutorNum < billedTutorCount {
+//			print("Billed Tutor: \(prevBilledTutorMonth.tutorBillingRows[billedTutorNum].tutorName)  \(prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalSessions)")
+			billedTutorSessionCount += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalSessions
+			billedTutorTotalRevenue += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalRevenue
+			billedTutorTotalCost += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalCost
+			
+			billedTutorNum += 1
+		}
+		
+		// Validate that the sum of the Tutors total revenue equals Student total revenue equals Location total revenue equals Billed Student revenue count equals Billed Tutor revenue Count
+		if tutorRevenue != studentRevenue || studentRevenue != locationRevenue || tutorRevenue != locationRevenue || locationRevenue != billedTutorTotalRevenue || billedTutorTotalRevenue != billedStudentTotalRevenue {
+			print("Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue), Location revenue \(locationRevenue), Billed Tutor revenue \(billedTutorTotalRevenue) and Billed Student revenue \(billedStudentTotalRevenue) do not match")
+		}
+		
+		// Validate that the Tutors total cost, Student total cost, billed Student total cost and billed Tutor Total Cost all match
+		if tutorCost != studentCost || studentCost != billedTutorTotalCost || billedTutorTotalCost != billedStudentTotalCost {
+			print("Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match")
+		}
+		
+		// Validate that the Tutor session count, Student session count, Billed Tutor session count and the Billed Student session count all match
+		if tutorSessions != studentSessions || studentSessions != billedStudentSessionCount || billedStudentSessionCount != billedTutorSessionCount {
+			print("Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match")
 		}
 		
 		if tutorStudentCount != assignedStudentCount {

@@ -235,7 +235,7 @@ struct ServiceListView: View {
 				}
 				.navigationDestination(isPresented: $listServiceCosts) {
 					if $serviceCostList.tutorServiceCostList.count > 0 {
-						TutorServiceCostView(serviceNum: $serviceNumber, serviceCostList: $serviceCostList, referenceData: referenceData)
+						ServiceCostByTutorView(serviceNum: $serviceNumber, serviceCostList: $serviceCostList, referenceData: referenceData)
 					}
 				}
 			}

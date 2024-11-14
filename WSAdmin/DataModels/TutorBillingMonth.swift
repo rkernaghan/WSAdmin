@@ -108,7 +108,7 @@ class TutorBillingMonth {
 			let monthRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
 			let monthProfit: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
 			
-			let totalSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
+			let totalSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingTotalSessionCol]) ?? 0
 			let totalCost: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
 			let totalRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
 			let totalProfit: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0

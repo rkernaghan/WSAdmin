@@ -354,7 +354,6 @@ let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "S
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 
 var buttonErrorMsg: String = " "
-var runMode: String = "TEST"
 
 var studentBillingFileNamePrefix: String = ""
 var tutorBillingFileNamePrefix: String = ""
@@ -367,9 +366,10 @@ var refreshOAuthToken: String = ""
 var clientOAuthID: String = ""
 var tokenExpiryTime: Date = Date.now
 
-var oauthToken: OAuthToken?
-
+// var oauthToken: OAuthToken?
 let oauth2Token = OAuth2Token()
+
+var runMode: String = "TEST"
 
 @main
 struct WSAdmin: App {

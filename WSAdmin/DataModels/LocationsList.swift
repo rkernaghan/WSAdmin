@@ -71,12 +71,11 @@ import GoogleSignIn
 			} catch {
 				print("ERROR: could not read Locations data")
 			}
-			
+			// Build the Locations list from the cells read in
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
+				loadLocationRows(locationCount: locationCount, sheetCells: sheetCells)
 			}
-			// Build the Locations list from the cells read in
-			loadLocationRows(locationCount: locationCount, sheetCells: sheetCells)
 		}
 	}
 	

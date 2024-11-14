@@ -103,7 +103,6 @@ struct ServiceView: View {
 			.frame(width:200)
 			.clipped()
 			
-			
 			HStack {
 				Picker("Billing Type", selection: $billingType) {
 					ForEach(BillingTypeOption.allCases, id:\.self) { option in

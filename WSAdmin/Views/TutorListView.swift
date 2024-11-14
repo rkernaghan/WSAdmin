@@ -18,7 +18,7 @@ struct TutorListView: View {
 	@State private var listTutorStudents: Bool = false
 	@State private var listTutorServices: Bool = false
 	@State private var assignService: Bool = false
-	@State private var editService: Bool = false
+	@State private var editServiceCosts: Bool = false
 	@State private var editTutor: Bool = false
 	
 	@State private var tutorNumber: Int = 0
@@ -184,14 +184,14 @@ struct TutorListView: View {
 								}
 							}
 							
-							Button("Edit Service Costs for Tutor") {
-								for objectID in items {
-									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-										tutorNumber = idx
-										editService.toggle()
-									}
-								}
-							}
+//							Button("Edit Service Costs for Tutor") {
+//								for objectID in items {
+//									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+//										tutorNumber = idx
+//										editServiceCosts.toggle()
+//									}
+//								}
+//							}
 							
 							Button("Edit Tutor") {
 								for objectID in items {
@@ -200,6 +200,32 @@ struct TutorListView: View {
 										editTutor.toggle()
 									}
 								}
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutor(tutorIndex: items, referenceData: referenceData)
+									if suspendResult == false {
+										showAlert = true
+										buttonErrorMsg = suspendMessage
+									}
+								}
+							} label: {
+								Label("Suspend Tutor", systemImage: "trash")
+							}
+
+							
+							Button(role: .destructive) {
+								Task {
+									let (unsuspendResult, unsuspendMessage) = await tutorMgmtVM.unsuspendTutor(tutorIndex: items, referenceData: referenceData)
+									if unsuspendResult == false {
+										showAlert = true
+										buttonErrorMsg = unsuspendMessage
+										//                                   viewChange.toggle()
+									}
+								}
+							} label: {
+								Label("UnSuspend Tutor", systemImage: "trash")
 							}
 							
 							Button(role: .destructive) {
@@ -227,35 +253,6 @@ struct TutorListView: View {
 //							} label: {
 //								Label("Undelete Tutor", systemImage: "trash")
 //							}
-							
-							Button(role: .destructive) {
-								Task {
-									let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutor(tutorIndex: items, referenceData: referenceData)
-									if suspendResult == false {
-										showAlert = true
-										buttonErrorMsg = suspendMessage
-									}
-								}
-							} label: {
-								Label("Suspend Tutor", systemImage: "trash")
-							}
-//							.alert(buttonErrorMsg, isPresented: $showAlert) {
-//								Button("OK", role: .cancel) {
-//								}
-//							}
-							
-							Button(role: .destructive) {
-								Task {
-									let (unsuspendResult, unsuspendMessage) = await tutorMgmtVM.unsuspendTutor(tutorIndex: items, referenceData: referenceData)
-									if unsuspendResult == false {
-										showAlert = true
-										buttonErrorMsg = unsuspendMessage
-										//                                   viewChange.toggle()
-									}
-								}
-							} label: {
-								Label("UnSuspend Tutor", systemImage: "trash")
-							}
 						}
 						
 					} else {
@@ -287,9 +284,9 @@ struct TutorListView: View {
 			.navigationDestination(isPresented: $assignStudent) {
 				StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
 			}
-			.navigationDestination(isPresented: $editService) {
-//				EditStudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
-			}
+//			.navigationDestination(isPresented: $editServiceCosts) {
+//				TutorServiceCostsView(tutorNum: $tutorNumber, referenceData: referenceData)
+//			}
 			.navigationDestination(isPresented: $listTutorStudents) {
 				TutorStudentsView(tutorNum: $tutorNumber, referenceData: referenceData)
 			}
