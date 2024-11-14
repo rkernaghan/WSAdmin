@@ -23,15 +23,12 @@ import GoogleSignIn
 		
 		let tutorBillingMonth = TutorBillingMonth()
 		
-//       let (monthName, billingYear) = getCurrentMonthYear()
 		let (prevMonthName, prevYearName) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
 		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
 		let billArray = BillArray()
 		print ("//")
 		print("//")
-		
-//    print("Before get Student Billing File ID Async")
 		
 		for objectID in tutorSet {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
@@ -44,14 +41,12 @@ import GoogleSignIn
 				billArray.processTimesheet(timesheet: timesheet)
 			}
 		}
-//            print("Tutor List: \(tutorList)")
-//                      billArray.printBillArray()
 		
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
 		} catch {
-			
+			print("Error: could not load Billed Tutor Month")
 		}
 		
 		let (alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
@@ -62,7 +57,6 @@ import GoogleSignIn
 		
 		invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 		
-		//            invoice.printInvoice()
 		return(invoice, tutorBillingMonth, alreadyBilledTutors)
 		
 	}
@@ -233,8 +227,6 @@ import GoogleSignIn
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
 		
-		var resultFlag: Bool = false
-		
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
@@ -242,55 +234,59 @@ import GoogleSignIn
 		
 		do {
 			try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
-		} catch {
-			print("Error creating directory: \(error)")
-		}
-		
-		do {
-			let dateFormatter = DateFormatter()
-			dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
-			let fileDate = dateFormatter.string(from: Date())
 			
-			let fileName = "CSV Export File \(fileDate).csv"
-			let fileManager = FileManager.default
-			
-			// Get the path to the Documents directory
-			guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-				print("Could not find the Documents directory.")
-				return(false, "Count not find the Documents Directory")
-			}
-			
-			// Set the file path
-			let fileURL = documentsDirectory.appendingPathComponent(fileName)
-			
-			// Create the file if it doesn't exist
-			if !fileManager.fileExists(atPath: fileURL.path) {
-				fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
-			}
-			// Open the file for writing
-			let fileHandle = try FileHandle(forWritingTo: fileURL)
-			
-			let csvLine = PgmConstants.csvHeader
-			if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
-				fileHandle.write(data)
-			}
-			
-			var invoiceLineNum = 0
-			let invoiceLineCount = invoice.invoiceLines.count
-			while invoiceLineNum < invoiceLineCount {
-				let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+			do {
+				let dateFormatter = DateFormatter()
+				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+				let fileDate = dateFormatter.string(from: Date())
+				
+				let fileName = "CSV Export File \(fileDate).csv"
+				let fileManager = FileManager.default
+				
+				// Get the path to the Documents directory
+				guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+					print("Could not find the Documents directory.")
+					return(false, "Count not find the Documents Directory")
+				}
+				
+				// Set the file path
+				let fileURL = documentsDirectory.appendingPathComponent(fileName)
+				
+				// Create the file if it doesn't exist
+				if !fileManager.fileExists(atPath: fileURL.path) {
+					fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+				}
+				// Open the file for writing
+				let fileHandle = try FileHandle(forWritingTo: fileURL)
+				
+				let csvLine = PgmConstants.csvHeader
 				if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 					fileHandle.write(data)
 				}
-				invoiceLineNum += 1
+				
+				var invoiceLineNum = 0
+				let invoiceLineCount = invoice.invoiceLines.count
+				while invoiceLineNum < invoiceLineCount {
+					let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+						fileHandle.write(data)
+					}
+					invoiceLineNum += 1
+				}
+				// Close the file when done
+				fileHandle.closeFile()
+				print("Lines written to CSV file successfully.")
+			} catch {
+				print("Error: Could not write to CSV file: \(error)")
+				generationFlag = false
+				generationMessage = "Error: Could not write to CSV file: \(error)"
 			}
-			// Close the file when done
-			fileHandle.closeFile()
-			print("Lines written to CSV file successfully.")
 		} catch {
-			print("error write to file: \(error)")
-			
+			print("Error creating directory: \(error)")
+			generationFlag = false
+			generationMessage = "Error: could not create directory for CSV File"
 		}
+		
 		return(generationFlag, generationMessage)
 	}
 	
