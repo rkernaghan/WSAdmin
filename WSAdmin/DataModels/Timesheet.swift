@@ -29,19 +29,25 @@ class Timesheet: Identifiable {
 //		month: the String name of the month to load the Timesheet data from
 //		timesheetID: the Google Drive File ID of the Tutor Timesheet
 //
-	func loadTimesheetData(tutorName: String, month: String, timesheetID: String) async {
+	func loadTimesheetData(tutorName: String, month: String, timesheetID: String) async -> Bool {
+		var completionFlag: Bool = true
+		
 		var sheetData: SheetData?
 		let range = month + PgmConstants.timesheetDataRange
 		// read in the cells from one month's Timesheet
 		do {
 			sheetData = try await readSheetCells(fileID: timesheetID, range: range)
+			// Load the sheet cells into this Timesheet
+			if let sheetData = sheetData {
+				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values)
+			} else {
+				completionFlag = false
+			}
 		} catch {
 			print("ERROR: could not readSheetCells for \(tutorName) Timesheet")
+			completionFlag = false
 		}
-		// Load the sheet cells into this Timesheet
-		if let sheetData = sheetData {
-			loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values)
-		}
+		return(completionFlag)
 	}
 
 //

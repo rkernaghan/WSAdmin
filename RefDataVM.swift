@@ -17,16 +17,26 @@ import Foundation
   
     
    
-    func loadReferenceData(referenceData: ReferenceData) async {
-
-        await referenceData.dataCounts.fetchDataCounts( referenceData: referenceData )
-        if referenceData.dataCounts.isDataCountsLoaded {
-            await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
-            await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
-            await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
-            await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
- 
-        }
-    }
-    
+	func loadReferenceData(referenceData: ReferenceData) async -> Bool{
+		var completionResult: Bool = true
+		
+		let fetchCountsFlag = await referenceData.dataCounts.fetchDataCounts( referenceData: referenceData )
+		if !fetchCountsFlag {
+			completionResult = false
+		}
+		
+		if referenceData.dataCounts.isDataCountsLoaded {
+			let fetchTutorsResult = await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
+			let fetchStudentsResult = await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
+			let fetchLocationsResult = await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
+			let fetchServicesResult = await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
+			
+			if !fetchTutorsResult || !fetchStudentsResult || !fetchLocationsResult || !fetchServicesResult {
+				completionResult = false
+			}
+			
+		}
+		return(completionResult)
+	}
+	
 }

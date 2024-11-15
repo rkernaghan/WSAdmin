@@ -366,7 +366,6 @@ var refreshOAuthToken: String = ""
 var clientOAuthID: String = ""
 var tokenExpiryTime: Date = Date.now
 
-// var oauthToken: OAuthToken?
 let oauth2Token = OAuth2Token()
 
 var runMode: String = "TEST"

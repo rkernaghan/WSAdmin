@@ -65,7 +65,8 @@ import Foundation
 	}
     
     
-	func fetchStudentData(studentCount: Int) async {
+	func fetchStudentData(studentCount: Int) async -> Bool {
+		var completionFlag: Bool = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -74,34 +75,42 @@ import Foundation
 		if studentCount > 0 {
 			do {
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1) )
+				// Build the Students list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					loadStudentRows(studentCount: studentCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
-				
-			}
-			// Build the Students list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				loadStudentRows(studentCount: studentCount, sheetCells: sheetCells)
+				completionFlag = false
+				print("Error: could not read Student Data from ReferenceData spreadsheet")
 			}
 		}
+		return(completionFlag)
 	}
 	
 	func saveStudentData() async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
 		// Write the Student rows to the Reference Data spreadsheet
 		let updateValues = unloadStudentRows()
 		let count = updateValues.count
 		let range = PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+			}
 		} catch {
 			print ("Error: Saving Student Data rows failed")
-			result = false
+			completionFlag = false
 		}
 		
-		return(result)
+		return(completionFlag)
 	}
 	
 	func loadStudentRows(studentCount: Int, sheetCells: [[String]] ) {
+		var completionFlag = false
 		
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"

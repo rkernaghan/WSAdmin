@@ -40,31 +40,40 @@ struct DataMgmtView: View {
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()
 	@State var referenceData = ReferenceData()
+	@State private var showAlert: Bool = false
     
 	var body: some View {
 		
-		SideView(referenceData: referenceData)
-		.frame(minWidth: 100, minHeight: 140)
+		VStack {
+			SideView(referenceData: referenceData)
+				.frame(minWidth: 100, minHeight: 140)
 			
-		.onAppear(perform: {
-			Task {
-				if runMode == "PROD" {
-					(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
-					(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
-					(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
-					studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
-					tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-				} else {
-					(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
-					(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
-					(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
-					studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
-					tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
-				}
-				await refDataVM.loadReferenceData(referenceData: referenceData)
-			}
-		})
-		
+				.onAppear(perform: {
+					Task {
+						if runMode == "PROD" {
+							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
+							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
+							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
+							studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
+							tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
+						} else {
+							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
+							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
+							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
+							studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
+							tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
+						}
+						let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
+						if !loadResult {
+							showAlert.toggle()
+							buttonErrorMsg = "Critical Error: Unable to load Reference Data - Restart program"
+						}
+					}
+				})
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
+		}
 			
 	}
 	

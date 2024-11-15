@@ -81,45 +81,54 @@ class DataCounts {
 		activeLocations -= 1
 	}
 	
-	func fetchDataCounts(referenceData: ReferenceData) async {
-		
+	func fetchDataCounts(referenceData: ReferenceData) async -> Bool {
+		var completionFlag: Bool = true
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		
 		// Read in the Data Counts from the Reference Data spreadsheet
 		
 		do {
-			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange  )
-		} catch {
+			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange )
+			if let sheetData = sheetData {
+				sheetCells = sheetData.values
+				// Build the Billed Tutors list for the month from the data read in
+				if sheetCells.count > 0 {
+					loadDataCountRows(sheetCells: sheetCells)
+				} else {
+					print("Error: could not read Data Counts")
+					completionFlag = false
+				}
+			} else {
+				completionFlag = false
+			}
 			
+		} catch {
+			completionFlag = false
+			print("Error: Could not read Data Counts from ReferenceData spreadsheet")
 		}
 		
-		if let sheetData = sheetData {
-			sheetCells = sheetData.values
-		}
-		// Build the Billed Tutors list for the month from the data read in
-		if sheetCells.count > 0 {
-			loadDataCountRows(sheetCells: sheetCells)
-		} else {
-			print("Error: could not read Data Counts")
-		}
+		return(completionFlag)
 	}
 	
 	
 	func saveDataCounts() async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
 // Write the Data Counts to the Reference Data spreadsheet
 		let updateValues = unloadLocationRows()
 		
 		let range = PgmConstants.dataCountRange
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+			}
 		} catch {
 			print ("Error: Saving Data Count rows failed")
-			result = false
+			completionFlag = false
 		}
 		
-		return(result)
+		return(completionFlag)
 	}
 
 	func loadDataCountRows(sheetCells: [[String]] ) {
@@ -136,7 +145,6 @@ class DataCounts {
 		self.totalLocations = Int(sheetCells[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol]) ?? 0
 		self.activeLocations = Int(sheetCells[PgmConstants.dataCountActiveLocationsRow][PgmConstants.dataCountActiveLocationsCol]) ?? 0
 		self.highestLocationKey = Int(sheetCells[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol]) ?? 0
-		self.isDataCountsLoaded = true
 		self.isDataCountsLoaded = true
 	}
 	

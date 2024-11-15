@@ -104,8 +104,15 @@ import Foundation
 				}
 			}
 		}
-		await referenceData.locations.saveLocationData()
-		await referenceData.dataCounts.saveDataCounts()
+		deleteResult = await referenceData.locations.saveLocationData()
+		if !deleteResult {
+			deleteMessage = "Critical Error: Could not save Location data"
+		} else {
+			deleteResult = await referenceData.dataCounts.saveDataCounts()
+			if !deleteResult {
+				deleteMessage = "Critical Error: Could not save Data Counts data"
+			}
+		}
         
 		return(deleteResult, deleteMessage)
 	}

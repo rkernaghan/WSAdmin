@@ -380,41 +380,70 @@ import Foundation
 	//	3) The Billed Tutor spreadsheet for the current year
 	//	4) The Billed Student spreadsheet for the current year
 	//
-	func backupSystem() async {
-		print("Backing up system")
+	func backupSystem() async -> Bool {
+		var completionFlag: Bool = true
+		var copyBilledTutorResult: [String: Any]?
+		var copyBilledStudentResult: [String: Any]?
 		
 		var tutorBillingFileName: String = ""
 		var studentBillingFileName: String = ""
+		var copyFileName: String = ""
 		
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
 		let backupDate = dateFormatter.string(from: Date())
 		dateFormatter.dateFormat = "yyyy"
 		let currentYear = dateFormatter.string(from: Date())
-
+		
+		print("Backing up system")
+		
 		do {
 			// Copy the Reference Data spreadsheet
-			try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: PgmConstants.referenceDataProdFileName + " Backup " + backupDate)
+			if runMode == "PROD" {
+				copyFileName = PgmConstants.referenceDataProdFileName + " Backup " + backupDate
+			} else {
+				copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
+			}
+			let copyRefDataResult = try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
 			print("Reference Data spreadsheet copied to file: \(PgmConstants.referenceDataProdFileName + " Backup " + backupDate)")
 			
 			// Copy the Tutor Details spreadsheet
-			try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)
+			if runMode == "PROD" {
+				copyFileName = PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate
+			} else {
+				copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
+			}
+			let copyDetailsDataResult = try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)
 			print("Tutor Details spreadsheet copied to file: \(PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)")
 			
 			// Copy the Tutor Billing spreadsheet
 			tutorBillingFileName = tutorBillingFileNamePrefix + currentYear
 			let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			try await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: tutorBillingFileName + " Backup " + backupDate)
-			print("Billed Tutor spreadsheet copied to file: \(tutorBillingFileName + " Backup " + backupDate)")
+			if tutorFileFound {
+				copyBilledTutorResult = try await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: tutorBillingFileName + " Backup " + backupDate)
+				print("Billed Tutor spreadsheet copied to file: \(tutorBillingFileName + " Backup " + backupDate)")
+			} else {
+				completionFlag = false
+			}
 			
 			// Copy the Student Billing spreadsheet
 			studentBillingFileName = studentBillingFileNamePrefix + currentYear
 			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			try await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: studentBillingFileName + " Backup " + backupDate)
-			print("Billed Student spreadsheet copied to file: \(studentBillingFileName + " Backup " + backupDate)")
+			if studentFileFound {
+				copyBilledStudentResult = try await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: studentBillingFileName + " Backup " + backupDate)
+				print("Billed Student spreadsheet copied to file: \(studentBillingFileName + " Backup " + backupDate)")
+			} else {
+				completionFlag = false
+			}
+			
+			if copyRefDataResult == nil || copyDetailsDataResult == nil || copyBilledTutorResult == nil || copyBilledStudentResult == nil {
+				completionFlag = false
+			}
 		} catch {
 			print("ERROR: Could not backup application files")
+			completionFlag = false
 		}
+		return(completionFlag)
 		
 	}
 	//
@@ -431,15 +460,19 @@ import Foundation
 		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
 		do {
 			(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
+			// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
+			if fileIdResult {
+				let readResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+				if !readResult {
+					print("Error: Could not load Tutor Billing Data for \(monthName)")
+				}
+			} else {
+				print("ERROR: could notget FileID for file: \(tutorBillingFileName)")
+			}
 		} catch {
 			print("Could not get FileID for file: \(tutorBillingFileName)")
 		}
-		// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
-		if fileIdResult {
-			await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-		} else {
-			print("ERROR: could notget FileID for file: \(tutorBillingFileName)")
-		}
+		
 		return(tutorBillingMonth)
 	}
 	//
@@ -456,15 +489,19 @@ import Foundation
 		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
 		do {
 			(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
+			// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
+			if fileIdResult {
+				let readResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+				if !readResult {
+					print("Error: Could not load Student Billing Data for \(monthName)")
+				}
+			} else {
+				print("ERROR: could not get FileID for file: \(studentBillingFileName)")
+			}
 		} catch {
 			print("Could not get FileID for file: \(studentBillingFileName)")
 		}
-		// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
-		if fileIdResult {
-			await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
-		} else {
-			print("ERROR: could not get FileID for file: \(studentBillingFileName)")
-		}
+		
 		return(studentBillingMonth)
 	}
 	

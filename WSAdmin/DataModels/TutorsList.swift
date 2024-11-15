@@ -54,7 +54,8 @@ import Foundation
 	}
 	
 	
-	func fetchTutorData(tutorCount: Int) async {
+	func fetchTutorData(tutorCount: Int) async -> Bool {
+		var completionFlag: Bool = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -63,15 +64,20 @@ import Foundation
 		if tutorCount > 0 {
 			do {
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + tutorCount - 1) )
+				// Build the Tutor list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					completionFlag = await loadTutorRows(tutorCount: tutorCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
 				print("ERROR: Could not read in Tutor data from ReferenceData spreadsheet")
+				completionFlag = false
 			}
-			// Build the Tutor list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				await loadTutorRows(tutorCount: tutorCount, sheetCells: sheetCells)
-			}
+			
 		}
+		return(completionFlag)
 	}
 	//
 	// This function saves the Tutors data in the ReferenceData object and saves it back to the ReferenceData spreadsheet.
@@ -97,10 +103,12 @@ import Foundation
 	// This function takes a 2 dimensional array of strings, read from the ReferenceData spreadsheet and
 	// populates the array of Tutors in the ReferenceData object
 	//
-	func loadTutorRows(tutorCount: Int, sheetCells: [[String]] ) async {
+	func loadTutorRows(tutorCount: Int, sheetCells: [[String]] ) async -> Bool {
+		var completionFlag: Bool = true
+		
 		var tutorIndex = 0
 		var rowNumber = 0
-		while tutorIndex < tutorCount {
+		while tutorIndex < tutorCount && completionFlag {
 			
 			let newTutorKey = sheetCells[rowNumber][PgmConstants.tutorKeyPosition]
 			let newTutorName = sheetCells[rowNumber][PgmConstants.tutorNamePosition]
@@ -124,16 +132,19 @@ import Foundation
 			
 			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit)
 			self.tutorsList.append(newTutor)
-			print("Loaded tutor \(newTutorName)")
+			
 			if newTutorStatus != "Deleted" {
-				await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorName: newTutorName, tutorDataFileID: tutorDetailsFileID)
+				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorName: newTutorName, tutorDataFileID: tutorDetailsFileID)
 			}
+			print("Loaded tutor \(newTutorName)")
 			
 			tutorIndex += 1
 			rowNumber += 1
 		}
 		print("Loaded Base Tutor Data for \(tutorIndex) Tutors")
 		self.isTutorDataLoaded = true
+		
+		return(completionFlag)
 	}
 	//
 	// This function takes the attributes for each Tutor and copies them to a 2 dimensional array of strings, which it returns,

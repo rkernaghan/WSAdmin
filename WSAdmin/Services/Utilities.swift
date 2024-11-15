@@ -148,6 +148,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			if let httpResponse = response as? HTTPURLResponse {
 				if httpResponse.statusCode != 200 {
 					print("Write Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+					completionFlag = false
 				}
 			}
 			// Check for HTTP response status
@@ -167,9 +168,8 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 	return(completionFlag)
 }
 
-func renameGoogleDriveFile(fileId: String, newName: String) async throws {
-//	    var accessToken: String
-	    
+func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool {
+	var renameResult: Bool = true
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)"
 	    
 	let tokenFound = await getAccessToken()
@@ -205,8 +205,13 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws {
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
 				print("File renamed successfully: \(json)")
 			}
+		} else {
+			renameResult = false
 		}
+	} else {
+		renameResult = false
 	}
+	return(renameResult)
 }
 
 // Function to copy a Google Drive file
@@ -407,7 +412,8 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 
 
 // Function to rename a specific sheet in a Google Sheets spreadsheet
-func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws {
+func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws -> Bool {
+	var renameResult: Bool = true
 	    
 	let tokenFound = await getAccessToken()
 	if tokenFound {
@@ -456,8 +462,15 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
 				print("Sheet renamed successfully: \(json)")
 			}
+		} else {
+			renameResult = false
 		}
+		
+	} else {
+		renameResult = false
 	}
+	
+	return(renameResult)
 }
 
 // Function to delete a sheet from a Google Sheets spreadsheet

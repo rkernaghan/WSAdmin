@@ -57,7 +57,8 @@ import Foundation
 	
   
     
-	func fetchServiceData(serviceCount: Int) async {
+	func fetchServiceData(serviceCount: Int) async -> Bool {
+		var completionFlag = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -66,31 +67,41 @@ import Foundation
 		if serviceCount > 0 {
 			do {
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + serviceCount - 1) )
+				// Build the Services list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					loadServiceRows(serviceCount: serviceCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
-				
+				completionFlag = false
+				print("Error: could not read Services Data from Reference Data spreadsheet")
 			}
-			// Build the Services list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				loadServiceRows(serviceCount: serviceCount, sheetCells: sheetCells)
-			}
+			
 		}
+		return(completionFlag)
 	}
     
 	func saveServiceData() async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
+		
 		// Write the Service Data rows to the Reference Data spreadsheet
 		let updateValues = unloadServiceRows()
 		let count = updateValues.count
 		let range = PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+				print("Error: Saving Services data rows failed")
+			}
 		} catch {
 			print ("Error: Saving Services Data rows failed")
-			result = false
+			completionFlag = false
 		}
 		
-		return(result)
+		return(completionFlag)
 	}
 	
 	func loadServiceRows(serviceCount: Int, sheetCells: [[String]] ) {

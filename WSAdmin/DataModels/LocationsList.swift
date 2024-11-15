@@ -59,7 +59,8 @@ import GoogleSignIn
 	
 	
 	
-	func fetchLocationData(locationCount: Int) async {
+	func fetchLocationData(locationCount: Int) async -> Bool {
+		var completionFlag: Bool = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -68,31 +69,40 @@ import GoogleSignIn
 		if locationCount > 0 {
 			do {
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + locationCount - 1) )
+				// Build the Locations list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					loadLocationRows(locationCount: locationCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
 				print("ERROR: could not read Locations data")
+				completionFlag = false
 			}
-			// Build the Locations list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				loadLocationRows(locationCount: locationCount, sheetCells: sheetCells)
-			}
+			
 		}
+		return(completionFlag)
 	}
 	
 	func saveLocationData() async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
 		// Write the Location rows to the Reference Data spreadsheet
 		let updateValues = unloadLocationRows()
 		let count = updateValues.count
 		let range = PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+				print("Error: saving Location data rows failed")
+			}
 		} catch {
 			print ("Error: Saving Location Data rows failed")
-			result = false
+			completionFlag = false
 		}
 		
-		return(result)
+		return(completionFlag)
 	}
 	
 	func loadLocationRows(locationCount: Int, sheetCells: [[String]] ) {

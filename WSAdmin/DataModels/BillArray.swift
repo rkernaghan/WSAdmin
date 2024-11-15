@@ -96,27 +96,31 @@ class BillArray {
 						newInvoice.totalSessions += 1
 						let studentName = billClients[clientNum].billItems[billItemNum].studentName
 						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-						let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
-						
-						clientName = billClients[clientNum].clientName
-						clientEmail = billClients[clientNum].clientEmail
-						
-						if clientName == prevClientName {
-							clientName = " "
-							clientEmail = " "
-							clientDueDate = " "
-							clientInvoiceDate = " "
-							clientTerms = " "
+						if !foundFlag {
+							print("Error: Could not find Student \(studentName) in Students List")
 						} else {
-							prevClientName = clientName
-							clientDueDate = dueDateStr
-							clientTerms = PgmConstants.termsString
-							clientInvoiceDate = invoiceDate
-						}
+							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 							
-						let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
-						newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
-						//               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+							clientName = billClients[clientNum].clientName
+							clientEmail = billClients[clientNum].clientEmail
+							
+							if clientName == prevClientName {
+								clientName = " "
+								clientEmail = " "
+								clientDueDate = " "
+								clientInvoiceDate = " "
+								clientTerms = " "
+							} else {
+								prevClientName = clientName
+								clientDueDate = dueDateStr
+								clientTerms = PgmConstants.termsString
+								clientInvoiceDate = invoiceDate
+							}
+							
+							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
+							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
+							//               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+						}
 						
 					}
 				}

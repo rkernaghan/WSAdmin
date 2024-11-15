@@ -89,12 +89,17 @@ import Foundation
 		tutorStudents.append(newTutorStudent)
 	}
     
-	func addNewTutorStudent(newTutorStudent: TutorStudent) async {
+	func addNewTutorStudent(newTutorStudent: TutorStudent) async -> Bool {
+		var completionFlag: Bool = true
+		
 		tutorStudents.append(newTutorStudent)
-		await saveTutorStudentData(tutorName: self.tutorName)
-		tutorStudentCount += 1
-		await saveTutorDataCounts()
-		self.tutorStatus = "Assigned"
+		completionFlag = await saveTutorStudentData(tutorName: self.tutorName)
+		if completionFlag {
+			tutorStudentCount += 1
+			completionFlag = await saveTutorDataCounts()
+			self.tutorStatus = "Assigned"
+		}
+		return(completionFlag)
 	}
     
 	func updateTutor(tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
@@ -104,33 +109,45 @@ import Foundation
 		self.tutorMaxStudents = maxStudents
 	}
     
-    func removeTutorStudent(studentKey: String) async {
-        let (studentFound, tutorStudentNum) = findTutorStudentByKey(studentKey: studentKey)
-        
-        if studentFound {
-            tutorStudents.remove(at: tutorStudentNum)
-		await saveTutorStudentData(tutorName: self.tutorName)
-            tutorStudentCount -= 1
-            await saveTutorDataCounts()
-            
-            if tutorStudentCount == 0 {
-                self.tutorStatus = "Unassigned"
-            }
-        }
-    }
+	func removeTutorStudent(studentKey: String) async -> Bool {
+		var completionFlag: Bool = true
+		
+		let (studentFound, tutorStudentNum) = findTutorStudentByKey(studentKey: studentKey)
+		
+		if studentFound {
+			tutorStudents.remove(at: tutorStudentNum)
+			completionFlag = await saveTutorStudentData(tutorName: self.tutorName)
+			if completionFlag {
+				tutorStudentCount -= 1
+				completionFlag = await saveTutorDataCounts()
+				
+				if tutorStudentCount == 0 {
+					self.tutorStatus = "Unassigned"
+				}
+			}
+		}
+		return(completionFlag)
+	}
     
-    func loadTutorService(newTutorService: TutorService) {
-        tutorServices.append(newTutorService)
-    }
+	func loadTutorService(newTutorService: TutorService) {
+		tutorServices.append(newTutorService)
+	}
+	
+	func addNewTutorService(newTutorService: TutorService) async -> Bool {
+		var completionFlag: Bool = true
+		
+		tutorServices.append(newTutorService)
+		completionFlag = await saveTutorServiceData(tutorName: self.tutorName)
+		if completionFlag {
+			tutorServiceCount += 1
+			completionFlag = await saveTutorDataCounts()
+		}
+		return(completionFlag)
+	}
     
-    func addNewTutorService(newTutorService: TutorService) async {
-        tutorServices.append(newTutorService)
-	    await saveTutorServiceData(tutorName: self.tutorName)
-        tutorServiceCount += 1
-        await saveTutorDataCounts()
-    }
-    
-	func updateTutorService(tutorServiceNum: Int, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
+	func updateTutorService(tutorServiceNum: Int, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> Bool {
+		var completionFlag: Bool = true
+		
 		tutorServices[tutorServiceNum].timesheetServiceName = timesheetName
 		tutorServices[tutorServiceNum].invoiceServiceName = invoiceName
 		tutorServices[tutorServiceNum].billingType = billingType
@@ -142,18 +159,25 @@ import Foundation
 		tutorServices[tutorServiceNum].price2 = price2
 		tutorServices[tutorServiceNum].price3 = price3
 		tutorServices[tutorServiceNum].totalPrice = price1 + price2 + price3
-		await saveTutorServiceData(tutorName: self.tutorName)
+		completionFlag = await saveTutorServiceData(tutorName: self.tutorName)
+		
+		return(completionFlag)
 	}
 
-	func removeTutorService(serviceKey: String) async {
+	func removeTutorService(serviceKey: String) async -> Bool {
+		var completionFlag: Bool = true
+		
 		let (serviceFound, tutorServiceNum) = findTutorServiceByKey(serviceKey: serviceKey)
         
 		if serviceFound {
 			tutorServices.remove(at: tutorServiceNum)
-			await saveTutorServiceData(tutorName: self.tutorName)
-			tutorServiceCount -= 1
-			await saveTutorDataCounts()
+			completionFlag = await saveTutorServiceData(tutorName: self.tutorName)
+			if completionFlag {
+				tutorServiceCount -= 1
+				completionFlag = await saveTutorDataCounts()
+			}
 		}
+		return(completionFlag)
 	}
     
 	func markDeleted() {
@@ -187,42 +211,42 @@ import Foundation
 		self.tutorTotalProfit -= sessionRevenue - sessionCost
 	}
     
-	func loadTutorDetails(tutorNum: Int, tutorName: String, tutorDataFileID: String) async {
-                
-        print("Tutor \(tutorName) Students: \(self.tutorStudentCount) Services: \(self.tutorServiceCount)")
+	func loadTutorDetails(tutorNum: Int, tutorName: String, tutorDataFileID: String) async -> Bool {
+		var completionFlag: Bool = true
         
 		if self.tutorServiceCount > 0 {
-			await self.fetchTutorServiceData( tutorName: tutorName, tutorServiceCount: tutorServiceCount)
+			completionFlag = await self.fetchTutorServiceData( tutorName: tutorName, tutorServiceCount: tutorServiceCount)
 		}
 
-		if self.tutorStudentCount > 0 {
-			await self.fetchTutorStudentData( tutorName: tutorName, tutorStudentCount: tutorStudentCount)
+		if self.tutorStudentCount > 0 && completionFlag {
+			completionFlag = await self.fetchTutorStudentData( tutorName: tutorName, tutorStudentCount: tutorStudentCount)
 		}
+		return(completionFlag)
 	}
     
     
-	func saveTutorDataCounts() async {
-		var result: Bool = true
+	func saveTutorDataCounts() async -> Bool {
+		var completionFlag: Bool = true
 		var updateValues = [[String]]()
         
 		let range = tutorName + PgmConstants.tutorDataCountsRange
-        print("Tutor Data Counts Save Range:\(range)")
-  
 		tutorStudentCount = tutorStudents.count
 		tutorServiceCount = tutorServices.count
 		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
 
 		do {
-			result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
 			print ("Error: Saving Tutor Data Counts failed")
-			result = false
+			completionFlag = false
 		}
+		return(completionFlag)
 	}
     
    
 
-	func fetchTutorStudentData(tutorName: String, tutorStudentCount: Int) async {
+	func fetchTutorStudentData(tutorName: String, tutorStudentCount: Int) async -> Bool {
+		var completionFlag: Bool = true
  
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -232,15 +256,19 @@ import Foundation
 			do {
 				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
 				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+				// Build the Tutor Students list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
 				print("ERROR: could not read Tutor Student sheet cells for \(tutorName)")
-			}
-			// Build the Tutor Students list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
+				completionFlag = false
 			}
 		}
+		return(completionFlag)
 	}
     
 	func fetchTutorDataCounts(tutorName: String) async -> (Int, Int){
@@ -291,19 +319,20 @@ import Foundation
 	}
 						   
 	func saveTutorStudentData(tutorName: String) async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
+		
 // Write the Tutor Student rows to the Tutor Details spreadsheet
 		let updateValues = unloadTutorStudentRows()
 		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
 			print ("Error: Saving Tutor Services data rows failed")
-			result = false
+			completionFlag = false
 		}
         
-		return(result)
+		return(completionFlag)
 	}
     
 	func loadTutorStudentRows(tutorStudentCount: Int, sheetCells: [[String]] ) {
@@ -349,7 +378,8 @@ import Foundation
 		return(updateValues)
 	}
     
-	func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async {
+	func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async -> Bool {
+		var completionFlag: Bool = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -359,35 +389,41 @@ import Foundation
 			do {
 				let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
 				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range)
+				// Build the Tutor Services list from the cells read in
+				if let sheetData = sheetData {
+					sheetCells = sheetData.values
+					loadTutorServiceRows(tutorServiceCount: tutorServiceCount, sheetCells: sheetCells)
+				} else {
+					completionFlag = false
+				}
 			} catch {
 				print("ERROR: could not read Tutor Services sheet cells for \(tutorName)")
-			}
-			// Build the Tutor Services list from the cells read in
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				loadTutorServiceRows(tutorServiceCount: tutorServiceCount, sheetCells: sheetCells)
+				completionFlag = false
 			}
 		}
+		return(completionFlag)
 	}
     
 	func saveTutorServiceData(tutorName: String) async -> Bool {
-		var result: Bool = true
+		var completionFlag: Bool = true
+		
 // Write the Tutor Services rows to the Tutor Details spreadsheet
 		let updateValues = unloadTutorServiceRows()
 		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
 			print ("Error: Saving Tutor Services data rows failed")
-			result = false
+			completionFlag = false
 		}
         
-		return(result)
+		return(completionFlag)
 	}
     
     
     func loadTutorServiceRows(tutorServiceCount: Int, sheetCells: [[String]] ) {
+	    
         var rowNum = 0
         var serviceNum = 0
         
