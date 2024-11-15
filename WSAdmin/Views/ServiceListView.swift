@@ -170,7 +170,6 @@ struct ServiceListView: View {
 							Button(role: .destructive) {
 								Task {
 									let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteService(indexes: items, referenceData: referenceData)
-									
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage

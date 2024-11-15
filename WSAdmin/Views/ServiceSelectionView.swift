@@ -37,8 +37,13 @@ struct ServiceSelectionView: View {
 						
 						Button {
 							Task {
-								await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-								dismiss()
+								let (assignResult, assignMessage) = await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								if !assignResult {
+									showAlert = true
+									buttonErrorMsg = assignMessage
+								} else {
+									dismiss()
+								}
 							}
 						} label: {
 							Label("Assign Service to \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
@@ -48,8 +53,13 @@ struct ServiceSelectionView: View {
 				} else {
 					Button {
 						Task {
-							await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-							dismiss()
+							let (assignResult, assignMessage) = await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							if !assignResult {
+								showAlert = true
+								buttonErrorMsg = assignMessage
+							} else {
+								dismiss()
+							}
 						}
 					} label: {
 						Label("Assign Services to \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
@@ -59,6 +69,9 @@ struct ServiceSelectionView: View {
 			} primaryAction: { items in
 				//              store.favourite(items)
 			}
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
 }

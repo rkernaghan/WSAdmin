@@ -88,28 +88,6 @@ struct BillingView: View {
 				}
 			}
 			
-			.contextMenu(forSelectionType: Tutor.ID.self) { items in
-				if items.count == 1 {
-					VStack {
-						
-						Button {
-							
-						} label: {
-							Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
-						}
-					}
-					
-				} else {
-					Button {
-						
-					} label: {
-						Label("Assign Tutors Student", systemImage: "square.and.arrow.up")
-					}
-				}
-				
-			} primaryAction: { items in
-				//              store.favourite(items)
-			}
 		}
 		.navigationDestination(isPresented: $showInvoice) {
 			InvoiceView(invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)

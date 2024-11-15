@@ -132,7 +132,7 @@ import Foundation
 					
 					// Change the name in the Student Billing spreadsheet for the previous month and current month (in case this month already billed and Student in this month's Student Tutor sheet)
 					let (prevMonthName, prevMonthYear) = getPrevMonthYear()
-					var renamePrevResult = await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: prevMonthName, yearName: prevMonthYear)
+					let renamePrevResult = await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: prevMonthName, yearName: prevMonthYear)
 					if !renamePrevResult {
 						completionFlag = false
 					}

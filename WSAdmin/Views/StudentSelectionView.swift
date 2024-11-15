@@ -39,8 +39,13 @@ struct StudentSelectionView: View {
 						
 						Button {
 							Task {
-								await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-								dismiss()
+								let (assignResult, assignMessage) = await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								if !assignResult {
+									showAlert = true
+									buttonErrorMsg = assignMessage
+								} else {
+									dismiss()
+								}
 							}
 						} label: {
 							Label("Assign Student to \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
@@ -50,8 +55,13 @@ struct StudentSelectionView: View {
 				} else {
 					Button {
 						Task {
-							await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
-							dismiss()
+							let (assignResult, assignMessage) = await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							if !assignResult {
+								showAlert = true
+								buttonErrorMsg = assignMessage
+							} else {
+								dismiss()
+							}
 						}
 					} label: {
 						Label("Assign Students to \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
@@ -62,6 +72,10 @@ struct StudentSelectionView: View {
 				//              store.favourite(items)
 			}
 		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
+		}
+		
 	}
 }
 

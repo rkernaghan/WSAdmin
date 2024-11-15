@@ -16,58 +16,61 @@ import Foundation
 	var price2Float: Float = 0.0
 	var price3Float: Float = 0.0
     
- //   func addService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: String, cost2: String, cost3: String, price1: String, price2: String, price3: String) {
-            
- //       let cost1Float = Float(cost1) ?? 0
- //       let cost2Float = Float(cost2) ?? 0
- //       let cost3Float = Float(cost3) ?? 0
- //       let price1Float = Float(price1) ?? 0
- //       let price2Float = Float(price2) ?? 0
- //       let price3Float = Float(price3) ?? 0
-        
-	    
- //       let newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(format: "%03d", referenceData.dataCounts.highestServiceKey)
- 
-  //      let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: serviceCount, serviceCost1: cost1Float, serviceCost2: cost2Float, serviceCost3:  cost3Float, servicePrice1: price1Float, servicePrice2: price2Float, servicePrice3: price3Float)
-        
-   //     referenceData.services.loadService(newService: newService, referenceData: referenceData)
-   // }
-    
-	func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
+	func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+		var addResult: Bool = true
+		var addMessage: String = ""
 		var newServiceKey: String = ""
 		
 		referenceData.dataCounts.increaseTotalServiceCount()
-		await referenceData.dataCounts.saveDataCounts()
-		if serviceType == .Base {
-			newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
+		addResult = await referenceData.dataCounts.saveDataCounts()
+		if !addResult {
+			addMessage = "Critical Error: Could not save Data Counts when adding new Service \(timesheetName)"
 		} else {
-			newServiceKey = PgmConstants.serviceSpecialKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
-		}
-		
-		let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
-		
-		referenceData.services.loadService(newService: newService, referenceData: referenceData)
-		
-		await referenceData.services.saveServiceData()
-		
-		let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
-		
-		if String(describing: serviceType) == "Base" {
-			if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
-				var tutorNum = 0
-				while tutorNum < referenceData.tutors.tutorsList.count {
-					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
-						let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-						await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-						referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-						referenceData.services.servicesList[serviceNum].serviceStatus = "Assigned"
+			if serviceType == .Base {
+				newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
+			} else {
+				newServiceKey = PgmConstants.serviceSpecialKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
+			}
+			
+			let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
+			
+			referenceData.services.loadService(newService: newService, referenceData: referenceData)
+			
+			addResult = await referenceData.services.saveServiceData()
+			if !addResult {
+				addMessage = "Critical Error: Could not save Services data when adding new Service \(timesheetName)"
+			} else {
+				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
+			
+				if String(describing: serviceType) == "Base" {
+					if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
+						var tutorNum = 0
+						while tutorNum < referenceData.tutors.tutorsList.count && addResult {
+							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+								let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+								addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+								if !addResult {
+									addMessage = "Critical Error: Could not save new Base Service \(timesheetName) in Tutor Details sheet for \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								}
+								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+								referenceData.services.servicesList[serviceNum].serviceStatus = "Assigned"
+							}
+							tutorNum += 1
+						}
+						addResult = await referenceData.tutors.saveTutorData()
+						if !addResult {
+							addMessage = "Critical Error: Could not save Tutors data when adding new Base Service \(timesheetName)"
+						} else {
+							addResult = await referenceData.services.saveServiceData()
+							if !addResult {
+								addMessage = "Critical Error: Could not save Services data when adding new Base Service \(timesheetName)"
+							}
+						}
 					}
-					tutorNum += 1
 				}
-				await referenceData.tutors.saveTutorData()
-				await referenceData.services.saveServiceData()
 			}
 		}
+		return(addResult, addMessage)
 	}
     
 	func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
@@ -108,29 +111,39 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
-	func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async {
+	func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+		var updateResult: Bool = true
+		var updateMessage: String = ""
 		
-// Check if the TimesheetName has changed
+		// Check if the TimesheetName has changed
 		if timesheetName != originalTimesheetName {
 			
 		}
 		referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
-		await referenceData.services.saveServiceData()
+		updateResult = await referenceData.services.saveServiceData()
+		if !updateResult {
+			updateMessage = "Critical Error: Could not save Service data when updating Service \(originalTimesheetName)"
+		} else {
         
-// Go through each Tutor and check if the updated Services is assigned to that Tutor and if so, update the Service Name
-		if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
-			var tutorNum = 0
-			while tutorNum < referenceData.tutors.tutorsList.count {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
-					let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
-					if serviceFound {
-						await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+			// Go through each Tutor and check if the updated Services is assigned to that Tutor and if so, update the Service Name
+			if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
+				var tutorNum = 0
+				while tutorNum < referenceData.tutors.tutorsList.count && updateResult {
+					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+						let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
+						if serviceFound {
+							updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							if !updateResult {
+								updateMessage = "Critical Error: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							}
+						}
 					}
+					tutorNum += 1
 				}
-				tutorNum += 1
 			}
 		}
+		return(updateResult, updateMessage)
 	}
     
 
@@ -138,14 +151,21 @@ import Foundation
 		var deleteResult: Bool = true
 		var deleteMessage: String = " "
 		
-		print("deleting Service")
-		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.services.servicesList[serviceNum].serviceStatus == "Unassigned" {
+					print("deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markDeleted()
-					await referenceData.services.saveServiceData()
-					referenceData.dataCounts.decreaseActiveServiceCount()
+					deleteResult = await referenceData.services.saveServiceData()
+					if !deleteResult {
+						deleteMessage = "Critical Error: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+					} else {
+						referenceData.dataCounts.decreaseActiveServiceCount()
+						deleteResult = await referenceData.dataCounts.saveDataCounts()
+						if !deleteResult {
+							deleteMessage = "Critical Error: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						}
+					}
 				} else {
 					deleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
 					print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be deleted")
@@ -159,14 +179,22 @@ import Foundation
 	func unDeleteService(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unDeleteResult: Bool = true
 		var unDeleteMessage: String = " "
-		print("UnDeleting Service")
 		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.services.servicesList[serviceNum].serviceStatus == "Deleted" {
+					print("Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markUnDeleted()
-					await referenceData.services.saveServiceData()
-					referenceData.dataCounts.increaseActiveServiceCount()
+					unDeleteResult = await referenceData.services.saveServiceData()
+					if !unDeleteResult {
+						unDeleteMessage = "Critical Error: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+					} else {
+						referenceData.dataCounts.increaseActiveServiceCount()
+						unDeleteResult = await referenceData.dataCounts.saveDataCounts()
+						if !unDeleteResult {
+							unDeleteMessage = "Critical Error: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						}
+					}
 				} else {
 					unDeleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
 					print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted")
@@ -174,7 +202,7 @@ import Foundation
 				}
 			}
 		}
-		await referenceData.dataCounts.saveDataCounts()
+		
 		return(unDeleteResult, unDeleteMessage)
 	}
     

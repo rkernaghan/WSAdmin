@@ -72,7 +72,7 @@ import Foundation
 					completionFlag = false
 				}
 			} catch {
-				print("ERROR: Could not read in Tutor data from ReferenceData spreadsheet")
+				print("Critical Error: Could not read in Tutor data from ReferenceData spreadsheet")
 				completionFlag = false
 			}
 			
@@ -93,7 +93,7 @@ import Foundation
 		do {
 			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 		} catch {
-			print ("Error: Saving Tutor Data rows failed")
+			print ("Critical Error: Saving Tutor Data rows failed")
 			result = false
 		}
 		

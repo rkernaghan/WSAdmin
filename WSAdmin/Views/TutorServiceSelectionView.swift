@@ -49,10 +49,14 @@ struct TutorServiceSelectionView: View {
 				} else {
 					Button {
 						Task {
-							await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+							let (assignResult, assignMessage) = await tutorMgmtVM.assignTutorService(serviceNum: serviceNum, tutorIndex: items, referenceData: referenceData)
+							if !assignResult {
+								showAlert.toggle()
+								buttonErrorMsg = assignMessage
+							}
 						}
 					} label: {
-						Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+						Label("Assign Services to Tutor", systemImage: "square.and.arrow.up")
 					}
 				}
 				

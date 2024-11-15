@@ -121,8 +121,13 @@ struct ServiceView: View {
 					if updateServiceFlag {
 						let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 						if validationResult {
-							await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-							dismiss()
+							let (updateResult, updateMessage) = await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							if !updateResult {
+								buttonErrorMsg = updateMessage
+								showAlert = true
+							} else {
+								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true
@@ -130,8 +135,13 @@ struct ServiceView: View {
 					} else {
 						let (validationResult, validationMessage) = serviceMgmtVM.validateNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 						if validationResult {
-							await serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-							dismiss()
+							let (addResult, addMessage) = await serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							if !addResult {
+								buttonErrorMsg = addMessage
+								showAlert = true
+							} else {
+								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true

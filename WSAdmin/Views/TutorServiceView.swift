@@ -23,6 +23,7 @@ struct TutorServiceView: View {
 	@State var price2: Float
 	@State var price3: Float
 	
+	@State private var showAlert: Bool = false
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -101,8 +102,13 @@ struct TutorServiceView: View {
 			
 			Button{
 				Task {
-					await tutorMgmtVM.updateTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-					dismiss()
+					let (updateResult, updateMessage) = await tutorMgmtVM.updateTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+					if !updateResult {
+						showAlert = true
+						buttonErrorMsg = updateMessage
+					} else {
+						dismiss()
+					}
 					
 				}
 			} label: {
@@ -115,6 +121,9 @@ struct TutorServiceView: View {
 			
 			Spacer()
 			
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
 }

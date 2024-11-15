@@ -229,7 +229,7 @@ class StudentBillingMonth {
 				completionFlag = false
 			}
 		} catch {
-			print("ERROR: Could not load \(prevMonth) Student Billing Data")
+			print("Critical Error: Could not load \(prevMonth) Student Billing Data")
 			completionFlag = false
 		}
 		

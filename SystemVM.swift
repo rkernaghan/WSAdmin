@@ -464,13 +464,13 @@ import Foundation
 			if fileIdResult {
 				let readResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
 				if !readResult {
-					print("Error: Could not load Tutor Billing Data for \(monthName)")
+					print("Warning: Could not load Tutor Billing Data for \(monthName)")
 				}
 			} else {
-				print("ERROR: could notget FileID for file: \(tutorBillingFileName)")
+				print("Error: could notget FileID for file: \(tutorBillingFileName)")
 			}
 		} catch {
-			print("Could not get FileID for file: \(tutorBillingFileName)")
+			print("Error: Could not get FileID for file: \(tutorBillingFileName)")
 		}
 		
 		return(tutorBillingMonth)
@@ -493,13 +493,13 @@ import Foundation
 			if fileIdResult {
 				let readResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 				if !readResult {
-					print("Error: Could not load Student Billing Data for \(monthName)")
+					print("Warning: Could not load Student Billing Data for \(monthName)")
 				}
 			} else {
-				print("ERROR: could not get FileID for file: \(studentBillingFileName)")
+				print("Error: could not get FileID for file: \(studentBillingFileName)")
 			}
 		} catch {
-			print("Could not get FileID for file: \(studentBillingFileName)")
+			print("Error: Could not get FileID for file: \(studentBillingFileName)")
 		}
 		
 		return(studentBillingMonth)
@@ -540,19 +540,19 @@ import Foundation
 							}
 						} catch {
 							generateResult = false
-							generateMessage += "ERROR: Could create Tutor Billing Prod file: \(newTutorBillingProdFileName)\n"
+							generateMessage += "Error: Could create Tutor Billing Prod file: \(newTutorBillingProdFileName)\n"
 						}
 					} else {
 						generateResult = false
-						generateMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+						generateMessage += "Error: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
 					}
 				} else {
 					generateResult = false
-					generateMessage += "ERROR: \(newTutorBillingProdFileName) already exists\n"
+					generateMessage += "Error: \(newTutorBillingProdFileName) already exists\n"
 				}
 			} catch {
 				generateResult = false
-				generateMessage += "ERROR: could not create \(newTutorBillingProdFileName)\n"
+				generateMessage += "Error: could not create \(newTutorBillingProdFileName)\n"
 			}
 			
 			// Create the next year's Test Tutor Billing spreadsheet
@@ -572,20 +572,20 @@ import Foundation
 							}
 						} catch {
 							generateResult = false
-							generateMessage += "ERROR: Could create Tutor Billing Test file: \(newTutorBillingTestFileName)\n"
+							generateMessage += "Error: Could create Tutor Billing Test file: \(newTutorBillingTestFileName)\n"
 						}
 					} else {
 						generateResult = false
-						generateMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+						generateMessage += "Error: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
 					}
 				} else {
 					generateResult = false
-					generateMessage += "ERROR: \(newTutorBillingTestFileName) already exists\n"
+					generateMessage += "Error: \(newTutorBillingTestFileName) already exists\n"
 				}
 				
 			} catch {
 				generateResult = false
-				generateMessage += "ERROR: could not create \(newTutorBillingTestFileName) \n"
+				generateMessage += "Error: could not create \(newTutorBillingTestFileName) \n"
 			}
 				
 			// Create the next year's Production Student Billing spreadsheets
@@ -610,19 +610,19 @@ import Foundation
 							}
 						} catch {
 							generateResult = false
-							generateMessage += "ERROR:  Could not create Billed Student Prod file: \(newStudentBillingProdFileName)\n"
+							generateMessage += "Error:  Could not create Billed Student Prod file: \(newStudentBillingProdFileName)\n"
 						}
 					} else {
 						generateResult = false
-						generateMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+						generateMessage += "Error: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
 					}
 				} else {
 					generateResult = false
-					generateMessage += "ERROR: \(newStudentBillingProdFileName) already exists \n"
+					generateMessage += "Error: \(newStudentBillingProdFileName) already exists \n"
 				}
 			} catch {
 				generateResult = false
-				generateMessage += "ERROR: could not create \(newStudentBillingProdFileName)\n"
+				generateMessage += "Error: could not create \(newStudentBillingProdFileName)\n"
 			}
 			
 			// Create the next year's Test Student Billing spreadsheets

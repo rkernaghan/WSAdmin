@@ -12,7 +12,10 @@ struct TutorStudentsView: View {
 	var referenceData: ReferenceData
     
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
+	@Environment(\.dismiss) var dismiss
+	
 	@State private var selectedStudents: Set<Student.ID> = []
+	@State private var showAlert: Bool = false
     
 	var body: some View {
 		VStack {
@@ -33,7 +36,13 @@ struct TutorStudentsView: View {
                         
 						Button {
 							Task {
-								await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								if !unassignResult {
+									showAlert = true
+									buttonErrorMsg = unassignMessage
+								} else {
+									dismiss()
+								}
 							}
 						} label: {
 							Label("Unassign Student", systemImage: "square.and.arrow.up")
@@ -43,7 +52,13 @@ struct TutorStudentsView: View {
 				} else {
 					Button {
 						Task {
-							await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							if !unassignResult {
+								showAlert = true
+								buttonErrorMsg = unassignMessage
+							} else {
+								dismiss()
+							}
 						}
 					} label: {
 						Label("Unassign Students", systemImage: "square.and.arrow.up")
@@ -52,6 +67,9 @@ struct TutorStudentsView: View {
 			} primaryAction: { items in
 				//              store.favourite(items)
 			}
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
     

@@ -39,11 +39,21 @@ struct LocationView: View {
 					let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
 					if locationValidationResult {
 						if updateLocationFlag {
-							await locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, newLocationName: locationName, originalLocationName: originalLocationName)
-							dismiss()
+							let (updateResult, updateMessage) = await locationMgmtVM.updateLocation(locationNum: locationNum, referenceData: referenceData, newLocationName: locationName, originalLocationName: originalLocationName)
+							if !updateResult {
+								showAlert.toggle()
+								buttonErrorMsg = updateMessage
+							} else {
+								dismiss()
+							}
 						} else {
-							await locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
-							dismiss()
+							let (addResult, addMessage) = await locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+							if !addResult {
+								showAlert.toggle()
+								buttonErrorMsg = addMessage
+							} else {
+								dismiss()
+							}
 						}
 					} else {
 						buttonErrorMsg = validationMessage
@@ -58,9 +68,9 @@ struct LocationView: View {
 					Text("Add New Location")
 				}
 			}
-			.alert(buttonErrorMsg, isPresented: $showAlert) {
-				Button("OK", role: .cancel) { }
-			}
+//			.alert(buttonErrorMsg, isPresented: $showAlert) {
+//				Button("OK", role: .cancel) { }
+//			}
 			.padding()
 			//            .background(Color.orange)
 			//            .foregroundColor(Color.white)
@@ -68,6 +78,9 @@ struct LocationView: View {
 			
 			Spacer()
 			
+		}
+		.alert(buttonErrorMsg, isPresented: $showAlert) {
+			Button("OK", role: .cancel) { }
 		}
 	}
 }

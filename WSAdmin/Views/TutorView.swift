@@ -61,24 +61,34 @@ struct TutorView: View {
 					let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
 					let contactEmail = tutorEmail.trimmingCharacters(in: .whitespaces)
 					let contactPhone = tutorPhone.trimmingCharacters(in: .whitespaces)
-	// Update an existing Tutor
+					// Update an existing Tutor
 					if updateTutorFlag {
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(originalTutorName: originalTutorName, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, originalTutorName: originalTutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
-							dismiss()
+							let (updateResult, updateMessage) = await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, originalTutorName: originalTutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+							if !updateResult {
+								buttonErrorMsg = updateMessage
+								showAlert = true
+							} else {
+								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true
 						}
-	// Add a new Tutor
 					} else {
+						// Add a new Tutor
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents)
-							showAlert = true
-							buttonErrorMsg = "You must Allow Access in 2 cells in RefData tab of new Timesheet for \(tutorName)"
-//							dismiss()
+							let (addResult, addMessage) = await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents)
+							if !addResult {
+								buttonErrorMsg = addMessage
+								showAlert = true
+							} else {
+								showAlert = true
+								buttonErrorMsg = "You must Allow Access in 2 cells in RefData tab of new Timesheet for \(tutorName)"
+//								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true

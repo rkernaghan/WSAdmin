@@ -421,28 +421,6 @@ import GoogleSignIn
 		return(deleteResult, deleteMessage)
 	}
         
-	func unDeleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
-		var unDeleteResult = true
-		var unDeleteMessage = " "
-		print("UnDeleting Tutor")
-        
-		for objectID in indexes {
-			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Deleted" {
-					referenceData.tutors.tutorsList[tutorNum].markUnDeleted()
-					await referenceData.tutors.saveTutorData()
-					referenceData.dataCounts.increaseActiveTutorCount()
-				} else {
-					unDeleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)"
-					print("Error: \(referenceData.tutors.tutorsList[tutorNum].tutorName) Can not be undeleted as status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)")
-					unDeleteResult = false
-				}
-			}
-		}
-		await referenceData.dataCounts.saveDataCounts()
-		
-		return(unDeleteResult, unDeleteMessage)
-	}
     
 	func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var assignResult: Bool = true
@@ -582,10 +560,16 @@ import GoogleSignIn
 		return(unassignResult, unassignMsg)
 	}
     
-	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> Bool {
+	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
 		
-		let updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-		return(updateResult)
+		var updateResult: Bool = true
+		var updateMessage: String = ""
+		
+		updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+		if !updateResult {
+			updateMessage = "Critical Error: Could not save Tutor Service \(timesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) "
+		}
+		return(updateResult, updateMessage)
 	}
 	
 	func suspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
