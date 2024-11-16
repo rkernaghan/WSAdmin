@@ -120,7 +120,7 @@ class StudentBillingMonth {
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							// Build the Billed Students list for the month from the data read in
-							let loadResult = loadStudentBillingRows(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
+							loadStudentBillingRows(studentBillingCount: studentBillingCount, sheetCells: sheetCells)
 						} else {
 							completionFlag = false
 						}
@@ -128,9 +128,6 @@ class StudentBillingMonth {
 					} catch {
 						completionFlag = false
 					}
-					
-				} else {
-					completionFlag = false
 				}
 			} else {
 				completionFlag = false
@@ -203,27 +200,29 @@ class StudentBillingMonth {
 		do {
 			let (resultFlag, prevMonthStudentFileID) = try await getFileID(fileName: prevMonthStudentFileName)
 			if resultFlag {
-				let loadFlag = await prevStudentBillingMonth.loadStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
+				completionFlag = await prevStudentBillingMonth.loadStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
+				if completionFlag {
 				
-				let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
-				while prevStudentNum < prevStudentCount {
-					let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
-					let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-					if foundFlag {
-						if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
-							let (foundFlag, billedStudentNum) = self.findBilledStudentByName(billedStudentName: studentName)
-							if !foundFlag {
-								let totalSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalSessions
-								let totalCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalCost
-								let totalRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalRevenue
-								let totalProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalProfit
-								let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
-								let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
-								self.studentBillingRows.append(newStudentBillingRow)
+					let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
+					while prevStudentNum < prevStudentCount {
+						let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
+						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+						if foundFlag {
+							if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+								let (foundFlag, billedStudentNum) = self.findBilledStudentByName(billedStudentName: studentName)
+								if !foundFlag {
+									let totalSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalSessions
+									let totalCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalCost
+									let totalRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalRevenue
+									let totalProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalProfit
+									let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
+									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
+									self.studentBillingRows.append(newStudentBillingRow)
+								}
 							}
 						}
+						prevStudentNum += 1
 					}
-					prevStudentNum += 1
 				}
 			} else {
 				completionFlag = false

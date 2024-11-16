@@ -81,13 +81,14 @@ struct InvoiceView: View {
 					}
 					HStack {
 						Button(action: {
-							
-							let (csvGenerationResult, csvGenerationMessage) = billingVM.generateCSVFile(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, tutorBillingMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
-							if csvGenerationResult {
-								dismiss()
-							} else {
-								buttonErrorMsg = csvGenerationMessage
-								showAlert = true
+							Task {
+								let (csvGenerationResult, csvGenerationMessage) = await billingVM.generateCSVFile(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, tutorBillingMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
+								if csvGenerationResult {
+									dismiss()
+								} else {
+									buttonErrorMsg = csvGenerationMessage
+									showAlert = true
+								}
 							}
 						}){
 							Text("Generate CSV File")

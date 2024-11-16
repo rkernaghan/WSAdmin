@@ -46,14 +46,20 @@ import GoogleSignIn
 		
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			let loadBilledTutorFlag = await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
-			if loadBilledTutorFlag {
-				(alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
-				
-				if alreadyBilledFlag {
-					print("Already Billed Tutors: \(alreadyBilledTutors)")
+			if !resultFlag {
+				print("Error: Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
+			} else {
+				let loadBilledTutorFlag = await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
+				if loadBilledTutorFlag {
+					(alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
+					
+					if alreadyBilledFlag {
+						print("Already Billed Tutors: \(alreadyBilledTutors)")
+					}
+					
+				} else {
+					print("Error: could not load Billed Tutor Mmonth for \(billingMonth)")
 				}
-				
 				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 			}
 		} catch {
@@ -69,15 +75,18 @@ import GoogleSignIn
 		var timesheetFileID: String = " "
 		var result: Bool = true
 		
-
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
 		do {
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
+			if result {
+				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
+				if !timesheetResult {
+					print("Error: Could not load Timesheet for Tutor \(tutorName)")
+				}
+			}
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
 		}
-
-		await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
 
 		return(timesheet)
 	}
@@ -124,7 +133,7 @@ import GoogleSignIn
 		//        }
 	}
 	
-	func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) -> Bool {
+	func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
@@ -138,7 +147,6 @@ import GoogleSignIn
 		let billingMonthTutorFileName = tutorBillingFileNamePrefix + billingYear
 		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
 		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
-		
 		
 		Task {
 			do {
@@ -205,7 +213,6 @@ import GoogleSignIn
 														
 														referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 														referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-														
 														invoiceLineNum += 1
 													}
 												}
@@ -214,7 +221,7 @@ import GoogleSignIn
 									}
 								}
 								if resultFlag {
-								resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
+									resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
 									if resultFlag {
 										do {
 											(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
@@ -250,14 +257,14 @@ import GoogleSignIn
 		return(resultFlag)
 	}
 	
-	func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) -> (Bool, String) {
+	func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
 		
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
-		self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
+		await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
 		
 		do {
 			try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)

@@ -18,17 +18,27 @@ import Foundation
 	//	- that the count of Tutor Details sheets equals the number of non-deleted Tutors
 	
 	func validateSystem(referenceData: ReferenceData) async {
+		
+		var billedTutorMonth = TutorBillingMonth()
+		var billedStudentMonth = StudentBillingMonth()
+		var billedMonthName: String = ""
+		
 		print ("//")
 		print("Validating System - Stand By for Adventure!")
 		print("//")
-		
-		let (prevMonthName, prevMonthYear) = getPrevMonthYear()
-		let prevBilledStudentMonth = await buildBilledStudentMonth(monthName: prevMonthName, yearName: prevMonthYear)
-		let prevBilledTutorMonth = await buildBilledTutorMonth(monthName: prevMonthName, yearName: prevMonthYear)
 				
 		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
-		let currentBilledStudentMonth = await buildBilledStudentMonth(monthName: currentMonthName, yearName: currentMonthYear)
-		let currentBilledTutorMonth = await buildBilledTutorMonth(monthName: currentMonthName, yearName: currentMonthYear)
+
+		billedTutorMonth = await buildBilledTutorMonth(monthName: currentMonthName, yearName: currentMonthYear)
+		if billedTutorMonth.tutorBillingRows.count > 0 {
+			let billedStudentMonth = await buildBilledStudentMonth(monthName: currentMonthName, yearName: currentMonthYear)
+			billedMonthName = currentMonthName
+		} else {
+			let (prevMonthName, prevMonthYear) = getPrevMonthYear()
+			billedStudentMonth = await buildBilledStudentMonth(monthName: prevMonthName, yearName: prevMonthYear)
+			billedTutorMonth = await buildBilledTutorMonth(monthName: prevMonthName, yearName: prevMonthYear)
+			billedMonthName = prevMonthName
+		}
 	
 		var locationRevenue: Float = 0.0
 		var studentRevenue: Float = 0.0
@@ -82,6 +92,7 @@ import Foundation
 		var totalStudents = 0
 		var activeStudents = 0
 		var deletedStudents = 0
+
 		
 		studentNum = 0
 //		studentCount = referenceData.students.studentsList.count
@@ -104,19 +115,13 @@ import Foundation
 			studentCost += referenceData.students.studentsList[studentNum].studentTotalCost
 			studentSessions += referenceData.students.studentsList[studentNum].studentSessions
 			
-			// Check if Student found in Billed Student List for previous month
+			// Check if Student found in Billed Student List for current/previous month
 			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
-				let (studentFoundFlag, billedStudentNum) = prevBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
 				if !studentFoundFlag {
-					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(prevMonthName)")
+					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)")
 				}
-				// If current Billed Student Month populated (i.e. billing has started for this month), check if Student is in current month Billed Student List
-				if currentBilledStudentMonth.studentBillingRows.count > 0 {
-					let (studentFoundFlag, billedStudentNum) = currentBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
-					if !studentFoundFlag {
-						print("Validation Error: Student \(studentName) not found in Billed Student Month for \(currentMonthName)")
-					}
-				}
+	
 				// Validate the Location Name for the Student
 				let (findResult, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
 				if !findResult {
@@ -249,17 +254,9 @@ import Foundation
 				}
 				
 				// Check if Tutor found in Billed Tutor List for previous month
-				let (tutorFoundFlag, billedTutorNum) = prevBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+				let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 				if !tutorFoundFlag {
-					print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(prevMonthName)")
-				}
-				
-				// If current Billed Tutor Month populated (i.e. billing has started for this month), check if Tutor is in current month Billed Tutor List
-				if currentBilledTutorMonth.tutorBillingRows.count > 0 {
-					let (tutorFoundFlag, billedTutorNum) = currentBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-					if !tutorFoundFlag {
-						print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(currentMonthName)")
-					}
+					print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)")
 				}
 				
 				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
@@ -313,11 +310,11 @@ import Foundation
 		var billedStudentTotalCost: Float = 0.0
 		var billedStudentTotalRevenue: Float = 0.0
 		var billedStudentNum = 0
-		let billedStudentCount = prevBilledStudentMonth.studentBillingRows.count
+		let billedStudentCount = billedStudentMonth.studentBillingRows.count
 		while billedStudentNum < billedStudentCount {
-			billedStudentSessionCount += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalSessions
-			billedStudentTotalRevenue += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalRevenue
-			billedStudentTotalCost += prevBilledStudentMonth.studentBillingRows[billedStudentNum].totalCost
+			billedStudentSessionCount += billedStudentMonth.studentBillingRows[billedStudentNum].totalSessions
+			billedStudentTotalRevenue += billedStudentMonth.studentBillingRows[billedStudentNum].totalRevenue
+			billedStudentTotalCost += billedStudentMonth.studentBillingRows[billedStudentNum].totalCost
 			
 			billedStudentNum += 1
 		}
@@ -327,12 +324,12 @@ import Foundation
 		var billedTutorTotalCost: Float = 0.0
 		var billedTutorTotalRevenue: Float = 0.0
 		var billedTutorNum = 0
-		let billedTutorCount = prevBilledTutorMonth.tutorBillingRows.count
+		let billedTutorCount = billedTutorMonth.tutorBillingRows.count
 		while billedTutorNum < billedTutorCount {
-//			print("Billed Tutor: \(prevBilledTutorMonth.tutorBillingRows[billedTutorNum].tutorName)  \(prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalSessions)")
-			billedTutorSessionCount += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalSessions
-			billedTutorTotalRevenue += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalRevenue
-			billedTutorTotalCost += prevBilledTutorMonth.tutorBillingRows[billedTutorNum].totalCost
+//			print("Billed Tutor: \(billedTutorMonth.tutorBillingRows[billedTutorNum].tutorName)  \(billedTutorMonth.tutorBillingRows[billedTutorNum].totalSessions)")
+			billedTutorSessionCount += billedTutorMonth.tutorBillingRows[billedTutorNum].totalSessions
+			billedTutorTotalRevenue += billedTutorMonth.tutorBillingRows[billedTutorNum].totalRevenue
+			billedTutorTotalCost += billedTutorMonth.tutorBillingRows[billedTutorNum].totalCost
 			
 			billedTutorNum += 1
 		}
@@ -360,18 +357,19 @@ import Foundation
 
 // Validate that the total number of Tutors in the previous month Billed Tutor List is equal to the number of active Tutors
 		
-		if prevBilledTutorMonth.tutorBillingRows.count != activeTutors {
-			print("Validation Error: Active Tutor count \(activeTutors) does not match number of Tutors in \(prevMonthName) Billed Tutor list \(prevBilledTutorMonth.tutorBillingRows.count)")
+		if billedTutorMonth.tutorBillingRows.count != activeTutors {
+			print("Validation Error: Active Tutor count \(activeTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)")
 		}
 
 		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students\
 		
-		if prevBilledStudentMonth.studentBillingRows.count != activeStudents {
-			print("Validation Error: Active Student count \(activeStudents) does not match number of Students in \(prevMonthName) Billed Student list \(prevBilledStudentMonth.studentBillingRows.count)")
+		if billedStudentMonth.studentBillingRows.count != activeStudents {
+			print("Validation Error: Active Student count \(activeStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)")
 		}
-
-		
+		print("//")
+		print("Validation Complete")
 	}
+	
 	//
 	// This function creates backup copies of the key Google Drive spreadsheets for the system.  Copied files are suffixed with current date and time.  If the system is running
 	// against the production files, they are backed up. If its running against the test files, those are backed up.

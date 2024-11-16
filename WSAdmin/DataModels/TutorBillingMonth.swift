@@ -204,7 +204,7 @@ class TutorBillingMonth {
 // that Tutor is not copied again.
 //
 	func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
-		var completionFlag: Bool = false
+		var completionFlag: Bool = true
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		// Load the Billed Tutor data from the previous month's sheet
@@ -213,8 +213,8 @@ class TutorBillingMonth {
 		do {
 			let (resultFlag, prevMonthTutorFileID) = try await getFileID(fileName: prevMonthTutorFileName)
 			if resultFlag {
-				let loadResult = await prevTutorBillingMonth.loadTutorBillingMonth(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID)
-				if loadResult {
+				completionFlag = await prevTutorBillingMonth.loadTutorBillingMonth(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID)
+				if completionFlag {
 					// Loop through each Tutor from the previous month's Billed Tutor sheet
 					var prevTutorNum: Int = 0
 					let prevTutorCount = prevTutorBillingMonth.tutorBillingRows.count
@@ -241,9 +241,11 @@ class TutorBillingMonth {
 				} else {
 					completionFlag = false
 				}
+			} else {
+				completionFlag = false
 			}
 		} catch {
-			print("ERROR: Could not load \(prevMonth) Tutor Billing Data")
+			print("Error: Could not load \(prevMonth) Tutor Billing Data")
 			completionFlag = false
 		}
 		

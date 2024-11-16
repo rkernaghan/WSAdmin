@@ -124,7 +124,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			// Prepare the request
 			var request = URLRequest(url: url)
 			request.httpMethod = "PUT"  // Using PUT to update the values in the sheet
-			request.addValue("Bearer \(31)", forHTTPHeaderField: "Authorization")
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 			
 			// Prepare the request body with the data to write
