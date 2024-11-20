@@ -368,7 +368,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "TEST"
+var runMode: String = "PROD"
 
 @main
 struct WSAdmin: App {

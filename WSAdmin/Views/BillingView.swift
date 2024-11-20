@@ -22,7 +22,7 @@ struct BillingView: View {
 	@State private var selectAll: Bool = false
 	@State private var invoice = Invoice()
 	@State private var alreadyBilledTutors = [String]()
-	@State private var billedTutorMonth = TutorBillingMonth()
+	@State private var billedTutorMonth = TutorBillingMonth(monthName: "")
 	
 	var body: some View {
 		

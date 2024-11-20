@@ -8,6 +8,11 @@ import Foundation
 
 class TutorBillingMonth {
 	var tutorBillingRows = [TutorBillingRow]()
+	var monthName: String
+	
+	init(monthName: String) {
+		self.monthName = monthName
+	}
 	
 	func findBilledTutorByName(billedTutorName: String) -> (Bool, Int) {
 		var found = false
@@ -50,7 +55,7 @@ class TutorBillingMonth {
 			if let tutorCountData = tutorCountData {
 				tutorBillingCount = Int(tutorCountData.values[0][0]) ?? 0
 				// Read in the Billed Tutors from the Billed Tutor spreadsheet
-				if tutorBillingCount > 0 {
+				if tutorBillingCount > 0 {			// Could be zero if loading a Billed Tutor month not yet billed
 					do {
 						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1) )
 						if let sheetData = sheetData {
@@ -64,10 +69,10 @@ class TutorBillingMonth {
 						completionFlag = false
 					}
 					
-					
-				} else {
-					completionFlag = false
 				}
+//				} else {
+//					completionFlag = false
+//				}
 			} else {
 				completionFlag = false
 			}
@@ -208,7 +213,7 @@ class TutorBillingMonth {
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		// Load the Billed Tutor data from the previous month's sheet
-		let prevTutorBillingMonth = TutorBillingMonth()
+		let prevTutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
 		do {
 			let (resultFlag, prevMonthTutorFileID) = try await getFileID(fileName: prevMonthTutorFileName)

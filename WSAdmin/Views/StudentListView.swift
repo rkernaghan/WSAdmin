@@ -48,7 +48,7 @@ struct StudentListView: View {
 			}
 			var suspendedArray: [Student] {
 				if showSuspended  {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Suspended]"}
+					return referenceData.students.studentsList.filter{$0.studentStatus == "Suspended"}
 				} else {
 					return emptyArray
 				}
@@ -77,13 +77,13 @@ struct StudentListView: View {
 				Table(studentArray, selection: $selectedStudents) {
 					Group {
 						TableColumn("Student Name", value: \Student.studentName)
-							.width(min: 90, ideal: 149, max: 260)
+							.width(min: 90, ideal: 160, max: 260)
 						
-						TableColumn("Guardian", value: \Student.studentGuardian)
-							.width(min: 90, ideal: 140, max: 260)
+						TableColumn("Client", value: \Student.studentGuardian)
+							.width(min: 90, ideal: 160, max: 260)
 						
 						TableColumn("Status", value: \Student.studentStatus)
-							.width(min: 70, ideal: 80, max: 90)
+							.width(min: 50, ideal: 70, max: 80)
 						
 						TableColumn("Tutor Name",value: \Student.studentTutorName)
 							.width(min: 80, ideal: 120, max: 180)
@@ -94,26 +94,26 @@ struct StudentListView: View {
 					Group {
 						
 						TableColumn("EMail", value: \Student.studentEmail)
-							.width(min: 100, ideal: 120, max: 200)
+							.width(min: 60, ideal: 100, max: 200)
 						
 						TableColumn("Student\nType") {data in
 							Text(data.studentType.rawValue)
 						}
-						.width(min: 50, ideal: 70, max: 90)
+						.width(min: 40, ideal: 50, max: 90)
 					}
 					             
 					Group {
 						TableColumn("Start Date", value: \Student.studentStartDate)
-							.width(min: 80, ideal: 90, max: 90)
+							.width(min: 60, ideal: 70, max: 90)
 						
 						TableColumn("End Date", value: \Student.studentEndDate)
-							.width(min: 80, ideal: 90, max: 90)
+							.width(min: 60, ideal: 70, max: 90)
 					}
 					Group {
 						
 						
 						TableColumn("Location", value: \Student.studentLocation)
-							.width(min: 80, ideal: 100, max: 140)
+							.width(min: 70, ideal: 80, max: 140)
 						
 						TableColumn("Total\nSessions") {data in
 							Text(String(data.studentSessions))
@@ -123,7 +123,7 @@ struct StudentListView: View {
 						
 //						TableColumn("Total Cost") {data in
 //							Text(String(data.studentTotalCost.formatted(.number.precision(.fractionLength(0)))))
-//								.frame(maxWidth: .infinity, alignment: .trailing)
+//								.frame(maxWidth: .infinity, alignment: .center)
 //						}
 //						.width(min: 60, ideal: 80, max: 90)
 //					}
@@ -131,15 +131,15 @@ struct StudentListView: View {
 						
 //						TableColumn("Total Revenue") {data in
 //							Text(String(data.studentTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
-//								.frame(maxWidth: .infinity, alignment: .trailing)
+//								.frame(maxWidth: .infinity, alignment: .center)
 //						}
 //						.width(min: 60, ideal: 80, max: 90)
 						
-						TableColumn("Total Profit") { data in
+						TableColumn("Total\nProfit") { data in
 							Text(String(data.studentTotalProfit.formatted(.number.precision(.fractionLength(0)))))
-								.frame(maxWidth: .infinity, alignment: .trailing)
+								.frame(maxWidth: .infinity, alignment: .center)
 						}
-						.width(min: 60, ideal: 80, max: 90)
+						.width(min: 40, ideal: 50, max: 60)
 
 					}
 				}

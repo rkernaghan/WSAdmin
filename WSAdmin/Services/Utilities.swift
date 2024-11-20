@@ -286,12 +286,13 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 			
 			// Perform the network request asynchronously
 			let (data, response) = try await URLSession.shared.data(for: request)
-			
+						
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
 			}
+			
 			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {

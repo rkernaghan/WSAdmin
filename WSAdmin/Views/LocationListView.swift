@@ -61,7 +61,7 @@ struct LocationListView: View {
 					.width(min: 50, ideal: 60, max: 80)
 					
 					TableColumn("Location\nStatus", value: \.locationStatus)
-						.width(min: 50, ideal: 60, max: 70)
+						.width(min: 50, ideal: 70, max: 80)
 				}
 				.contextMenu(forSelectionType: Location.ID.self) { items in
 					if items.isEmpty {

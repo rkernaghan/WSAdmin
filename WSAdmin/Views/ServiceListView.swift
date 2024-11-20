@@ -72,20 +72,20 @@ struct ServiceListView: View {
 				Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
 //					Group {
 						TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
-							.width(min: 120, ideal: 150, max: 240)
+							.width(min: 120, ideal: 160, max: 240)
 						
 						TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
-							.width(min: 120, ideal: 150, max: 240)
+							.width(min: 120, ideal: 160, max: 240)
 						
 						TableColumn("Service\nType") {data in
 							Text(data.serviceType.rawValue)
 						}
-						.width(min: 50, ideal: 70, max: 80)
+						.width(min: 40, ideal: 50, max: 60)
 						
 						TableColumn("Billing\nType") {data in
 							Text(data.serviceBillingType.rawValue)
 						}
-						.width(min: 50, ideal: 70, max: 80)
+						.width(min: 40, ideal: 50, max: 60)
 						
 						TableColumn("Service\nStatus", value: \Service.serviceStatus)
 							.width(min: 50, ideal: 70, max: 80)
@@ -94,7 +94,7 @@ struct ServiceListView: View {
 							Text(String(data.serviceCount))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
-						.width(min: 40, ideal: 60, max: 70)
+						.width(min: 40, ideal: 50, max: 60)
 						
 						TableColumn("Cost 1") { data in
 							Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))

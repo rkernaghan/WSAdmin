@@ -48,6 +48,7 @@ struct ServiceSelectionView: View {
 						} label: {
 							Label("Assign Service to \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
 						}
+						
 					}
 					
 				} else {

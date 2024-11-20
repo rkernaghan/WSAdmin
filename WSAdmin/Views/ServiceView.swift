@@ -94,14 +94,20 @@ struct ServiceView: View {
 			}
 			
 			HStack {
-				Picker("Service Type", selection: $serviceType) {
-					ForEach(ServiceTypeOption.allCases) { option in
-						Text(String(describing: option))
+				if !updateServiceFlag {
+					
+					Picker("Service Type", selection: $serviceType) {
+						ForEach(ServiceTypeOption.allCases) { option in
+							Text(String(describing: option))
+						}
 					}
+				} else {
+					Text("Service Type:")
+					Text( String(describing: serviceType) )
 				}
 			}
 			.frame(width:200)
-			.clipped()
+//			.clipped()
 			
 			HStack {
 				Picker("Billing Type", selection: $billingType) {

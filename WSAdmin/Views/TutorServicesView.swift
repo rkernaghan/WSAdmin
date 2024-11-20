@@ -67,24 +67,25 @@ struct TutorServicesView: View {
 							Label("Edit Tutor Service for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
 						}
 						
-						Button {
-							Task {
-								for objectID in items {
-									if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
-										tutorServiceNum = idx
-										let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
-										if unassignResult {
-											dismiss()
-										} else {
-											showAlert = true
-											buttonErrorMsg = unassignMessage
-										}
-									}
-								}
-							}
-						} label: {
-							Label("Unassign Service from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
-						}
+//						Button {
+//							Task {
+//								for objectID in items {
+//									if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+//										tutorServiceNum = idx
+//										let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorServiceSet(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+//										if unassignResult {
+//
+//											dismiss()
+//										} else {
+//											showAlert = true
+//											buttonErrorMsg = unassignMessage
+//										}
+//									}
+//								}
+//							}
+//						} label: {
+//							Label("Unassign Service from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
+//						}
 					}
 					
 				} else {
@@ -100,24 +101,24 @@ struct TutorServicesView: View {
 							Label("Edit Tutor Services", systemImage: "square.and.arrow.up")
 						}
 						
-						Button {
-							Task {
-								for objectID in items {
-									if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
-										tutorServiceNum = idx
-										let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorService(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
-										if !unassignResult {
-											showAlert = true
-											buttonErrorMsg = unassignMessage
-										} else {
-											dismiss()
-										}
-									}
-								}
-							}
-						} label: {
-							Label("Unassign Tutor Services", systemImage: "square.and.arrow.up")
-						}
+//						Button {
+//							Task {
+//								for objectID in items {
+//									if let idx = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
+//										tutorServiceNum = idx
+//										let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorServiceSet(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+//										if !unassignResult {
+//											showAlert = true
+//											buttonErrorMsg = unassignMessage
+//										} else {
+//											dismiss()
+//										}
+//									}
+//								}
+//							}
+//						} label: {
+//							Label("Unassign Tutor Services", systemImage: "square.and.arrow.up")
+//						}
 					}
 				}
 			} primaryAction: { items in

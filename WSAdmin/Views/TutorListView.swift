@@ -18,6 +18,7 @@ struct TutorListView: View {
 	@State private var listTutorStudents: Bool = false
 	@State private var listTutorServices: Bool = false
 	@State private var assignService: Bool = false
+	@State private var unassignService: Bool = false
 	@State private var editServiceCosts: Bool = false
 	@State private var editTutor: Bool = false
 	
@@ -51,7 +52,7 @@ struct TutorListView: View {
 			}
 			var suspendedArray: [Tutor] {
 				if showSuspended  {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended]"}
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended"}
 				} else {
 					return emptyArray
 				}
@@ -95,7 +96,7 @@ struct TutorListView: View {
 							Text(String(data.tutorServiceCount))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
-						.width(min: 50, ideal: 60, max: 60)
+						.width(min: 40, ideal: 50, max: 50)
 
 					}
 					Group {
@@ -103,13 +104,13 @@ struct TutorListView: View {
 							.width(min: 90, ideal: 100, max: 110)
 						
 						TableColumn("Email", value: \Tutor.tutorEmail)
-							.width(min: 150, ideal: 180, max: 260)
+							.width(min: 120, ideal: 160, max: 260)
 						
 						TableColumn("Start Date", value: \Tutor.tutorStartDate)
-							.width(min: 60, ideal: 80, max: 80)
+							.width(min: 60, ideal: 70, max: 90)
 						
 						TableColumn("End Date", value: \Tutor.tutorEndDate)
-							.width(min: 60, ideal: 80, max: 80)
+							.width(min: 60, ideal: 70, max: 90)
 						
 						TableColumn("Max\nStudents") { data in
 							Text(String(data.tutorMaxStudents))
@@ -117,23 +118,23 @@ struct TutorListView: View {
 						}
 						.width(min: 50, ideal: 60, max: 60)
 						
-						TableColumn("Total Cost") {data in
+						TableColumn("Total\nCost") {data in
 							   Text(String(data.tutorTotalCost.formatted(.number.precision(.fractionLength(0)))))
 							.frame(maxWidth: .infinity, alignment: .trailing)
 						}
-						.width(min: 60, ideal: 80, max: 90)
+						.width(min: 40, ideal: 50, max: 60)
 						
-						TableColumn("Total Revenue") {data in
+						TableColumn("Total\nRevenue") {data in
 							Text(String(data.tutorTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
 								.frame(maxWidth: .infinity, alignment: .trailing)
 						}
-						.width(min: 60, ideal: 80, max: 90)
+						.width(min: 40, ideal: 50, max: 60)
 						
-						TableColumn("Total Profit") { data in
+						TableColumn("Total\nProfit") { data in
 							Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(0)))))
 								.frame(maxWidth: .infinity, alignment: .trailing)
 						}
-						.width(min: 60, ideal: 80, max: 90)
+						.width(min: 40, ideal: 50, max: 60)
 					}
 				}
 				.contextMenu(forSelectionType: Tutor.ID.self) { items in
@@ -180,6 +181,15 @@ struct TutorListView: View {
 									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 										tutorNumber = idx
 										assignService.toggle()
+									}
+								}
+							}
+							
+							Button("Remove Service from Tutor") {
+								for objectID in items {
+									if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+										tutorNumber = idx
+										unassignService.toggle()
 									}
 								}
 							}
@@ -280,6 +290,9 @@ struct TutorListView: View {
 			
 			.navigationDestination(isPresented: $assignService) {
 				ServiceSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
+			}
+			.navigationDestination(isPresented: $unassignService) {
+				TutorServiceListSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)
 			}
 			.navigationDestination(isPresented: $assignStudent) {
 				StudentSelectionView(tutorNum: $tutorNumber, referenceData: referenceData)

@@ -80,13 +80,13 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag {
 			validationResult = false
-			validationMessage = "Error: Service \(timesheetName) Already Exists "
+			validationMessage = "Error: Service \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
 		if commaFlag {
 			validationResult = false
-			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma "
+			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma\n"
 		}
 		
 		return(validationResult, validationMessage)
@@ -99,13 +99,13 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag && originalTimesheetName != timesheetName {
 			validationResult = false
-			validationMessage = "Error: Service \(timesheetName) Already Exists "
+			validationMessage = "Error: Service \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
 		if commaFlag {
 			validationResult = false
-			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma "
+			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma\n"
 		}
 		
 		return(validationResult, validationMessage)
@@ -119,6 +119,7 @@ import Foundation
 		if timesheetName != originalTimesheetName {
 			
 		}
+		
 		referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
 		updateResult = await referenceData.services.saveServiceData()

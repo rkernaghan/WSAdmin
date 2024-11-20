@@ -70,7 +70,7 @@ import Foundation
 			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: locationName)
 			if locationFoundFlag {
 				validationResult = false
-				validationMessage += "Error: Location \(locationName) already exists"
+				validationMessage += "Error: Location \(locationName) already exists\n"
 			}
 			
 			let commaFlag = locationName.contains(",")
@@ -96,7 +96,7 @@ import Foundation
 		let commaFlag = locationName.contains(",")
 		if commaFlag {
 			validationResult = false
-			validationMessage = "Error: Location Name: \(locationName) Contains a Comma "
+			validationMessage = "Error: Location Name: \(locationName) Contains a Comma\n"
 		}
 		
 		return(validationResult, validationMessage)

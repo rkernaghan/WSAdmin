@@ -43,7 +43,7 @@ import Foundation
 					let (prevMonthName, billingYear) = getPrevMonthYear()
 					let studentBillingFileName = studentBillingFileNamePrefix + billingYear
 					
-					let studentBillingMonth = StudentBillingMonth()
+					let studentBillingMonth = StudentBillingMonth(monthName: prevMonthName)
 					
 					// Get the File ID of the Billed Student spreadsheet for the year
 					do {
@@ -153,7 +153,7 @@ import Foundation
 		
 		let studentBillingFileName = studentBillingFileNamePrefix + yearName
 		
-		let studentBillingMonth = StudentBillingMonth()
+		let studentBillingMonth = StudentBillingMonth(monthName: monthName)
 		
 		// Get the fileID of the Billed Student spreadsheet for the year
 		do {
@@ -190,47 +190,47 @@ import Foundation
 		
 		if studentName == "" || studentName == " " {
 			validationResult = false
-			validationMessage = "Student Name cannot be blank"
+			validationMessage = "Student Name cannot be blank\n"
 		} else {
 			
 			if guardianName == "" || guardianName == " " {
 				validationResult = false
-				validationMessage = "Guardian Name cannot be blank"
+				validationMessage = "Guardian Name cannot be blank\n"
 			}
 			
 			let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 			if studentFoundFlag {
 				validationResult = false
-				validationMessage = "Student Name \(studentName) Already Exists"
+				validationMessage = "Student Name \(studentName) Already Exists\n"
 			}
 			
 			var commaFlag = studentName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Student Name: \(studentName) Contains a Comma "
+				validationMessage = "Error: Student Name: \(studentName) Contains a Comma\n"
 			}
 			
 			commaFlag = guardianName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma "
+				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma\n"
 			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
 			if !validEmailFlag {
 				validationResult = false
-				validationMessage += " Error: Email \(contactEmail) is Not Valid"
+				validationMessage += " Error: Email \(contactEmail) is Not Valid\n"
 			}
 			
 			let validPhoneFlag = isValidPhone(contactPhone)
 			if !validPhoneFlag {
 				validationResult = false
-				validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid"
+				validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid\n"
 			}
 			
 			if locationName == " " || locationName == "" {
 				validationResult = false
-				validationMessage += "Error: No Location selected"
+				validationMessage += "Error: No Location selected\n"
 			}
 		}
 		
@@ -243,42 +243,42 @@ import Foundation
 		
 		if studentName == "" || studentName == " " {
 			validationResult = false
-			validationMessage = "Student Name cannot be blank"
+			validationMessage = "Student Name cannot be blank\n"
 		} else {
 			
 			if guardianName == "" || guardianName == " " {
 				validationResult = false
-				validationMessage = "Guardian Name cannot be blank"
+				validationMessage = "Guardian Name cannot be blank\n"
 			}
 			
 			let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 			if studentFoundFlag && originalStudentName != studentName {
 				validationResult = false
-				validationMessage = "Error: New Student name \(studentName) already exists"
+				validationMessage = "Error: New Student name \(studentName) already exists\n"
 			}
 			
 			var commaFlag = studentName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Student Name: \(studentName) Contains a Comma "
+				validationMessage = "Error: Student Name: \(studentName) Contains a Comma\n"
 			}
 			
 			commaFlag = guardianName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma "
+				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma\n"
 			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
 			if !validEmailFlag {
 				validationResult = false
-				validationMessage += " Error: Email \(contactEmail) is Not Valid"
+				validationMessage += " Error: Email \(contactEmail) is Not Valid\n"
 			}
 			
 			let validPhoneFlag = isValidPhone(contactPhone)
 			if !validPhoneFlag {
 				validationResult = false
-				validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid"
+				validationMessage += "Error: Phone Number \(contactPhone) Is Not Valid\n"
 			}
 		}
 		
@@ -333,7 +333,7 @@ import Foundation
 								let (prevMonthName, billingYear) = getPrevMonthYear()
 								let studentBillingFileName = studentBillingFileNamePrefix + billingYear
 								
-								let studentBillingMonth = StudentBillingMonth()
+								let studentBillingMonth = StudentBillingMonth(monthName: prevMonthName)
 								
 								// Get the File ID of the Billed Student spreadsheet for the year
 								do {
@@ -521,7 +521,7 @@ import Foundation
 						if foundFlag {
 							unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
 							if unassignResult {
-								unassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+								unassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
 							} else  {
 								unassignMessage = "Error: could not remove Tutor Student when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
 							}

@@ -151,11 +151,19 @@ struct SideView: View {
 					await systemVM.validateSystem(referenceData: referenceData)
 				}
 			}
+			
 			Button("Backup System") {
 				Task {
 					await systemVM.backupSystem()
 				}
 			}
+			
+			Button("Validate Billing Data") {
+				Task {
+					await systemVM.ValidateBillingData(referenceData: referenceData)
+				}
+			}
+			
 			Button("Create Next Years Files") {
 				Task {
 					let (generateResult, generateMessage) = await systemVM.generateNewYearFiles(referenceData: referenceData)

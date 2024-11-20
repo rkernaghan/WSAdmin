@@ -8,6 +8,11 @@ import Foundation
 
 class StudentBillingMonth {
 	var studentBillingRows = [StudentBillingRow]()
+	var monthName: String
+	
+	init(monthName: String) {
+		self.monthName = monthName
+	}
 	
 	func findBilledStudentByName(billedStudentName: String) -> (Bool, Int) {
 		var found = false
@@ -193,7 +198,7 @@ class StudentBillingMonth {
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		var prevStudentNum: Int = 0
-		let prevStudentBillingMonth = StudentBillingMonth()
+		let prevStudentBillingMonth = StudentBillingMonth(monthName: prevMonth)
 		
 		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
 		

@@ -23,7 +23,7 @@ import GoogleSignIn
 		var alreadyBilledFlag: Bool = false
 		var alreadyBilledTutors = [String]()
 		
-		let tutorBillingMonth = TutorBillingMonth()
+		let tutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		
 		let (prevMonthName, prevYearName) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
 		
@@ -50,16 +50,16 @@ import GoogleSignIn
 				print("Error: Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
 			} else {
 				let loadBilledTutorFlag = await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
-				if loadBilledTutorFlag {
+				if loadBilledTutorFlag {				// If not Tutors billed this month, the flag will be flase, which is not an error
 					(alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
 					
 					if alreadyBilledFlag {
 						print("Already Billed Tutors: \(alreadyBilledTutors)")
 					}
-					
-				} else {
-					print("Error: could not load Billed Tutor Mmonth for \(billingMonth)")
 				}
+//				} else {
+//					print("Error: could not load Billed Tutor Month for \(billingMonth)")
+//				}
 				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 			}
 		} catch {
@@ -91,54 +91,14 @@ import GoogleSignIn
 		return(timesheet)
 	}
 	
-	
-	
-	func fetchTimesheetData(tutorName: String, spreadsheetId: String, range: String) async throws -> SheetData? {
-		var yourOAuthToken: String
-		var sheetData: SheetData?
-		
-		let currentUser = GIDSignIn.sharedInstance.currentUser
-		if let user = currentUser {
-			yourOAuthToken = user.accessToken.tokenString
-			
-			// URL for Google Sheets API
-			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)"
-			guard let url = URL(string: urlString) else {
-				throw URLError(.badURL)
-			}
-			
-			// Set up the request with OAuth 2.0 token
-			var request = URLRequest(url: url)
-			request.httpMethod = "GET"
-			request.addValue("Bearer \(yourOAuthToken)", forHTTPHeaderField: "Authorization")
-			
-			// Use async URLSession to fetch the data
-			
-			let (data, response) = try await URLSession.shared.data(for: request)
-			
-			if let httpResponse = response as? HTTPURLResponse {
-				print("error \(httpResponse.statusCode)")
-			}
-			// Check if the response is successful
-			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-				throw URLError(.badServerResponse)
-			}
-			
-			// Decode the JSON data into the SheetData structure
-			sheetData = try JSONDecoder().decode(SheetData.self, from: data)
-			
-		}
-		//        if let sheetData = sheetData {
-		return sheetData
-		//        }
-	}
+
 	
 	func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
 		
-		let studentBillingMonth = StudentBillingMonth()
+		let studentBillingMonth = StudentBillingMonth(monthName: billingMonth)
 		var resultFlag: Bool = false
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
@@ -148,7 +108,7 @@ import GoogleSignIn
 		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
 		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
 		
-		Task {
+		
 			do {
 				(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 				if resultFlag {
@@ -213,12 +173,13 @@ import GoogleSignIn
 														
 														referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 														referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-														invoiceLineNum += 1
+														
 													}
 												}
 											}
 										}
 									}
+									invoiceLineNum += 1
 								}
 								if resultFlag {
 									resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
@@ -253,7 +214,7 @@ import GoogleSignIn
 				resultFlag = false
 			}
 		
-		}
+		
 		return(resultFlag)
 	}
 	
@@ -264,61 +225,65 @@ import GoogleSignIn
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
-		await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
-		
-		do {
-			try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
-			
+		generationFlag = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
+		if !generationFlag {
+			generationMessage = "Error: Could not update Billing Stats"
+			print("Error: Could not update billing stats")
+		} else {
 			do {
-				let dateFormatter = DateFormatter()
-				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
-				let fileDate = dateFormatter.string(from: Date())
+				try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
 				
-				let fileName = "CSV Export File \(fileDate).csv"
-				let fileManager = FileManager.default
-				
-				// Get the path to the Documents directory
-				guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-					print("Could not find the Documents directory.")
-					return(false, "Count not find the Documents Directory")
-				}
-				
-				// Set the file path
-				let fileURL = documentsDirectory.appendingPathComponent(fileName)
-				
-				// Create the file if it doesn't exist
-				if !fileManager.fileExists(atPath: fileURL.path) {
-					fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
-				}
-				// Open the file for writing
-				let fileHandle = try FileHandle(forWritingTo: fileURL)
-				
-				let csvLine = PgmConstants.csvHeader
-				if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
-					fileHandle.write(data)
-				}
-				
-				var invoiceLineNum = 0
-				let invoiceLineCount = invoice.invoiceLines.count
-				while invoiceLineNum < invoiceLineCount {
-					let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+				do {
+					let dateFormatter = DateFormatter()
+					dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+					let fileDate = dateFormatter.string(from: Date())
+					
+					let fileName = "CSV Export File \(fileDate).csv"
+					let fileManager = FileManager.default
+					
+					// Get the path to the Documents directory
+					guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+						print("Could not find the Documents directory.")
+						return(false, "Count not find the Documents Directory")
+					}
+					
+					// Set the file path
+					let fileURL = documentsDirectory.appendingPathComponent(fileName)
+					
+					// Create the file if it doesn't exist
+					if !fileManager.fileExists(atPath: fileURL.path) {
+						fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+					}
+					// Open the file for writing
+					let fileHandle = try FileHandle(forWritingTo: fileURL)
+					
+					let csvLine = PgmConstants.csvHeader
 					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 						fileHandle.write(data)
 					}
-					invoiceLineNum += 1
+					
+					var invoiceLineNum = 0
+					let invoiceLineCount = invoice.invoiceLines.count
+					while invoiceLineNum < invoiceLineCount {
+						let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+						if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+							fileHandle.write(data)
+						}
+						invoiceLineNum += 1
+					}
+					// Close the file when done
+					fileHandle.closeFile()
+					print("Lines written to CSV file successfully.")
+				} catch {
+					print("Error: Could not write to CSV file: \(error)")
+					generationFlag = false
+					generationMessage = "Error: Could not write to CSV file: \(error)"
 				}
-				// Close the file when done
-				fileHandle.closeFile()
-				print("Lines written to CSV file successfully.")
 			} catch {
-				print("Error: Could not write to CSV file: \(error)")
+				print("Error creating directory: \(error)")
 				generationFlag = false
-				generationMessage = "Error: Could not write to CSV file: \(error)"
+				generationMessage = "Error: could not create directory for CSV File"
 			}
-		} catch {
-			print("Error creating directory: \(error)")
-			generationFlag = false
-			generationMessage = "Error: could not create directory for CSV File"
 		}
 		
 		return(generationFlag, generationMessage)
