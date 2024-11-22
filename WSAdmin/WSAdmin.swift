@@ -158,8 +158,8 @@ struct PgmConstants {
 	static let tutorHeaderArray2 = [" ", " ", " ", "B000", "-", " ", " ", " ", " ", " ", " ", " ", " ", " ", "S0000", "-"]
 	static let tutorHeader1Range = "!A1:T2"
 	static let tutorHeader1Array = [tutorHeaderArray1, tutorHeaderArray2]
-	static let tutorHeader2Array = [["Student Count", "0"], ["Service Count", "0"]]
-	static let tutorHeader2Range = "!A4:B5"
+	static let tutorHeader2Array = [["Student Count", "0"], ["Service Count", "0"],["Notes Count","=RefData!A1"]]
+	static let tutorHeader2Range = "!A4:B6"
 	static let tutorHeader3Range = "!A2:B2"
 	
 	static let timesheetSessionCountRow: Int = 2

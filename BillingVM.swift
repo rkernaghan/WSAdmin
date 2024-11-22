@@ -28,7 +28,7 @@ import GoogleSignIn
 		let (prevMonthName, prevYearName) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
 		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
-		let billArray = BillArray()
+		let billArray = BillArray(monthName: billingMonth)
 		print ("//")
 		print("//")
 		

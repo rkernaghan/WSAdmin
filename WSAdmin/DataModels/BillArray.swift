@@ -9,6 +9,11 @@ import Foundation
 class BillArray {
     
 	var billClients = [BillClient]()
+	var monthName: String
+	
+	init(monthName: String) {
+		self.monthName = monthName
+	}
 	
 	func addBillClient(newBillClient: BillClient) {
 		self.billClients.append(newBillClient)

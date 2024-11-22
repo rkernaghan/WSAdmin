@@ -84,7 +84,8 @@ import GoogleSignIn
 	
 	func getAuthScope( ) {
 		
-		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets"]
+//		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets"]
+		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive.readonly"]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
 			return ;  /* Not signed in. */
 		}
@@ -92,23 +93,20 @@ import GoogleSignIn
 			return}
 		
 		currentUser.addScopes(additionalScopes, presenting: presentingWindow) { signInResult, error in
-			guard error == nil else {
-				return }
-			
-			guard let signInResult = signInResult else {
-				return }
-			
-			let grantedScopes = currentUser.grantedScopes
-			if grantedScopes == nil || !grantedScopes!.contains(additionalScopes) {
-				print("GetScope - Additional scopes not granted")
+			if let error = error {
+				print("Error requesting additional scopes: \(error.localizedDescription)")
 				self.isLoggedIn = false
-			}
-			else {
-				print("GetScope - Got the additional scopes")
+			} else {
+				print("Additional scopes granted.")
 				self.isLoggedIn = true
+				// You can now use the updated user to make authenticated API requests
+				if let grantedScopes = currentUser.grantedScopes {
+						print("Granted scopes: \(grantedScopes)")
+				}
 			}
 		}
 	}
+
 	
 	
 	func signIn() {
