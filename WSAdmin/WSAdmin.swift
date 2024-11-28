@@ -50,7 +50,8 @@ struct PgmConstants {
 	static let tutorStudentsRange = "!O3:T"
 	static let tutorServicesRange = "!D3:M"
 	static let tutorDataCountsRange = "!B4:B5"
-	static let tutorDataTutorNameCell = "!A3:A3"
+	static let tutorDataTutorNameCell = "!B2:B2"
+	static let tutorDataTimesheetFileIDRange = "!B3:B3"
 	
 	static let tutorStartingRowNumber = 2
 	static let tutorKeyPosition = 0
@@ -160,7 +161,7 @@ struct PgmConstants {
 	static let tutorHeader1Array = [tutorHeaderArray1, tutorHeaderArray2]
 	static let tutorHeader2Array = [["Student Count", "0"], ["Service Count", "0"],["Notes Count","=RefData!A1"]]
 	static let tutorHeader2Range = "!A4:B6"
-	static let tutorHeader3Range = "!A2:B2"
+	static let tutorHeader3Range = "!A2:B3"
 	
 	static let timesheetSessionCountRow: Int = 2
 	static let timesheetSessionCountCol: Int = 1
@@ -313,7 +314,7 @@ enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible 
 	}
 }
 
-enum YearSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum TypeSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
 	case Minor
 	case Adult
 	
@@ -336,18 +337,11 @@ struct SheetData: Decodable {
 	let values: [[String]]
 }
 
-struct OAuthToken {
-	var accessToken: String
-	var refreshToken: String
-	var expiresAt: Date
-}
-
 class OAuth2Token{
 	var accessToken: String?
 	var refreshToken: String?
 	var expiresAt: Date?
 	var clientID: String?
-	
 }
 
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]

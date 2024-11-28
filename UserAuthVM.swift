@@ -65,9 +65,11 @@ import GoogleSignIn
 		}
 	}
 	
+	// "drive" scope required to create new Timesheet for new Tutor
+	//
 	func checkAuthScope() -> Bool {
 		
-		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets"]
+		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
 			return(false) ;  /* Not signed in. */
 		}
@@ -85,7 +87,7 @@ import GoogleSignIn
 	func getAuthScope( ) {
 		
 //		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets"]
-		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive.readonly"]
+		let additionalScopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
 			return ;  /* Not signed in. */
 		}

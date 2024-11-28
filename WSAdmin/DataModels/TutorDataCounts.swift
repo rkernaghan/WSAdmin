@@ -9,11 +9,12 @@ import Foundation
 
 class TutorDataCounts {
     
-    var tutorStudentCount: Int = 0
-    var tutorServiceCount: Int = 0
-    
-    func saveTutorDataCounts() {
-        
-    }
+	var timesheetFileID: String = ""
+	var tutorStudentCount: Int = 0
+	var tutorServiceCount: Int = 0
+	
+//	func saveTutorDataCounts() {
+//
+//	}
     
 }

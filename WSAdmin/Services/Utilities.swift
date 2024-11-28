@@ -43,7 +43,7 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 			// Check if the response is successful
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+				throw NSError(domain: "Invalid HTTP Response in getFileID", code: statusCode, userInfo: nil)
 			}
 			
 			// Parse the JSON response
@@ -116,7 +116,8 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 	let tokenFound = await getAccessToken()
 	if tokenFound {
 		let accessToken = oauth2Token.accessToken
-		if let accessToken = accessToken {		let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
+		if let accessToken = accessToken {
+			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
 			guard let url = URL(string: urlString) else {
 				throw URLError(.badURL)
 			}
@@ -135,7 +136,6 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			]
 			
 			request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
-			
 			
 			// Perform the network request asynchronously using async/await
 			let (data, response) = try await URLSession.shared.data(for: request)
@@ -161,6 +161,38 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 		completionFlag = false
 	}
 	return(completionFlag)
+}
+
+func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
+	var requestResult: Bool = true
+	
+	// The additional scopes you want to request
+	print("Additional Scopes Requested: \(additionalScopes)")
+	
+	// Ensure the user is already signed in
+	guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
+		print("User is not signed in.")
+		return(false)
+	}
+	
+	do {
+		// Use async/await to request additional scopes
+		guard let presentingWindow = await NSApplication.shared.mainWindow else {
+			return(false)
+		}
+		let user = try await currentUser.addScopes(additionalScopes, presenting: presentingWindow)
+		print("Additional scopes granted.")
+		
+		// Access granted scopes if needed
+		if let grantedScopes = currentUser.grantedScopes {
+			print("Granted scopes: \(grantedScopes)")
+		}
+	} catch {
+		// Handle errors
+		print("Error requesting additional scopes: \(error.localizedDescription)")
+		requestResult = false
+	}
+	return(requestResult)
 }
 
 func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool {

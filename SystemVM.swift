@@ -260,7 +260,7 @@ import Foundation
 				}
 				
 				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
-				let (studentCount, serviceCount) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
+				let (studentCount, serviceCount, timesheetFileID) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
 				if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
 					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)")
 				}
@@ -1202,6 +1202,40 @@ import Foundation
 			}
 		}
 	return(generateResult, generateMessage)
+	}
+	
+	func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String){
+		var updateResult: Bool = true
+		var updateMessage: String = ""
+		
+		let (currentMonth, currentMonthYear) = getCurrentMonthYear()
+
+		var tutorNum = 0
+		let tutorCount = referenceData.tutors.tutorsList.count
+		while tutorNum < tutorCount {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+				let timesheetFileName = "Timesheet " + currentMonthYear + " " + tutorName
+				do {
+					let (getResult, timesheetFileID) = try await getFileID(fileName: timesheetFileName)
+					let range = tutorName + PgmConstants.tutorDataTimesheetFileIDRange
+					let updateValues = [[timesheetFileID]]
+					do {
+						let updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+					} catch {
+						updateResult = false
+						updateMessage = "Error updating timesheet file ID for \(tutorName)"
+					}
+				} catch {
+					updateResult = false
+					updateMessage = "Error getting file ID for \(timesheetFileName)"
+				}
+			}
+			
+			tutorNum += 1
+		}
+		
+		return(updateResult, updateMessage)
 	}
 }
 

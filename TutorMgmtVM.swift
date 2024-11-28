@@ -17,6 +17,7 @@ import GoogleSignIn
     func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int) async -> (Bool, String) {
 	    var addResult: Bool = true
 	    var addMessage: String = ""
+	    var newTimesheetFileID: String = ""
 	    
  //           var tutorBillingFileID: String = ""
             
@@ -33,17 +34,17 @@ import GoogleSignIn
 		    
 		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
 		    referenceData.tutors.loadTutor(newTutor: newTutor)
-		    
-		    // Create a new Tutor Details sheet for the new Tutor
-		    addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey)
+		    // Create a new Timesheet for the Tutor
+		    (addResult, newTimesheetFileID) = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
 		    if !addResult {
-			    addMessage = "Error: could not create Tutor Details sheet for new Tutor \(tutorName)"
+			    addMessage = "Critical Error: Could not create Timesheet for Tutor \(tutorName)"
 		    } else {
-			    // Create a new Timesheet for the Tutor
-			    addResult = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
+			    // Create a new Tutor Details sheet for the new Tutor
+			    addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey, newTimesheetFileID: newTimesheetFileID)
 			    if !addResult {
-				    addMessage = "Critical Error: Could not create Timesheet for Tutor \(tutorName)"
+				    addMessage = "Error: could not create Tutor Details sheet for new Tutor \(tutorName)"
 			    } else {
+			    
 				    // Add the new Tutor to the Billed Tutor list for the previous month
 				    let (prevMonthName, prevMonthYear) = getPrevMonthYear()
 				    addResult = await self.addTutorToBilledTutorMonth(tutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
@@ -694,7 +695,7 @@ import GoogleSignIn
 	}
     
    
-	func copyNewTimesheet(tutorName: String, tutorEmail: String) async -> Bool {
+	func copyNewTimesheet(tutorName: String, tutorEmail: String) async -> (Bool, String) {
 		var copyResult: Bool = true
 
 		var newTimesheetFileID: String = ""
@@ -749,10 +750,10 @@ import GoogleSignIn
 			copyResult = false
 		}
 
-		return(copyResult)
+		return(copyResult, newTimesheetFileID)
 	}
          
-	func createNewDetailsSheet(tutorName: String, tutorKey: String) async -> Bool {
+	func createNewDetailsSheet(tutorName: String, tutorKey: String, newTimesheetFileID: String) async -> Bool {
 		var createResult: Bool = true
 	    
 		var updateValues = [[String]]()
@@ -771,7 +772,7 @@ import GoogleSignIn
 							createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues)
 							if createResult {
 								range = tutorName + PgmConstants.tutorHeader3Range
-								updateValues = [[tutorKey, tutorName]]
+								updateValues = [[tutorKey, tutorName], ["Timesheet FileID", newTimesheetFileID]]
 								do {
 									createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues)
 								} catch {

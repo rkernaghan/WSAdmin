@@ -65,17 +65,23 @@ class Timesheet: Identifiable {
 			while entryCounter < entryCount && rowNum < rowCounter {
 				let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
 				if date != "" && date != " " {
-					let student = sheetCells[rowNum][PgmConstants.timesheetStudentCol]
-					let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
-					let duration = Int(sheetCells[rowNum][PgmConstants.timesheetDurationCol]) ?? 0
-					let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
-					let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
-					let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
-					let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
-					let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
-					let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
-					let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, serviceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
-					self.addTimesheetRow(timesheetRow: newTimesheetRow)
+					let rowCount = sheetCells[rowNum].count
+					if rowCount < 9 {
+						print("Skipping row \(rowNum) as it only has \(rowCount) cells")
+					} else {
+						let student = sheetCells[rowNum][PgmConstants.timesheetStudentCol]
+						let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
+						let duration = Int(sheetCells[rowNum][PgmConstants.timesheetDurationCol]) ?? 0
+						let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
+						let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
+						let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
+						let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
+						let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
+						let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
+						let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, serviceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
+						self.addTimesheetRow(timesheetRow: newTimesheetRow)
+					}
+
 					//   print(tutorName, student, date, service)
 					entryCounter += 1
 				}

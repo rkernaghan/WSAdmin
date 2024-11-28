@@ -19,6 +19,7 @@ struct TutorView: View {
 	@State var maxStudents: Int
 	
 	@State private var showAlert = false
+	@State private var dismissAlert = false
 	
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
@@ -87,7 +88,7 @@ struct TutorView: View {
 							} else {
 								showAlert = true
 								buttonErrorMsg = "You must Allow Access in 2 cells in RefData tab of new Timesheet for \(tutorName)"
-//								dismiss()
+								dismissAlert = true
 							}
 						} else {
 							buttonErrorMsg = validationMessage
@@ -104,7 +105,11 @@ struct TutorView: View {
 				}
 			}
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
-				Button("OK", role: .cancel) { }
+				Button("OK", role: .cancel) {
+					if dismissAlert {
+						dismiss()
+					}
+				}
 			}
 			.padding()
 //			.clipShape(RoundedRectangle(cornerRadius: 10))

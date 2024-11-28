@@ -173,6 +173,16 @@ struct SideView: View {
 					}
 				}
 			}
+			
+			Button("Update Tutor Timesheet File IDs") {
+				Task {
+					let (updateResult, updateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
+					if !updateResult {
+						showAlert.toggle()
+						buttonErrorMsg = updateMessage
+					}
+				}
+			}
                 
 		}
 		
