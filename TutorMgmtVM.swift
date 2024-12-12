@@ -32,13 +32,17 @@ import GoogleSignIn
 		    let startDate = dateFormatter.string(from: Date())
 		    //       let maxStudentsInt = Int(maxStudents) ?? 0
 		    
-		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0)
+		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
 		    referenceData.tutors.loadTutor(newTutor: newTutor)
 		    // Create a new Timesheet for the Tutor
 		    (addResult, newTimesheetFileID) = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
 		    if !addResult {
 			    addMessage = "Critical Error: Could not create Timesheet for Tutor \(tutorName)"
 		    } else {
+			    // add the TimesheetFileID to the new Tutor object
+			    let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+			    referenceData.tutors.tutorsList[tutorNum].timesheetFileID = newTimesheetFileID
+			    
 			    // Create a new Tutor Details sheet for the new Tutor
 			    addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey, newTimesheetFileID: newTimesheetFileID)
 			    if !addResult {
@@ -53,7 +57,7 @@ import GoogleSignIn
 				    } else {
 					    
 					    // Assign all Base Services to new Tutor
-					    let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+					   
 					    var serviceNum = 0
 					    let serviceCount = referenceData.services.servicesList.count
 					    while serviceNum < serviceCount && addResult {
@@ -130,8 +134,13 @@ import GoogleSignIn
 				updateMessage = "Critical Error: Could not rename Tutor \(originalTutorName) in Billed Tutor data for \(prevMonthName)"
 			} else {
 				let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
-				// Don't check result as Tutor may not be in current Billed Tutor list of current month not yet Billed
+				// Don't check result as Tutor may not be in current Billed Tutor list of current month if not yet Billed
 				updateResult = await self.renameTutorInBilledTutorMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: currentMonthName, yearName: currentMonthYear)
+				
+				// Change the Tutor Name in the Billed Students lists for the previous and current months for any Students assigned to this Tutor
+				// Don't check result as Tutor may not be assigned to any Tutors and therefore won't be in Billed Student list
+				updateResult = await self.renameTutorInBilledStudentMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
+				updateResult = await self.renameTutorInBilledStudentMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: currentMonthName, yearName: currentMonthYear)
 				
 				// Change the sheet name of the Tutor Details sheet and the name in the tutor's sheet
 				// First get the sheet ID in the spreadsheet
@@ -278,6 +287,43 @@ import GoogleSignIn
 		return(renameResult)
 	}
 	
+	// looks for each instance of a Tutor Name in a Student Billed month (assigned to a Tutor) and renames the Tutor for that Student
+	func renameTutorInBilledStudentMonth(originalTutorName: String, newTutorName: String, monthName: String, yearName: String) async -> Bool {
+		var renameResult: Bool = false
+		var studentBillingFileID: String = ""
+		
+		let studentBillingFileName = studentBillingFileNamePrefix + yearName
+		
+		let studentBillingMonth = StudentBillingMonth(monthName: monthName)
+		
+		// Get the fileID of the Billed Tutor spreadsheet for the year
+		do {
+			(renameResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
+			if renameResult {
+				// Read the data from the Billed Tutor spreadsheet for the previous month
+				renameResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+				if renameResult {
+					
+					var billedStudentNum = 0
+					let billedStudentCount = studentBillingMonth.studentBillingRows.count
+					while billedStudentNum < billedStudentCount {
+						let studentTutorName = studentBillingMonth.studentBillingRows[billedStudentNum].tutorName
+						if studentTutorName == originalTutorName {
+							studentBillingMonth.studentBillingRows[billedStudentNum].tutorName = newTutorName
+						}
+						billedStudentNum += 1
+					}
+					renameResult = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+					
+				}
+			}
+		} catch {
+			print("Could not get FileID for file: \(studentBillingFileName)")
+			renameResult = false
+		}
+		
+		return(renameResult)
+	}
 	
 	func validateNewTutor(tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData)->(Bool, String) {
 		var validationResult = true
@@ -406,34 +452,37 @@ import GoogleSignIn
 									if !deleteResult {
 										deleteMessage = "Critical Error: Could not load Tutor Billing data for \(prevMonthName)"
 									} else {
-										// Remove the Tutor to Billed Tutor list for the month
+										// Mark Tutor as deleted in the to Billed Tutor list for the month
 										let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 										let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
-										if billedTutorFound != false {
-											tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
-										}
-										// Save the updated Billed Tutor list for the month
-										deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName)
-										if !deleteResult {
-											deleteMessage = "Critical Error: Could not save Tutor Billing data for \(prevMonthName)"
+										if billedTutorFound == false {
+											deleteResult = false
+											deleteMessage = "Critical Error: Could not find Tutor \(tutorName) in Billed Tutor list for month \(prevMonthName)"
 										} else {
-											
-											// Delete the Tutor Details sheet for the Tutor
-											do {
-												if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName) {
-													tutorSheetID = sheetID
-													let deleteFileData = try await deleteSheet(spreadsheetId: tutorDetailsFileID, sheetId: tutorSheetID)
-													if deleteFileData == nil {
-														deleteMessage = "Critical Error: Could not delete Tutor Details sheet for \(tutorName)"
+											// Save the updated Billed Tutor list for the month
+											tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
+											deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName)
+											if !deleteResult {
+												deleteMessage = "Critical Error: Could not save Tutor Billing data for \(prevMonthName)"
+											} else {
+												
+												// Delete the Tutor Details sheet for the Tutor
+												do {
+													if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName) {
+														tutorSheetID = sheetID
+														let deleteFileData = try await deleteSheet(spreadsheetId: tutorDetailsFileID, sheetId: tutorSheetID)
+														if deleteFileData == nil {
+															deleteMessage = "Critical Error: Could not delete Tutor Details sheet for \(tutorName)"
+														}
+													} else {
+														deleteResult = false
+														deleteMessage = "Critical Error: Could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet"
 													}
-												} else {
+												} catch {
+													print("Error: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet")
 													deleteResult = false
-													deleteMessage = "Critical Error: Could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet"
+													deleteMessage = "Error: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
 												}
-											} catch {
-												print("Error: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet")
-												deleteResult = false
-												deleteMessage = "Error: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
 											}
 										}
 									}

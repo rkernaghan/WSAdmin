@@ -66,7 +66,7 @@ class Timesheet: Identifiable {
 				let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
 				if date != "" && date != " " {
 					let rowCount = sheetCells[rowNum].count
-					if rowCount < 9 {
+					if rowCount < 9 {						// Check if all required Timesheet cells populated for this row, else ignore the row and warn
 						print("Skipping row \(rowNum) as it only has \(rowCount) cells")
 					} else {
 						let student = sheetCells[rowNum][PgmConstants.timesheetStudentCol]

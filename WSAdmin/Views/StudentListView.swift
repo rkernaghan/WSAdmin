@@ -61,7 +61,7 @@ struct StudentListView: View {
 				}
 			}
 			
-			var studentArray: [Student] = assignedArray + unassignedArray + suspendedArray + deletedArray
+			let studentArray: [Student] = assignedArray + unassignedArray + suspendedArray + deletedArray
 			
 			VStack {
 				

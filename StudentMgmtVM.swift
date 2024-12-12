@@ -320,16 +320,18 @@ import Foundation
 						referenceData.dataCounts.decreaseActiveStudentCount()
 						// Decrease the counts of Students at the Location
 						let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
-						if locationFound {
+						if !locationFound {
 							deleteResult = false
 							deleteMessage = "Error: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 						} else {
 							referenceData.locations.locationsList[locationNum].decreaseStudentCount()
-							deleteResult = await referenceData.locations.saveLocationData()
-							if deleteResult {
-								deleteMessage = "Error: Could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
+							let saveResult = await referenceData.locations.saveLocationData()
+							if !saveResult {
+								print("Error: could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)")
+								deleteResult = false
+								deleteMessage = "Critical Error: Could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 							} else {
-								// Remove Student from Billed Student list for previous month
+								// Mark Student deleted in the Billed Student list for previous month
 								let (prevMonthName, billingYear) = getPrevMonthYear()
 								let studentBillingFileName = studentBillingFileNamePrefix + billingYear
 								
@@ -350,9 +352,11 @@ import Foundation
 											// Remove the Student from the Billed Student list for the month
 											let studentName = referenceData.students.studentsList[studentNum].studentName
 											let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
-											if billedStudentFound != false {
-												studentBillingMonth.deleteBilledStudent(billedStudentNum: billedStudentNum)
+											if billedStudentFound == false {
+												deleteResult = false
+												deleteMessage = "Critical Error: Could not find Student \(studentName) in the Billed Student List for month \(prevMonthName)"
 											}
+											studentBillingMonth.deleteBilledStudent(billedStudentNum: billedStudentNum)
 											// Save the updated Billed Student list for the month
 											deleteResult = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName)
 											if !deleteResult {

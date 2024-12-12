@@ -24,9 +24,10 @@ import Foundation
 	var tutorTotalProfit: Float
 	var tutorStudents = [TutorStudent]()
 	var tutorServices = [TutorService]()
+	var timesheetFileID: String
 	let id = UUID()
 	
-	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalRevenue: Float, tutorTotalProfit: Float) {
+	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Float, tutorTotalRevenue: Float, tutorTotalProfit: Float, timesheetFileID:String) {
 		self.tutorKey = tutorKey
 		self.tutorName = tutorName
 		self.tutorEmail = tutorEmail
@@ -41,6 +42,7 @@ import Foundation
 		self.tutorTotalCost = tutorTotalCost
 		self.tutorTotalRevenue = tutorTotalRevenue
 		self.tutorTotalProfit = tutorTotalProfit
+		self.timesheetFileID = timesheetFileID
 	}
 	
 	func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
@@ -232,7 +234,7 @@ import Foundation
 		let range = tutorName + PgmConstants.tutorDataCountsRange
 		tutorStudentCount = tutorStudents.count
 		tutorServiceCount = tutorServices.count
-		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
+		updateValues = [[timesheetFileID], [String(tutorStudentCount)], [String(tutorServiceCount)]]
 		
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
@@ -287,8 +289,9 @@ import Foundation
 			
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
-				studentCount = Int( sheetCells[0][0] ) ?? 0
-				serviceCount = Int( sheetCells[1][0] ) ?? 0
+				timesheetFileID = sheetCells[0][0]
+				studentCount = Int( sheetCells[1][0] ) ?? 0
+				serviceCount = Int( sheetCells[2][0] ) ?? 0
 			} else {
 				studentCount = 0
 				serviceCount = 0

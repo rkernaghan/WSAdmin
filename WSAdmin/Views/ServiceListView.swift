@@ -58,7 +58,7 @@ struct ServiceListView: View {
 				}
 			}
 			
-			var serviceArray: [Service] = assignedArray + unassignedArray + deletedArray
+			let serviceArray: [Service] = assignedArray + unassignedArray + deletedArray
 			
 			VStack {
 				HStack {

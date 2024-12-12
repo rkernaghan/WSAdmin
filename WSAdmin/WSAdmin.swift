@@ -4,8 +4,9 @@
 //
 //  Created by Russell Kernaghan on 2024-08-13.
 //
-
+import Foundation
 import SwiftUI
+import OSLog
 
 struct PgmConstants {
 	static let dataCountTotalStudentsRow = 0
@@ -49,7 +50,7 @@ struct PgmConstants {
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
 	static let tutorServicesRange = "!D3:M"
-	static let tutorDataCountsRange = "!B4:B5"
+	static let tutorDataCountsRange = "!B3:B5"
 	static let tutorDataTutorNameCell = "!B2:B2"
 	static let tutorDataTimesheetFileIDRange = "!B3:B3"
 	
@@ -131,6 +132,7 @@ struct PgmConstants {
 	static let locationStatusPosition = 5
 	
 	static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+	static let yearNames = ["2024","2025","2026","2027","2028","2029","2030","2031","2032","2032"]
 	static let firstTimesheetRow = 5
 	static let servicePrompt = "Choose Service"
 	static let studentPrompt = "Choose Student"
@@ -143,12 +145,16 @@ struct PgmConstants {
 	static let locationKeyPrefix = "C"
 	
 	static let tutorDetailsTestFileName: String = "Tutor Details Data - TEST"
+	static let tutorDetailsShadowFileName: String = "Tutor Details Data - Shadow"
 	static let tutorDetailsProdFileName: String = "Tutor Details Data"
 	static let referenceDataTestFileName: String = "ReferenceData - TEST"
+	static let referenceDataShadowFileName: String = "ReferenceData - Shadow"
 	static let referenceDataProdFileName: String = "ReferenceData"
 	static let studentBillingTestFileNamePrefix: String = "Student Billing Summary - TEST "
+	static let studentBillingShadowFileNamePrefix: String = "Student Billing Summary - Shadow "
 	static let studentBillingProdFileNamePrefix: String = "Student Billing Summary "
 	static let tutorBillingTestFileNamePrefix: String = "Tutor Billing Summary - TEST "
+	static let tutorBillingShadowFileNamePrefix: String = "Tutor Billing Summary - Shadow "
 	static let tutorBillingProdFileNamePrefix: String = "Tutor Billing Summary "
 	static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
 	static let timesheetTemplateProdFileName: String = "Template Timesheet"
@@ -179,7 +185,7 @@ struct PgmConstants {
 	static let timesheetTutorNameCell = "RefData!A2:A2"
 	
 	static let studentBillingCountRange = "!A2:A2"
-	static let studentBillingRange = "!A4:J"
+	static let studentBillingRange = "!A4:K"
 	static let studentBillingStartRow = 4
 	static let studentBillingStudentCol = 0
 	static let studentBillingMonthSessionCol = 1
@@ -191,9 +197,10 @@ struct PgmConstants {
 	static let studentBillingTotalRevenueCol = 7
 	static let studentBillingTotalProfitCol = 8
 	static let studentBillingTutorCol = 9
+	static let studentBillingStatusCol = 10
 	
 	static let tutorBillingCountRange = "!A2:A2"
-	static let tutorBillingRange = "!A4:I"
+	static let tutorBillingRange = "!A4:J"
 	static let tutorBillingStartRow = 4
 	static let tutorBillingTutorCol = 0
 	static let tutorBillingMonthSessionCol = 1
@@ -204,6 +211,7 @@ struct PgmConstants {
 	static let tutorBillingTotalCostCol = 6
 	static let tutorBillingTotalRevenueCol = 7
 	static let tutorBillingTotalProfitCol = 8
+	static let tutorBillingStatusCol = 9
 	
 	static let termsString: String = "Net 14 days"
 	static let taxCodeString: String = "N"
@@ -214,6 +222,9 @@ struct PgmConstants {
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"
 	static let writeSeattleEmail: String = "info@writeseattle.com"
 	static let russellEmail: String = "rskernaghan@gmail.com"
+	
+	static let systemStartMonthIndex = 6
+	static let systemStartYearIndex = 0
 }
 
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
@@ -346,7 +357,8 @@ class OAuth2Token{
 
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
-
+let yearNumbersArray = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
+ 
 var buttonErrorMsg: String = " "
 
 var studentBillingFileNamePrefix: String = ""
@@ -367,6 +379,7 @@ var runMode: String = "PROD"
 @main
 struct WSAdmin: App {
 	let systemVM = SystemVM()
+	let logger = Logger()
 	
 	var body: some Scene {
 		

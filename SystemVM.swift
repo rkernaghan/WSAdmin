@@ -337,11 +337,91 @@ import Foundation
 		// Validate that the sum of the Tutors total revenue equals Student total revenue equals Location total revenue equals Billed Student revenue count equals Billed Tutor revenue Count
 		if tutorRevenue != studentRevenue || studentRevenue != locationRevenue || tutorRevenue != locationRevenue || locationRevenue != billedTutorTotalRevenue || billedTutorTotalRevenue != billedStudentTotalRevenue {
 			print("Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue), Location revenue \(locationRevenue), Billed Tutor revenue \(billedTutorTotalRevenue) and Billed Student revenue \(billedStudentTotalRevenue) do not match")
+			
+			// If total Student revenue in RefData does not equal total Student revenue in Billed Student list, find the difference
+			if studentRevenue != billedStudentTotalRevenue {
+				var studentNum = 0
+				let studentCount = referenceData.students.studentsList.count
+				while studentNum < studentCount {
+					let studentName = referenceData.students.studentsList[studentNum].studentName
+					let refStudentRevenue = referenceData.students.studentsList[studentNum].studentTotalRevenue
+					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					if !studentFoundFlag {
+						print("Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences")
+					} else {
+						let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalRevenue
+						if billedStudentRevenue != refStudentRevenue {
+							print("Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) ")
+						}
+					}
+					studentNum += 1
+				}
+			}
+			
+			// If total Tutor revenue in RefData does not equal total Tutor revenue in Billed Tutor list, find the difference
+			if tutorRevenue != billedTutorTotalRevenue {
+				var tutorNum = 0
+				let tutorCount = referenceData.tutors.tutorsList.count
+				while tutorNum < tutorCount {
+					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+					let refTutorRevenue = referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
+					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+					if !tutorFoundFlag {
+						print("Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences")
+					} else {
+						let billedTutorRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalRevenue
+						if billedTutorRevenue != refTutorRevenue {
+							print("Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) ")
+						}
+					}
+					tutorNum += 1
+				}
+			}
 		}
 		
 		// Validate that the Tutors total cost, Student total cost, billed Student total cost and billed Tutor Total Cost all match
 		if tutorCost != studentCost || studentCost != billedTutorTotalCost || billedTutorTotalCost != billedStudentTotalCost {
 			print("Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match")
+			
+			// If total Student cost in RefData does not equal total Student cost in Billed Student list, find the difference
+			if studentCost != billedStudentTotalCost {
+				var studentNum = 0
+				let studentCount = referenceData.students.studentsList.count
+				while studentNum < studentCount {
+					let studentName = referenceData.students.studentsList[studentNum].studentName
+					let refStudentCost = referenceData.students.studentsList[studentNum].studentTotalCost
+					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					if !studentFoundFlag {
+						print("Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences")
+					} else {
+						let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalCost
+						if billedStudentCost != refStudentCost {
+							print("Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) ")
+						}
+					}
+					studentNum += 1
+				}
+			}
+			
+			// If total Tutor cost in RefData does not equal total Tutor cost in Billed Tutor list, find the difference
+			if tutorCost != billedTutorTotalCost {
+				var tutorNum = 0
+				let tutorCount = referenceData.tutors.tutorsList.count
+				while tutorNum < tutorCount {
+					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+					let refTutorCost = referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
+					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+					if !tutorFoundFlag {
+						print("Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences")
+					} else {
+						let billedTutorCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalCost
+						if billedTutorCost != refTutorCost {
+							print("Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) ")
+						}
+					}
+					tutorNum += 1
+				}
+			}
 		}
 		
 		// Validate that the Tutor session count, Student session count, Billed Tutor session count and the Billed Student session count all match
@@ -357,14 +437,27 @@ import Foundation
 
 // Validate that the total number of Tutors in the previous month Billed Tutor List is equal to the number of active Tutors
 		
-		if billedTutorMonth.tutorBillingRows.count != activeTutors {
-			print("Validation Error: Active Tutor count \(activeTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)")
+		if billedTutorMonth.tutorBillingRows.count != totalTutors {
+			print("Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)")
 		}
 
 		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students\
 		
-		if billedStudentMonth.studentBillingRows.count != activeStudents {
-			print("Validation Error: Active Student count \(activeStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)")
+		if billedStudentMonth.studentBillingRows.count != totalStudents {
+			print("Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)")
+			// If more Students in Billed Student list, find missing Student
+			if totalStudents < billedStudentMonth.studentBillingRows.count {
+				var studentNum = 0
+				var studentCount = billedStudentMonth.studentBillingRows.count
+				while studentNum < studentCount {
+					let studentName = billedStudentMonth.studentBillingRows[studentNum].studentName
+					let (studentFoundFlag, billedStudentNum) = referenceData.students.findStudentByName(studentName: studentName)
+					if !studentFoundFlag {
+						print("Student \(studentName) is in Billed Student list but not Reference Data Students")
+					}
+					studentNum += 1
+				}
+			}
 		}
 		print("//")
 		print("Validation Complete")
@@ -574,19 +667,19 @@ import Foundation
 					let compareMonthSessions = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].monthSessions
 					//					print("Tutor:\(tutorName) Billed Student Cost:\(billedTutorCost) Compare Cost:\(compareCost)")
 					if compareMonthCost.rounded() == billedTutorMonthCost.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month costs matched \(billedTutorMonthCost) \(compareMonthCost)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value \(billedTutorMonthCost) \(compareMonthCost)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month costs do not match \(billedTutorMonthCost) \(compareMonthCost)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month costs do not match computed values \(billedTutorMonthCost) \(compareMonthCost)\n")
 					}
 					if compareMonthRevenue.rounded() == billedTutorMonthRevenue.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month revenue matched \(billedTutorMonthRevenue) \(compareMonthRevenue)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value \(billedTutorMonthRevenue) \(compareMonthRevenue)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month revenue does not match \(billedTutorMonthRevenue) \(compareMonthRevenue)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month revenue does not match computed value\(billedTutorMonthRevenue) \(compareMonthRevenue)\n")
 					}
 					if compareMonthSessions == billedTutorMonthSessions {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month sessions matched \(billedTutorMonthSessions) \(compareMonthSessions)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value \(billedTutorMonthSessions) \(compareMonthSessions)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) month sessions do not match \(billedTutorMonthSessions) \(compareMonthSessions)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month sessions do not match computed value \(billedTutorMonthSessions) \(compareMonthSessions)\n")
 					}
 					
 				}
@@ -608,19 +701,19 @@ import Foundation
 					let compareMonthSessions = compareBilledStudentMonth.studentBillingRows[compareStudentNum].monthSessions
 					//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
 					if compareMonthCost.rounded() == billedStudentMonthCost.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) month costs matched \(billedStudentMonthCost) \(compareMonthCost)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) \(compareMonthCost)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) month costs do not match \(billedStudentMonthCost) \(compareMonthCost)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month costs do not match computed value \(billedStudentMonthCost) \(compareMonthCost)\n")
 					}
 					if compareMonthRevenue.rounded() == billedStudentMonthRevenue.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) month revenue matched \(billedStudentMonthRevenue) \(compareMonthRevenue)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month revenue matches computed value \(billedStudentMonthRevenue) \(compareMonthRevenue)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) month revenue does not match \(billedStudentMonthRevenue) \(compareMonthRevenue)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month revenue does not match computed value\(billedStudentMonthRevenue) \(compareMonthRevenue)\n")
 					}
 					if compareMonthSessions  == billedStudentMonthSessions {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) month sessions matched \(billedStudentMonthSessions) \(compareMonthSessions)")
+						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month sessions matches computed value \(billedStudentMonthSessions) \(compareMonthSessions)")
 					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) month sessions do not match \(billedStudentMonthSessions) \(compareMonthSessions)\n")
+						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month sessions do not match computed value\(billedStudentMonthSessions) \(compareMonthSessions)\n")
 					}
 					
 				}
@@ -661,19 +754,19 @@ import Foundation
 						let compareTotalSessions = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalSessions
 						//					print("Tutor:\(tutorName) Billed Student Cost:\(billedTutorCost) Compare Cost:\(compareCost)")
 						if compareTotalCost.rounded() == billedTutorTotalCost.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(tutorName) total costs matched \(billedTutorTotalCost) \(compareTotalCost)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total costs matches computed value \(billedTutorTotalCost) \(compareTotalCost)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(tutorName) total costs do not match \(billedTutorTotalCost) \(compareTotalCost)\n")
+							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total costs do not match computed value \(billedTutorTotalCost) \(compareTotalCost)\n")
 						}
 						if compareTotalRevenue.rounded() == billedTutorTotalRevenue.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(tutorName) total revenue matched \(billedTutorTotalRevenue) \(compareTotalRevenue)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total revenue matched computes value \(billedTutorTotalRevenue) \(compareTotalRevenue)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(tutorName) total revenue does not match \(billedTutorTotalRevenue) \(compareTotalRevenue)\n")
+							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total revenue does not match computed value \(billedTutorTotalRevenue) \(compareTotalRevenue)\n")
 						}
 						if compareTotalSessions == billedTutorTotalSessions {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(tutorName) total sessions matched \(billedTutorTotalSessions) \(compareTotalSessions)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total sessions matches computed value \(billedTutorTotalSessions) \(compareTotalSessions)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(tutorName) total sessions do not match \(billedTutorTotalSessions) \(compareTotalSessions)\n")
+							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total sessions do not match computed value \(billedTutorTotalSessions) \(compareTotalSessions)\n")
 						}
 					} else {
 						print("Error: Could not find \(tutorName) in yearTutorBilling \(yearTutorBilling[monthIndex].monthName)")
@@ -722,25 +815,25 @@ import Foundation
 						let compareTotalSessions = compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalSessions
 						//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
 						if compareTotalCost.rounded() == billedStudentTotalCost.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(studentName) total costs matched \(billedStudentTotalCost) \(compareTotalCost)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total costs matches computed value \(billedStudentTotalCost) \(compareTotalCost)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(studentName) total costs do not match \(billedStudentTotalCost) \(compareTotalCost)\n")
+							print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total costs do not match computed value \(billedStudentTotalCost) \(compareTotalCost)\n")
 						}
 						if compareTotalRevenue.rounded() == billedStudentTotalRevenue.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(studentName) total revenue matched \(billedStudentTotalRevenue) \(compareTotalRevenue)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total revenue matches computed value \(billedStudentTotalRevenue) \(compareTotalRevenue)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(studentName) total revenue does not match \(billedStudentTotalRevenue) \(compareTotalRevenue)\n")
+							print("\(yearTutorBilling[monthIndex].monthName):Student \(studentName) Billed Student total revenue does not match computed value \(billedStudentTotalRevenue) \(compareTotalRevenue)\n")
 						}
 						if compareTotalSessions  == billedStudentTotalSessions {
-							print("          \(yearTutorBilling[monthIndex].monthName): \(studentName) total sessions matched \(billedStudentTotalSessions) \(compareTotalSessions)")
+							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total sessions matches computed value \(billedStudentTotalSessions) \(compareTotalSessions)")
 						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): \(studentName) total sessions do not match \(billedStudentTotalSessions) \(compareTotalSessions)\n")
+							print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total sessions do not match computed value \(billedStudentTotalSessions) \(compareTotalSessions)\n")
 						}
 					} else {
-						print("Error: Could not find \(studentName) in yearStudentBilling \(yearTutorBilling[monthIndex].monthName)")
+						print("Error: Could not find Student \(studentName) in yearStudentBilling \(yearTutorBilling[monthIndex].monthName)")
 					}
 				} else {
-					print("Error: Could not find \(studentName) in compareBilledStudentMonth \(yearTutorBilling[monthIndex].monthName)")
+					print("Error: Could not find Student \(studentName) in compareBilledStudentMonth \(yearTutorBilling[monthIndex].monthName)")
 				}
 				
 				billedStudentNum += 1
@@ -956,64 +1049,7 @@ import Foundation
 		return(completionFlag)
 		
 	}
-	//
-	// This function creates a new Billed Tutor object for a month, reads in the data for that month and returns that new Billed Tutor object
-	//		monthName: the month to load the Billed Tutor data for
-	//		yearName: the year of the month to load the Billed Tutor data for
-	//
-	func buildBilledTutorMonth(monthName: String, yearName: String) async -> TutorBillingMonth {
-		let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
-		var fileIdResult: Bool = true
-		var tutorBillingFileID = ""
-		let tutorBillingMonth = TutorBillingMonth(monthName: monthName)
-		
-		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
-		do {
-			(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
-			if fileIdResult {
-				let readResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
-				if !readResult {
-					print("Warning: Could not load Tutor Billing Data for \(monthName)")
-				}
-			} else {
-				print("Error: could not get FileID for file: \(tutorBillingFileName)")
-			}
-		} catch {
-			print("Error: Could not get FileID for file: \(tutorBillingFileName)")
-		}
-		
-		return(tutorBillingMonth)
-	}
-	//
-	// This function creates a new Billed Student object for a month, reads in the data for that month and returns that new Billed Student object
-	//		monthName: the month to load the Billed Student data for
-	//		yearName: the year of the month to load the Billed Student data for
-	//
-	func buildBilledStudentMonth(monthName: String, yearName: String) async -> StudentBillingMonth {
-		let studentBillingFileName = studentBillingFileNamePrefix + yearName
-		var fileIdResult: Bool = true
-		var studentBillingFileID = ""
-		let studentBillingMonth = StudentBillingMonth(monthName: monthName)
-		
-		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
-		do {
-			(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
-			// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
-			if fileIdResult {
-				let readResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
-				if !readResult {
-					print("Warning: Could not load Student Billing Data for \(monthName)")
-				}
-			} else {
-				print("Error: could not get FileID for file: \(studentBillingFileName)")
-			}
-		} catch {
-			print("Error: Could not get FileID for file: \(studentBillingFileName)")
-		}
-		
-		return(studentBillingMonth)
-	}
+
 	
 	// This function generates the next year's spreadsheets (Tutor Billing, Student Billing) and a new Timesheet for each Tutor
 	//
@@ -1239,4 +1275,62 @@ import Foundation
 	}
 }
 
+//
+// This function creates a new Billed Tutor object for a month, reads in the data for that month and returns that new Billed Tutor object
+//		monthName: the month to load the Billed Tutor data for
+//		yearName: the year of the month to load the Billed Tutor data for
+//
+func buildBilledTutorMonth(monthName: String, yearName: String) async -> TutorBillingMonth {
+	let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
+	var fileIdResult: Bool = true
+	var tutorBillingFileID = ""
+	let tutorBillingMonth = TutorBillingMonth(monthName: monthName)
+	
+	// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
+	do {
+		(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
+		// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
+		if fileIdResult {
+			let readResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+			if !readResult {
+				print("Warning: Could not load Tutor Billing Data for \(monthName)")
+			}
+		} else {
+			print("Error: could not get FileID for file: \(tutorBillingFileName)")
+		}
+	} catch {
+		print("Error: Could not get FileID for file: \(tutorBillingFileName)")
+	}
+	
+	return(tutorBillingMonth)
+}
+//
+// This function creates a new Billed Student object for a month, reads in the data for that month and returns that new Billed Student object
+//		monthName: the month to load the Billed Student data for
+//		yearName: the year of the month to load the Billed Student data for
+//
+func buildBilledStudentMonth(monthName: String, yearName: String) async -> StudentBillingMonth {
+	let studentBillingFileName = studentBillingFileNamePrefix + yearName
+	var fileIdResult: Bool = true
+	var studentBillingFileID = ""
+	let studentBillingMonth = StudentBillingMonth(monthName: monthName)
+	
+	// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
+	do {
+		(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
+		// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
+		if fileIdResult {
+			let readResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+			if !readResult {
+				print("Warning: Could not load Student Billing Data for \(monthName)")
+			}
+		} else {
+			print("Error: could not get FileID for file: \(studentBillingFileName)")
+		}
+	} catch {
+		print("Error: Could not get FileID for file: \(studentBillingFileName)")
+	}
+	
+	return(studentBillingMonth)
+}
 

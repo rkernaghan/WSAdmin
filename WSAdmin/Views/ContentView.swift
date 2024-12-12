@@ -8,6 +8,8 @@ import Foundation
 import SwiftUI
 import GoogleSignIn
 
+// ContentView - main view in view hierarchy; invoked from WSAdmin
+
 struct ContentView: View {
 
 	let authVM = UserAuthVM()
@@ -17,6 +19,7 @@ struct ContentView: View {
 	let serviceMgmtVM = ServiceMgmtVM()
 	let locationMgmtVM = LocationMgmtVM()
 	let billingVM = BillingVM()
+	let financeSummaryVM = FinanceSummaryVM()
     
 	var body: some View {
 		NavigationStack {
@@ -36,6 +39,7 @@ struct ContentView: View {
 		.environment(serviceMgmtVM)
 		.environment(locationMgmtVM)
 		.environment(billingVM)
+		.environment(financeSummaryVM)
 
 	}
 }

@@ -53,10 +53,16 @@ struct DataMgmtView: View {
 						if runMode == "PROD" {
 							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
 							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
-							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
+							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
 							studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
 							tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-						} else {
+						} else if runMode == "SHADOW" {
+							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsShadowFileName)
+							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataShadowFileName)
+							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
+							studentBillingFileNamePrefix = PgmConstants.studentBillingShadowFileNamePrefix
+							tutorBillingFileNamePrefix = PgmConstants.tutorBillingShadowFileNamePrefix
+						} else if runMode == "TEST"{
 							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
 							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
 							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
@@ -82,10 +88,13 @@ struct DataMgmtView: View {
 struct SideView: View {
 	var referenceData: ReferenceData
 	@State private var showAlert: Bool = false
+	@State private var showFinanceSummary: Bool = false
+	@State private var financeSummaryArray = [FinanceSummaryRow]()
 	
 	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	@Environment(SystemVM.self) var systemVM: SystemVM
+	@Environment(FinanceSummaryVM.self) var financeSummaryVM: FinanceSummaryVM
         
 	var body: some View {
  
@@ -115,7 +124,7 @@ struct SideView: View {
 			}
 
 			NavigationLink {
-				BillingView(referenceData: referenceData)
+				BillingSelectionView(referenceData: referenceData)
 			} label: {
 				Label("Billing", systemImage: "person")
 			}
@@ -145,6 +154,13 @@ struct SideView: View {
 			}
 			
 			Spacer()
+			
+			Button("Finance Summary") {
+				Task {
+					financeSummaryArray = await financeSummaryVM.buildFinanceSummary()
+					showFinanceSummary = true
+				}
+			}
 			
 			Button("Validate System") {
 				Task {
@@ -183,20 +199,25 @@ struct SideView: View {
 					}
 				}
 			}
+			
+			Button(action: {
+				userAuthVM.signOut()
+				//                dismiss() }) {
+			}) {
+				Text("Sign Out")
+			}
                 
 		}
 		
 //            	.listStyle(SidebarListStyle())
 		.navigationTitle("Sidebar")
             
-		Button(action: {
-			userAuthVM.signOut()
-                //                dismiss() }) {
-		}) {
-			Text("Sign Out")
-		}
+		
 		.alert(buttonErrorMsg, isPresented: $showAlert) {
 			Button("OK", role: .cancel) { }
+		}
+		.navigationDestination(isPresented: $showFinanceSummary) {
+			FinanceSummary(financeSummaryArray: financeSummaryArray)
 		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))

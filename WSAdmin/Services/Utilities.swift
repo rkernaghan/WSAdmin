@@ -8,6 +8,13 @@
 import Foundation
 import GoogleSignIn
 
+// getFileID - gets the Google FileID of a file on Google Drive
+//	Parameters:
+//		fileName - name of the File to retrive Google File ID
+//	Returns:
+//		a boolean flag as to whether the FileID could be returned
+//		a string containing the Google FileID
+//
 func getFileID(fileName: String) async throws -> (Bool, String) {
 	var fileID: String = ""
 	var fileFound: Bool = false
@@ -62,6 +69,14 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 	}
 }
 
+// readSheetCells - reads a range of cells from a Google Sheet
+//	Parameters:
+//		fileID: the Google Drive FileID of the spreadsheet
+//		range: the cell range to retrieve
+//	Returns:
+//		sheetData: an optional SheetData struct containing the retrieved cells in sheetdata.values
+//	Throws:
+//
 func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 	var values = [[String]]()
 	var sheetData: SheetData?
@@ -91,7 +106,7 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			//    print("After Read Cells URL Session call \(fileID)")
 			if let httpResponse = response as? HTTPURLResponse {
 				if httpResponse.statusCode != 200 {
-					print("Read Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+					print("Read Sheet Cells HTTP Result Error Code: \(httpResponse.statusCode)")
 				}
 			}
 			// Check if the response is successful
@@ -109,7 +124,15 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 	//        }
 }
 
-
+// writeSheetCells - writes a set of cells to a Google Sheets spreadsheet
+//	Parameters:
+//		fileID: the Google Drive FileID of the spreadsheet to write to
+//		range: the spreadsheet range to write to
+//		values: a 2 dimensional array in row/column format of cells values to be written
+//	Returns:
+//		a boolean indicating whether the write operation was successful
+//	Throws:
+//
 func writeSheetCells(fileID: String, range: String, values: [[String]]) async throws -> Bool {
 	var completionFlag: Bool = true
 
@@ -142,7 +165,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			
 			if let httpResponse = response as? HTTPURLResponse {
 				if httpResponse.statusCode != 200 {
-					print("Write Sheet HTTP Result Error Code: \(httpResponse.statusCode)")
+					print("Write Sheet Cells HTTP Result Error Code: \(httpResponse.statusCode)")
 					completionFlag = false
 				}
 			}
@@ -163,6 +186,12 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 	return(completionFlag)
 }
 
+// requestAdditionalScopes - calls Google Cloud API to request user permission for additional API scope to read/write spreadsheet cells and get Google Drive FileID
+//	Parameters:
+//		additionalScopes: an array containing the Google Cloud Scopes requested
+//	Returns:
+//		a boolean indicating whether the request was successful
+//
 func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
 	var requestResult: Bool = true
 	
@@ -195,6 +224,13 @@ func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
 	return(requestResult)
 }
 
+// renameGoogleDriveFile - renames a Google Drive File.  Used when a Tutor name changes to rename the Tutor's Timesheet
+//	Parameters:
+//		fileID: the Google Drive FileID of the file being renamed
+//		newName: the name the file should be renamed to
+//	Returns:
+//		a boolean indicating whether the rename was successful
+//
 func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool {
 	var renameResult: Bool = true
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)"
@@ -241,7 +277,15 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool
 	return(renameResult)
 }
 
-// Function to copy a Google Drive file
+// copyGoogleDriveFile - copies a Google Drive file into a new file.  Used to create new Timesheets for new Tutors; and new Timesheets and Tutor/Student billing summary files for a new calendar year
+//	Parameters:
+//		sourceFileID: Google Drive FileID of the Google Drive file being copied
+//		newFileName: name of the Google Drive file to create and copy into
+//	Returns:
+//
+//	Throws
+//
+
 func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws -> [String: Any]? {
 	
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"

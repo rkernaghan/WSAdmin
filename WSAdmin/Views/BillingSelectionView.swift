@@ -1,5 +1,5 @@
 //
-//  BillingView.swift
+//  BillingSelectionView.swift
 //  WSAdmin
 //
 //  Created by Russell Kernaghan on 2024-10-14.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BillingView: View {
+struct BillingSelectionView: View {
 	
 	var referenceData: ReferenceData
 	
@@ -28,7 +28,7 @@ struct BillingView: View {
 		
 		VStack {
 			
-			var tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
+			let tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
 			
 			Toggle(isOn: Binding(
 				get: { selectedTutors.count == tutorList.count && !tutorList.isEmpty },
@@ -97,5 +97,5 @@ struct BillingView: View {
 }
 
 #Preview {
-	//    BillingView()
+	//    BillingSelectionView()
 }

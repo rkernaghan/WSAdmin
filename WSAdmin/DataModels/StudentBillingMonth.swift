@@ -29,7 +29,7 @@ class StudentBillingMonth {
 	}
 	
 	func addNewBilledStudent(studentName: String) {
-		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: 0, totalCost: 0.0, totalRevenue: 0.0, totalProfit: 0.0, tutorName: "")
+		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: 0, totalCost: 0.0, totalRevenue: 0.0, totalProfit: 0.0, tutorName: "", studentStatus: "Active")
 		self.studentBillingRows.append(newStudentBillingRow)
 	}
 	
@@ -38,7 +38,7 @@ class StudentBillingMonth {
 	}
 	
 	func deleteBilledStudent(billedStudentNum: Int) {
-		self.studentBillingRows.remove(at: billedStudentNum)
+		self.studentBillingRows[billedStudentNum].studentStatus = "Deleted"
 	}
 	
 	func loadStudentBillingRows(studentBillingCount: Int, sheetCells: [[String]]) {
@@ -56,13 +56,15 @@ class StudentBillingMonth {
 			let totalCost: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
 			let totalRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
 			let totalProfit: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
+			let studentStatus: String = sheetCells[rowNumber][PgmConstants.studentBillingStatusCol]
+			
 			let rowSize = sheetCells[rowNumber].count
 			var tutorName = ""
-			if rowSize == PgmConstants.studentBillingTutorCol + 1 {
+			if rowSize == PgmConstants.studentBillingTutorCol + 2 {
 				tutorName = sheetCells[rowNumber][PgmConstants.studentBillingTutorCol]
 			}
 			
-			let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
+			let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName, studentStatus: studentStatus)
 			
 			self.insertBilledStudentRow(studentBillingRow: newStudentBillingRow)
 			
@@ -95,12 +97,13 @@ class StudentBillingMonth {
 			let totalRevenue: String = String(studentBillingRows[billedStudentNum].totalRevenue)
 			let totalProfit: String = String(studentBillingRows[billedStudentNum].totalProfit)
 			let tutorName: String = studentBillingRows[billedStudentNum].tutorName
+			let studentStatus: String = studentBillingRows[billedStudentNum].studentStatus
 			
-			updateValues.insert([studentName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalProfit, tutorName], at: billedStudentNum)
+			updateValues.insert([studentName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalProfit, tutorName, studentStatus], at: billedStudentNum)
 			billedStudentNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
 		return(updateValues)
 	}
 
@@ -213,7 +216,7 @@ class StudentBillingMonth {
 						let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
 						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 						if foundFlag {
-							if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+//							if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
 								let (foundFlag, billedStudentNum) = self.findBilledStudentByName(billedStudentName: studentName)
 								if !foundFlag {
 									let totalSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalSessions
@@ -221,10 +224,11 @@ class StudentBillingMonth {
 									let totalRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalRevenue
 									let totalProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalProfit
 									let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
-									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName)
+									let studentStatus = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentStatus
+									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorName: tutorName, studentStatus: studentStatus)
 									self.studentBillingRows.append(newStudentBillingRow)
 								}
-							}
+//							}
 						}
 						prevStudentNum += 1
 					}

@@ -29,7 +29,7 @@ class TutorBillingMonth {
 	}
     
 	func addNewBilledTutor(tutorName: String) {
-		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: 0, totalCost: 0.0, totalRevenue: 0.0, totalProfit: 0.0)
+		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: 0, totalCost: 0.0, totalRevenue: 0.0, totalProfit: 0.0, tutorStatus: "Active")
 		self.tutorBillingRows.append(newTutorBillingRow)
 	}
 	
@@ -38,7 +38,7 @@ class TutorBillingMonth {
 	}
 	
 	func deleteBilledTutor(billedTutorNum: Int) {
-		self.tutorBillingRows.remove(at: billedTutorNum)
+		self.tutorBillingRows[billedTutorNum].tutorStatus = "Deleted"
 	}
 	
 	
@@ -57,7 +57,8 @@ class TutorBillingMonth {
 				// Read in the Billed Tutors from the Billed Tutor spreadsheet
 				if tutorBillingCount > 0 {			// Could be zero if loading a Billed Tutor month not yet billed
 					do {
-						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1) )
+						let cellRange = monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1)
+						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: cellRange)
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							
@@ -137,7 +138,9 @@ class TutorBillingMonth {
 			let totalRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
 			let totalProfit: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
 			
-			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit)
+			let tutorStatus: String = sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]
+			
+			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: monthSessions, monthCost: monthCost, monthRevenue: monthRevenue, monthProfit: monthProfit, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorStatus: tutorStatus)
 			
 			self.insertBilledTutorRow(tutorBillingRow: newTutorBillingRow)
 			
@@ -166,12 +169,13 @@ class TutorBillingMonth {
 			let totalCost: String = String(tutorBillingRows[billedTutorNum].totalCost)
 			let totalRevenue: String = String(tutorBillingRows[billedTutorNum].totalRevenue)
 			let totalProfit: String = String(tutorBillingRows[billedTutorNum].totalProfit)
+			let tutorStatus: String = tutorBillingRows[billedTutorNum].tutorStatus
 			
-			updateValues.insert([tutorName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalProfit], at: billedTutorNum)
+			updateValues.insert([tutorName, monthSessions, monthCost, monthRevenue, monthProfit, totalSessions, totalCost, totalRevenue, totalProfit, tutorStatus], at: billedTutorNum)
 			billedTutorNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedTutorNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedTutorNum)
 		return(updateValues)
 	}
 //
@@ -227,26 +231,29 @@ class TutorBillingMonth {
 						let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
 						let (foundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 						if foundFlag {
-							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+//							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
 								let (foundFlag, billedTutorNum) = self.findBilledTutorByName(billedTutorName: tutorName)
 								if !foundFlag {
 									let totalSessions = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalSessions
 									let totalCost = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalCost
 									let totalRevenue = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalRevenue
 									let totalProfit = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalProfit
-									let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit)
+									let tutorStatus = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorStatus
+									let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: totalSessions, totalCost: totalCost, totalRevenue: totalRevenue, totalProfit: totalProfit, tutorStatus: tutorStatus)
 									self.tutorBillingRows.append(newTutorBillingRow)
 								}
-							}
+//							}
 						}
 						//   print("Month: \(prevTutorNum)\(self.tutorBillingRows[prevTutorNum].monthSessions) \(self.tutorBillingRows[prevTutorNum].monthCost) \(self.tutorBillingRows[prevTutorNum].monthRevenue) ")
 						prevTutorNum += 1
 					}
 					
 				} else {
+					print("Error: could not load prev month Billed Tutor month")
 					completionFlag = false
 				}
 			} else {
+				print("Error: could not get File ID for \(prevMonthTutorFileName)")
 				completionFlag = false
 			}
 		} catch {

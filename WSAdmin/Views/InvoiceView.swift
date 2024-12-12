@@ -65,7 +65,7 @@ struct InvoiceView: View {
 							.width(min: 100, ideal: 150, max: 220)
 						TableColumn("Description", value: \.description)
 							.width(min: 70, ideal: 90, max: 120)
-						TableColumn("Quantity", value: \.quantity)
+						TableColumn("Quantity", value: \.quantity) 
 							.width(min: 40, ideal: 40, max: 60)
 						TableColumn("Rate", value: \.rate)
 							.width(min: 40, ideal: 40, max: 50)

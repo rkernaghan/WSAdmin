@@ -9,11 +9,14 @@ import Foundation
 import SwiftUI
 import GoogleSignIn
 
+class BillingMessages: ObservableObject {
+	@Published var message: String = ""
+}
+
 @Observable class BillingVM  {
 
 //    private var sheetData: SheetData?
 //    private var errorMessage: String?
-
         
 	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
@@ -71,7 +74,7 @@ import GoogleSignIn
 	}
 	
 	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String) async -> Timesheet {
-		var timesheet = Timesheet()
+		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
 		
@@ -108,112 +111,111 @@ import GoogleSignIn
 		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
 		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
 		
-		
-			do {
-				(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
+		do {
+			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
+			if resultFlag {
+				resultFlag = await studentBillingMonth.loadStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
 				if resultFlag {
-					resultFlag = await studentBillingMonth.loadStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
+					resultFlag = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 					if resultFlag {
-						resultFlag = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+						resultFlag = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 						if resultFlag {
-							resultFlag = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
-							if resultFlag {
-								var invoiceLineNum: Int = 0
-								let invoiceLineCount: Int = invoice.invoiceLines.count
-								while invoiceLineNum < invoiceLineCount {
-									let tutorName = invoice.invoiceLines[invoiceLineNum].tutorName
-									let studentName = invoice.invoiceLines[invoiceLineNum].studentName
-									let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
-									if billedTutorFound {
-										let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
-										if billedStudentFound {
-											let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-											if tutorFound {
-												let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-												if studentFound {
-													let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
-													let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-													if locationFound {
-														
-														let cost = invoice.invoiceLines[invoiceLineNum].cost
-														let revenue = invoice.invoiceLines[invoiceLineNum].amount
-														let profit = revenue - cost
-														
-														if alreadyBilledTutors.contains(tutorName) {
-															resetBillingStats(sessionCost: cost, sessionRevenue: revenue, billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
-														}
-														
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost += cost
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].totalCost += cost
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue += revenue
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].totalRevenue += revenue
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].monthProfit += profit
-														tutorBillingMonth.tutorBillingRows[billedTutorNum].totalProfit += profit
-														
-														studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions += 1
-														studentBillingMonth.studentBillingRows[billedStudentNum].totalSessions += 1
-														studentBillingMonth.studentBillingRows[billedStudentNum].monthCost += cost
-														studentBillingMonth.studentBillingRows[billedStudentNum].totalCost += cost
-														studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue += revenue
-														studentBillingMonth.studentBillingRows[billedStudentNum].totalRevenue += revenue
-														studentBillingMonth.studentBillingRows[billedStudentNum].monthProfit += profit
-														studentBillingMonth.studentBillingRows[billedStudentNum].totalProfit += profit
-														
-														referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
-														referenceData.tutors.tutorsList[tutorNum].tutorTotalCost += cost
-														referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue += revenue
-														referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit += profit
-														
-														referenceData.students.studentsList[studentNum].studentSessions += 1
-														referenceData.students.studentsList[studentNum].studentTotalCost += cost
-														referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
-														referenceData.students.studentsList[studentNum].studentTotalProfit += profit
-														
-														referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
-														referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-														
+							var invoiceLineNum: Int = 0
+							let invoiceLineCount: Int = invoice.invoiceLines.count
+							while invoiceLineNum < invoiceLineCount {
+								let tutorName = invoice.invoiceLines[invoiceLineNum].tutorName
+								let studentName = invoice.invoiceLines[invoiceLineNum].studentName
+								let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+								if billedTutorFound {
+									let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+									if billedStudentFound {
+										let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+										if tutorFound {
+											let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+											if studentFound {
+												let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+												let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+												if locationFound {
+													
+													let cost = invoice.invoiceLines[invoiceLineNum].cost
+													let revenue = invoice.invoiceLines[invoiceLineNum].amount
+													let profit = revenue - cost
+													
+													if alreadyBilledTutors.contains(tutorName) {
+														resetBillingStats(sessionCost: cost, sessionRevenue: revenue, billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
 													}
+													
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost += cost
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalCost += cost
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue += revenue
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalRevenue += revenue
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthProfit += profit
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalProfit += profit
+													
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions += 1
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalSessions += 1
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthCost += cost
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalCost += cost
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue += revenue
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalRevenue += revenue
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthProfit += profit
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalProfit += profit
+													studentBillingMonth.studentBillingRows[billedStudentNum].tutorName = tutorName
+													
+													referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
+													referenceData.tutors.tutorsList[tutorNum].tutorTotalCost += cost
+													referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue += revenue
+													referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit += profit
+													
+													referenceData.students.studentsList[studentNum].studentSessions += 1
+													referenceData.students.studentsList[studentNum].studentTotalCost += cost
+													referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
+													referenceData.students.studentsList[studentNum].studentTotalProfit += profit
+													
+													referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
+													referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
+													
 												}
 											}
 										}
 									}
-									invoiceLineNum += 1
 								}
+								invoiceLineNum += 1
+							}
+							if resultFlag {
+								resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
 								if resultFlag {
-									resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
-									if resultFlag {
-										do {
-											(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
+									do {
+										(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
+										if resultFlag {
+											resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
 											if resultFlag {
-												resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
-												if resultFlag {
-													let saveTutorResult = await referenceData.tutors.saveTutorData()
-													let saveStudentResult = await referenceData.students.saveStudentData()
-													let saveLocationResult = await referenceData.locations.saveLocationData()
-													if !saveTutorResult || !saveStudentResult || !saveLocationResult {
-														resultFlag = false
-													}
+												let saveTutorResult = await referenceData.tutors.saveTutorData()
+												let saveStudentResult = await referenceData.students.saveStudentData()
+												let saveLocationResult = await referenceData.locations.saveLocationData()
+												if !saveTutorResult || !saveStudentResult || !saveLocationResult {
+													resultFlag = false
 												}
-											} else {
-												print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
 											}
-										} catch {
-											print("Error Saving Tutor Billing Data")
-											resultFlag = false
+										} else {
+											print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
 										}
+									} catch {
+										print("Error Saving Tutor Billing Data")
+										resultFlag = false
 									}
 								}
 							}
 						}
 					}
 				}
-			} catch {
-				print("Could not get File ID for Student Billing File \(billingMonthStudentFileName)")
-				resultFlag = false
 			}
-		
+		} catch {
+			print("Could not get File ID for Student Billing File \(billingMonthStudentFileName)")
+			resultFlag = false
+		}
 		
 		return(resultFlag)
 	}
