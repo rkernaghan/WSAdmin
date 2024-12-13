@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct BillingProgressView: View {
+	
+	var billingMessages: BillingMessages
 	var referenceData: ReferenceData
 	var invoice: Invoice
 	var billingMonth: String
@@ -14,7 +16,6 @@ struct BillingProgressView: View {
 	var billedTutorMonth: TutorBillingMonth
 	var alreadyBilledTutors: [String]
 
-	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM
 	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
 
@@ -24,9 +25,13 @@ struct BillingProgressView: View {
 	var body: some View {
 						
 		VStack {
-//			List(billingMessages) {
-//				Text($0.billingText)
-//			}
+			List(billingMessages.billingMessageList) {
+				Text($0.billingMessageText)
+			}
+			
+			Button("Show Invoice") {
+				showInvoice = true
+			}
 		}
 		.alert(buttonErrorMsg, isPresented: $showAlert) {
 			Button("OK", role: .cancel) { }
@@ -34,7 +39,6 @@ struct BillingProgressView: View {
 		
 		.navigationDestination(isPresented: $showInvoice) {
 			InvoiceView(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
-		
 		}
 			
 		

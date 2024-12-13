@@ -21,8 +21,10 @@ struct BillingSelectionView: View {
 	@State private var showInvoice: Bool = false
 	@State private var selectAll: Bool = false
 	@State private var invoice = Invoice()
+	@State private var billingMessages = BillingMessages()
 	@State private var alreadyBilledTutors = [String]()
 	@State private var billedTutorMonth = TutorBillingMonth(monthName: "")
+
 	
 	var body: some View {
 		
@@ -76,8 +78,11 @@ struct BillingSelectionView: View {
 					
 					Button {
 						Task {
-							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData)
+							billingMessages.billingMessageList.removeAll()
 							showInvoice = true
+							
+							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages)
+							
 						}
 					} label: {
 						Label("Generate Invoice", systemImage: "square.and.arrow.up")
@@ -90,7 +95,8 @@ struct BillingSelectionView: View {
 			
 		}
 		.navigationDestination(isPresented: $showInvoice) {
-			InvoiceView(invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
+			BillingProgressView(billingMessages: billingMessages, referenceData: referenceData, invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors)
+	
 		}
 	}
 	

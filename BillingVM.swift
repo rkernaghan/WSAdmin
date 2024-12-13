@@ -9,16 +9,13 @@ import Foundation
 import SwiftUI
 import GoogleSignIn
 
-class BillingMessages: ObservableObject {
-	@Published var message: String = ""
-}
 
 @Observable class BillingVM  {
 
 //    private var sheetData: SheetData?
 //    private var errorMessage: String?
         
-	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData) async -> (Invoice, TutorBillingMonth, [String]) {
+	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: BillingMessages) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
 		var tutorBillingFileID: String = ""
@@ -39,11 +36,12 @@ class BillingMessages: ObservableObject {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 				print("Read Timesheet for Tutor: \(tutorName)")
+				billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
 				tutorList.append(tutorName)
 				
-				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth)
+				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages)
 				
-				billArray.processTimesheet(timesheet: timesheet)
+				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
 			}
 		}
 		
@@ -58,6 +56,7 @@ class BillingMessages: ObservableObject {
 					
 					if alreadyBilledFlag {
 						print("Already Billed Tutors: \(alreadyBilledTutors)")
+						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Tutors already billed for month: \(alreadyBilledTutors)"))
 					}
 				}
 //				} else {
@@ -67,13 +66,15 @@ class BillingMessages: ObservableObject {
 			}
 		} catch {
 			print("Error: could not load Billed Tutor Month")
+			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not load Billed Tutor Month"))
+			
 		}
-		
+		billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Invoice generation completed"))
 		return(invoice, tutorBillingMonth, alreadyBilledTutors)
 		
 	}
 	
-	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String) async -> Timesheet {
+	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: BillingMessages) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
@@ -82,13 +83,15 @@ class BillingMessages: ObservableObject {
 		do {
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
 			if result {
-				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID)
+				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages)
 				if !timesheetResult {
 					print("Error: Could not load Timesheet for Tutor \(tutorName)")
+					billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 				}
 			}
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
+			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not get timesheet fileID for \(fileName)"))
 		}
 
 		return(timesheet)

@@ -15,11 +15,13 @@ class BillArray {
 		self.monthName = monthName
 	}
 	
+	// Adds a new client to a BillArray
 	func addBillClient(newBillClient: BillClient) {
 		self.billClients.append(newBillClient)
 	}
 	
-	func processTimesheet(timesheet: Timesheet) {
+	//
+	func processTimesheet(timesheet: Timesheet, billingMessages: BillingMessages) {
 		
 		var timesheetNum = 0
 		while timesheetNum < timesheet.timesheetRows.count {
@@ -43,6 +45,7 @@ class BillArray {
 		}
 	}
         
+	// Finds a client in a BillArray by client name
 	func findBillClientByName(billClientName: String) -> (Bool, Int) {
 		var found = false
 		
@@ -57,6 +60,7 @@ class BillArray {
 		return(found, billClientNum)
 	}
     
+	//
 	func generateInvoice(alreadyBilledTutors: [String], referenceData: ReferenceData) -> Invoice {
 		var clientName: String = ""
 		var clientEmail: String = ""
@@ -124,7 +128,7 @@ class BillArray {
 							
 							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
-							//               print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+
 						}
 						
 					}
@@ -138,7 +142,8 @@ class BillArray {
 		//        newInvoice.printInvoice()
 		return(newInvoice)
 	}
-               
+	
+	// Prints a the elements of a BillArray (used for debugging processes)
 	func printBillArray() {
 		
 		var clientNum = 0

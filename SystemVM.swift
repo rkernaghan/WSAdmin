@@ -473,6 +473,8 @@ import Foundation
 		var compareStudentBilling = [StudentBillingMonth]()			// The new monthly computed Student Billing data directly from the timesheets
 		var openingMonthNum: Int = 0
 		
+		let billingMessages = BillingMessages()
+		
 		let currentMonthNum = Calendar.current.component(.month, from: Date())                 // Current month may not be billed yet
 		
 		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
@@ -505,11 +507,11 @@ import Foundation
 						let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 						if result {
 							let timesheet = Timesheet()
-							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID)
+							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages)
 							if !timesheetResult {
 								print("Error: Could not load Timesheet for Tutor \(tutorName)")
 							} else {
-								billArray.processTimesheet(timesheet: timesheet)
+								billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
 							}
 						}
 					} catch {
