@@ -1322,7 +1322,7 @@ func buildBilledStudentMonth(monthName: String, yearName: String) async -> Stude
 		(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 		// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
 		if fileIdResult {
-			let readResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+			let readResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 			if !readResult {
 				print("Warning: Could not load Student Billing Data for \(monthName)")
 			}

@@ -53,7 +53,7 @@ import Foundation
 							completionMessage = "Error: Could not get fileID for file: \(studentBillingFileName) when adding new Student"
 						} else {
 							// Read in the Billed Students for the previous month
-							let getStudentBillingFlag = await studentBillingMonth.loadStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+							let getStudentBillingFlag = await studentBillingMonth.getStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 							if !getStudentBillingFlag {
 								completionFlag = false
 								completionMessage = "Error: Could not load Student Billing Month: \(studentBillingFileName) when adding new Student"
@@ -64,7 +64,7 @@ import Foundation
 									studentBillingMonth.addNewBilledStudent(studentName: studentName)
 								}
 								// Save the updated Billed Student list for the month
-								let saveStudentBillingFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName)
+								let saveStudentBillingFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName)
 								if !saveStudentBillingFlag {
 									completionFlag = false
 									completionMessage = "Error: Could not save Student Billing Month: \(studentBillingFileName) when adding new Student"
@@ -162,14 +162,14 @@ import Foundation
 				completionResult = false
 			} else {
 				// Read the data from the Billed Student spreadsheet for the previous month
-				completionResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+				completionResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 				if completionResult {
 					// Add new the Student to Billed Student list for the month
 					let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
 					if billedStudentFound {
 						studentBillingMonth.studentBillingRows[billedStudentNum].studentName = newStudentName
 						// Save the updated Billed Student list for the month
-						completionResult = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+						completionResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
 					} else {
 						print("WARNING: Billed Student \(originalStudentName) not found in Billed Student sheet for \(monthName) \(yearName)")
 						completionResult = false
@@ -345,7 +345,7 @@ import Foundation
 										deleteMessage = "Error: Could not get File ID for Student Billing FileName: \(studentBillingFileName)"
 									} else {
 										// Read in the Billed Students for the previous month
-										deleteResult = await studentBillingMonth.loadStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
+										deleteResult = await studentBillingMonth.getStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID)
 										if !deleteResult {
 											deleteMessage = "Error: could not load Student Billing Month for \(prevMonthName) when deleting Student"
 										} else {
@@ -358,7 +358,7 @@ import Foundation
 											}
 											studentBillingMonth.deleteBilledStudent(billedStudentNum: billedStudentNum)
 											// Save the updated Billed Student list for the month
-											deleteResult = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName)
+											deleteResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName)
 											if !deleteResult {
 												deleteMessage = "Error: Could not save Student Billing Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 											}

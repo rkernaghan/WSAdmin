@@ -4,7 +4,8 @@
 //
 //  Created by Russell Kernaghan on 2024-10-18.
 //
-
+// TutorBillingRow holds an instance of one tutor's billing attributes for month month.  Data is generated when a CSV file is generated and stored in the TutorBilling spreadsheet.
+//
 class TutorBillingRow {
 	var tutorName: String
 	var monthSessions: Int
@@ -30,6 +31,7 @@ class TutorBillingRow {
 		self.tutorStatus = tutorStatus
 	}
 	
+	// Resets a Tutors's Billed Tutor session, cost, revenue and profit numbers for a month when a Tutor is billed again after being previously billed that month
 	func resetBilledTutorMonth(cost: Float, revenue: Float, profit: Float) {
 		
 		self.monthSessions -= 1
@@ -43,14 +45,4 @@ class TutorBillingRow {
 		self.totalProfit -= profit
 	}
     
-//    func resetBilledTutorMonth() {
-//        self.totalSessions -= self.monthSessions
-//        self.totalCost -= self.monthCost
-//        self.totalRevenue -= self.monthRevenue
-//        self.totalProfit -= self.monthProfit
-//        self.monthSessions = 0
-//        self.monthCost = 0.0
-//        self.monthRevenue = 0.0
-//        self.monthProfit = 0.0
-//    }
 }

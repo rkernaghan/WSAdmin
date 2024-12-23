@@ -6,6 +6,7 @@
 //
 import Foundation
 
+// StudentBillingMonth holds an array os StudentBillingRow instances.  Each array represents the STudent Billing data for one month.
 class StudentBillingMonth {
 	var studentBillingRows = [StudentBillingRow]()
 	var monthName: String
@@ -28,23 +29,27 @@ class StudentBillingMonth {
 		return(found, billedStudentNum)
 	}
 	
+	// Adds a new StudentBillingRow instance to the StudentBillingRows array.
 	func addNewBilledStudent(studentName: String) {
 		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthSessions: 0, monthCost: 0.0, monthRevenue: 0.0, monthProfit: 0.0, totalSessions: 0, totalCost: 0.0, totalRevenue: 0.0, totalProfit: 0.0, tutorName: "", studentStatus: "Active")
 		self.studentBillingRows.append(newStudentBillingRow)
 	}
-	
+	// Adds a StudentBillingRow instance read from the StudentBilling spreadsheet to the StudentBillingRows array.
 	func insertBilledStudentRow(studentBillingRow: StudentBillingRow) {
 		self.studentBillingRows.append(studentBillingRow)
 	}
 	
+	// Marks a StudentBillingRow instance as Deleted (when a Student is deleted).  StudentBillingRow is kept so the totals are kept in sync with Student data.
 	func deleteBilledStudent(billedStudentNum: Int) {
 		self.studentBillingRows[billedStudentNum].studentStatus = "Deleted"
 	}
 	
+	// Builds a StudentBillingMonth array from the data read from the Student Billing sheet for a month.
 	func loadStudentBillingRows(studentBillingCount: Int, sheetCells: [[String]]) {
 		
 		var studentBillingIndex = 0
 		var rowNumber = 0
+		// Loop through each row and add the data to a StudentBillingRow instance and add that instance to the StudentBillingMonth instance.
 		while studentBillingIndex < studentBillingCount {
 			let studentName = sheetCells[rowNumber][PgmConstants.studentBillingStudentCol]
 			let monthSessions: Int = Int(sheetCells[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
@@ -71,15 +76,9 @@ class StudentBillingMonth {
 			rowNumber += 1
 			studentBillingIndex += 1
 		}
-		//                  print("Loaded Student Billing Data")
-		//                  let billedStudentCount = self.studentBillingRows.count
-		//                  var billedStudentNum = 0
-		//                  while billedStudentNum < billedStudentCount {
-		//                      print("Billed Student " + self.studentBillingRows[0].studentName)
-		//                      billedStudentNum += 1
-		//                  }
 	}
 	
+	// Build a 2 dimensional array of strings to be written to the Student Billing spreadsheet for a month.
 	func unloadStudentBillingRows() -> [[String]] {
 		
 		var updateValues = [[String]]()
@@ -107,8 +106,9 @@ class StudentBillingMonth {
 		return(updateValues)
 	}
 
-	
-	func loadStudentBillingMonth(monthName: String, studentBillingFileID: String) async -> Bool {
+	// Reads a month from a Student Billing spreadsheet and loads a StudentBillingMonth array with a StudentBillingRow instance for each spreadsheet row.
+	//
+	func getStudentBillingMonth(monthName: String, studentBillingFileID: String) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var studentBillingCount: Int = 0
@@ -144,26 +144,11 @@ class StudentBillingMonth {
 			completionFlag = false
 		}
 		return(completionFlag)
-		
 	}
 	
-	//    func saveStudentBillingData(billingMonth: String, billingYear: String) async {
-	//        var studentBillingFileID = " "
+	// Saves a Student Billing Month by unloading the array to a 2 dimensional array of strings and writing those strings to a sheet (month) in the Student Billing spreadsheet
 	//
-	//        let studentBillingFileName = "Student Billing Summary - TEST " + billingYear
-	//        getFileID(fileName: studentBillingFileName) {result in
-	//            switch result {
-	//            case .success(let fileID):
-	//                studentBillingFileID = fileID
-	//                self.saveStudentBillingMonth(billingMonth: billingMonth, studentBillingFileID: studentBillingFileID)
-	//                print("After Task for get File ID")
-	//            case . failure(let error):
-	//                print("Error: \(error.localizedDescription)")
-	//            }
-	//        }
-	//    }
-	
-	func saveStudentBillingData(studentBillingFileID: String, billingMonth: String) async -> Bool {
+	func saveStudentBillingMonth(studentBillingFileID: String, billingMonth: String) async -> Bool {
 		var completionFlag: Bool = true
 		
 		// Write the Student Billing rows to the Billed Student spreadsheet
@@ -195,10 +180,11 @@ class StudentBillingMonth {
 	}
 	
 	
-	
+	// Copies a previous month's Student Billing month rows (totals only not previous month values) into this (self) Student Billing Month instance.  Used to create a new Student Billing month instance when billing a new month that
+	// hasn't been billing before.
 	func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
 		var completionFlag: Bool = true
-		
+		// Determine the file name of the previous month Student Billiing spreadsheet (could be a previous year)
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		var prevStudentNum: Int = 0
 		let prevStudentBillingMonth = StudentBillingMonth(monthName: prevMonth)
@@ -206,11 +192,12 @@ class StudentBillingMonth {
 		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
 		
 		do {
+			// Get the File ID of the previous month Student Billing Month spreadsheet
 			let (resultFlag, prevMonthStudentFileID) = try await getFileID(fileName: prevMonthStudentFileName)
 			if resultFlag {
-				completionFlag = await prevStudentBillingMonth.loadStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
+				completionFlag = await prevStudentBillingMonth.getStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID)
 				if completionFlag {
-				
+					// Loop through each row in the previous month entries and copy to self instance
 					let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
 					while prevStudentNum < prevStudentCount {
 						let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName

@@ -301,7 +301,7 @@ import GoogleSignIn
 			(renameResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 			if renameResult {
 				// Read the data from the Billed Tutor spreadsheet for the previous month
-				renameResult = await studentBillingMonth.loadStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+				renameResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 				if renameResult {
 					
 					var billedStudentNum = 0
@@ -313,7 +313,7 @@ import GoogleSignIn
 						}
 						billedStudentNum += 1
 					}
-					renameResult = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+					renameResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
 					
 				}
 			}

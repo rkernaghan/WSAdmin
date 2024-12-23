@@ -117,7 +117,7 @@ import GoogleSignIn
 		do {
 			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 			if resultFlag {
-				resultFlag = await studentBillingMonth.loadStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
+				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
 				if resultFlag {
 					resultFlag = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 					if resultFlag {
@@ -188,7 +188,7 @@ import GoogleSignIn
 								invoiceLineNum += 1
 							}
 							if resultFlag {
-								resultFlag = await studentBillingMonth.saveStudentBillingData(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
+								resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
 								if resultFlag {
 									do {
 										(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)

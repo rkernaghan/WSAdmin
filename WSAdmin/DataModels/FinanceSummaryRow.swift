@@ -6,6 +6,8 @@
 //
 import Foundation
 
+// FinanceSummaryRow is a class to hold a financial summary for one month's billing. Used to hold data for display in the Finance Summary view.
+//
 class FinanceSummaryRow: Identifiable {
 	var year: String
 	var month: String
