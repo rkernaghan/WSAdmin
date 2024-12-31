@@ -80,7 +80,7 @@ class Timesheet: Identifiable {
 						let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
 						let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
 						let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
-						let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, serviceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
+						let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
 						self.addTimesheetRow(timesheetRow: newTimesheetRow)
 						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "               Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
 					}

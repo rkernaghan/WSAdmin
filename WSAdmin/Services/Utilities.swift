@@ -814,4 +814,6 @@ func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, St
 	    return(prevMonthName, prevYearName)
 }
 
-
+func removeCommas(sourceString: String) -> String {
+	return(sourceString.replacingOccurrences(of: ",", with: ""))
+}

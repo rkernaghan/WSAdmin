@@ -575,13 +575,13 @@ import Foundation
 				while itemNum < itemCount {
 					// Get the tutoring session data that was on the Timesheet
 					let studentName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].studentName
-					let serviceName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].serviceName
+					let timesheetServiceName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].timesheetServiceName
 					let serviceDate = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].serviceDate
 					let duration = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].duration
 					let tutorName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].tutorName
 					// Get the costs and prices for the Service for the Tutor that conducted the tutoring
 					let (tutorFindResult, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-					let (serviceFindResult, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: serviceName)
+					let (serviceFindResult, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
 					if serviceFindResult {
 						let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].computeSessionCostPrice(duration: duration)
 						// Find the Tutor in the compareBilledTutor instance for the month -- if not found, add the Tutor
@@ -605,7 +605,7 @@ import Foundation
 						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthRevenue += price
 						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthSessions += 1
 					} else {
-						print("Error: could not find Service \(serviceName) for Tutor \(tutorName)")
+						print("Error: could not find Service \(timesheetServiceName) for Tutor \(tutorName)")
 					}
 					
 					itemNum += 1

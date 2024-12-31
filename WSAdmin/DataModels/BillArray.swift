@@ -35,11 +35,12 @@ class BillArray {
 			let studentName = timesheet.timesheetRows[timesheetNum].studentName
 			let serviceDate = timesheet.timesheetRows[timesheetNum].serviceDate
 			let duration = timesheet.timesheetRows[timesheetNum].duration
-			let serviceName = timesheet.timesheetRows[timesheetNum].serviceName
+			let timesheetServiceName = timesheet.timesheetRows[timesheetNum].timesheetServiceName
+			
 			let notes = timesheet.timesheetRows[timesheetNum].notes
 			let tutorName = timesheet.timesheetRows[timesheetNum].tutorName
 			let cost = timesheet.timesheetRows[timesheetNum].cost
-			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, serviceName: serviceName, notes: notes, cost: cost, tutorName: tutorName)
+			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, timesheetServiceName: timesheetServiceName, notes: notes, cost: cost, tutorName: tutorName)
 			self.billClients[billClientNum].billItems.append(newBillItem)
 			timesheetNum += 1
 		}
@@ -95,11 +96,12 @@ class BillArray {
 				let tutorName = billClients[clientNum].billItems[billItemNum].tutorName
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 				if tutorFound {
-					timesheetServiceName = billClients[clientNum].billItems[billItemNum].serviceName
+					timesheetServiceName = billClients[clientNum].billItems[billItemNum].timesheetServiceName
 					let (serviceFound, serviceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
 					if serviceFound {
 						duration = billClients[clientNum].billItems[billItemNum].duration
 						let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].computeSessionCostPrice(duration: duration)
+						let invoiceServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].invoiceServiceName.replacingOccurrences(of: ",", with: "")
 						newInvoice.totalRevenue += price
 						newInvoice.totalCost += cost
 						newInvoice.totalSessions += 1
@@ -126,7 +128,7 @@ class BillArray {
 								clientInvoiceDate = invoiceDate
 							}
 							
-							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: timesheetServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
+							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 
 						}
@@ -151,7 +153,7 @@ class BillArray {
 			print("Client : \(billClients[clientNum].clientName) ")
 			var billItemNum = 0
 			while billItemNum < billClients[clientNum].billItems.count {
-				print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].serviceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
+				print("     Bill Item: \(billClients[clientNum].billItems[billItemNum].studentName) \(billClients[clientNum].billItems[billItemNum].serviceDate) \(billClients[clientNum].billItems[billItemNum].timesheetServiceName) \(billClients[clientNum].billItems[billItemNum].duration) ")
 				billItemNum += 1
 			}
 			clientNum += 1

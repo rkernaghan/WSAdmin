@@ -11,7 +11,7 @@ class TimesheetRow: Identifiable {
     var studentName: String
     var serviceDate: String
     var duration: Int
-    var serviceName: String
+    var timesheetServiceName: String
     var notes: String
     var cost: Float
     var clientName: String
@@ -20,11 +20,11 @@ class TimesheetRow: Identifiable {
     var tutorName: String
     let id = UUID()
     
-    init(studentName: String, serviceDate: String, duration: Int, serviceName: String, notes: String, cost: Float, clientName: String, clientEmail: String, clientPhone: String, tutorName: String) {
+    init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, notes: String, cost: Float, clientName: String, clientEmail: String, clientPhone: String, tutorName: String) {
         self.studentName = studentName
         self.serviceDate = serviceDate
         self.duration = duration
-        self.serviceName = serviceName
+        self.timesheetServiceName = timesheetServiceName
         self.notes = notes
         self.cost = cost
         self.clientName = clientName
