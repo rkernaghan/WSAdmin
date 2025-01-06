@@ -1064,8 +1064,9 @@ import Foundation
 		
 	
 		if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
-			nextYear = String(yearInt + 1)
-			
+//			nextYear = String(yearInt + 1)
+			nextYear = "2025"
+					
 			// Create the next year's Production Tutor Billing spreadsheet
 			
 			let newTutorBillingProdFileName = PgmConstants.tutorBillingProdFileNamePrefix + nextYear
@@ -1082,6 +1083,10 @@ import Foundation
 								
 								if let fileID = copiedFileData["id"] as? String {
 									newTimesheetFileID = fileID
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									print("Created Tutor Billing Prod file: \(newTutorBillingProdFileName)")
 								} else {
 									print("No valid string found for the key 'name'")
 								}
@@ -1114,6 +1119,10 @@ import Foundation
 								
 								if let fileID = copiedFileData["id"] as? String {
 									newTimesheetFileID = fileID
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									print( "Created Tutor Billing Test file: \(newTutorBillingTestFileName)")
 								} else {
 									print("No valid string found for the key 'name'")
 								}
@@ -1152,6 +1161,10 @@ import Foundation
 								
 								if let fileID = copiedFileData["id"] as? String {
 									newTimesheetFileID = fileID
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									print("Created Billed Student Prod file: \(newStudentBillingProdFileName)\n")
 								} else {
 									print("No valid string found for the key 'name'")
 								}
@@ -1184,6 +1197,10 @@ import Foundation
 								
 								if let fileID = copiedFileData["id"] as? String {
 									newTimesheetFileID = fileID
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									print("Created Billed Student Test file: \(newStudentBillingTestFileName)\n")
 								} else {
 									print("No valid string found for the key 'name'")
 								}
@@ -1205,7 +1222,7 @@ import Foundation
 				generateResult = false
 				generateMessage += "ERROR: could not create \(newStudentBillingTestFileName)\n"
 			}
-			
+			//  Create a Timesheet for each Tutor for the year
 			var tutorNum = 0
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
@@ -1221,6 +1238,17 @@ import Foundation
 								if let fileID = copiedFileData["id"] as? String {
 									newTimesheetFileID = fileID
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									print("Created Timesheet: \(newTutorTimesheetName)")
+									// Write the Tutor name into the RefData tab of the new Tutor Timesheet
+									let range = PgmConstants.timesheetTutorNameCell
+									do {
+										try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]])
+									} catch {
+										print("ERROR: can not write Tutor Name into new Tutor Timesheet")
+									}
 								} else {
 									print("No valid string found for the key 'name'")
 								}
@@ -1260,6 +1288,7 @@ import Foundation
 					let updateValues = [[timesheetFileID]]
 					do {
 						let updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+						print("   Information: Updating Timesheet File ID for \(tutorName) in Tutor Details spreadsheet")
 					} catch {
 						updateResult = false
 						updateMessage = "Error updating timesheet file ID for \(tutorName)"

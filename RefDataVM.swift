@@ -15,8 +15,6 @@ import Foundation
 // 2) If only a single file is retreived, call loadStudentServices to retrieve the Tutor's assigned Student list, Services list and Notes options as well as the Tutor service history for the month
 //
   
-    
-   
 	func loadReferenceData(referenceData: ReferenceData) async -> Bool{
 		var completionResult: Bool = true
 		

@@ -51,7 +51,7 @@ import GoogleSignIn
 				print("Error: Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
 			} else {
 				let loadBilledTutorFlag = await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
-				if loadBilledTutorFlag {				// If not Tutors billed this month, the flag will be flase, which is not an error
+				if loadBilledTutorFlag {				// If no Tutors billed this month, the flag will be false, which is not an error
 					(alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
 					
 					if alreadyBilledFlag {
@@ -307,7 +307,7 @@ import GoogleSignIn
 		let invoiceDescription = invoiceLine.description
 		let invoiceQuantity = invoiceLine.quantity
 		let invoiceRate = invoiceLine.rate
-		let invoiceAmount = String(invoiceLine.amount)
+		let invoiceAmount = String(invoiceLine.amount.formatted(.number.precision(.fractionLength(2))))
 		let invoiceTaxCode = invoiceLine.taxCode
 		let invoiceServiceDate = invoiceLine.serviceDate
 		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceTerm + PgmConstants.csvSeperator +  invoiceLocation + PgmConstants.csvSeperator + invoiceTutor + PgmConstants.csvSeperator + invoiceItem + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator + invoiceRate + PgmConstants.csvSeperator + invoiceAmount + PgmConstants.csvSeperator + invoiceTaxCode + PgmConstants.csvSeperator + invoiceServiceDate 

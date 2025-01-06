@@ -5,6 +5,8 @@
 //  Created by Russell Kernaghan on 2024-10-24.
 //
 
+// BillItem holds one row (tutoring session) from a Timesheet.  
+
 class BillItem {
     
 	var studentName: String

@@ -765,6 +765,10 @@ import GoogleSignIn
 					do {
 						var copyFileData = try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail)
 						if let copyFileData = copyFileData {
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+							
 							let range = PgmConstants.timesheetTutorNameCell
 							do {
 								copyResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]])
@@ -775,7 +779,7 @@ import GoogleSignIn
 						} else {
 							copyResult = false
 						}
-						
+						// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
 						copyFileData = try await addPermissionToFile(fileId: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail)
 						if let copyFileData = copyFileData {
 							print("Granted Tutor \(tutorName) read access to Tutor Details File Name")

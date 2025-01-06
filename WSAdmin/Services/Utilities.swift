@@ -366,6 +366,7 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				print("Error could not add permission: \(statusCode) for user \(String(describing: emailAddress)) on fileId \(fileId)")
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
 			}
 			

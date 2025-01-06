@@ -213,7 +213,7 @@ struct PgmConstants {
 	static let tutorBillingTotalProfitCol = 8
 	static let tutorBillingStatusCol = 9
 	
-	static let termsString: String = "Net 14 days"
+	static let termsString: String = "14 days"
 	static let taxCodeString: String = "N"
 	static let csvSeperator: String = ","
 	static let crlf: String = "\r\n"

@@ -6,6 +6,10 @@
 //
 import Foundation
 
+// BillArray has the functions and data to process a set of Timesheets and store them in a format suitable for generating an invoice from.
+// A BillArray has one BillClient for each client assigned to the Tutors being billed in this invoice.
+// Each BillClient has one or more BillItems, which are the Timesheet rows (tutoring sessions) from the Timesheets for the Tutors being billed
+
 class BillArray {
     
 	var billClients = [BillClient]()
@@ -75,9 +79,10 @@ class BillArray {
 		var duration: Int = 0
 		
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy/MM/dd"
+		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let invoiceDate = dateFormatter.string(from: Date())
 		
+		// Calculate the due date of the invoice, which is 14 days from today's date
 		let calendar = Calendar.current
 		let now = Date()
 		let dueDate = calendar.date(byAdding: .day, value: 14, to: now)
@@ -89,9 +94,11 @@ class BillArray {
 		
 		var prevClientName = ""
 		var clientNum = 0
+		// Loop through each client in the billClients, which is a list of clients being billed in this invoice
 		while clientNum < billClients.count {
 			//   print("Client : \(billClients[clientNum].clientName) ")
 			var billItemNum = 0
+			// Loop through each tutoring session for the client
 			while billItemNum < billClients[clientNum].billItems.count {
 				let tutorName = billClients[clientNum].billItems[billItemNum].tutorName
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
@@ -101,10 +108,13 @@ class BillArray {
 					if serviceFound {
 						duration = billClients[clientNum].billItems[billItemNum].duration
 						let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].computeSessionCostPrice(duration: duration)
+						// Get the Invoice Service Name and remove any commas from the name (there should not be any commas but this is a double check)
 						let invoiceServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].invoiceServiceName.replacingOccurrences(of: ",", with: "")
-						newInvoice.totalRevenue += price
-						newInvoice.totalCost += cost
-						newInvoice.totalSessions += 1
+						
+						newInvoice.totalRevenue += price	// Increment the running total Revenue for this invoice
+						newInvoice.totalCost += cost		// Increment the running total Cost for this invoice
+						newInvoice.totalSessions += 1		// Increment the running total sessions for this invoice
+						
 						let studentName = billClients[clientNum].billItems[billItemNum].studentName
 						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 						if !foundFlag {
@@ -115,20 +125,21 @@ class BillArray {
 							clientName = billClients[clientNum].clientName
 							clientEmail = billClients[clientNum].clientEmail
 							
+							// If this is the same client as the previous tutoring session in this invoice, some attributes are blank as required by QuickBooks CSV format
 							if clientName == prevClientName {
-								clientName = " "
-								clientEmail = " "
-								clientDueDate = " "
-								clientInvoiceDate = " "
-								clientTerms = " "
-							} else {
+								clientName = ""
+								clientEmail = ""
+								clientDueDate = ""
+								clientInvoiceDate = ""
+								clientTerms = ""
+							} else {			// If this session is for a different client, fill in client name, due date, etc
 								prevClientName = clientName
 								clientDueDate = dueDateStr
 								clientTerms = PgmConstants.termsString
 								clientInvoiceDate = invoiceDate
 							}
-							
-							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
+							// Add a line to the invoice with the tutoring session data
+							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 
 						}
@@ -139,6 +150,7 @@ class BillArray {
 			}
 			clientNum += 1
 		}
+		
 		newInvoice.totalProfit = newInvoice.totalRevenue - newInvoice.totalCost
 		newInvoice.isInvoiceLoaded = true
 		//        newInvoice.printInvoice()

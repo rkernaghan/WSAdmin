@@ -36,7 +36,6 @@ struct DataMgmtView: View {
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	@Environment(SystemVM.self) var systemVM: SystemVM
 
-    
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()
 	@State var referenceData = ReferenceData()
@@ -225,8 +224,6 @@ struct SideView: View {
 	
 
 }
-
-
 
 
 struct MainView: View {
