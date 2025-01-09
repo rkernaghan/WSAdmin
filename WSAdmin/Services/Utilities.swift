@@ -669,6 +669,7 @@ func getAccessToken() async -> (Bool) {
 				print("Could not refresh access Token")
 			}
 		} else {
+			print("Utilities-getAccessToken: Access Token is not expired")
 			returnResult = true
 		}
 	} else {
@@ -686,9 +687,9 @@ func isTokenExpired() -> Bool {
 		if let tokenExpiry = tokenExpiry {
 //			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
 			if Date() >= tokenExpiry {
-				print("Token Time Expiry Test Failed")
+				print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
 			} else {
-//				print("Token not expired")
+				print("Token not expired")
 			}
 			return Date() >= tokenExpiry
 		} else {

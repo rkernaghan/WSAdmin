@@ -12,7 +12,7 @@ import GoogleSignIn
 
 struct ContentView: View {
 
-	let authVM = UserAuthVM()
+	let userAuthVM = UserAuthVM()
 	let refDataVM = RefDataVM()
 	let studentMgmtVM = StudentMgmtVM()
 	let tutorMgmtVM = TutorMgmtVM()
@@ -24,7 +24,7 @@ struct ContentView: View {
 	var body: some View {
 		NavigationStack {
 			VStack{
-				if (authVM.isLoggedIn) {
+				if (userAuthVM.isLoggedIn) {
 					DataMgmtView()
 				} else {
 					SignInView()
@@ -33,7 +33,7 @@ struct ContentView: View {
 		}
 		.navigationTitle("Write Seattle Administration")
 		.environment(refDataVM)
-		.environment(authVM)
+		.environment(userAuthVM)
 		.environment(studentMgmtVM)
 		.environment(tutorMgmtVM)
 		.environment(serviceMgmtVM)

@@ -10,7 +10,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 
 struct SignInView: View {
-	@Environment(UserAuthVM.self) var userAuthModel: UserAuthVM
+	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
 	@State private var showAlert = false
 
 	var body: some View {
@@ -20,7 +20,7 @@ struct SignInView: View {
 					Spacer()
             
 					GoogleSignInButton(action: {
-						userAuthModel.signIn()  })
+						userAuthVM.signIn()  })
 					.accessibilityIdentifier("GoogleSignInButton")
 					.accessibility(hint: Text("Sign in with Google button."))
 					.padding()

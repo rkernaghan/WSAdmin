@@ -355,8 +355,6 @@ class OAuth2Token{
 	var clientID: String?
 }
 
-
-
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 let yearNumbersArray = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
@@ -376,7 +374,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "PROD"
+var runMode: String = "TEST"
 
 @main
 struct WSAdmin: App {
