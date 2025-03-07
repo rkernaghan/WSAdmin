@@ -23,9 +23,7 @@ import Foundation
 		var billedStudentMonth = StudentBillingMonth(monthName: "")
 		var billedMonthName: String = ""
 		
-		print ("//")
-		print("Validating System - Stand By for Adventure!")
-		print("//")
+		print("\n** Validating System - Stand By for Adventure! **")
 				
 		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
 
@@ -82,18 +80,137 @@ import Foundation
 // Validate that each Tutor has a Timesheet
 
 		
-// Check if the count of Students in the Tutor Details sheet matches the count for the Tutor in the Reference Data
-		
 
-// Check if the count of Services in the Tutor Details sheet matches the count for the Tutor in the Reference Data
-		
 
+		studentNum = 0
+		while studentNum < studentCount {
+			
+			// Check for duplicate Student keys
+			let studentKey = referenceData.students.studentsList[studentNum].studentKey
+			let studentKeyCount = referenceData.students.studentsList.filter { $0.studentKey == studentKey }.count
+			if studentKeyCount > 1 {
+				print( "Validation Error: Duplicate Student Key \(studentKey) for \(referenceData.students.studentsList[studentNum].studentName)")
+			}
+			
+			// Check for duplicate Student names
+			let studentName = referenceData.students.studentsList[studentNum].studentName
+			let studentNameCount = referenceData.students.studentsList.filter { $0.studentName == studentName }.count
+			if studentNameCount > 1 {
+				print( "Validation Error: Duplicate Student Name \(studentName)")
+			}
+			
+			studentNum += 1
+		}
+
+		var serviceNum = 0
+		let serviceCount = referenceData.services.servicesList.count
+		while serviceNum < serviceCount {
+			
+			// Check for duplicate Service keys
+			let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+			let serviceKeyCount = referenceData.services.servicesList.filter { $0.serviceKey == serviceKey }.count
+			if serviceKeyCount > 1 {
+				print( "Validation Error: Duplicate Service Key \(serviceKey) for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
+			}
+			
+			// Check for duplicate Service names
+			let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
+			let serviceNameCount = referenceData.services.servicesList.filter { $0.serviceTimesheetName == serviceName }.count
+			if serviceNameCount > 1 {
+				print( "Validation Error: Duplicate Service Name \(serviceName)")
+			}
+			serviceNum += 1
+		}
+		
+		var locationNum = 0
+		let locationCount = referenceData.locations.locationsList.count
+		while locationNum < locationCount {
+			
+			// Check for duplicate Location keys
+			let locationKey = referenceData.locations.locationsList[locationNum].locationKey
+			let locationKeyCount = referenceData.locations.locationsList.filter { $0.locationKey == locationKey }.count
+			if locationKeyCount > 1 {
+				print( "Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)")
+			}
+			// Check for duplicate Location names
+			let locationName = referenceData.locations.locationsList[locationNum].locationName
+			let locationNameCount = referenceData.locations.locationsList.filter { $0.locationName == locationName }.count
+			if locationNameCount > 1 {
+				print( "Validation Error: Duplicate Location Name \(locationName)")
+			}
+			
+			locationNum += 1
+		}
+		
+		var tutorNum = 0
+		let tutorCount = referenceData.tutors.tutorsList.count
+		while tutorNum < tutorCount {
+			
+			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+			
+			// Check for duplicate Tutor Keys in Reference Data
+			let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+			let tutorKeyCount = referenceData.tutors.tutorsList.filter { $0.tutorKey == tutorKey }.count
+			if tutorKeyCount > 1 {
+				print( "Validation Error: Duplicate Tutor Key \(tutorKey)")
+			}
+			
+			// Check for duplicate Tutor Names in Reference Data
+			let tutorNameCount = referenceData.tutors.tutorsList.filter { $0.tutorName == tutorName }.count
+			if tutorNameCount > 1 {
+				print( "Validation Error: Duplicate Tutor Name \(tutorName)")
+			}
+			
+			// Check that the Student Keys in the Reference Dasta matches the Student Keys in the Tutor Details file for each Tutor
+			var tutorStudentNum = 0
+			let tutorStudentCount = referenceData.tutors.tutorsList[tutorNum].tutorStudents.count
+			while tutorStudentNum < tutorStudentCount {
+				var tutorStudentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+				var tutorStudentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
+				let (studentFound, studentNum) = referenceData.students.findStudentByKey(studentKey: tutorStudentKey)
+				if studentFound {
+					let studentName = referenceData.students.studentsList[studentNum].studentName
+					
+					if studentName != tutorStudentName {
+						print ("Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)")
+					}
+				} else {
+					print( "Validation Error: \(tutorStudentKey) not found in Reference Data")
+				}
+				tutorStudentNum += 1
+			}
+			
+			// Check that the Service Keys in the Reference Dasta matches the Service Keys in the Tutor Details file for each Tutor
+			var tutorServiceNum = 0
+			let tutorServiceCount = referenceData.tutors.tutorsList[tutorNum].tutorServices.count
+			while tutorServiceNum < tutorServiceCount {
+				var tutorServiceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
+				var tutorServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName
+				
+				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: tutorServiceKey)
+				if serviceFound {
+					let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
+					
+					if serviceName != tutorServiceName {
+						print ("Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)")
+					}
+				} else {
+					print( "Validation Error: \(tutorServiceKey) not found in Reference Data")
+				}
+				tutorServiceNum += 1
+			}
+			
+			
+			tutorNum += 1
+		}
+
+		
+		
 		// Check that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalStudents = 0
 		var activeStudents = 0
 		var deletedStudents = 0
 
-		
 		studentNum = 0
 //		studentCount = referenceData.students.studentsList.count
 		while studentNum < studentCount {
@@ -148,8 +265,7 @@ import Foundation
 		var activeServices = 0
 		var deletedServices = 0
 		
-		var serviceNum = 0
-		let serviceCount = referenceData.services.servicesList.count
+		serviceNum = 0
 		while serviceNum < serviceCount {
 			switch referenceData.services.servicesList[serviceNum].serviceStatus {
 			case "Unassigned", "Assigned":
@@ -179,9 +295,8 @@ import Foundation
 		var activeLocations = 0
 		var deletedLocations = 0
 		
-		var locationNum = 0
+		locationNum = 0
 		var locationStudents = 0
-		let locationCount = referenceData.locations.locationsList.count
 		while locationNum < locationCount {
 			switch referenceData.locations.locationsList[locationNum].locationStatus {
 			case "Active":
@@ -199,6 +314,7 @@ import Foundation
 		}
 		print("          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
 		
+	
 		if locationStudents != activeStudents {
 			print("Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)")
 		}
@@ -219,8 +335,7 @@ import Foundation
 		var deletedTutors = 0
 		var sheetNum: Int?
 		
-		var tutorNum = 0
-		let tutorCount = referenceData.tutors.tutorsList.count
+		tutorNum = 0
 		while tutorNum < tutorCount {
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			switch referenceData.tutors.tutorsList[tutorNum].tutorStatus {
@@ -268,6 +383,7 @@ import Foundation
 				if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
 					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)")
 				}
+				
 			}
 			
 			totalTutors += 1
@@ -305,6 +421,9 @@ import Foundation
 		
 
 // Validate that the Student names in the Master Reference worksheet match the student names in the Student Billing spreadsheet
+		
+		
+		
 		// Get the session count, total cost and total revenue for the previous Billed Student month (current month may not be done yet)
 		var billedStudentSessionCount: Int  = 0
 		var billedStudentTotalCost: Float = 0.0
@@ -459,11 +578,11 @@ import Foundation
 				}
 			}
 		}
-		print("//")
-		print("Validation Complete")
+		print("** Validation Complete **\n")
+		      
 	}
 	//
-	// This function validates the Tutor and Student Billing data for the year by reading through all the Timesheets and checking the timesheet data against the Tutor and Student Billing dasta.
+	// This function validates the Tutor and Student Billing data for the year by reading through all the Timesheets and checking the timesheet data against the Tutor and Student Billing data.
 	//
 	func ValidateBillingData(referenceData: ReferenceData) async {
 		var yearBillArray = [BillArray]()					// The monthly processed Timesheet data
@@ -485,7 +604,7 @@ import Foundation
 		} else {
 			openingMonthNum = 1
 		}
-		// Read in all of the Timesheets for the year (for 2024 -- starting September into an array of monthly Timesheet data indexed by month
+		// Read in all of the Timesheets for the year (for 2024 -- starting September) into an array of monthly Timesheet data indexed by month
 		// Each yearBillArray element contains a Bill Array of all of the Timesheets for that month processed by client
 		print(" Step 1 - Read in all Tutor Timesheets")
 		var monthNum = openingMonthNum
@@ -536,8 +655,6 @@ import Foundation
 			yearStudentBilling.append( await buildBilledStudentMonth(monthName: monthName, yearName: currentMonthYear) )
 			monthNum += 1
 		}
-		
-		
 		
 		// Read in all of the Tutor Billing data for the year into a monthly array of Tutor Billing data
 		//Each yearTutorBilling element contains a TutorBillingMonth instance containing all of the Tutor Billing data for that month
@@ -614,7 +731,7 @@ import Foundation
 				clientNum += 1
 			}
 			
-			// For Tutors that did not have a tutoring session this month, copy there previous month's compareTutorBilling cost, price and session data to this month's totals
+			// For Tutors that did not have a tutoring session this month, copy their previous month's compareTutorBilling cost, price and session data to this month's totals
 			var tutorNum = 0
 			var tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
@@ -634,7 +751,7 @@ import Foundation
 				tutorNum += 1
 			}
 			
-			// For Students that did not have a tutoring session this month, copy there previous month's compareStudent Billing cost, price and session data to this month's totals
+			// For Students that did not have a tutoring session this month, copy their previous month's compareStudent Billing cost, price and session data to this month's totals
 			var studentNum = 0
 			var studentCount = referenceData.students.studentsList.count
 			while studentNum < studentCount {
@@ -995,12 +1112,13 @@ import Foundation
 		var copyFileName: String = ""
 		
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+		dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
 		let backupDate = dateFormatter.string(from: Date())
 		dateFormatter.dateFormat = "yyyy"
 		let currentYear = dateFormatter.string(from: Date())
 		
-		print("Backing up system")
+		print(" ")
+		print("** Backing up system ** ")
 		
 		do {
 			// Copy the Reference Data spreadsheet
@@ -1010,7 +1128,8 @@ import Foundation
 				copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
 			}
 			let copyRefDataResult = try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
-			print("Reference Data spreadsheet copied to file: \(PgmConstants.referenceDataProdFileName + " Backup " + backupDate)")
+			print("Reference Data spreadsheet copied to file: \(copyFileName)")
+			
 			
 			// Copy the Tutor Details spreadsheet
 			if runMode == "PROD" {
@@ -1018,8 +1137,8 @@ import Foundation
 			} else {
 				copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
 			}
-			let copyDetailsDataResult = try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)
-			print("Tutor Details spreadsheet copied to file: \(PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate)")
+			let copyDetailsDataResult = try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: copyFileName)
+			print("Tutor Details spreadsheet copied to file: \(copyFileName)")
 			
 			// Copy the Tutor Billing spreadsheet
 			tutorBillingFileName = tutorBillingFileNamePrefix + currentYear
@@ -1033,7 +1152,7 @@ import Foundation
 			
 			// Copy the Student Billing spreadsheet
 			studentBillingFileName = studentBillingFileNamePrefix + currentYear
-			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
+			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 			if studentFileFound {
 				copyBilledStudentResult = try await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: studentBillingFileName + " Backup " + backupDate)
 				print("Billed Student spreadsheet copied to file: \(studentBillingFileName + " Backup " + backupDate)")
@@ -1048,8 +1167,11 @@ import Foundation
 			print("ERROR: Could not backup application files")
 			completionFlag = false
 		}
-		return(completionFlag)
 		
+		print("** Backup Complete **")
+		print(" ")
+		
+		return(completionFlag)
 	}
 
 	

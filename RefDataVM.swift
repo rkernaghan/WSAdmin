@@ -16,21 +16,24 @@ import Foundation
 //
   
 	func loadReferenceData(referenceData: ReferenceData) async -> Bool{
+		
 		var completionResult: Bool = true
 		
+		// Read in the counts of Tutors, Students, Locations and Services from the Reference Data file in order to know how many rows of each to read in
+		// If the read succeeds, read in the Tutors, Students, Locations and Services 
 		let fetchCountsFlag = await referenceData.dataCounts.fetchDataCounts( referenceData: referenceData )
 		if !fetchCountsFlag {
 			completionResult = false
-		}
-		
-		if referenceData.dataCounts.isDataCountsLoaded {
-			let fetchTutorsResult = await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
-			let fetchStudentsResult = await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
-			let fetchLocationsResult = await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
-			let fetchServicesResult = await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
-			
-			if !fetchTutorsResult || !fetchStudentsResult || !fetchLocationsResult || !fetchServicesResult {
-				completionResult = false
+		} else {
+			if referenceData.dataCounts.isDataCountsLoaded {
+				let fetchTutorsResult = await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
+				let fetchStudentsResult = await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
+				let fetchLocationsResult = await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
+				let fetchServicesResult = await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
+				
+				if !fetchTutorsResult || !fetchStudentsResult || !fetchLocationsResult || !fetchServicesResult {
+					completionResult = false
+				}
 			}
 			
 		}

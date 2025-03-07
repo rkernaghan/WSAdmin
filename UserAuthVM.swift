@@ -19,9 +19,9 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	var errorMessage: String = ""
 	
 	init() {
-		print("UserAuthVM-init: Starting")
+//		print("UserAuthVM-init: Starting")
 		restoreSignIn()
-		print("UserAuthVM-init: Finished")
+//		print("UserAuthVM-init: Finished")
 	}
 	
 
@@ -31,7 +31,7 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 			print("UserAuthVM-signin: Could not get presenting window")
 			return}
 		
-		print("UserAuthVM-signIn: Starting Signin")
+//		print("UserAuthVM-signIn: Starting Signin")
 
 		GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) {signInResult, error in
 			guard let result = signInResult else {
@@ -55,7 +55,7 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	//
 	func restoreSignIn() {
 		
-		print("UserAuthVM-restoreSignIn: Starting restoreSignIn function")
+//		print("UserAuthVM-restoreSignIn: Starting restoreSignIn function")
 
 		GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
 			if let error = error {
@@ -103,10 +103,10 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 					oauth2Token.clientID = clientID
 				}
 				
-				print("\nUserAuthVM-checkSignInStatus: accessToken: \(accessOAuthToken)")
-				print("UserAuthVM-checkSignInStatus: refreshToken: \(refreshOAuthToken)")
-				print("UserAuthVM-checkSignInStatus: tokenExpirationDate: \(String(describing: tokenExpirationDate))")
-				print("UserAuthVM-checkSignInStatus: clientID: \(String(describing: clientID))\n")
+//				print("\nUserAuthVM-checkSignInStatus: accessToken: \(accessOAuthToken)")
+//				print("UserAuthVM-checkSignInStatus: refreshToken: \(refreshOAuthToken)")
+//				print("UserAuthVM-checkSignInStatus: tokenExpirationDate: \(String(describing: tokenExpirationDate))")
+//				print("UserAuthVM-checkSignInStatus: clientID: \(String(describing: clientID))\n")
 				
 				let scopeStatus = checkAuthScope()
 				if !scopeStatus {

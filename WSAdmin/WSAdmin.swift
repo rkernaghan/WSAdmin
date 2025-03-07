@@ -50,7 +50,7 @@ struct PgmConstants {
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
 	static let tutorServicesRange = "!D3:M"
-	static let tutorDataCountsRange = "!B3:B5"
+	static let tutorDataCountsRange = "!B4:B5"
 	static let tutorDataTutorNameCell = "!B2:B2"
 	static let tutorDataTimesheetFileIDRange = "!B3:B3"
 	
@@ -374,7 +374,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "TEST"
+var runMode: String = "PROD"
 
 @main
 struct WSAdmin: App {

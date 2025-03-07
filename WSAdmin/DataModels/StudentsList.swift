@@ -95,7 +95,7 @@ import Foundation
 		// Write the Student rows to the Reference Data spreadsheet
 		let updateValues = unloadStudentRows()
 		let count = updateValues.count
-		let range = PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + updateValues.count - 1)
+		let range = PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + count - 1)
 		do {
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
@@ -110,7 +110,6 @@ import Foundation
 	}
 	
 	func loadStudentRows(studentCount: Int, sheetCells: [[String]] ) {
-		var completionFlag = false
 		
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"

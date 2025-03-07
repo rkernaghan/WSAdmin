@@ -88,8 +88,13 @@ struct StudentView: View {
 					if updateStudentFlag {
 						let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
 						if studentValidationResult {
-							await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
-							dismiss()
+							let (updateResult, updateMessage) = await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+							if !updateResult {
+								buttonErrorMsg = updateMessage
+								showAlert = true
+							} else {
+								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true
@@ -97,8 +102,13 @@ struct StudentView: View {
 					} else {
 						let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
 						if studentValidationResult {
-							await studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
-							dismiss()
+							let (addResult, addMessage) = await studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+							if !addResult {
+								buttonErrorMsg = addMessage
+								showAlert = true
+							} else {
+								dismiss()
+							}
 						} else {
 							buttonErrorMsg = validationMessage
 							showAlert = true

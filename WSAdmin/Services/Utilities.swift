@@ -18,11 +18,6 @@ import GoogleSignIn
 func getFileID(fileName: String) async throws -> (Bool, String) {
 	var fileID: String = ""
 	var fileFound: Bool = false
-//	var accessToken: String
-	
-//	let currentUser = GIDSignIn.sharedInstance.currentUser
-//	if let user = currentUser {
-//		accessToken = user.accessToken.tokenString
 		
 	let tokenFound = await getAccessToken()
 	if tokenFound {
@@ -80,10 +75,6 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 	var values = [[String]]()
 	var sheetData: SheetData?
-	
-//	let currentUser = GIDSignIn.sharedInstance.currentUser
-//	if let user = currentUser {
-//		accessToken = user.accessToken.tokenString
 		
 	let tokenFound = await getAccessToken()
 	if tokenFound {
@@ -321,7 +312,7 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				print("File copied successfully: \(json)")
+//				print("File copied successfully: \(json)")
 				return json
 			}
 		}
@@ -384,7 +375,6 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 
 // Function to get the sheet ID based on sheet name using spreadsheets.get
 func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> Int? {
-//	    var accessToken: String
 	    
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)?fields=sheets.properties"
 	
@@ -616,8 +606,9 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 	let tokenFound = await getAccessToken()
 	if tokenFound {
 		let accessToken = oauth2Token.accessToken
-		if let accessToken = accessToken {		let accessToken = oauth2Token.accessToken
-			if let accessToken = accessToken {
+		if let accessToken = accessToken {
+//			let accessToken = oauth2Token.accessToken
+//			if let accessToken = accessToken {
 				var request = URLRequest(url: url)
 				request.httpMethod = "GET"
 				request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -634,7 +625,7 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 				// Parse the JSON response
 				let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
 				sheetCount = googleSheetsResponse.sheets.count
-			}
+//			}
 		}
 	}
 	// Return the count of sheets
@@ -669,7 +660,7 @@ func getAccessToken() async -> (Bool) {
 				print("Could not refresh access Token")
 			}
 		} else {
-			print("Utilities-getAccessToken: Access Token is not expired")
+//			print("Utilities-getAccessToken: Access Token is not expired")
 			returnResult = true
 		}
 	} else {
@@ -686,11 +677,11 @@ func isTokenExpired() -> Bool {
 		let tokenExpiry = oauth2Token.expiresAt
 		if let tokenExpiry = tokenExpiry {
 //			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
-			if Date() >= tokenExpiry {
-				print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
-			} else {
-				print("Token not expired")
-			}
+//			if Date() >= tokenExpiry {
+//				print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
+//			} else {
+//				print("Token not expired")
+//			}
 			return Date() >= tokenExpiry
 		} else {
 			return true

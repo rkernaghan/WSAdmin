@@ -13,8 +13,6 @@ import Foundation
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
 		
-		var studentBillingCount: Int = 0
-		var sheetCells = [[String]]()
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
@@ -83,11 +81,10 @@ import Foundation
 		return(completionFlag, completionMessage)
 	}
     
-	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async -> Bool {
-		var prevBilledStudentMonthName: String = ""
-		var billedStudentFileID: String = ""
-		var fileIDFound: Bool = true
+	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async -> (Bool, String) {
+
 		var completionFlag: Bool = true
+		var completionMessage: String = ""
 		
 		let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -135,14 +132,19 @@ import Foundation
 					let renamePrevResult = await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: prevMonthName, yearName: prevMonthYear)
 					if !renamePrevResult {
 						completionFlag = false
+						completionMessage = "Error renaming Student in Billed Student Month"
 					}
 					let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
 					let renameCurrentResult = await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: currentMonthName, yearName: currentMonthYear)
 					// If Student not found in current Billed Student month, it may not be an error as the Student may not have been billed yet
 				}
+			} else {
+				completionMessage = "Error: Could not update Location count data when updating Student: \(studentName)"
 			}
+		} else {
+			completionMessage = "Error: Could not save Student data for Student: \(studentName)"
 		}
-		return(completionFlag)
+		return(completionFlag, completionMessage)
 	}
     
 	func renameStudentInBilledStudentMonth(originalStudentName: String, newStudentName: String, monthName: String, yearName: String) async -> Bool {
@@ -306,8 +308,6 @@ import Foundation
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
-		print("deleting Student")
-		
 		for objectID in indexes {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
@@ -409,6 +409,8 @@ import Foundation
 						if !unDeleteResult {
 							unDeleteMessage = "Error: could not save Location data when Undeleting Student"
 						}
+					} else {
+						unDeleteMessage = "Error: could not save Student data when Undeleting Student \(referenceData.students.studentsList[index].studentName)"
 					}
 					
 				} else {

@@ -106,6 +106,7 @@ import Foundation
 	func loadTutorRows(tutorCount: Int, sheetCells: [[String]] ) async -> Bool {
 		var completionFlag: Bool = true
 		
+		print("\n** Starting Load Tutor Data **")
 		var tutorIndex = 0
 		var rowNumber = 0
 		while tutorIndex < tutorCount && completionFlag {
@@ -136,12 +137,12 @@ import Foundation
 			if newTutorStatus != "Deleted" {
 				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorName: newTutorName, tutorDataFileID: tutorDetailsFileID)
 			}
-			print("Loaded tutor \(newTutorName)")
+			print("Loaded Tutor \(newTutorName)")
 			
 			tutorIndex += 1
 			rowNumber += 1
 		}
-		print("Loaded Base Tutor Data for \(tutorIndex) Tutors")
+		print("** Loaded Base Tutor Data for \(tutorIndex) Tutors - Tutor Loading Complete **\n")
 		self.isTutorDataLoaded = true
 		
 		return(completionFlag)

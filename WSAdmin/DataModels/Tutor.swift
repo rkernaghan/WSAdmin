@@ -234,7 +234,8 @@ import Foundation
 		let range = tutorName + PgmConstants.tutorDataCountsRange
 		tutorStudentCount = tutorStudents.count
 		tutorServiceCount = tutorServices.count
-		updateValues = [[timesheetFileID], [String(tutorStudentCount)], [String(tutorServiceCount)]]
+
+		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
 		
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
@@ -289,9 +290,8 @@ import Foundation
 			
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
-				timesheetFileID = sheetCells[0][0]
-				studentCount = Int( sheetCells[1][0] ) ?? 0
-				serviceCount = Int( sheetCells[2][0] ) ?? 0
+				studentCount = Int( sheetCells[0][0] ) ?? 0
+				serviceCount = Int( sheetCells[1][0] ) ?? 0
 			} else {
 				studentCount = 0
 				serviceCount = 0
