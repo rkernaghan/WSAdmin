@@ -222,6 +222,7 @@ struct PgmConstants {
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"
 	static let writeSeattleEmail: String = "info@writeseattle.com"
 	static let russellEmail: String = "rskernaghan@gmail.com"
+	static let serviceAccountEmail: String = "service-account1@writeseattle2.iam.gserviceaccount.com"
 	
 	static let systemStartMonthIndex = 6
 	static let systemStartYearIndex = 0

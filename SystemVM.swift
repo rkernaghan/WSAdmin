@@ -1208,6 +1208,7 @@ import Foundation
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail)
 									print("Created Tutor Billing Prod file: \(newTutorBillingProdFileName)")
 								} else {
 									print("No valid string found for the key 'name'")
@@ -1244,6 +1245,7 @@ import Foundation
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail)
 									print( "Created Tutor Billing Test file: \(newTutorBillingTestFileName)")
 								} else {
 									print("No valid string found for the key 'name'")
@@ -1286,6 +1288,7 @@ import Foundation
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail)
 									print("Created Billed Student Prod file: \(newStudentBillingProdFileName)\n")
 								} else {
 									print("No valid string found for the key 'name'")
@@ -1322,6 +1325,7 @@ import Foundation
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail)
 									print("Created Billed Student Test file: \(newStudentBillingTestFileName)\n")
 								} else {
 									print("No valid string found for the key 'name'")
@@ -1363,6 +1367,7 @@ import Foundation
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
+									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail)
 									print("Created Timesheet: \(newTutorTimesheetName)")
 									// Write the Tutor name into the RefData tab of the new Tutor Timesheet
 									let range = PgmConstants.timesheetTutorNameCell
