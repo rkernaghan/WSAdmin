@@ -810,3 +810,177 @@ func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, St
 func removeCommas(sourceString: String) -> String {
 	return(sourceString.replacingOccurrences(of: ",", with: ""))
 }
+
+// This function reads in the Availability data for a Tutor from the Availability tab on their Timesheet.  The data may not be filled in.
+func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutorStatus: String, tutorStudentCount: Int) async throws -> TutorAvailabilityRow {
+	
+	var tutorAvailability: String = ""
+	var mondayAvailability: String = ""
+	var tuesdayAvailability: String = ""
+	var wednesdayAvailability: String = ""
+	var thursdayAvailability: String = ""
+	var fridayAvailability: String = ""
+	var saturdayAvailability: String = ""
+	var sundayAvailability: String = ""
+	var mondayLocation: String = ""
+	var tuesdayLocation: String = ""
+	var wednesdayLocation: String = ""
+	var thursdayLocation: String = ""
+	var fridayLocation: String = ""
+	var saturdayLocation: String = ""
+	var sundayLocation: String = ""
+	
+	var sheetData: SheetData?
+	let range = PgmConstants.timesheetAvailabilityDataRange
+	// read in the cells containing the Tutor's Availability data from the Timesheet Availability sheet
+	do {
+		sheetData = try await readSheetCells(fileID: timesheetFileID, range: range)
+		// Load the sheet cells into this Timesheet
+		if let sheetData = sheetData {
+			if sheetData.values.count > 0 {
+				if !sheetData.values[0][1].isEmpty {
+					tutorAvailability = sheetData.values[0][1]
+				} else {
+					print("Tutor Availability Not Specified for \(tutorName)")
+				}
+				
+				if sheetData.values.indices.contains(3), sheetData.values[3].indices.contains(0) {
+					if sheetData.values[3][0] == "Monday" {
+						if sheetData.values.indices.contains(3), sheetData.values[3].indices.contains(1) {
+							mondayAvailability = sheetData.values[3][1]
+						} else {
+//							print("Tutor Monday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(3), sheetData.values[3].indices.contains(2) {
+							mondayLocation = sheetData.values[3][2]
+						} else {
+//							print("Tutor Monday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Monday Availability Data out of Line \(sheetData.values[3][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(4), sheetData.values[4].indices.contains(0) {
+					if sheetData.values[4][0] == "Tuesday" {
+						if sheetData.values.indices.contains(4), sheetData.values[4].indices.contains(1) {
+							tuesdayAvailability = sheetData.values[4][1]
+						} else {
+//							print("Tutor Tuesday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(4), sheetData.values[4].indices.contains(2) {
+							tuesdayLocation = sheetData.values[4][2]
+						} else {
+//							print("Tutor Tuesday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Tuesday Availability Data out of Line \(sheetData.values[4][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(5), sheetData.values[5].indices.contains(0) {
+					if sheetData.values[5][0] == "Wednesday" {
+						if sheetData.values.indices.contains(5), sheetData.values[5].indices.contains(1) {
+							wednesdayAvailability = sheetData.values[5][1]
+						} else {
+//							print("Tutor Wednesday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(5), sheetData.values[5].indices.contains(2) {
+							wednesdayLocation = sheetData.values[5][2]
+						} else {
+//							print( "Tutor Wednesday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Wednesday Availability Data out of Line \(sheetData.values[5][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(6), sheetData.values[6].indices.contains(0) {
+					if  sheetData.values[6][0] == "Thursday" {
+						if sheetData.values.indices.contains(6), sheetData.values[6].indices.contains(1) {
+							thursdayAvailability = sheetData.values[6][1]
+						} else {
+//							print("Tutor Thursday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(6), sheetData.values[6].indices.contains(2) {
+							thursdayLocation = sheetData.values[6][2]
+						} else {
+//							print( "Tutor Thursday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Thursday Availability Data out of Line \(sheetData.values[6][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(7), sheetData.values[7].indices.contains(0) {
+					if sheetData.values[7][0] == "Friday" {
+						if sheetData.values.indices.contains(7), sheetData.values[7].indices.contains(1) {
+							fridayAvailability = sheetData.values[7][1]
+						} else {
+//							print("Tutor Friday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(7), sheetData.values[7].indices.contains(2) {
+							fridayLocation = sheetData.values[7][2]
+						} else {
+//							print( "Tutor Friday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Friday Availability Data out of Line \(sheetData.values[7][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(8), sheetData.values[8].indices.contains(0) {
+					if sheetData.values[8][0] == "Saturday" {
+						if sheetData.values.indices.contains(8), sheetData.values[8].indices.contains(1) {
+							saturdayAvailability = sheetData.values[8][1]
+						} else {
+//							print("Tutor Saturday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(8), sheetData.values[8].indices.contains(2) {
+							saturdayLocation = sheetData.values[8][2]
+						} else {
+//							print( "Tutor Saturday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Saturday Availability Data out of Line \(sheetData.values[8][0]) for \(tutorName)")
+					}
+				}
+				
+				if sheetData.values.indices.contains(9), sheetData.values[9].indices.contains(0) {
+					if sheetData.values[9][0] == "Sunday" {
+						if sheetData.values.indices.contains(9), sheetData.values[9].indices.contains(1) {
+							sundayAvailability = sheetData.values[9][1]
+						} else {
+//							print("Tutor Sunday Availability Not Specified for \(tutorName)")
+						}
+						
+						if sheetData.values.indices.contains(9), sheetData.values[9].indices.contains(2) {
+							sundayLocation = sheetData.values[9][2]
+						} else {
+//							print( "Tutor Sunday Location Not Specified for \(tutorName)")
+						}
+					} else {
+						print(" Tutor Sunday Availability Data out of Line \(sheetData.values[9][0]) for \(tutorName)")
+					}
+				}
+				
+				
+			}
+		} else {
+			
+		}
+	} catch {
+		print("ERROR: could not read SheetCells for \(tutorName) Timesheet")
+		
+		
+	}
+	let tutorAvailabilityRow = TutorAvailabilityRow(tutorName: tutorName, tutorAvailability: tutorAvailability, tutorStatus: tutorStatus, tutorStudentCount: tutorStudentCount, mondayAvailability: mondayAvailability, mondayLocation: mondayLocation, tuesdayAvailability: tuesdayAvailability, tuesdayLocation: tuesdayLocation, wednesdayAvailability: wednesdayAvailability, wednesdayLocation: wednesdayLocation, thursdayAvailability: thursdayAvailability, thursdayLocation: thursdayLocation, fridayAvailability: fridayAvailability, fridayLocation: fridayLocation, saturdayAvailability: saturdayAvailability, saturdayLocation: saturdayLocation, sundayAvailability: sundayAvailability, sundayLocation: sundayLocation)
+	
+	return tutorAvailabilityRow
+}

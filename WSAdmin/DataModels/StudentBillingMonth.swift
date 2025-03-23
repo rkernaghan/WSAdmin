@@ -15,7 +15,7 @@ class StudentBillingMonth {
 		self.monthName = monthName
 	}
 	
-	func findBilledStudentByName(billedStudentName: String) -> (Bool, Int) {
+	func findBilledStudentByStudentName(billedStudentName: String) -> (Bool, Int) {
 		var found = false
 		
 		var billedStudentNum = 0
@@ -27,6 +27,21 @@ class StudentBillingMonth {
 			}
 		}
 		return(found, billedStudentNum)
+	}
+	
+	func findBilledStudentsByTutorName(tutorName: String) -> (Bool, [Int]) {
+		var found = false
+		var billedStudentNumbers: [Int] = []
+		var billedStudentNum = 0
+	
+		while billedStudentNum < studentBillingRows.count {
+			if studentBillingRows[billedStudentNum].tutorName == tutorName {
+				found = true
+				billedStudentNumbers.append(billedStudentNum)
+			}
+			billedStudentNum += 1
+		}
+		return(found, billedStudentNumbers)
 	}
 	
 	// Adds a new StudentBillingRow instance to the StudentBillingRows array.
@@ -204,7 +219,7 @@ class StudentBillingMonth {
 						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 						if foundFlag {
 //							if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
-								let (foundFlag, billedStudentNum) = self.findBilledStudentByName(billedStudentName: studentName)
+								let (foundFlag, billedStudentNum) = self.findBilledStudentByStudentName(billedStudentName: studentName)
 								if !foundFlag {
 									let totalSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalSessions
 									let totalCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalCost

@@ -12,9 +12,8 @@ import GoogleSignIn
 
 @Observable class BillingVM  {
 
-//    private var sheetData: SheetData?
-//    private var errorMessage: String?
-        
+        // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
+	
 	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: BillingMessages) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
@@ -25,13 +24,11 @@ import GoogleSignIn
 		
 		let tutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		
-		let (prevMonthName, prevYearName) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
-		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
 		let billArray = BillArray(monthName: billingMonth)
-		print ("//")
-		print("//")
+		print ("\n ** Starting Generate Invoice **")
 		
+		// Go through each selected Tutor, read the Tutor's Timesheet and add the data to the billArray.
 		for objectID in tutorSet {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
@@ -45,6 +42,8 @@ import GoogleSignIn
 			}
 		}
 		
+		// Load Billed Tutor month for current month. If this month has already been billed, get list of already billed Tutors for the month. Then
+		// generate the Invoice.
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if !resultFlag {
@@ -59,9 +58,6 @@ import GoogleSignIn
 						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Tutors already billed for month: \(alreadyBilledTutors)"))
 					}
 				}
-//				} else {
-//					print("Error: could not load Billed Tutor Month for \(billingMonth)")
-//				}
 				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 			}
 		} catch {
@@ -69,11 +65,14 @@ import GoogleSignIn
 			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not load Billed Tutor Month"))
 			
 		}
+		
+		// Return the invoice data, the Tutor Billing data for the month so it can be updated if user bills the invoice (creates CSV) and the list of any Tutors already billed
 		billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Invoice generation completed"))
 		return(invoice, tutorBillingMonth, alreadyBilledTutors)
 		
 	}
 	
+	// Read in a Timesheet for a Tutor
 	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: BillingMessages) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
@@ -98,8 +97,11 @@ import GoogleSignIn
 	}
 	
 
-	
+	// Update the billing stats for Tutors, Students and Locations in the Reference Data, Student Billing and Tutor Billing spreadsheets.  If the Tutor was already billed, reset the billing stats
+	// for that Tutor before updating the billing stats
 	func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
+		
+		print(" Starting updating billing stats for \(billingMonth)")
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
@@ -111,10 +113,10 @@ import GoogleSignIn
 		
 		let billingMonthStudentFileName = studentBillingFileNamePrefix + billingYear
 		let billingMonthTutorFileName = tutorBillingFileNamePrefix + billingYear
-		let prevMonthStudentFileName = studentBillingFileNamePrefix + prevMonthYear
-		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
+
 		
 		do {
+			// Read in the current month Student Billing month, copy the previous month's Student and Tutor billing months to current month's files
 			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 			if resultFlag {
 				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
@@ -123,6 +125,13 @@ import GoogleSignIn
 					if resultFlag {
 						resultFlag = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 						if resultFlag {
+							
+							if alreadyBilledTutors.count > 0 {
+								resetBillingStats(alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData, billingMonth: billingMonth, billingYear: billingYear)
+							}
+							
+							// Go through each line in the Invoice and update the Student, Tutor and Location billing stats in the Reference Data and
+							// Tutor Billing and Student Billing spreadsheets
 							var invoiceLineNum: Int = 0
 							let invoiceLineCount: Int = invoice.invoiceLines.count
 							while invoiceLineNum < invoiceLineCount {
@@ -130,7 +139,7 @@ import GoogleSignIn
 								let studentName = invoice.invoiceLines[invoiceLineNum].studentName
 								let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 								if billedTutorFound {
-									let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+									let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 									if billedStudentFound {
 										let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 										if tutorFound {
@@ -139,14 +148,10 @@ import GoogleSignIn
 												let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 												let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
 												if locationFound {
-													
+												
 													let cost = invoice.invoiceLines[invoiceLineNum].cost
 													let revenue = invoice.invoiceLines[invoiceLineNum].amount
 													let profit = revenue - cost
-													
-													if alreadyBilledTutors.contains(tutorName) {
-														resetBillingStats(sessionCost: cost, sessionRevenue: revenue, billedTutorNum: billedTutorNum, billedStudentNum: billedStudentNum, tutorNum: tutorNum, studentNum: studentNum, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData )
-													}
 													
 													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
 													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
@@ -179,7 +184,6 @@ import GoogleSignIn
 													
 													referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 													referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-													
 												}
 											}
 										}
@@ -187,12 +191,15 @@ import GoogleSignIn
 								}
 								invoiceLineNum += 1
 							}
+							
+							// After looping through each Invoice line and updating billing stats, save the Reference Data, Student Billing and Tutor Billing spreadsheets
 							if resultFlag {
 								resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
 								if resultFlag {
 									do {
 										(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
 										if resultFlag {
+											
 											resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
 											if resultFlag {
 												let saveTutorResult = await referenceData.tutors.saveTutorData()
@@ -223,6 +230,7 @@ import GoogleSignIn
 		return(resultFlag)
 	}
 	
+	// Create the CSV file from the Invoice and stores in on disk
 	func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
@@ -230,12 +238,14 @@ import GoogleSignIn
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
+		// First update the billing stats for Tutors, Students and Locations
 		generationFlag = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
 		if !generationFlag {
 			generationMessage = "Error: Could not update Billing Stats"
 			print("Error: Could not update billing stats")
 		} else {
 			do {
+				// Create the file in the Documents directory
 				try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
 				
 				do {
@@ -267,6 +277,7 @@ import GoogleSignIn
 						fileHandle.write(data)
 					}
 					
+					// Loop through the invoice and create a line in the CSV file from each Invoice line
 					var invoiceLineNum = 0
 					let invoiceLineCount = invoice.invoiceLines.count
 					while invoiceLineNum < invoiceLineCount {
@@ -294,6 +305,7 @@ import GoogleSignIn
 		return(generationFlag, generationMessage)
 	}
 	
+	// Format a CSV file line from an Invoice file line
 	func processInvoiceLine(invoiceLine: InvoiceLine) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
 		let invoiceClient = invoiceLine.clientName
@@ -314,17 +326,76 @@ import GoogleSignIn
 		return(csvLine)
 	}
 	
-	func resetBillingStats(sessionCost: Float, sessionRevenue: Float, billedTutorNum: Int, billedStudentNum: Int, tutorNum: Int, studentNum: Int, tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData) {
-		tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth(cost: sessionCost, revenue: sessionRevenue, profit: sessionRevenue - sessionCost)
-		studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(cost: sessionCost, revenue: sessionRevenue, profit: sessionRevenue - sessionCost)
+	// Reset Tutor, Student and Location billing stats in the Reference Data, Tutor Billing and Student Billing spreadsheets (when Tutor is rebilled for a month) by removing session, cost, revenue and profit counts for the current billing month
+	func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) {
 		
-		referenceData.tutors.tutorsList[tutorNum].resetBillingStats(sessionCost: sessionCost, sessionRevenue: sessionRevenue)
-		referenceData.students.studentsList[studentNum].resetBillingStats(sessionCost: sessionCost, sessionRevenue: sessionRevenue)
-		
-		let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
-		let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-		referenceData.locations.locationsList[locationNum].resetBillingStats(sessionRevenue: sessionRevenue)
-		
+		// Loop through each Tutor that was already billed
+		var alreadyBilledTutorNum = 0
+		let alreadyBilledTutorCount = alreadyBilledTutors.count
+		while alreadyBilledTutorNum < alreadyBilledTutorCount {
+			
+			let tutorName = alreadyBilledTutors[alreadyBilledTutorNum]
+			let (billedStudentFound, alreadyBilledStudentNumbers) = studentBillingMonth.findBilledStudentsByTutorName(tutorName: tutorName)
+			
+			if billedStudentFound {
+				
+				// Loop through each Student assigned to the already billed Tutor
+				var alreadyBilledStudentNum = 0
+				while alreadyBilledStudentNum < alreadyBilledStudentNumbers.count {
+					
+					let billedStudentNum = alreadyBilledStudentNumbers[alreadyBilledStudentNum]
+					let studentName = studentBillingMonth.studentBillingRows[billedStudentNum].studentName
+			
+					let sessions = studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions
+					let cost = studentBillingMonth.studentBillingRows[billedStudentNum].monthCost
+					let revenue = studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue
+					
+					// Reset the Student Billing month data for the Student
+					studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(sessions: sessions, cost: cost, revenue: revenue, profit: revenue - cost)
+					
+					let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+					if studentFound {
+						// Reset the Reference Data for the Student
+						referenceData.students.studentsList[studentNum].resetBillingStats(monthSessions: sessions, monthCost: cost, monthRevenue: revenue)
+						
+						// Reset the Location data associated with the Student
+						let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+						let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+						if locationFound {
+							referenceData.locations.locationsList[locationNum].resetBillingStats(monthRevenue: revenue)
+						}
+					} else {
+						print ("Error: Student \(studentName) not found in Reference Data")
+					}
+					
+					alreadyBilledStudentNum += 1
+				}
+			} else {
+				print("Error: Billed Student assigned to Tutor \(tutorName) not found in Student Billing Month \(billingMonth) \(billingYear)")
+			}
+			
+			
+			let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+			if billedTutorFound {
+				
+				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+				if tutorFound {
+					// Reset the Billed Tutor month data for the Tutor and the ReferenceData Tutor data
+					let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions
+					let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost
+					let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue
+					tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth()
+					referenceData.tutors.tutorsList[tutorNum].resetBillingStats(sessions: monthTutorSessions, monthCost: monthTutorCost, monthRevenue: monthTutorRevenue)
+					
+				} else {
+					print("Error: Tutor \(tutorName) not found in Reference Data")
+				}
+			} else {
+				print("Error: Tutor \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)")
+			}
+			
+			alreadyBilledTutorNum += 1
+		}
 	}
-    
+	
 }

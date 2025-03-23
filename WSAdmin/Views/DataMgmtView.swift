@@ -88,7 +88,9 @@ struct SideView: View {
 	var referenceData: ReferenceData
 	@State private var showAlert: Bool = false
 	@State private var showFinanceSummary: Bool = false
+	@State private var showTutorAvailabilitySummary: Bool = false
 	@State private var financeSummaryArray = [FinanceSummaryRow]()
+	@State private var tutorAvailabilityArray = [TutorAvailabilityRow]()
 	
 	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -154,6 +156,13 @@ struct SideView: View {
 			
 			Spacer()
 			
+			Button("Tutor Availability Summary") {
+				Task {
+					tutorAvailabilityArray = await tutorMgmtVM.buildTutorAvailabilityArray(referenceData: referenceData)
+					showTutorAvailabilitySummary = true
+				}
+			}
+			
 			Button("Finance Summary") {
 				Task {
 					financeSummaryArray = await financeSummaryVM.buildFinanceSummary()
@@ -217,6 +226,9 @@ struct SideView: View {
 		}
 		.navigationDestination(isPresented: $showFinanceSummary) {
 			FinanceSummary(financeSummaryArray: financeSummaryArray)
+		}
+		.navigationDestination(isPresented: $showTutorAvailabilitySummary) {
+			TutorAvailabilityView(tutorAvailabilityArray: tutorAvailabilityArray)
 		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))

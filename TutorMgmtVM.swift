@@ -896,5 +896,43 @@ import GoogleSignIn
 		}
 		return(tutorServiceCostList)
 	}
+	
+	func buildTutorAvailabilityArray(referenceData: ReferenceData) async -> [TutorAvailabilityRow] {
+		
+		var tutorAvailabilityArray = [TutorAvailabilityRow]()
+		
+		var result: Bool = false
+		var timesheetFileID: String = ""
+		
+		let yearInt = Calendar.current.dateComponents([.year], from: Date()).year
+		let timesheetYear = String(yearInt!)
+		
+		// Loop through all Tutors selecting those that are Assigned or Unassigned (ignore Suspended and Deleted Tutors)
+		var tutorNum = 0
+		while tutorNum < referenceData.tutors.tutorsList.count {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Assigned" || referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" {
+				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+				let tutorStatus = referenceData.tutors.tutorsList[tutorNum].tutorStatus
+				let tutorStudentCount = referenceData.tutors.tutorsList[tutorNum].tutorStudentCount
+				
+				// Get fileid of the Availability sheet of the Tutors Timesheet spreadsheet
+				
+				let fileName = "Timesheet " + timesheetYear + " " + tutorName
+				do {
+					(result, timesheetFileID) = try await getFileID(fileName: fileName)
+					if result {
+						let tutorAvailabilityRow = try await buildTutorAvailabilityRow(tutorName: tutorName, timesheetFileID: timesheetFileID, tutorStatus: tutorStatus, tutorStudentCount: tutorStudentCount)
+						tutorAvailabilityArray.append(tutorAvailabilityRow)
+					}
+				} catch {
+					print("Error: could not get timesheet fileID for \(fileName)")
+				}
+				
+			}
+			tutorNum += 1
+		}
+		
+		return(tutorAvailabilityArray)
+	}
     
 }

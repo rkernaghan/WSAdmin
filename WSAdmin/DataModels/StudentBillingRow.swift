@@ -35,15 +35,17 @@ class StudentBillingRow {
 	}
 	
 	// Resets a Student's Billed Tutor session, cost, revenue and profit numbers for a month when a Student is billed again after being previously billed that month
-	func resetBilledStudentMonth(cost: Float, revenue: Float, profit: Float) {
-		self.totalSessions -= 1
+	func resetBilledStudentMonth(sessions: Int, cost: Float, revenue: Float, profit: Float) {
+		
+		self.totalSessions -= sessions
 		self.totalCost -= cost
 		self.totalRevenue -= revenue
 		self.totalProfit -= profit
-		self.monthSessions -= 1
-		self.monthCost -= cost
-		self.monthRevenue -= revenue
-		self.monthProfit -= profit
+		
+		self.monthSessions = 0
+		self.monthCost = 0.0
+		self.monthRevenue = 0.0
+		self.monthProfit = 0.0
 	}
 }
 

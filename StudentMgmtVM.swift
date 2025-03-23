@@ -57,7 +57,7 @@ import Foundation
 								completionMessage = "Error: Could not load Student Billing Month: \(studentBillingFileName) when adding new Student"
 							} else {
 								// Add the new Student to Billed Student list for the month
-								let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+								let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 								if billedStudentFound == false {
 									studentBillingMonth.addNewBilledStudent(studentName: studentName)
 								}
@@ -167,7 +167,7 @@ import Foundation
 				completionResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
 				if completionResult {
 					// Add new the Student to Billed Student list for the month
-					let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: originalStudentName)
+					let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: originalStudentName)
 					if billedStudentFound {
 						studentBillingMonth.studentBillingRows[billedStudentNum].studentName = newStudentName
 						// Save the updated Billed Student list for the month
@@ -351,7 +351,7 @@ import Foundation
 										} else {
 											// Remove the Student from the Billed Student list for the month
 											let studentName = referenceData.students.studentsList[studentNum].studentName
-											let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByName(billedStudentName: studentName)
+											let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 											if billedStudentFound == false {
 												deleteResult = false
 												deleteMessage = "Critical Error: Could not find Student \(studentName) in the Billed Student List for month \(prevMonthName)"

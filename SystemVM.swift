@@ -234,7 +234,7 @@ import Foundation
 			
 			// Check if Student found in Billed Student List for current/previous month
 			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
-				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if !studentFoundFlag {
 					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)")
 				}
@@ -464,7 +464,7 @@ import Foundation
 				while studentNum < studentCount {
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					let refStudentRevenue = referenceData.students.studentsList[studentNum].studentTotalRevenue
-					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
 						print("Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences")
 					} else {
@@ -509,7 +509,7 @@ import Foundation
 				while studentNum < studentCount {
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					let refStudentCost = referenceData.students.studentsList[studentNum].studentTotalCost
-					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
 						print("Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences")
 					} else {
@@ -712,10 +712,10 @@ import Foundation
 						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthRevenue += price
 						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
 						// Find the Student in the compareBilledStudent instance for the month -- if not found, add the Student
-						var (billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+						var (billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 						if !billedStudentFound {
 							compareBilledStudentMonth.addNewBilledStudent(studentName: studentName)
-							(billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+							(billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 						}
 						// Increment the month cost, price and sessions for the Student based on this tutoring session data
 						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthCost += cost
@@ -756,12 +756,12 @@ import Foundation
 			var studentCount = referenceData.students.studentsList.count
 			while studentNum < studentCount {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
-				var (compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				var (compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if !compareStudentFound {
 					compareBilledStudentMonth.addNewBilledStudent(studentName: studentName)
-					(compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+					(compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if monthIndex > 1 {
-						let (prevMonthFound, prevMonthCompareStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByName(billedStudentName: studentName)
+						let (prevMonthFound, prevMonthCompareStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByStudentName(billedStudentName: studentName)
 						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalCost = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalCost
 						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalRevenue = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalRevenue
 						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalSessions = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalSessions
@@ -810,7 +810,7 @@ import Foundation
 			studentCount = yearStudentBilling[monthIndex].studentBillingRows.count
 			while billedStudentNum < studentCount {
 				let studentName = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].studentName
-				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if compareStudentFound {
 					let billedStudentMonthCost = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].monthCost
 					let compareMonthCost = compareBilledStudentMonth.studentBillingRows[compareStudentNum].monthCost
@@ -909,7 +909,7 @@ import Foundation
 					compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalRevenue = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthRevenue
 					compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalSessions = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthSessions
 				} else {
-					let (prevMonthBilledStudentFound, prevMonthStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByName(billedStudentName: studentName)
+					let (prevMonthBilledStudentFound, prevMonthStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByStudentName(billedStudentName: studentName)
 					if prevMonthBilledStudentFound {
 						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalCost = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthCost + compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthStudentNum].totalCost
 						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalRevenue = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthRevenue + compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthStudentNum].totalRevenue
@@ -922,9 +922,9 @@ import Foundation
 					}
 				}
 				
-				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByName(billedStudentName: studentName)
+				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if compareStudentFound {
-					let (monthBilledStudentFound, monthBilledStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByName(billedStudentName: studentName)
+					let (monthBilledStudentFound, monthBilledStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
 					if monthBilledStudentFound {
 						let billedStudentTotalCost = yearStudentBilling[monthIndex].studentBillingRows[monthBilledStudentNum].totalCost
 						let compareTotalCost = compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalCost
@@ -1063,7 +1063,7 @@ import Foundation
 			let refDataSessions = referenceData.students.studentsList[studentNum].studentSessions
 			print("Student: \(studentName) ReferenceData   \(refDataCost) \(refDataRevenue) \(refDataSessions) \(yearTutorBilling[monthIndex].monthName)")
 			
-			let (billedStudentFound, billingStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByName(billedStudentName: studentName)
+			let (billedStudentFound, billingStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
 			if billedStudentFound {
 				let billedCost = yearStudentBilling[monthIndex].studentBillingRows[billingStudentNum].totalCost
 				let billedRevenue = yearStudentBilling[monthIndex].studentBillingRows[billingStudentNum].totalRevenue
@@ -1072,7 +1072,7 @@ import Foundation
 			} else {
 				print("Student: \(studentName) not found Billed Student list \(yearTutorBilling[monthIndex].monthName) \(yearTutorBilling[monthIndex].monthName)")
 			}
-			let (compareStudentFound, compareStudentNum) = compareStudentBilling[monthIndex].findBilledStudentByName(billedStudentName: studentName)
+			let (compareStudentFound, compareStudentNum) = compareStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
 			if compareStudentFound {
 				let compareCost = compareStudentBilling[monthIndex].studentBillingRows[compareStudentNum].totalCost
 				let compareRevenue = compareStudentBilling[monthIndex].studentBillingRows[compareStudentNum].totalRevenue

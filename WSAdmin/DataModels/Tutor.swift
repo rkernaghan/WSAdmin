@@ -13,6 +13,7 @@ import Foundation
 	var tutorEmail: String
 	var tutorPhone: String
 	var tutorStatus: String
+	var tutorAvailability: String
 	var tutorStartDate: String
 	var tutorEndDate: String
 	var tutorMaxStudents: Int
@@ -33,6 +34,7 @@ import Foundation
 		self.tutorEmail = tutorEmail
 		self.tutorPhone = tutorPhone
 		self.tutorStatus = tutorStatus
+		self.tutorAvailability = " "
 		self.tutorStartDate = tutorStartDate
 		self.tutorEndDate = tutorEndDate
 		self.tutorMaxStudents = tutorMaxStudents
@@ -206,11 +208,11 @@ import Foundation
 		self.tutorStatus = "Unassigned"
 	}
 	
-	func resetBillingStats(sessionCost: Float, sessionRevenue: Float) {
-		self.tutorTotalSessions -= 1
-		self.tutorTotalCost -= sessionCost
-		self.tutorTotalRevenue -= sessionRevenue
-		self.tutorTotalProfit -= sessionRevenue - sessionCost
+	func resetBillingStats(sessions: Int, monthCost: Float, monthRevenue: Float) {
+		self.tutorTotalSessions -= sessions
+		self.tutorTotalCost -= monthCost
+		self.tutorTotalRevenue -= monthRevenue
+		self.tutorTotalProfit -= monthRevenue - monthCost
 	}
 	
 	func loadTutorDetails(tutorNum: Int, tutorName: String, tutorDataFileID: String) async -> Bool {

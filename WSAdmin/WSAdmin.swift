@@ -183,6 +183,7 @@ struct PgmConstants {
 	static let timesheetClientPhoneCol = 8
 	static let timesheetDataRange = "!A1:I102"
 	static let timesheetTutorNameCell = "RefData!A2:A2"
+	static let timesheetAvailabilityDataRange = "Availability!A1:C10"
 	
 	static let studentBillingCountRange = "!A2:A2"
 	static let studentBillingRange = "!A4:K"
