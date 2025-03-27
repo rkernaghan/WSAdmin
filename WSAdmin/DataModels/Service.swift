@@ -18,9 +18,11 @@ import Foundation
 	var serviceCost1: Float
 	var serviceCost2: Float
 	var serviceCost3: Float
+	var serviceTotalCost: Float
 	var servicePrice1: Float
 	var servicePrice2: Float
 	var servicePrice3: Float
+	var serviceTotalPrice: Float
 	let id = UUID()
 	
 	init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
@@ -34,9 +36,11 @@ import Foundation
 		self.serviceCost1 = serviceCost1
 		self.serviceCost2 = serviceCost2
 		self.serviceCost3 = serviceCost3
+		self.serviceTotalCost = serviceCost1 + serviceCost2 + serviceCost3
 		self.servicePrice1 = servicePrice1
 		self.servicePrice2 = servicePrice2
 		self.servicePrice3 = servicePrice3
+		self.serviceTotalPrice = servicePrice1 + servicePrice2 + servicePrice3
 	}
 
 	func markDeleted() {
@@ -57,10 +61,12 @@ import Foundation
 		self.serviceCost1 = cost1
 		self.serviceCost2 = cost2
 		self.serviceCost3 = cost3
+		self.serviceTotalCost = cost1 + cost2 + cost3
 		
 		self.servicePrice1 = price1
 		self.servicePrice2 = price2
 		self.servicePrice3 = price3
+		self.serviceTotalPrice = price1 + price2 + price3
 	}
     
 	func markUnDeleted() {

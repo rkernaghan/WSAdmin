@@ -49,7 +49,7 @@ import Foundation
 	
 	func addNewStudent(studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String, referenceData: ReferenceData) {
 		
-		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey)
+		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey + 1)
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())

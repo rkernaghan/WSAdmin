@@ -490,7 +490,7 @@ import Foundation
 					} else {
 						let billedTutorRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalRevenue
 						if billedTutorRevenue != refTutorRevenue {
-							print("Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) ")
+							print("Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) ")
 						}
 					}
 					tutorNum += 1
@@ -515,7 +515,7 @@ import Foundation
 					} else {
 						let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalCost
 						if billedStudentCost != refStudentCost {
-							print("Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) ")
+							print("Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) ")
 						}
 					}
 					studentNum += 1
@@ -535,7 +535,7 @@ import Foundation
 					} else {
 						let billedTutorCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalCost
 						if billedTutorCost != refTutorCost {
-							print("Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) ")
+							print("Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) ")
 						}
 					}
 					tutorNum += 1

@@ -13,7 +13,7 @@ import Foundation
 		var saveResult: Bool = true
 		var saveMessage: String = ""
 		
-		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey)
+		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey + 1)
 		
 		let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
 		referenceData.locations.loadLocation(newLocation: newLocation)

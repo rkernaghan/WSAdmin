@@ -70,19 +70,19 @@ struct ServiceListView: View {
 				}
 				
 				Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
-//					Group {
+					Group {
 						TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
 							.width(min: 120, ideal: 160, max: 240)
 						
 						TableColumn("Invoice Name", value: \Service.serviceInvoiceName)
 							.width(min: 120, ideal: 160, max: 240)
 						
-						TableColumn("Service\nType") {data in
+						TableColumn("Service\nType") { (data: Service) in
 							Text(data.serviceType.rawValue)
 						}
 						.width(min: 40, ideal: 50, max: 60)
 						
-						TableColumn("Billing\nType") {data in
+						TableColumn("Billing\nType") { (data: Service) in
 							Text(data.serviceBillingType.rawValue)
 						}
 						.width(min: 40, ideal: 50, max: 60)
@@ -90,50 +90,66 @@ struct ServiceListView: View {
 						TableColumn("Service\nStatus", value: \Service.serviceStatus)
 							.width(min: 50, ideal: 70, max: 80)
 						
-						TableColumn("Assigned\nTutors" ) { data in
+						TableColumn("Assigned\nTutors" ) { (data: Service) in
 							Text(String(data.serviceCount))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 60)
+					}
+					
+					Group {
 						
-						TableColumn("Cost 1") { data in
+						TableColumn("Cost 1") { (data: Service) in
 							Text(String(data.serviceCost1.formatted(.number.precision(.fractionLength(2)))))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 50)
-//					}
-					
-//					Group {
-						TableColumn("Cost 2") { data in
+
+						TableColumn("Cost 2") { (data: Service) in
 							Text(String(data.serviceCost2.formatted(.number.precision(.fractionLength(2)))))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 50)
 						
-						TableColumn("Cost 3") { data in
+						TableColumn("Cost 3") { (data: Service) in
 							Text(String(data.serviceCost3.formatted(.number.precision(.fractionLength(2)))))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 50)
 						
-						TableColumn("Price 1") { data in
+						TableColumn("Total\nCost") { (data: Service) in
+							Text(String(data.serviceTotalCost.formatted(.number.precision(.fractionLength(2))) ))
+								.frame(maxWidth: .infinity, alignment: .center)
+						}
+						.width(min: 40, ideal: 60, max: 60)
+					}
+					
+					Group {
+						
+						TableColumn("Price 1") { (data: Service) in
 							Text(String(data.servicePrice1.formatted(.number.precision(.fractionLength(2)))))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 50)
 					
-//						TableColumn("Price 2") { data in
-//							Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
-//								.frame(maxWidth: .infinity, alignment: .center)
-//						}
-//						.width(min: 40, ideal: 50, max: 50)
+						TableColumn("Price 2") { (data: Service) in
+							Text(String(data.servicePrice2.formatted(.number.precision(.fractionLength(2)))))
+								.frame(maxWidth: .infinity, alignment: .center)
+						}
+						.width(min: 40, ideal: 50, max: 50)
 						
-//						TableColumn("Price 3") { data in
-//						       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
-//								.frame(maxWidth: .infinity, alignment: .center)
-//						}
-//						.width(min: 40, ideal: 50, max: 50)
-//					}
+						TableColumn("Price 3") { (data: Service) in
+						       Text(String(data.servicePrice3.formatted(.number.precision(.fractionLength(2)))))
+								.frame(maxWidth: .infinity, alignment: .center)
+						}
+						.width(min: 40, ideal: 50, max: 50)
+						
+						TableColumn("Total\nPrice") { (data: Service) in
+							Text(String(data.serviceTotalPrice.formatted(.number.precision(.fractionLength(2))) ))
+								.frame(maxWidth: .infinity, alignment: .center)
+						}
+						.width(min: 40, ideal: 60, max: 60)
+					}
 					
 				}
 				.contextMenu(forSelectionType: Service.ID.self) { items in
