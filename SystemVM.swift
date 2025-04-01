@@ -470,7 +470,7 @@ import Foundation
 					} else {
 						let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalRevenue
 						if billedStudentRevenue != refStudentRevenue {
-							print("Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) ")
+							print("Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) ")
 						}
 					}
 					studentNum += 1
