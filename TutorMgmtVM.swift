@@ -99,14 +99,14 @@ import GoogleSignIn
             do {
                     (addResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 		    // Read the data from the Billed Tutor spreadsheet for the previous month
-		    addResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+		    addResult = await tutorBillingMonth.getTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 		    if addResult {
 			    // Add new the Tutor to Billed Tutor list for the month
 			    let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 			    if !billedTutorFound {
 				    tutorBillingMonth.addNewBilledTutor(tutorName: tutorName)
 				    // Save the updated Billed Tutor list for the month
-				    addResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
+				    addResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: false)
 			    } else {
 				    addResult = false
 			    }
@@ -265,14 +265,14 @@ import GoogleSignIn
 			(renameResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if renameResult {
 				// Read the data from the Billed Tutor spreadsheet for the previous month
-				renameResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+				renameResult = await tutorBillingMonth.getTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 				if renameResult {
 					// Add new the Tutor to Billed Tutor list for the month
 					let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: originalTutorName)
 					if billedTutorFound {
 						tutorBillingMonth.tutorBillingRows[billedTutorNum].tutorName = newTutorName
 						// Save the updated Billed Tutor list for the month
-						renameResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName)
+						renameResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: false)
 					} else {
 						print("WARNING: Billed Tutor \(originalTutorName) not found in Billed Tutor sheet for \(monthName) \(yearName)")
 						renameResult = false
@@ -301,7 +301,7 @@ import GoogleSignIn
 			(renameResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 			if renameResult {
 				// Read the data from the Billed Tutor spreadsheet for the previous month
-				renameResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID)
+				renameResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID, loadValidatedData: false)
 				if renameResult {
 					
 					var billedStudentNum = 0
@@ -313,7 +313,7 @@ import GoogleSignIn
 						}
 						billedStudentNum += 1
 					}
-					renameResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName)
+					renameResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName, saveValidatedStudentData: false)
 					
 				}
 			}
@@ -448,7 +448,7 @@ import GoogleSignIn
 									deleteMessage = "Critical Error: Could not get File ID for Tutor Billing File \(tutorBillingFileName)"
 								} else {
 									// Read in the Billed Tutors for the previous month
-									deleteResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID)
+									deleteResult = await tutorBillingMonth.getTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 									if !deleteResult {
 										deleteMessage = "Critical Error: Could not load Tutor Billing data for \(prevMonthName)"
 									} else {
@@ -461,7 +461,7 @@ import GoogleSignIn
 										} else {
 											// Save the updated Billed Tutor list for the month
 											tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
-											deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName)
+											deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName, saveValidatedTutorData: false)
 											if !deleteResult {
 												deleteMessage = "Critical Error: Could not save Tutor Billing data for \(prevMonthName)"
 											} else {

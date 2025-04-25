@@ -170,7 +170,7 @@ struct SideView: View {
 				}
 			}
 			
-			Button("Validate System") {
+			Button("Validate System Data Integrity") {
 				Task {
 					await systemVM.validateSystem(referenceData: referenceData)
 				}
@@ -182,7 +182,14 @@ struct SideView: View {
 				}
 			}
 			
-			Button("Validate Billing Data") {
+			NavigationLink {
+				ValidationMonthSelectionView(referenceData: referenceData)
+			} label: {
+				Label("Validate Month", systemImage: "person")
+			
+			}
+			
+			Button("Validate Complete Billing Data") {
 				Task {
 					await systemVM.ValidateBillingData(referenceData: referenceData)
 				}

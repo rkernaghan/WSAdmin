@@ -60,7 +60,7 @@ import Foundation
 						let tutorBillingMonth = TutorBillingMonth(monthName: monthName)
 						
 						// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
-						let readResult = await tutorBillingMonth.loadTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID)
+						let readResult = await tutorBillingMonth.getTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 						if !readResult {
 							print("Warning: Could not load Tutor Billing Data for \(monthName)")
 						} else {
@@ -72,11 +72,15 @@ import Foundation
 							var tutorNum = 0
 							let tutorCount = tutorBillingMonth.tutorBillingRows.count
 							while tutorNum < tutorCount {
-								if tutorBillingMonth.tutorBillingRows[tutorNum].totalSessions > 0 {
-									monthSessionTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthSessions
-									monthCostTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthCost
-									monthRevenueTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthRevenue
-									monthProfitTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthProfit
+								if tutorBillingMonth.tutorBillingRows[tutorNum].totalBilledSessions > 0 {
+//								if tutorBillingMonth.tutorBillingRows[tutorNum].monthBillingSessions > 0 {
+									monthSessionTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions
+									monthCostTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledCost
+									monthRevenueTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledRevenue
+									monthProfitTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledProfit
+								}
+								
+								if tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions > 0 {
 									billedMonthTutors += 1
 								}
 								

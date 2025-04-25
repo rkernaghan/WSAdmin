@@ -22,19 +22,19 @@ struct FinanceSummary: View {
 
 				TableColumn("Active\nTutors") {data in
 					Text(String(data.activeTutorsForMonth))
-						.frame(maxWidth: .infinity, alignment: .trailing)
+						.frame(maxWidth: .infinity, alignment: .center)
 					     }
 					.width(min: 30, ideal: 40, max: 50)
 
 				TableColumn("Billed\nTutors") { data in
 					Text(String(data.billedTutorsForMonth))
-						.frame(maxWidth: .infinity, alignment: .trailing)
+						.frame(maxWidth: .infinity, alignment: .center)
 				}
 					.width(min: 30, ideal: 40, max: 50)
 				
 				TableColumn("Month\nSessions") {data in
 					Text(String(data.monthSessions))
-						.frame(maxWidth: .infinity, alignment: .trailing)
+						.frame(maxWidth: .infinity, alignment: .center)
 				}
 					.width(min: 30, ideal: 40, max: 60)
 				
@@ -46,7 +46,7 @@ struct FinanceSummary: View {
 
 				TableColumn("Year\nSessions") {data in
 					Text(String(data.yearSessions))
-						.frame(maxWidth: .infinity, alignment: .trailing)
+						.frame(maxWidth: .infinity, alignment: .center)
 				}
 					.width(min: 30, ideal: 40, max: 60)
 				
@@ -58,7 +58,7 @@ struct FinanceSummary: View {
 
 				TableColumn("Total\nSessions") {data in
 					Text(String(data.totalSessions))
-						.frame(maxWidth: .infinity, alignment: .trailing)
+						.frame(maxWidth: .infinity, alignment: .center)
 				}
 					.width(min: 30, ideal: 40, max: 60)
 				

@@ -5,47 +5,64 @@
 //  Created by Russell Kernaghan on 2024-10-18.
 //
 
-// StudentBillingRow holds an instance of one student's billing attributes for month month.  Data is generated when a CSV file is generated and stored in the StudentBilling spreadsheet.
+// StudentBillingRow holds an instance of one student's billing data attributes for one month.  Data is generated when a CSV file is generated and stored in the StudentBilling spreadsheet.
 //
 class StudentBillingRow {
 	var studentName: String
-	var monthSessions: Int
-	var monthCost: Float
-	var monthRevenue: Float
-	var monthProfit: Float
-	var totalSessions: Int
-	var totalCost: Float
-	var totalRevenue: Float
-	var totalProfit: Float
+	var monthBilledSessions: Int
+	var monthBilledCost: Float
+	var monthBilledRevenue: Float
+	var monthBilledProfit: Float
+	var totalBilledSessions: Int
+	var totalBilledCost: Float
+	var totalBilledRevenue: Float
+	var totalBilledProfit: Float
 	var tutorName: String
 	var studentStatus: String
+	var monthValidatedSessions: Int
+	var monthValidatedCost: Float
+	var monthValidatedRevenue: Float
+	var monthValidatedProfit: Float
+	var totalValidatedSessions: Int
+	var totalValidatedCost: Float
+	var totalValidatedRevenue: Float
+	var totalValidatedProfit: Float
 	
-	init(studentName: String, monthSessions: Int, monthCost: Float, monthRevenue: Float, monthProfit: Float, totalSessions: Int, totalCost: Float, totalRevenue: Float, totalProfit: Float, tutorName: String, studentStatus: String) {
+	init(studentName: String, monthBillingSessions: Int, monthBillingCost: Float, monthBillingRevenue: Float, monthBillingProfit: Float, totalBillingSessions: Int, totalBillingCost: Float, totalBillingRevenue: Float, totalBillingProfit: Float, tutorName: String, studentStatus: String, monthValidatedSessions: Int, monthValidatedCost: Float, monthValidatedRevenue: Float, monthValidatedProfit: Float, totalValidatedSessions: Int, totalValidatedCost: Float, totalValidatedRevenue: Float, totalValidatedProfit: Float) {
 		self.studentName = studentName
-		self.monthSessions = monthSessions
-		self.monthCost = monthCost
-		self.monthRevenue = monthRevenue
-		self.monthProfit = monthProfit
-		self.totalSessions = totalSessions
-		self.totalCost = totalCost
-		self.totalRevenue = totalRevenue
-		self.totalProfit = totalProfit
+		self.monthBilledSessions = monthBillingSessions
+		self.monthBilledCost = monthBillingCost
+		self.monthBilledRevenue = monthBillingRevenue
+		self.monthBilledProfit = monthBillingProfit
+		self.totalBilledSessions = totalBillingSessions
+		self.totalBilledCost = totalBillingCost
+		self.totalBilledRevenue = totalBillingRevenue
+		self.totalBilledProfit = totalBillingProfit
 		self.tutorName = tutorName
 		self.studentStatus = studentStatus
+		self.monthValidatedSessions = monthValidatedSessions
+		self.monthValidatedCost = monthValidatedCost
+		self.monthValidatedRevenue = monthValidatedRevenue
+		self.monthValidatedProfit = monthValidatedProfit
+		self.totalValidatedSessions = totalValidatedSessions
+		self.totalValidatedCost = totalValidatedCost
+		self.totalValidatedRevenue = totalValidatedRevenue
+		self.totalValidatedProfit = totalValidatedProfit
+		
 	}
 	
 	// Resets a Student's Billed Tutor session, cost, revenue and profit numbers for a month when a Student is billed again after being previously billed that month
 	func resetBilledStudentMonth(sessions: Int, cost: Float, revenue: Float, profit: Float) {
 		
-		self.totalSessions -= sessions
-		self.totalCost -= cost
-		self.totalRevenue -= revenue
-		self.totalProfit -= profit
+		self.totalBilledSessions -= sessions
+		self.totalBilledCost -= cost
+		self.totalBilledRevenue -= revenue
+		self.totalBilledProfit -= profit
 		
-		self.monthSessions = 0
-		self.monthCost = 0.0
-		self.monthRevenue = 0.0
-		self.monthProfit = 0.0
+		self.monthBilledSessions = 0
+		self.monthBilledCost = 0.0
+		self.monthBilledRevenue = 0.0
+		self.monthBilledProfit = 0.0
 	}
 }
 

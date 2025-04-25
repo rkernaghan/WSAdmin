@@ -49,7 +49,7 @@ import GoogleSignIn
 			if !resultFlag {
 				print("Error: Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
 			} else {
-				let loadBilledTutorFlag = await tutorBillingMonth.loadTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID)
+				let loadBilledTutorFlag = await tutorBillingMonth.getTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 				if loadBilledTutorFlag {				// If no Tutors billed this month, the flag will be false, which is not an error
 					(alreadyBilledFlag, alreadyBilledTutors) = tutorBillingMonth.checkAlreadyBilled(tutorList: tutorList)
 					
@@ -119,7 +119,7 @@ import GoogleSignIn
 			// Read in the current month Student Billing month, copy the previous month's Student and Tutor billing months to current month's files
 			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 			if resultFlag {
-				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID)
+				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID, loadValidatedData: false)
 				if resultFlag {
 					resultFlag = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 					if resultFlag {
@@ -153,23 +153,23 @@ import GoogleSignIn
 													let revenue = invoice.invoiceLines[invoiceLineNum].amount
 													let profit = revenue - cost
 													
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions += 1
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalSessions += 1
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost += cost
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalCost += cost
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue += revenue
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalRevenue += revenue
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthProfit += profit
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalProfit += profit
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions += 1
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledSessions += 1
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost += cost
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledCost += cost
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue += revenue
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue += revenue
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledProfit += profit
+													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledProfit += profit
 													
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions += 1
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalSessions += 1
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthCost += cost
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalCost += cost
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue += revenue
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalRevenue += revenue
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthProfit += profit
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalProfit += profit
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions += 1
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledSessions += 1
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost += cost
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledCost += cost
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue += revenue
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledRevenue += revenue
+													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledProfit += profit
+													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledProfit += profit
 													studentBillingMonth.studentBillingRows[billedStudentNum].tutorName = tutorName
 													
 													referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
@@ -194,13 +194,13 @@ import GoogleSignIn
 							
 							// After looping through each Invoice line and updating billing stats, save the Reference Data, Student Billing and Tutor Billing spreadsheets
 							if resultFlag {
-								resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth)
+								resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth, saveValidatedStudentData: false)
 								if resultFlag {
 									do {
 										(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
 										if resultFlag {
 											
-											resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth)
+											resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth, saveValidatedTutorData: false)
 											if resultFlag {
 												let saveTutorResult = await referenceData.tutors.saveTutorData()
 												let saveStudentResult = await referenceData.students.saveStudentData()
@@ -346,9 +346,9 @@ import GoogleSignIn
 					let billedStudentNum = alreadyBilledStudentNumbers[alreadyBilledStudentNum]
 					let studentName = studentBillingMonth.studentBillingRows[billedStudentNum].studentName
 			
-					let sessions = studentBillingMonth.studentBillingRows[billedStudentNum].monthSessions
-					let cost = studentBillingMonth.studentBillingRows[billedStudentNum].monthCost
-					let revenue = studentBillingMonth.studentBillingRows[billedStudentNum].monthRevenue
+					let sessions = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions
+					let cost = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost
+					let revenue = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue
 					
 					// Reset the Student Billing month data for the Student
 					studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(sessions: sessions, cost: cost, revenue: revenue, profit: revenue - cost)
@@ -381,9 +381,9 @@ import GoogleSignIn
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 				if tutorFound {
 					// Reset the Billed Tutor month data for the Tutor and the ReferenceData Tutor data
-					let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthSessions
-					let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthCost
-					let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthRevenue
+					let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
+					let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost
+					let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
 					tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth()
 					referenceData.tutors.tutorsList[tutorNum].resetBillingStats(sessions: monthTutorSessions, monthCost: monthTutorCost, monthRevenue: monthTutorRevenue)
 					

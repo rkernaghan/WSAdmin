@@ -20,6 +20,8 @@
 		023065E72D08F3A6004B27F6 /* FinanceSummaryVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023065E62D08F38C004B27F6 /* FinanceSummaryVM.swift */; };
 		023065E92D08F3B9004B27F6 /* FinanceSummaryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023065E82D08F3AC004B27F6 /* FinanceSummaryRow.swift */; };
 		023065EB2D0A6FEE004B27F6 /* FinanceSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */; };
+		024421392DB996B40057E961 /* ValidationMonthSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */; };
+		0244213B2DB998D20057E961 /* ValidationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0244213A2DB998C80057E961 /* ValidationProgressView.swift */; };
 		025232A92CEAB44E0071A995 /* TutorServiceListSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */; };
 		02863C842CB48508002FE12B /* ServiceCostByTutorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */; };
 		02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C852CB4877A002FE12B /* TutorServiceCost.swift */; };
@@ -105,6 +107,8 @@
 		023065E62D08F38C004B27F6 /* FinanceSummaryVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceSummaryVM.swift; sourceTree = "<group>"; };
 		023065E82D08F3AC004B27F6 /* FinanceSummaryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceSummaryRow.swift; sourceTree = "<group>"; };
 		023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceSummary.swift; sourceTree = "<group>"; };
+		024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationMonthSelectionView.swift; sourceTree = "<group>"; };
+		0244213A2DB998C80057E961 /* ValidationProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationProgressView.swift; sourceTree = "<group>"; };
 		025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceListSelectionView.swift; sourceTree = "<group>"; };
 		02620E042D2846F3001E09F3 /* WSAdminRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WSAdminRelease.entitlements; sourceTree = "<group>"; };
 		02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceCostByTutorView.swift; sourceTree = "<group>"; };
@@ -249,6 +253,8 @@
 				02A39F1C2C6B8B5C00C1FB4B /* ContentView.swift */,
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
 				02E76DF92CBDBCD6002AC504 /* BillingSelectionView.swift */,
+				024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */,
+				0244213A2DB998C80057E961 /* ValidationProgressView.swift */,
 				023065E42CFB7134004B27F6 /* BillingProgressView.swift */,
 				023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */,
 				02E76DFD2CBDDAA2002AC504 /* InvoiceView.swift */,
@@ -486,6 +492,7 @@
 				020BF32F2CD8F1F0000890AF /* TutorServiceSelectionView.swift in Sources */,
 				02AC9BC22C88A161007391A7 /* StudentsList.swift in Sources */,
 				02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */,
+				0244213B2DB998D20057E961 /* ValidationProgressView.swift in Sources */,
 				02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */,
 				02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
@@ -493,6 +500,7 @@
 				02CA8C1C2CAB3CD700CCD03C /* TutorServiceView.swift in Sources */,
 				02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */,
 				02E76E022CBDFA39002AC504 /* Invoice.swift in Sources */,
+				024421392DB996B40057E961 /* ValidationMonthSelectionView.swift in Sources */,
 				029E4E0B2CCACEC90080AD4E /* BillItem.swift in Sources */,
 				02E7B1BB2C90769300EE73A3 /* DataCounts.swift in Sources */,
 				02E76E062CBF0D68002AC504 /* Timesheet.swift in Sources */,
