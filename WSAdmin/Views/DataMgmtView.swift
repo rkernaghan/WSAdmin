@@ -189,11 +189,6 @@ struct SideView: View {
 			
 			}
 			
-			Button("Validate Complete Billing Data") {
-				Task {
-					await systemVM.ValidateBillingData(referenceData: referenceData)
-				}
-			}
 			
 			Button("Create Next Years Files") {
 				Task {

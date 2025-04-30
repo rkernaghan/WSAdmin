@@ -171,12 +171,13 @@ class StudentBillingMonth {
 		var sheetData: SheetData?
 		var studentCountData: SheetData?
 		
-		// Get the count of Students in the Billed Student spreadsheet
+		
 		do {
+			// Get the count of Students in the Billed Student spreadsheet
 			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange)
 			if let studentCountData = studentCountData {
 				studentBillingCount = Int(studentCountData.values[0][0]) ?? 0
-				// Read in the Billed Students from the Billed Student spreadsheet
+				// Read in the Billed Students from the Billed Student spreadsheet based on count
 				if studentBillingCount > 0 {
 					do {
 						let cellRange = monthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1)

@@ -594,7 +594,9 @@ import Foundation
 	// Step 9 - assess the total Student Billing data against the calculated value for the current month plus the validated total for the previous month
 	// Step 10 - assess the total Tutor Billing data against the calculated value for the current month plus the validated total for the previous month
 	// Step 11 - update the validated month and total student data in the Student Billing data spreadsheet
-	// Step 12 - update tge validated month and total tutor data in the Tutor Billing data spreadsheet
+	// Step 12 - update the validated month and total tutor data in the Tutor Billing data spreadsheet
+	// Step 13 - compare the Validated Tutor billing stat data against the Reference data Tutor billing stat date
+	// Step 14 - compare the validated Student billing stat data against the Reference data STudent billing stat data
 	//
 	func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: BillingMessages) async {
 		
@@ -610,8 +612,8 @@ import Foundation
 		let billArray = BillArray(monthName: monthName )
 		
 		var tutorNum = 0
-		var tutorCount = referenceData.tutors.tutorsList.count
-		while tutorNum < tutorCount {
+		let refTutorCount = referenceData.tutors.tutorsList.count
+		while tutorNum < refTutorCount {
 			
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
@@ -728,7 +730,7 @@ import Foundation
 		
 		// Calculate the Tutor total Sessions, Cost, Revenue and Profit to this month (previous month Validated Total plus current month Validated Totals
 		tutorNum = 0
-		while tutorNum < tutorCount {
+		while tutorNum < refTutorCount {
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			let (currentMonthTutorFound,currentMonthTutorNum) = currentBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 			if currentMonthTutorFound {
@@ -745,9 +747,9 @@ import Foundation
 		
 		// Calculate the Student total Sessions, Cost, Revenue and Profit to this month (previous month Validated Total plus current month Validated Totals
 		var studentNum = 0
-		let studentCount = currentBilledStudentMonth.studentBillingRows.count
+		let refStudentCount = referenceData.students.studentsList.count
 		
-		while studentNum < studentCount {
+		while studentNum < refStudentCount {
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			let (currentMonthStudentFound,currentMonthStudentNum) = currentBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 			if currentMonthStudentFound {
@@ -765,8 +767,8 @@ import Foundation
 		
 		// Go through each Tutor and compared their monthly Billed Tutor cost, price and session data to what is calculated in the compareBilledTutor data
 		var billedTutorNum = 0
-		tutorCount = currentBilledTutorMonth.tutorBillingRows.count
-		while billedTutorNum < tutorCount {
+		let billedTutorCount = currentBilledTutorMonth.tutorBillingRows.count
+		while billedTutorNum < billedTutorCount {
 			let tutorName = currentBilledTutorMonth.tutorBillingRows[billedTutorNum].tutorName
 			
 			let billedTutorMonthCost = currentBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledCost
@@ -777,17 +779,17 @@ import Foundation
 			let compareMonthSessions = currentBilledTutorMonth.tutorBillingRows[billedTutorNum].monthValidatedSessions
 			
 			if compareMonthCost.rounded() == billedTutorMonthCost.rounded() {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value: \(billedTutorMonthCost) vs \(compareMonthCost)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value: \(billedTutorMonthCost) vs \(compareMonthCost)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs do not match computed value: \(billedTutorMonthCost) vs \(compareMonthCost)\n"))
 			}
 			if compareMonthRevenue.rounded() == billedTutorMonthRevenue.rounded() {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue does not match computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)\n"))
 			}
 			if compareMonthSessions == billedTutorMonthSessions {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions do not match computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)\n"))
 			}
@@ -797,8 +799,8 @@ import Foundation
 		
 		// Go through each Student and compared their monthly Billed Student cost, price and session data to what is calculated in the compareBilledStudent data
 		var billedStudentNum = 0
-		//			studentCount = currentBilledStudentMonth.studentBillingRows.count
-		while billedStudentNum < studentCount {
+		let billedStudentCount = currentBilledStudentMonth.studentBillingRows.count
+		while billedStudentNum < billedStudentCount {
 			let studentName = currentBilledStudentMonth.studentBillingRows[billedStudentNum].studentName
 			//				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 			//				if compareStudentFound {
@@ -810,17 +812,17 @@ import Foundation
 			let compareMonthSessions = currentBilledStudentMonth.studentBillingRows[billedStudentNum].monthValidatedSessions
 			//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
 			if compareMonthCost.rounded() == billedStudentMonthCost.rounded() {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) vs \(compareMonthCost)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) vs \(compareMonthCost)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs do not match computed value: \(billedStudentMonthCost) vs \(compareMonthCost)\n"))
 			}
 			if compareMonthRevenue.rounded() == billedStudentMonthRevenue.rounded() {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue matches computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue matches computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue does not match computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)\n"))
 			}
 			if compareMonthSessions  == billedStudentMonthSessions {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions matches computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)"))
+//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions matches computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)"))
 			} else {
 				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions do not match computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)\n"))
 			}
@@ -830,16 +832,98 @@ import Foundation
 		
 		// Save the validated Tutor data for the month to the Billed Tutor spreadsheet for the month
 		let saveTutorValidationResult = await saveBilledTutorMonth(tutorBillingMonth: currentBilledTutorMonth, monthName: monthName, yearName: yearName, saveValidatedData: true)
+		tutorNum = 0
+		
 		
 		// Save the validated Student data for the month to the Billed Student spreadsheet for the month
 		let saveStudentValidationResult =  await saveBilledStudentMonth(studentBillingMonth: currentBilledStudentMonth, monthName: monthName, yearName: yearName, saveValidatedData: true)
+		
+		// Step 13 - compare the Validated Tutor billing stat data against the Reference data Tutor billing stat date
+		
+		tutorNum = 0
+		while tutorNum < referenceData.tutors.tutorsList.count {
+			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+			let refSessionCount = referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions
+			let refTotalCost = round(referenceData.tutors.tutorsList[tutorNum].tutorTotalCost)
+			let refTotalRevenue = round(referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue)
+			let refTotalProfit = round(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit)
+			
+			let (currentMonthTutorFound, currentMonthTutorNum) = currentBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
+			if currentMonthTutorFound {
+				
+				let validatedSessionCount = currentBilledTutorMonth.tutorBillingRows[currentMonthTutorNum].totalValidatedSessions
+				let validatedTotalCost = round(currentBilledTutorMonth.tutorBillingRows[currentMonthTutorNum].totalValidatedCost)
+				let validatedTotalRevenue = round(currentBilledTutorMonth.tutorBillingRows[currentMonthTutorNum].totalValidatedRevenue)
+				let validatedTotalProfit = round(currentBilledTutorMonth.tutorBillingRows[currentMonthTutorNum].totalValidatedProfit)
+				
+				if refSessionCount != validatedSessionCount {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
+				}
+				
+				if refTotalCost != validatedTotalCost {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
+				}
+				
+				if refTotalRevenue != validatedTotalRevenue {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
+				}
+				
+				if refTotalProfit != validatedTotalProfit {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
+					
+				}
+			} else {
+				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) not found in Current Tutor Month comparing against Reference Stats"))
+			}
+			
+			
+			tutorNum += 1
+		}
+		
+		// Step 14 - compare the validated Student billing stat data against the Reference data STudent billing stat data
+		studentNum = 0
+		while studentNum < referenceData.students.studentsList.count {
+			let studentName = referenceData.students.studentsList[studentNum].studentName
+			let refSessionCount = referenceData.students.studentsList[studentNum].studentSessions
+			let refTotalCost = round(referenceData.students.studentsList[studentNum].studentTotalCost)
+			let refTotalRevenue = round(referenceData.students.studentsList[studentNum].studentTotalRevenue)
+			let refTotalProfit = round(referenceData.students.studentsList[studentNum].studentTotalProfit)
+			
+			let (currentMonthStudentFound,currentMonthStudentNum) = currentBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
+			if currentMonthStudentFound {
+				let validatedSessionCount = currentBilledStudentMonth.studentBillingRows[currentMonthStudentNum].totalValidatedSessions
+				let validatedTotalCost = round(currentBilledStudentMonth.studentBillingRows[currentMonthStudentNum].totalValidatedCost)
+				let validatedTotalRevenue = round(currentBilledStudentMonth.studentBillingRows[currentMonthStudentNum].totalValidatedRevenue)
+				let validatedTotalProfit = round(currentBilledStudentMonth.studentBillingRows[currentMonthStudentNum].totalValidatedProfit)
+				
+				if refSessionCount != validatedSessionCount {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
+				}
+				
+				if refTotalCost != validatedTotalCost {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName)  Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
+				}
+				
+				if refTotalRevenue != validatedTotalRevenue {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
+				}
+				
+				if refTotalProfit != validatedTotalProfit {
+					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
+				}
+			} else {
+				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) not found in Current Student Month comparing against Reference Stats"))
+			}
+				
+			studentNum += 1
+		}
 		
 		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: " Month Validation Complete for \(monthName)"))
 		
 		
 	}
 	
-	//
+	// ** This Function is Obsolete **
 	// This function validates the Tutor and Student Billing data for the year by reading through all the Timesheets and checking the timesheet data against the Tutor and Student Billing data.
 	//
 	func ValidateBillingData(referenceData: ReferenceData) async {
