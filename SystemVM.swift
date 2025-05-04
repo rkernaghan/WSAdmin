@@ -17,13 +17,13 @@ import Foundation
 	//	- that there is one Tutor Details sheet for each Tutor
 	//	- that the count of Tutor Details sheets equals the number of non-deleted Tutors
 	
-	func validateSystem(referenceData: ReferenceData) async {
+	func validateSystem(referenceData: ReferenceData, validationMessages: WindowMessages) async {
 		
 		var billedTutorMonth = TutorBillingMonth(monthName: "")
 		var billedStudentMonth = StudentBillingMonth(monthName: "")
 		var billedMonthName: String = ""
 		
-		print("\n** Validating System - Stand By for Adventure! **")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\n** Validating System - Stand By for Adventure! **"))
 		
 		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
 		
@@ -70,7 +70,7 @@ import Foundation
 				tutorNum += 1
 			}
 			if assignedCount > 1 {
-				print("Validation Warning: \(studentName) assigned to Tutors \(assignedTutors)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Warning: \(studentName) assigned to Tutors \(assignedTutors)"))
 			}
 			studentNum += 1
 		}
@@ -89,14 +89,14 @@ import Foundation
 			let studentKey = referenceData.students.studentsList[studentNum].studentKey
 			let studentKeyCount = referenceData.students.studentsList.filter { $0.studentKey == studentKey }.count
 			if studentKeyCount > 1 {
-				print( "Validation Error: Duplicate Student Key \(studentKey) for \(referenceData.students.studentsList[studentNum].studentName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Student Key \(studentKey) for \(referenceData.students.studentsList[studentNum].studentName)"))
 			}
 			
 			// Check for duplicate Student names
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			let studentNameCount = referenceData.students.studentsList.filter { $0.studentName == studentName }.count
 			if studentNameCount > 1 {
-				print( "Validation Error: Duplicate Student Name \(studentName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Student Name \(studentName)"))
 			}
 			
 			studentNum += 1
@@ -110,14 +110,14 @@ import Foundation
 			let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
 			let serviceKeyCount = referenceData.services.servicesList.filter { $0.serviceKey == serviceKey }.count
 			if serviceKeyCount > 1 {
-				print( "Validation Error: Duplicate Service Key \(serviceKey) for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Service Key \(serviceKey) for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"))
 			}
 			
 			// Check for duplicate Service names
 			let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 			let serviceNameCount = referenceData.services.servicesList.filter { $0.serviceTimesheetName == serviceName }.count
 			if serviceNameCount > 1 {
-				print( "Validation Error: Duplicate Service Name \(serviceName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Service Name \(serviceName)"))
 			}
 			serviceNum += 1
 		}
@@ -130,13 +130,13 @@ import Foundation
 			let locationKey = referenceData.locations.locationsList[locationNum].locationKey
 			let locationKeyCount = referenceData.locations.locationsList.filter { $0.locationKey == locationKey }.count
 			if locationKeyCount > 1 {
-				print( "Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
 			}
 			// Check for duplicate Location names
 			let locationName = referenceData.locations.locationsList[locationNum].locationName
 			let locationNameCount = referenceData.locations.locationsList.filter { $0.locationName == locationName }.count
 			if locationNameCount > 1 {
-				print( "Validation Error: Duplicate Location Name \(locationName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Location Name \(locationName)"))
 			}
 			
 			locationNum += 1
@@ -152,30 +152,30 @@ import Foundation
 			let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
 			let tutorKeyCount = referenceData.tutors.tutorsList.filter { $0.tutorKey == tutorKey }.count
 			if tutorKeyCount > 1 {
-				print( "Validation Error: Duplicate Tutor Key \(tutorKey)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Tutor Key \(tutorKey)"))
 			}
 			
 			// Check for duplicate Tutor Names in Reference Data
 			let tutorNameCount = referenceData.tutors.tutorsList.filter { $0.tutorName == tutorName }.count
 			if tutorNameCount > 1 {
-				print( "Validation Error: Duplicate Tutor Name \(tutorName)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Duplicate Tutor Name \(tutorName)"))
 			}
 			
 			// Check that the Student Keys in the Reference Dasta matches the Student Keys in the Tutor Details file for each Tutor
 			var tutorStudentNum = 0
 			let tutorStudentCount = referenceData.tutors.tutorsList[tutorNum].tutorStudents.count
 			while tutorStudentNum < tutorStudentCount {
-				var tutorStudentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
-				var tutorStudentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
+				let tutorStudentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+				let tutorStudentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
 				let (studentFound, studentNum) = referenceData.students.findStudentByKey(studentKey: tutorStudentKey)
 				if studentFound {
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					
 					if studentName != tutorStudentName {
-						print ("Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)"))
 					}
 				} else {
-					print( "Validation Error: \(tutorStudentKey) not found in Reference Data")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: \(tutorStudentKey) not found in Reference Data"))
 				}
 				tutorStudentNum += 1
 			}
@@ -184,18 +184,18 @@ import Foundation
 			var tutorServiceNum = 0
 			let tutorServiceCount = referenceData.tutors.tutorsList[tutorNum].tutorServices.count
 			while tutorServiceNum < tutorServiceCount {
-				var tutorServiceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
-				var tutorServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName
+				let tutorServiceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
+				let tutorServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName
 				
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: tutorServiceKey)
 				if serviceFound {
 					let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 					
 					if serviceName != tutorServiceName {
-						print ("Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)"))
 					}
 				} else {
-					print( "Validation Error: \(tutorServiceKey) not found in Reference Data")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: \(tutorServiceKey) not found in Reference Data"))
 				}
 				tutorServiceNum += 1
 			}
@@ -225,7 +225,7 @@ import Foundation
 				case "Deleted":
 					deletedStudents += 1
 				default:
-					print("Validation Error: Invalid Status for Student \(studentName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Invalid Status for Student \(studentName)"))
 			}
 			totalStudents += 1
 			studentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
@@ -236,24 +236,24 @@ import Foundation
 			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
 				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if !studentFoundFlag {
-					print("Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)"))
 				}
 				
 				// Validate the Location Name for the Student
 				let (findResult, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
 				if !findResult {
-					print("Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List"))
 				}
 			}
 			studentNum += 1
 		}
-		print("          Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)"))
 		
 		if totalStudents != referenceData.dataCounts.totalStudents {
-			print("Validation Error: Reference Data Count for Total Students \(referenceData.dataCounts.totalStudents) does not match actual count in Reference Data Students list of \(totalStudents)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Total Students \(referenceData.dataCounts.totalStudents) does not match actual count in Reference Data Students list of \(totalStudents)"))
 		}
 		if activeStudents != referenceData.dataCounts.activeStudents {
-			print("Validation Error: Reference Data Count for Active Students \(referenceData.dataCounts.activeStudents) does not match actual count in Reference Data Students list of \(activeStudents)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Active Students \(referenceData.dataCounts.activeStudents) does not match actual count in Reference Data Students list of \(activeStudents)"))
 		}
 		//		if deletedStudents != referenceData.dataCounts.totalStudents - referenceData.dataCounts.activeStudents  {
 		//			print("Validation Error: Reference Data Count for Deleted Students \(referenceData.dataCounts.deletedStudents) does not match actual count in Reference Data Students list of \(deletedStudents)")
@@ -273,18 +273,18 @@ import Foundation
 				case "Deleted", "Suspended":
 					deletedServices += 1
 				default:
-					print("Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"))
 			}
 			totalServices += 1
 			
 			serviceNum += 1
 		}
-		print("          Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"          Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)"))
 		if totalServices != referenceData.dataCounts.totalServices {
-			print("Validation Error: Reference Data Count for Total Services \(referenceData.dataCounts.totalServices) does not match actual count in Reference Data Services list of \(totalServices)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Total Services \(referenceData.dataCounts.totalServices) does not match actual count in Reference Data Services list of \(totalServices)"))
 		}
 		if activeServices != referenceData.dataCounts.activeServices {
-			print("Validation Error: Reference Data Count for Active Services \(referenceData.dataCounts.activeServices) does not match actual count in Reference Data Services list of \(activeServices)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Active Services \(referenceData.dataCounts.activeServices) does not match actual count in Reference Data Services list of \(activeServices)"))
 		}
 		//		if deletedServices != referenceData.dataCounts.totalServices - referenceData.dataCounts.activeServices  {
 		//			print("Validation Error: Reference Data Count for Deleted Services \(referenceData.dataCounts.deletedServices) does not match actual count in Reference Data Services list of \(deletedServices)")
@@ -304,7 +304,7 @@ import Foundation
 				case "Deleted":
 					deletedLocations += 1
 				default:
-					print("Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
 			}
 			locationStudents += referenceData.locations.locationsList[locationNum].locationStudentCount
 			totalLocations += 1
@@ -312,17 +312,17 @@ import Foundation
 			
 			locationNum += 1
 		}
-		print("          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)"))
 		
 		
 		if locationStudents != activeStudents {
-			print("Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)"))
 		}
 		if totalLocations != referenceData.dataCounts.totalLocations {
-			print("Validation Error: Reference Data Count for Total Locations \(referenceData.dataCounts.totalLocations) does not match actual count in Reference Data Locations list of \(totalLocations)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Total Locations \(referenceData.dataCounts.totalLocations) does not match actual count in Reference Data Locations list of \(totalLocations)"))
 		}
 		if activeLocations != referenceData.dataCounts.activeLocations {
-			print("Validation Error: Reference Data Count for Active Locations \(referenceData.dataCounts.activeLocations) does not match actual count in Reference Data Locations list of \(activeLocations)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Reference Data Count for Active Locations \(referenceData.dataCounts.activeLocations) does not match actual count in Reference Data Locations list of \(activeLocations)"))
 		}
 		//		if deletedLocations != referenceData.dataCounts.totalLocations - referenceData.dataCounts.activeLocations  {
 		//			print("Validation Error: Reference Data Count for Deleted Locations \(referenceData.dataCounts.deletedLocations) does not match actual count in Reference Data Locations list of \(deletedLocations)")
@@ -345,15 +345,15 @@ import Foundation
 				case "Unassigned", "Suspended":
 					activeTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
-						print("Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned"))
 					}
 				case "Deleted":
 					deletedTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
-						print("Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned"))
 					}
 				default:
-					print("Validation Error: Invalid Tutor Status for Tutor \(tutorName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Invalid Tutor Status for Tutor \(tutorName)"))
 			}
 			
 			
@@ -362,26 +362,26 @@ import Foundation
 				do {
 					sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
 				} catch {
-					print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"))
 				}
 				if sheetNum == nil {
-					print("Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"))
 				}
 				
 				// Check if Tutor found in Billed Tutor List for previous month
 				let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 				if !tutorFoundFlag {
-					print("Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)"))
 				}
 				
 				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
 				let (studentCount, serviceCount, timesheetFileID) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
 				if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
-					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)"))
 				}
 				
 				if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
-					print("Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)")
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)"))
 				}
 				
 			}
@@ -394,22 +394,22 @@ import Foundation
 			tutorNum += 1
 		}
 		
-		print("          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)"))
 		
 		do {
 			let tutorDetailsSheetCount = try await getSheetCount(spreadsheetId: tutorDetailsFileID)
 			if (tutorDetailsSheetCount - 1) != activeTutors {	// Subtract 1 from sheet count for shared RefData sheet
-				print("Validation Error - count of active tutors: \(activeTutors) does not equal number of Tutor Details sheets: \(tutorDetailsSheetCount)")
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error - count of active tutors: \(activeTutors) does not equal number of Tutor Details sheets: \(tutorDetailsSheetCount)"))
 			}
 		} catch {
-			print("ERROR: could get get count of TutorDetails sheets")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: could get get count of TutorDetails sheets"))
 		}
 		
 		if totalTutors != referenceData.dataCounts.totalTutors {
-			print("Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)"))
 		}
 		if activeTutors != referenceData.dataCounts.activeTutors {
-			print("Validation Error: Reference Data Count for Active Tutors \(referenceData.dataCounts.activeTutors) does not match actual count in Reference Data Tutors list of \(activeTutors)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Reference Data Count for Active Tutors \(referenceData.dataCounts.activeTutors) does not match actual count in Reference Data Tutors list of \(activeTutors)"))
 		}
 		//		if deletedTutors != referenceData.dataCounts.totalTutors - referenceData.dataCounts.activeTutors  {
 		//			print("Validation Error: Reference Data Count for Deleted Tutors \(referenceData.dataCounts.deletedTutors) does not match actual count in Reference Data Tutors list of \(deletedTutors)")
@@ -455,7 +455,7 @@ import Foundation
 		
 		// Validate that the sum of the Tutors total revenue equals Student total revenue equals Location total revenue equals Billed Student revenue count equals Billed Tutor revenue Count
 		if tutorRevenue != studentRevenue || studentRevenue != locationRevenue || tutorRevenue != locationRevenue || locationRevenue != billedTutorTotalRevenue || billedTutorTotalRevenue != billedStudentTotalRevenue {
-			print("Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue), Location revenue \(locationRevenue), Billed Tutor revenue \(billedTutorTotalRevenue) and Billed Student revenue \(billedStudentTotalRevenue) do not match")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue), Location revenue \(locationRevenue), Billed Tutor revenue \(billedTutorTotalRevenue) and Billed Student revenue \(billedStudentTotalRevenue) do not match"))
 			
 			// If total Student revenue in RefData does not equal total Student revenue in Billed Student list, find the difference
 			if studentRevenue != billedStudentTotalRevenue {
@@ -466,11 +466,11 @@ import Foundation
 					let refStudentRevenue = referenceData.students.studentsList[studentNum].studentTotalRevenue
 					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
-						print("Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences"))
 					} else {
 						let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue
 						if billedStudentRevenue != refStudentRevenue {
-							print("Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) ")
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) "))
 						}
 					}
 					studentNum += 1
@@ -486,11 +486,11 @@ import Foundation
 					let refTutorRevenue = referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
 					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
-						print("Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences"))
 					} else {
 						let billedTutorRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue
 						if billedTutorRevenue != refTutorRevenue {
-							print("Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) ")
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) "))
 						}
 					}
 					tutorNum += 1
@@ -500,7 +500,7 @@ import Foundation
 		
 		// Validate that the Tutors total cost, Student total cost, billed Student total cost and billed Tutor Total Cost all match
 		if tutorCost != studentCost || studentCost != billedTutorTotalCost || billedTutorTotalCost != billedStudentTotalCost {
-			print("Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match"))
 			
 			// If total Student cost in RefData does not equal total Student cost in Billed Student list, find the difference
 			if studentCost != billedStudentTotalCost {
@@ -511,11 +511,11 @@ import Foundation
 					let refStudentCost = referenceData.students.studentsList[studentNum].studentTotalCost
 					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
-						print("Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences"))
 					} else {
 						let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost
 						if billedStudentCost != refStudentCost {
-							print("Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) ")
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) "))
 						}
 					}
 					studentNum += 1
@@ -531,11 +531,11 @@ import Foundation
 					let refTutorCost = referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
 					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
-						print("Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences"))
 					} else {
 						let billedTutorCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost
 						if billedTutorCost != refTutorCost {
-							print("Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) ")
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "))
 						}
 					}
 					tutorNum += 1
@@ -545,11 +545,11 @@ import Foundation
 		
 		// Validate that the Tutor session count, Student session count, Billed Tutor session count and the Billed Student session count all match
 		if tutorSessions != studentSessions || studentSessions != billedStudentSessionCount || billedStudentSessionCount != billedTutorSessionCount {
-			print("Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match"))
 		}
 		
 		if tutorStudentCount != assignedStudentCount {
-			print("Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) -- could be due to re-assignment")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) -- could be due to re-assignment"))
 		}
 		
 		// Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template
@@ -557,13 +557,13 @@ import Foundation
 		// Validate that the total number of Tutors in the previous month Billed Tutor List is equal to the number of active Tutors
 		
 		if billedTutorMonth.tutorBillingRows.count != totalTutors {
-			print("Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)"))
 		}
 		
 		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students\
 		
 		if billedStudentMonth.studentBillingRows.count != totalStudents {
-			print("Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)")
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)"))
 			// If more Students in Billed Student list, find missing Student
 			if totalStudents < billedStudentMonth.studentBillingRows.count {
 				var studentNum = 0
@@ -572,13 +572,13 @@ import Foundation
 					let studentName = billedStudentMonth.studentBillingRows[studentNum].studentName
 					let (studentFoundFlag, billedStudentNum) = referenceData.students.findStudentByName(studentName: studentName)
 					if !studentFoundFlag {
-						print("Student \(studentName) is in Billed Student list but not Reference Data Students")
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Student \(studentName) is in Billed Student list but not Reference Data Students"))
 					}
 					studentNum += 1
 				}
 			}
 		}
-		print("** Validation Complete **\n")
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "** Validation Complete **\n"))
 		
 	}
 	//
@@ -598,16 +598,16 @@ import Foundation
 	// Step 13 - compare the Validated Tutor billing stat data against the Reference data Tutor billing stat date
 	// Step 14 - compare the validated Student billing stat data against the Reference data STudent billing stat data
 	//
-	func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: BillingMessages) async {
+	func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: WindowMessages) async {
 		
-		let billingMessages = BillingMessages()
+//		let billingMessages = WindowMessages()
 		
 		let (prevMonthName, prevMonthYearName) = findPrevMonthYear(currentMonth: monthName, currentYear: yearName)
 		
 		
 		// Step 1 - Read in all of the Timesheets for the month into an array of monthly Timesheet data
 		// Each yearBillArray element contains a Bill Array of all of the Timesheets for that month processed by client
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: " Step 1 - Read in all the Tutor Timesheets for \(monthName) \(yearName)"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " Step 1 - Read in all the Tutor Timesheets for \(monthName) \(yearName)"))
 		
 		let billArray = BillArray(monthName: monthName )
 		
@@ -617,24 +617,24 @@ import Foundation
 			
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Processing \(monthName) Timesheet for \(tutorName)"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Processing \(monthName) Timesheet for \(tutorName)"))
 				let fileName = "Timesheet " + yearName + " " + tutorName
 				do {
 					let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 					if result {
 						let timesheet = Timesheet()
-						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages)
+						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: validationMessages)
 						if !timesheetResult {
-							validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 						} else {
-							billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
+							billArray.processTimesheet(timesheet: timesheet, billingMessages: validationMessages)
 						}
 					}
 				} catch {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not get timesheet fileID for \(fileName)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName)"))
 				}
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "*Not processing Timesheet for deleted Tutor \(tutorName)"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*Not processing Timesheet for deleted Tutor \(tutorName)"))
 			}
 			tutorNum += 1
 		}
@@ -642,34 +642,34 @@ import Foundation
 		
 		// Step 2 - Read in all of the Student Billing data for the month into an array of Student Billing data
 		//
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Step 2 - Read in the Student Billing Months"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Step 2 - Read in the Student Billing Months"))
 		
 		let currentBilledStudentMonth = await buildBilledStudentMonth(monthName: monthName, yearName: yearName, loadValidatedData: false)
 		
 		
 		// Step 3 - Read in all of the Tutor Billing data for the month into an array of Tutor Billing data
 		//
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Step 3 - Read in the Tutor Billing Months"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Step 3 - Read in the Tutor Billing Months"))
 		
 		let currentBilledTutorMonth =  await buildBilledTutorMonth(monthName: monthName, yearName: yearName, loadValidatedData: false)
 		
 		
 		// Step 4 - Read in the Validated Student Billing data for the month previous to the one being processed
 		//
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Step 4 - read in previous month validated student billing data"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Step 4 - read in previous month validated student billing data"))
 		let prevBilledStudentMonth = await buildBilledStudentMonth(monthName: prevMonthName, yearName: prevMonthYearName, loadValidatedData: true)
 		
 		// Step 5 - Read in the Validated Tutor Billing data for the month previous to the one being processed
 		//
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Step 5 - read in previous month validated tutor billing data"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Step 5 - read in previous month validated tutor billing data"))
 		let prevBilledTutorMonth = await buildBilledTutorMonth(monthName: prevMonthName, yearName: prevMonthYearName, loadValidatedData: true)
 		
 		
 		// Loop through each session for each client for each month in the array of Timesheets
 		
 		
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "// Step 6 - Processing Month \(monthName)"))
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "//"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "// Step 6 - Processing Month \(monthName)"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "//"))
 		
 		//loop through each Client in the Bill Array
 		
@@ -719,7 +719,7 @@ import Foundation
 					currentBilledStudentMonth.studentBillingRows[billedStudentNum].monthValidatedProfit += (price - cost)
 					currentBilledStudentMonth.studentBillingRows[billedStudentNum].monthValidatedSessions += 1
 				} else {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not find Service \(timesheetServiceName) for Tutor \(tutorName)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not find Service \(timesheetServiceName) for Tutor \(tutorName)"))
 				}
 				
 				itemNum += 1
@@ -779,19 +779,19 @@ import Foundation
 			let compareMonthSessions = currentBilledTutorMonth.tutorBillingRows[billedTutorNum].monthValidatedSessions
 			
 			if compareMonthCost.rounded() == billedTutorMonthCost.rounded() {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value: \(billedTutorMonthCost) vs \(compareMonthCost)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value: \(billedTutorMonthCost) vs \(compareMonthCost)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs do not match computed value: \(billedTutorMonthCost) vs \(compareMonthCost)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month costs do not match computed value: \(billedTutorMonthCost) vs \(compareMonthCost)\n"))
 			}
 			if compareMonthRevenue.rounded() == billedTutorMonthRevenue.rounded() {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue does not match computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month revenue does not match computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)\n"))
 			}
 			if compareMonthSessions == billedTutorMonthSessions {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions do not match computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Tutor \(tutorName) Billed Tutor month sessions do not match computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)\n"))
 			}
 			
 			billedTutorNum += 1
@@ -812,19 +812,19 @@ import Foundation
 			let compareMonthSessions = currentBilledStudentMonth.studentBillingRows[billedStudentNum].monthValidatedSessions
 			//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
 			if compareMonthCost.rounded() == billedStudentMonthCost.rounded() {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) vs \(compareMonthCost)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) vs \(compareMonthCost)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs do not match computed value: \(billedStudentMonthCost) vs \(compareMonthCost)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month costs do not match computed value: \(billedStudentMonthCost) vs \(compareMonthCost)\n"))
 			}
 			if compareMonthRevenue.rounded() == billedStudentMonthRevenue.rounded() {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue matches computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue matches computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue does not match computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month revenue does not match computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)\n"))
 			}
 			if compareMonthSessions  == billedStudentMonthSessions {
-//				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions matches computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)"))
+//				validationMessages.addMessage(windowLineText: WindowMessageLine(windowLineText: "          \(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions matches computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)"))
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions do not match computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)\n"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\(currentBilledTutorMonth.monthName): Student \(studentName) Billed Student month sessions do not match computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)\n"))
 			}
 			
 			billedStudentNum += 1
@@ -857,23 +857,23 @@ import Foundation
 				let validatedTotalProfit = round(currentBilledTutorMonth.tutorBillingRows[currentMonthTutorNum].totalValidatedProfit)
 				
 				if refSessionCount != validatedSessionCount {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Tutor \(tutorName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
 				}
 				
 				if refTotalCost != validatedTotalCost {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Tutor \(tutorName) Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
 				}
 				
 				if refTotalRevenue != validatedTotalRevenue {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Tutor \(tutorName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
 				}
 				
 				if refTotalProfit != validatedTotalProfit {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Tutor \(tutorName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
 					
 				}
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Tutor \(tutorName) not found in Current Tutor Month comparing against Reference Stats"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Tutor \(tutorName) not found in Current Tutor Month comparing against Reference Stats"))
 			}
 			
 			
@@ -897,28 +897,28 @@ import Foundation
 				let validatedTotalProfit = round(currentBilledStudentMonth.studentBillingRows[currentMonthStudentNum].totalValidatedProfit)
 				
 				if refSessionCount != validatedSessionCount {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Student \(studentName) Reference Data Total Sessions \(refSessionCount) does not match Validated Data Stats \(validatedSessionCount)"))
 				}
 				
 				if refTotalCost != validatedTotalCost {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName)  Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Student \(studentName)  Reference Data Total Cost \(refTotalCost) does not match Validated Data Stats \(validatedTotalCost)"))
 				}
 				
 				if refTotalRevenue != validatedTotalRevenue {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Student \(studentName) Reference Data Total Revenue \(refTotalRevenue) does not match Validated Data Stats \(validatedTotalRevenue)"))
 				}
 				
 				if refTotalProfit != validatedTotalProfit {
-					validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Student \(studentName) Reference Data Total Profit \(refTotalProfit) does not match Validated Data Stats \(validatedTotalProfit)"))
 				}
 			} else {
-				validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: Student \(studentName) not found in Current Student Month comparing against Reference Stats"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: Student \(studentName) not found in Current Student Month comparing against Reference Stats"))
 			}
 				
 			studentNum += 1
 		}
 		
-		validationMessages.addMessage(billingMessage: BillingMessage(billingMessageText: " Month Validation Complete for \(monthName)"))
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " Month Validation Complete for \(monthName)"))
 		
 		
 	}
@@ -934,7 +934,7 @@ import Foundation
 		var compareStudentBilling = [StudentBillingMonth]()			// The new monthly computed Student Billing data directly from the timesheets
 		var openingMonthNum: Int = 0
 		
-		let billingMessages = BillingMessages()
+		let billingMessages = WindowMessages()
 		
 		let currentMonthNum = Calendar.current.component(.month, from: Date())                 // Current month may not be billed yet
 		

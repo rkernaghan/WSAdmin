@@ -40,11 +40,12 @@ struct DataMgmtView: View {
 	var dataCounts = DataCounts()
 	@State var referenceData = ReferenceData()
 	@State private var showAlert: Bool = false
+	@State private var statusMessage: String = ""
     
 	var body: some View {
 		
 		VStack {
-			SideView(referenceData: referenceData)
+			SideView(referenceData: referenceData, statusMessage: $statusMessage)
 				.frame(minWidth: 100, minHeight: 140)
 			
 				.onAppear(perform: {
@@ -72,6 +73,8 @@ struct DataMgmtView: View {
 						if !loadResult {
 							showAlert.toggle()
 							buttonErrorMsg = "Critical Error: Unable to load Reference Data - Restart program"
+						} else {
+							statusMessage = "Reference Data Loaded"
 						}
 					}
 				})
@@ -86,11 +89,15 @@ struct DataMgmtView: View {
 
 struct SideView: View {
 	var referenceData: ReferenceData
+	@Binding var statusMessage: String
+	
 	@State private var showAlert: Bool = false
 	@State private var showFinanceSummary: Bool = false
 	@State private var showTutorAvailabilitySummary: Bool = false
+	@State private var showDataIntegritySummary: Bool = false
 	@State private var financeSummaryArray = [FinanceSummaryRow]()
 	@State private var tutorAvailabilityArray = [TutorAvailabilityRow]()
+	@State private var validationMessages = WindowMessages()
 	
 	@Environment(UserAuthVM.self) var userAuthVM: UserAuthVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -100,6 +107,9 @@ struct SideView: View {
 	var body: some View {
  
 		List {
+			Text(statusMessage)
+			.padding()
+			
 			NavigationLink {
 				TutorListView(referenceData: referenceData)
 			} label: {
@@ -158,6 +168,7 @@ struct SideView: View {
 			
 			Button("Tutor Availability Summary") {
 				Task {
+					statusMessage = " "
 					tutorAvailabilityArray = await tutorMgmtVM.buildTutorAvailabilityArray(referenceData: referenceData)
 					showTutorAvailabilitySummary = true
 				}
@@ -165,6 +176,7 @@ struct SideView: View {
 			
 			Button("Finance Summary") {
 				Task {
+					statusMessage = " "
 					financeSummaryArray = await financeSummaryVM.buildFinanceSummary()
 					showFinanceSummary = true
 				}
@@ -172,13 +184,23 @@ struct SideView: View {
 			
 			Button("Validate System Data Integrity") {
 				Task {
-					await systemVM.validateSystem(referenceData: referenceData)
+					statusMessage = " "
+					await systemVM.validateSystem(referenceData: referenceData, validationMessages: validationMessages)
+					showDataIntegritySummary = true
 				}
+
 			}
+	
 			
 			Button("Backup System") {
 				Task {
-					await systemVM.backupSystem()
+					statusMessage = " "
+					let backupFlag = await systemVM.backupSystem()
+					if backupFlag {
+						statusMessage = "Backup Successful"
+					} else {
+						statusMessage = "Backup Failed"
+					}
 				}
 			}
 			
@@ -192,6 +214,7 @@ struct SideView: View {
 			
 			Button("Create Next Years Files") {
 				Task {
+					statusMessage = " "
 					let (generateResult, generateMessage) = await systemVM.generateNewYearFiles(referenceData: referenceData)
 					if !generateResult {
 						showAlert.toggle()
@@ -202,6 +225,7 @@ struct SideView: View {
 			
 			Button("Update Tutor Timesheet File IDs") {
 				Task {
+					statusMessage = " "
 					let (updateResult, updateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
 					if !updateResult {
 						showAlert.toggle()
@@ -231,6 +255,9 @@ struct SideView: View {
 		}
 		.navigationDestination(isPresented: $showTutorAvailabilitySummary) {
 			TutorAvailabilityView(tutorAvailabilityArray: tutorAvailabilityArray)
+		}
+		.navigationDestination(isPresented: $showDataIntegritySummary) {
+			ValidateDataIntegrityView(validationMessages: validationMessages, referenceData: referenceData)
 		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))

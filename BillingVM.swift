@@ -14,7 +14,7 @@ import GoogleSignIn
 
         // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
 	
-	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: BillingMessages) async -> (Invoice, TutorBillingMonth, [String]) {
+	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
 		var tutorBillingFileID: String = ""
@@ -33,7 +33,7 @@ import GoogleSignIn
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 				print("Read Timesheet for Tutor: \(tutorName)")
-				billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
+				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
 				tutorList.append(tutorName)
 				
 				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages)
@@ -55,25 +55,25 @@ import GoogleSignIn
 					
 					if alreadyBilledFlag {
 						print("Already Billed Tutors: \(alreadyBilledTutors)")
-						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Tutors already billed for month: \(alreadyBilledTutors)"))
+						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Tutors already billed for month: \(alreadyBilledTutors)"))
 					}
 				}
 				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 			}
 		} catch {
 			print("Error: could not load Billed Tutor Month")
-			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not load Billed Tutor Month"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not load Billed Tutor Month"))
 			
 		}
 		
 		// Return the invoice data, the Tutor Billing data for the month so it can be updated if user bills the invoice (creates CSV) and the list of any Tutors already billed
-		billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "          Information: Invoice generation completed"))
+		billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Invoice generation completed"))
 		return(invoice, tutorBillingMonth, alreadyBilledTutors)
 		
 	}
 	
 	// Read in a Timesheet for a Tutor
-	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: BillingMessages) async -> Timesheet {
+	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
@@ -85,12 +85,12 @@ import GoogleSignIn
 				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages)
 				if !timesheetResult {
 					print("Error: Could not load Timesheet for Tutor \(tutorName)")
-					billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 				}
 			}
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
-			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: could not get timesheet fileID for \(fileName)"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName)"))
 		}
 
 		return(timesheet)

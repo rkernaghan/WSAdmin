@@ -29,7 +29,7 @@ class Timesheet: Identifiable {
 //		month: the String name of the month to load the Timesheet data from
 //		timesheetID: the Google Drive File ID of the Tutor Timesheet
 //
-	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: BillingMessages) async -> Bool {
+	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var sheetData: SheetData?
@@ -45,7 +45,7 @@ class Timesheet: Identifiable {
 			}
 		} catch {
 			print("ERROR: could not read SheetCells for \(tutorName) Timesheet")
-			billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "ERROR: could not read SheetCells for \(tutorName) Timesheet"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: could not read SheetCells for \(tutorName) Timesheet"))
 			completionFlag = false
 		}
 		return(completionFlag)
@@ -56,7 +56,7 @@ class Timesheet: Identifiable {
 //		tutorName: the name of the tutor who's Timesheet is being loaded
 //		sheetCells: a 2 dimensional array of Strings with each element containing one spreadsheet cell
 //
-	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: BillingMessages ) {
+	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages ) {
 		
 		if sheetCells.count > 0 {
 			let entryCount = Int(sheetCells[PgmConstants.timesheetSessionCountRow][PgmConstants.timesheetSessionCountCol]) ?? 0
@@ -69,7 +69,7 @@ class Timesheet: Identifiable {
 					let rowCount = sheetCells[rowNum].count
 					if rowCount < 9 {						// Check if all required Timesheet cells populated for this row, else ignore the row and warn
 						print("Skipping row \(rowNum) as it only has \(rowCount) cells")
-						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "Error: Skipping Timesheet row \(rowNum) as it only has \(rowCount) cells"))
+						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Skipping Timesheet row \(rowNum) as it only has \(rowCount) cells"))
 					} else {
 						let student = sheetCells[rowNum][PgmConstants.timesheetStudentCol]
 						let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
@@ -82,7 +82,7 @@ class Timesheet: Identifiable {
 						let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
 						let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
 						self.addTimesheetRow(timesheetRow: newTimesheetRow)
-						billingMessages.addMessage(billingMessage: BillingMessage(billingMessageText: "               Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
+						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "               Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
 					}
 
 					//   print(tutorName, student, date, service)

@@ -25,7 +25,7 @@ class BillArray {
 	}
 	
 	//
-	func processTimesheet(timesheet: Timesheet, billingMessages: BillingMessages) {
+	func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages) {
 		
 		var timesheetNum = 0
 		while timesheetNum < timesheet.timesheetRows.count {

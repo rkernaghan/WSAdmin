@@ -21,7 +21,7 @@
 		023065E92D08F3B9004B27F6 /* FinanceSummaryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023065E82D08F3AC004B27F6 /* FinanceSummaryRow.swift */; };
 		023065EB2D0A6FEE004B27F6 /* FinanceSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */; };
 		024421392DB996B40057E961 /* ValidationMonthSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */; };
-		0244213B2DB998D20057E961 /* ValidationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0244213A2DB998C80057E961 /* ValidationProgressView.swift */; };
+		0244213B2DB998D20057E961 /* ValidateMonthProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0244213A2DB998C80057E961 /* ValidateMonthProgressView.swift */; };
 		025232A92CEAB44E0071A995 /* TutorServiceListSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */; };
 		02863C842CB48508002FE12B /* ServiceCostByTutorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */; };
 		02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C852CB4877A002FE12B /* TutorServiceCost.swift */; };
@@ -37,7 +37,7 @@
 		02A4775B2CBCC34D001AA1AA /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A4775A2CBCC335001AA1AA /* Utilities.swift */; };
 		02A712D12D8E30A400D90799 /* TutorAvailabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A712D02D8E308F00D90799 /* TutorAvailabilityView.swift */; };
 		02A712D32D8F41C100D90799 /* TutorAvailabilityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A712D22D8F41A400D90799 /* TutorAvailabilityRow.swift */; };
-		02AC02782D0B874200E75ABE /* BillingMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC02772D0B873B00E75ABE /* BillingMessages.swift */; };
+		02AC02782D0B874200E75ABE /* WindowMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC02772D0B873B00E75ABE /* WindowMessages.swift */; };
 		02AC9BB32C855BF8007391A7 /* UserAuthVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB22C855BF8007391A7 /* UserAuthVM.swift */; };
 		02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB42C855C7B007391A7 /* SignInView.swift */; };
 		02AC9BB92C8614B1007391A7 /* DataMgmtView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */; };
@@ -54,6 +54,7 @@
 		02AC9BD32C892B49007391A7 /* StudentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD22C892B49007391A7 /* StudentView.swift */; };
 		02AC9BD52C894BFC007391A7 /* StudentMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */; };
 		02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */; };
+		02B9B4132DC7E06E009A7D34 /* ValidateDataIntegrityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B9B4122DC7E057009A7D34 /* ValidateDataIntegrityView.swift */; };
 		02BD576D2C9329EF00A85EEF /* TutorDataCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */; };
 		02C8BEF22C9F145200EAB9DE /* TutorStudentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */; };
 		02CA8C1C2CAB3CD700CCD03C /* TutorServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */; };
@@ -108,7 +109,7 @@
 		023065E82D08F3AC004B27F6 /* FinanceSummaryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceSummaryRow.swift; sourceTree = "<group>"; };
 		023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceSummary.swift; sourceTree = "<group>"; };
 		024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationMonthSelectionView.swift; sourceTree = "<group>"; };
-		0244213A2DB998C80057E961 /* ValidationProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationProgressView.swift; sourceTree = "<group>"; };
+		0244213A2DB998C80057E961 /* ValidateMonthProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateMonthProgressView.swift; sourceTree = "<group>"; };
 		025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceListSelectionView.swift; sourceTree = "<group>"; };
 		02620E042D2846F3001E09F3 /* WSAdminRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WSAdminRelease.entitlements; sourceTree = "<group>"; };
 		02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceCostByTutorView.swift; sourceTree = "<group>"; };
@@ -126,7 +127,7 @@
 		02A4775A2CBCC335001AA1AA /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		02A712D02D8E308F00D90799 /* TutorAvailabilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorAvailabilityView.swift; sourceTree = "<group>"; };
 		02A712D22D8F41A400D90799 /* TutorAvailabilityRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorAvailabilityRow.swift; sourceTree = "<group>"; };
-		02AC02772D0B873B00E75ABE /* BillingMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingMessages.swift; sourceTree = "<group>"; };
+		02AC02772D0B873B00E75ABE /* WindowMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowMessages.swift; sourceTree = "<group>"; };
 		02AC9BB22C855BF8007391A7 /* UserAuthVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthVM.swift; sourceTree = "<group>"; };
 		02AC9BB42C855C7B007391A7 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		02AC9BB62C855CB9007391A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -144,6 +145,7 @@
 		02AC9BD22C892B49007391A7 /* StudentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentView.swift; sourceTree = "<group>"; };
 		02AC9BD42C894BFC007391A7 /* StudentMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentMgmtVM.swift; sourceTree = "<group>"; };
 		02AC9BD62C894E69007391A7 /* TutorMgmtVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorMgmtVM.swift; sourceTree = "<group>"; };
+		02B9B4122DC7E057009A7D34 /* ValidateDataIntegrityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateDataIntegrityView.swift; sourceTree = "<group>"; };
 		02BD576C2C9329EF00A85EEF /* TutorDataCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorDataCounts.swift; sourceTree = "<group>"; };
 		02C8BEF12C9F145200EAB9DE /* TutorStudentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorStudentsView.swift; sourceTree = "<group>"; };
 		02CA8C1B2CAB3CD700CCD03C /* TutorServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceView.swift; sourceTree = "<group>"; };
@@ -254,7 +256,8 @@
 				02AC9BB82C8614B1007391A7 /* DataMgmtView.swift */,
 				02E76DF92CBDBCD6002AC504 /* BillingSelectionView.swift */,
 				024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */,
-				0244213A2DB998C80057E961 /* ValidationProgressView.swift */,
+				0244213A2DB998C80057E961 /* ValidateMonthProgressView.swift */,
+				02B9B4122DC7E057009A7D34 /* ValidateDataIntegrityView.swift */,
 				023065E42CFB7134004B27F6 /* BillingProgressView.swift */,
 				023065EA2D0A6FE7004B27F6 /* FinanceSummary.swift */,
 				02E76DFD2CBDDAA2002AC504 /* InvoiceView.swift */,
@@ -301,7 +304,7 @@
 		02AC9BC32C88A34A007391A7 /* DataModels */ = {
 			isa = PBXGroup;
 			children = (
-				02AC02772D0B873B00E75ABE /* BillingMessages.swift */,
+				02AC02772D0B873B00E75ABE /* WindowMessages.swift */,
 				023065E82D08F3AC004B27F6 /* FinanceSummaryRow.swift */,
 				02A712D22D8F41A400D90799 /* TutorAvailabilityRow.swift */,
 				02E76E3E2CC30A42002AC504 /* StudentBillingRow.swift */,
@@ -462,9 +465,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WSAdmin/Pods-WSAdmin-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WSAdmin/Pods-WSAdmin-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -492,7 +499,7 @@
 				020BF32F2CD8F1F0000890AF /* TutorServiceSelectionView.swift in Sources */,
 				02AC9BC22C88A161007391A7 /* StudentsList.swift in Sources */,
 				02AC9BB52C855C7B007391A7 /* SignInView.swift in Sources */,
-				0244213B2DB998D20057E961 /* ValidationProgressView.swift in Sources */,
+				0244213B2DB998D20057E961 /* ValidateMonthProgressView.swift in Sources */,
 				02DD5A4A2C8A0FFA002893AD /* ServiceMgmtVM.swift in Sources */,
 				02AC9BCF2C88A6DC007391A7 /* LocationsList.swift in Sources */,
 				02AC9BC72C88A68A007391A7 /* TutorsList.swift in Sources */,
@@ -510,7 +517,7 @@
 				029E4E092CCACDB00080AD4E /* BillArray.swift in Sources */,
 				02A39F1B2C6B8B5C00C1FB4B /* WSAdmin.swift in Sources */,
 				02AC9BD72C894E69007391A7 /* TutorMgmtVM.swift in Sources */,
-				02AC02782D0B874200E75ABE /* BillingMessages.swift in Sources */,
+				02AC02782D0B874200E75ABE /* WindowMessages.swift in Sources */,
 				02AC9BD32C892B49007391A7 /* StudentView.swift in Sources */,
 				02DD5A4E2C8A141A002893AD /* ServiceView.swift in Sources */,
 				02E76E3D2CC30A3D002AC504 /* TutorBillingMonth.swift in Sources */,
@@ -524,6 +531,7 @@
 				020557382CA65FA800F4F7EB /* TutorServicesView.swift in Sources */,
 				029E4E0D2CCAD0780080AD4E /* BillClient.swift in Sources */,
 				02AC9BD12C892B0F007391A7 /* TutorView.swift in Sources */,
+				02B9B4132DC7E06E009A7D34 /* ValidateDataIntegrityView.swift in Sources */,
 				023065E72D08F3A6004B27F6 /* FinanceSummaryVM.swift in Sources */,
 				023065EB2D0A6FEE004B27F6 /* FinanceSummary.swift in Sources */,
 				020BF32B2CD8F162000890AF /* ServiceSelectionView.swift in Sources */,

@@ -21,7 +21,7 @@ struct BillingSelectionView: View {
 	@State private var showInvoice: Bool = false
 	@State private var selectAll: Bool = false
 	@State private var invoice = Invoice()
-	@State private var billingMessages = BillingMessages()
+	@State private var billingMessages = WindowMessages()
 	@State private var alreadyBilledTutors = [String]()
 	@State private var billedTutorMonth = TutorBillingMonth(monthName: "")
 
@@ -78,7 +78,7 @@ struct BillingSelectionView: View {
 					
 					Button {
 						Task {
-							billingMessages.billingMessageList.removeAll()
+							billingMessages.windowMessageList.removeAll()
 							showInvoice = true
 							
 							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages)

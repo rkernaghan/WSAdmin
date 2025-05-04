@@ -20,7 +20,7 @@ struct ValidationMonthSelectionView: View {
 	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
 	@State private var showAlert: Bool = false
 	@State private var showMessages: Bool = false
-	@State private var validationMessages = BillingMessages()
+	@State private var validationMessages = WindowMessages()
 
 	
 	
@@ -47,7 +47,7 @@ struct ValidationMonthSelectionView: View {
 					
 					Button {
 						Task {
-							validationMessages.billingMessageList.removeAll()
+							validationMessages.windowMessageList.removeAll()
 							showMessages = true
 	
 							await systemVM.ValidateMonthBillingData(referenceData: referenceData, monthName: selectedMonth, yearName: selectedYear,  validationMessages: validationMessages)
@@ -64,7 +64,7 @@ struct ValidationMonthSelectionView: View {
 			
 		}
 		.navigationDestination(isPresented: $showMessages) {
-			ValidationProgressView(validationMessages: validationMessages, referenceData: referenceData,  billingMonth: selectedMonth, billingYear: selectedYear)
+			ValidateMonthProgressView(validationMessages: validationMessages, referenceData: referenceData,  billingMonth: selectedMonth, billingYear: selectedYear)
 			
 		}
 	}

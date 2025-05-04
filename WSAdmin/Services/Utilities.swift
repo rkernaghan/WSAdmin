@@ -73,7 +73,7 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 //	Throws:
 //
 func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
-	var values = [[String]]()
+//	var values = [[String]]()
 	var sheetData: SheetData?
 		
 	let tokenFound = await getAccessToken()

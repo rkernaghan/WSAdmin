@@ -8,7 +8,7 @@ import SwiftUI
 
 struct BillingProgressView: View {
 	
-	var billingMessages: BillingMessages
+	var billingMessages: WindowMessages
 	var referenceData: ReferenceData
 	var invoice: Invoice
 	var billingMonth: String
@@ -25,8 +25,8 @@ struct BillingProgressView: View {
 	var body: some View {
 						
 		VStack {
-			List(billingMessages.billingMessageList) {
-				Text($0.billingMessageText)
+			List(billingMessages.windowMessageList) {
+				Text($0.windowLineText)
 			}
 			
 			Button("Show Invoice") {
