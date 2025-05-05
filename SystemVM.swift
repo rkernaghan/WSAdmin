@@ -600,7 +600,7 @@ import Foundation
 	//
 	func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: WindowMessages) async {
 		
-//		let billingMessages = WindowMessages()
+		let billingMessages = WindowMessages()
 		
 		let (prevMonthName, prevMonthYearName) = findPrevMonthYear(currentMonth: monthName, currentYear: yearName)
 		
@@ -609,7 +609,7 @@ import Foundation
 		// Each yearBillArray element contains a Bill Array of all of the Timesheets for that month processed by client
 		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " Step 1 - Read in all the Tutor Timesheets for \(monthName) \(yearName)"))
 		
-		let billArray = BillArray(monthName: monthName )
+		let billArray = BillArray(monthName: monthName )	// Used for detailed messages generated when processing Timesheet.  Not displayed for this validate month function.  Basically a bit bucket.
 		
 		var tutorNum = 0
 		let refTutorCount = referenceData.tutors.tutorsList.count
@@ -623,7 +623,7 @@ import Foundation
 					let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 					if result {
 						let timesheet = Timesheet()
-						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: validationMessages)
+						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
 						if !timesheetResult {
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 						} else {
@@ -957,7 +957,7 @@ import Foundation
 			let billArray = BillArray(monthName: monthArray[monthNum] )
 			
 			var tutorNum = 0
-			var tutorCount = referenceData.tutors.tutorsList.count
+			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
 				
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
@@ -968,7 +968,7 @@ import Foundation
 						let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 						if result {
 							let timesheet = Timesheet()
-							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages)
+							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
 							if !timesheetResult {
 								print("Error: Could not load Timesheet for Tutor \(tutorName)")
 							} else {
@@ -1025,9 +1025,9 @@ import Foundation
 			var clientNum = 0
 			let clientCount = yearBillArray[monthIndex].billClients.count
 			while clientNum < clientCount {
-				let clientName = yearBillArray[monthIndex].billClients[clientNum].clientName
-				var monthCost = 0
-				var monthRevenue = 0
+//				let clientName = yearBillArray[monthIndex].billClients[clientNum].clientName
+//				var monthCost = 0
+//				var monthRevenue = 0
 				//Loop through each tutoring session for the client that month
 				var itemNum = 0
 				let itemCount = yearBillArray[monthIndex].billClients[clientNum].billItems.count
@@ -1035,7 +1035,7 @@ import Foundation
 					// Get the tutoring session data that was on the Timesheet
 					let studentName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].studentName
 					let timesheetServiceName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].timesheetServiceName
-					let serviceDate = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].serviceDate
+//					let serviceDate = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].serviceDate
 					let duration = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].duration
 					let tutorName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].tutorName
 					// Get the costs and prices for the Service for the Tutor that conducted the tutoring

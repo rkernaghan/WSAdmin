@@ -29,7 +29,7 @@ class Timesheet: Identifiable {
 //		month: the String name of the month to load the Timesheet data from
 //		timesheetID: the Google Drive File ID of the Tutor Timesheet
 //
-	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages) async -> Bool {
+	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var sheetData: SheetData?
@@ -39,7 +39,7 @@ class Timesheet: Identifiable {
 			sheetData = try await readSheetCells(fileID: timesheetID, range: range)
 			// Load the sheet cells into this Timesheet
 			if let sheetData = sheetData {
-				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, billingMessages: billingMessages)
+				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, billingMessages: billingMessages, monthName: month, referenceData: referenceData)
 			} else {
 				completionFlag = false
 			}
@@ -56,37 +56,92 @@ class Timesheet: Identifiable {
 //		tutorName: the name of the tutor who's Timesheet is being loaded
 //		sheetCells: a 2 dimensional array of Strings with each element containing one spreadsheet cell
 //
-	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages ) {
+	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages, monthName: String, referenceData: ReferenceData ) {
+		
+		var duration: Int = 0
+		let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+		if !tutorFoundFlag {
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " ** Error - Tutor \(tutorName) not found in Reference Data"))
+		}
 		
 		if sheetCells.count > 0 {
-			let entryCount = Int(sheetCells[PgmConstants.timesheetSessionCountRow][PgmConstants.timesheetSessionCountCol]) ?? 0
-			var entryCounter = 0
-			var rowNum = PgmConstants.timesheetFirstSessionRow
-			let rowCounter = entryCount + 12                                                // 12 blank rows allowed
+			let entryCount = Int(sheetCells[PgmConstants.timesheetSessionCountRow][PgmConstants.timesheetSessionCountCol]) ?? 0		// Number of session rows in Timesheet
+			var entryCounter = 0														// Current session being processed in loop
+			var rowNum = PgmConstants.timesheetFirstSessionRow										// Starting row of first session in Timesheet
+			let rowCounter = entryCount + 12                                               							// 12 blank rows allowed
 			while entryCounter < entryCount && rowNum < rowCounter {
 				let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
 				if date != "" && date != " " {
-					let rowCount = sheetCells[rowNum].count
-					if rowCount < 9 {						// Check if all required Timesheet cells populated for this row, else ignore the row and warn
-						print("Skipping row \(rowNum) as it only has \(rowCount) cells")
-						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Skipping Timesheet row \(rowNum) as it only has \(rowCount) cells"))
+					let cellCount = sheetCells[rowNum].count
+					if cellCount < 9 {						// Check if all required Timesheet cells populated for this row, else ignore the row and warn
+						print("Skipping row \(rowNum) as it only has \(cellCount) cells")
+						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Skipping Timesheet row \(rowNum + 1) as it only has \(cellCount) cells"))
 					} else {
 						let student = sheetCells[rowNum][PgmConstants.timesheetStudentCol]
+						if student == "" {
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Student cell empty for \(date)"))
+						} else {
+							let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByName(studentName: student)
+							if !tutorStudentFound {
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Student: \(student) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)"))
+							}
+						}
+						
+						// Check if month field not empty and service date is for month being billed
 						let date = sheetCells[rowNum][PgmConstants.timesheetDateCol]
-						let duration = Int(sheetCells[rowNum][PgmConstants.timesheetDurationCol]) ?? 0
+						if date == "" {
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Date cell empty for \(date)"))
+						} else {
+							let validateDateFlag = validateDateField(dateField: date, monthName: monthName)
+							if !validateDateFlag {
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Date: \(date) not within \(monthName) for Student \(student)"))
+							}
+						}
+						
+						let durationCell = sheetCells[rowNum][PgmConstants.timesheetDurationCol]
+						if durationCell == "" {
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell empty for \(date) with Student \(student)"))
+						} else {
+							duration = Int(durationCell) ?? 0
+							if duration == 0 {
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell = 0 for \(date) with Student \(student)"))
+							}
+						}
+												
 						let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
+						if service == "" {
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service cell empty for \(date) with Student \(student)"))
+						} else {
+							let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: service)
+							if !tutorServiceFound {
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service: \(service) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)"))
+							}
+						}
+						
 						let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
-						let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
+						
 						let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
+						if clientName == "" {
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Client Name cell empty for \(date) with Student \(student)"))
+						}
+						
+						let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
+						
 						let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
 						let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
+						
 						let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
 						self.addTimesheetRow(timesheetRow: newTimesheetRow)
+						
 						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "               Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
 					}
+						
+				
 
 					//   print(tutorName, student, date, service)
 					entryCounter += 1
+				} else {
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Date missing for Session on Timesheet row \(rowNum + 1); skipping this entry"))
 				}
 				rowNum += 1
 			}

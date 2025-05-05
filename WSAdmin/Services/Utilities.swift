@@ -984,3 +984,21 @@ func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutor
 	
 	return tutorAvailabilityRow
 }
+
+// This function checks is a Date string (from a Timesheet service entry) is for the month being billed.
+//
+func validateDateField(dateField: String, monthName: String) -> Bool {
+	var validDateField: Bool
+	
+	let firstSlash = dateField.firstIndex(of: "/")!
+	
+	let monthNumString = dateField.prefix(upTo: firstSlash)
+	let monthNum = Int(monthNumString) ?? 0
+	if monthArray[monthNum - 1] == monthName {
+		validDateField = true
+	} else {
+		validDateField = false
+	}
+		
+	return(validDateField)
+}

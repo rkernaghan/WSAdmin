@@ -47,12 +47,28 @@ import Foundation
 		self.timesheetFileID = timesheetFileID
 	}
 	
+	// Find a Student assigned to this Tutor by Student Key
 	func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
 		var studentFound = false
 		var tutorStudentNum = 0
 		
 		while tutorStudentNum < tutorStudents.count && !studentFound {
 			if tutorStudents[tutorStudentNum].studentKey == studentKey {
+				studentFound = true
+			} else {
+				tutorStudentNum += 1
+			}
+		}
+		return(studentFound, tutorStudentNum)
+	}
+	
+	// Find a Student assigned to this Tutor by Student Name
+	func findTutorStudentByName(studentName: String) -> (Bool, Int) {
+		var studentFound = false
+		var tutorStudentNum = 0
+		
+		while tutorStudentNum < tutorStudents.count && !studentFound {
+			if tutorStudents[tutorStudentNum].studentName == studentName {
 				studentFound = true
 			} else {
 				tutorStudentNum += 1

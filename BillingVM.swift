@@ -36,7 +36,7 @@ import GoogleSignIn
 				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
 				tutorList.append(tutorName)
 				
-				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages)
+				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages, referenceData: referenceData)
 				
 				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
 			}
@@ -73,7 +73,7 @@ import GoogleSignIn
 	}
 	
 	// Read in a Timesheet for a Tutor
-	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages) async -> Timesheet {
+	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages, referenceData: ReferenceData) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
@@ -82,7 +82,7 @@ import GoogleSignIn
 		do {
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
 			if result {
-				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages)
+				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
 				if !timesheetResult {
 					print("Error: Could not load Timesheet for Tutor \(tutorName)")
 					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))

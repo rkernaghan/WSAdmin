@@ -31,7 +31,7 @@ struct ContentView: View {
 				}
 			}
 		}
-		.navigationTitle("Write Seattle Administration")
+//		.navigationTitle("Write Seattle Administration")
 		.environment(refDataVM)
 		.environment(userAuthVM)
 		.environment(studentMgmtVM)

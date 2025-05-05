@@ -21,10 +21,10 @@ struct StudentListView: View {
 	@State private var unassignTutor: Bool = false
 	@State private var editStudent: Bool = false
 	@State private var reassignStudent: Bool = false
-	@State private var showDeleted: Bool = false
+	@State private var showDeleted: Bool = true
 	@State private var showUnassigned: Bool = true
 	@State private var showAssigned: Bool = true
-	@State private var showSuspended: Bool = false
+	@State private var showSuspended: Bool = true
 	
 	@State private var emptyArray = [Student]()
 	@State private var studentNumber: Int = 0

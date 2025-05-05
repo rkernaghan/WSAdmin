@@ -30,12 +30,14 @@ class BillArray {
 		var timesheetNum = 0
 		while timesheetNum < timesheet.timesheetRows.count {
 			let timesheetClientName = timesheet.timesheetRows[timesheetNum].clientName
+			
 			var (foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			if !foundFlag {
 				let newBillClient = BillClient(clientName: timesheetClientName, clientEmail: timesheet.timesheetRows[timesheetNum].clientEmail, clientPhone: timesheet.timesheetRows[timesheetNum].clientPhone)
 				self.addBillClient(newBillClient: newBillClient)
 				(foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			}
+			
 			let studentName = timesheet.timesheetRows[timesheetNum].studentName
 			let serviceDate = timesheet.timesheetRows[timesheetNum].serviceDate
 			let duration = timesheet.timesheetRows[timesheetNum].duration
@@ -44,6 +46,7 @@ class BillArray {
 			let notes = timesheet.timesheetRows[timesheetNum].notes
 			let tutorName = timesheet.timesheetRows[timesheetNum].tutorName
 			let cost = timesheet.timesheetRows[timesheetNum].cost
+			
 			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, timesheetServiceName: timesheetServiceName, notes: notes, cost: cost, tutorName: tutorName)
 			self.billClients[billClientNum].billItems.append(newBillItem)
 			timesheetNum += 1
