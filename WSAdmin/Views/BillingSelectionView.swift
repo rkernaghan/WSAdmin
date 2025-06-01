@@ -94,6 +94,9 @@ struct BillingSelectionView: View {
 			}
 			
 		}
+	
+		.navigationTitle("Billing Selection View")
+		
 		.navigationDestination(isPresented: $showInvoice) {
 			BillingProgressView(billingMessages: billingMessages, referenceData: referenceData, invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors)
 	

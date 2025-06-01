@@ -236,6 +236,8 @@ struct ServiceListView: View {
 				} primaryAction: { items in
 					//              store.favourite(items)
 				}
+				.navigationTitle("Services List")
+				
 				.alert(buttonErrorMsg, isPresented: $showAlert) {
 					Button("OK", role: .cancel) { }
 				}

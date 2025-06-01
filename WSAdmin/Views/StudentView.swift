@@ -122,6 +122,8 @@ struct StudentView: View {
 					Text("Add New Student")
 				}
 			}
+			.navigationTitle("Student Display")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}

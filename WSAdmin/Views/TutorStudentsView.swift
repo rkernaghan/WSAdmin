@@ -68,6 +68,8 @@ struct TutorStudentsView: View {
 				//              store.favourite(items)
 			}
 		}
+		.navigationTitle("\(referenceData.tutors.tutorsList[tutorNum].tutorName) Tutor Students List")
+		
 		.alert(buttonErrorMsg, isPresented: $showAlert) {
 			Button("OK", role: .cancel) { }
 		}

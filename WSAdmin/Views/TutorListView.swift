@@ -65,7 +65,7 @@ struct TutorListView: View {
 				}
 			}
 			
-			var tutorArray: [Tutor] = assignedArray + unassignedArray + suspendedArray + deletedArray
+			let tutorArray: [Tutor] = assignedArray + unassignedArray + suspendedArray + deletedArray
 				
 			
 			VStack {
@@ -284,6 +284,8 @@ struct TutorListView: View {
 					//              store.favourite(items)
 				}
 			}
+			.navigationTitle("Tutors List")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}

@@ -330,6 +330,8 @@ struct StudentListView: View {
 				}
 				
 			}
+			.navigationTitle("Students List")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}

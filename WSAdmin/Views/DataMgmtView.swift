@@ -74,7 +74,11 @@ struct DataMgmtView: View {
 							showAlert.toggle()
 							buttonErrorMsg = "Critical Error: Unable to load Reference Data - Restart program"
 						} else {
-							statusMessage = "Reference Data Loaded"
+							let tutorCount = referenceData.tutors.tutorsList.count
+							let studentCount = referenceData.students.studentsList.count
+							let serviceCount = referenceData.services.servicesList.count
+							let locationCount = referenceData.locations.locationsList.count
+							statusMessage = "Reference Data Loaded: \(tutorCount) Tutors, \(studentCount) Students, \(serviceCount) Services, \(locationCount) Locations"
 						}
 					}
 				})
@@ -219,6 +223,8 @@ struct SideView: View {
 					if !generateResult {
 						showAlert.toggle()
 						buttonErrorMsg = generateMessage
+					} else {
+						statusMessage = "Files Generated For New Year"
 					}
 				}
 			}
@@ -230,6 +236,8 @@ struct SideView: View {
 					if !updateResult {
 						showAlert.toggle()
 						buttonErrorMsg = updateMessage
+					} else {
+						statusMessage = "Timesheet File IDs Update Successful"
 					}
 				}
 			}
@@ -244,7 +252,7 @@ struct SideView: View {
 		}
 		
 //            	.listStyle(SidebarListStyle())
-		.navigationTitle("Sidebar")
+		.navigationTitle("Main Menu")
             
 		
 		.alert(buttonErrorMsg, isPresented: $showAlert) {

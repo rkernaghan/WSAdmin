@@ -204,6 +204,7 @@ struct TutorAvailabilityView: View {
 		
 			
 		}
+		.navigationTitle("Tutor Availability View")
 	}
 }
 

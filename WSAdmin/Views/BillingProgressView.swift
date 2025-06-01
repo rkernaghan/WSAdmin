@@ -33,6 +33,8 @@ struct BillingProgressView: View {
 				showInvoice = true
 			}
 		}
+		.navigationTitle("Billing Progress View")
+		
 		.alert(buttonErrorMsg, isPresented: $showAlert) {
 			Button("OK", role: .cancel) { }
 		}

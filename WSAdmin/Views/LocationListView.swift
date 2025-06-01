@@ -128,6 +128,8 @@ struct LocationListView: View {
 				} primaryAction: { items in
 					//              store.favourite(items)
 				}
+				.navigationTitle("Locations List")
+				
 				.alert(buttonErrorMsg, isPresented: $showAlert) {
 					Button("OK", role: .cancel) { }
 				}

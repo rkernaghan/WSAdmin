@@ -99,6 +99,8 @@ struct InvoiceView: View {
 					}
 				}
 			}
+			.navigationTitle("Invoice View")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}

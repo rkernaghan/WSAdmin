@@ -161,6 +161,8 @@ struct ServiceView: View {
 					Label("Add New Service", systemImage: "square.and.arrow.up")
 				}
 			}
+			.navigationTitle("Service Display")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) { }
 			}

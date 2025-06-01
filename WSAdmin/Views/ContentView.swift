@@ -30,8 +30,11 @@ struct ContentView: View {
 					SignInView()
 				}
 			}
+			.toolbar {
+				Text("Hi Stephen")
+			}
 		}
-//		.navigationTitle("Write Seattle Administration")
+		.navigationTitle("Write Seattle Administration")
 		.environment(refDataVM)
 		.environment(userAuthVM)
 		.environment(studentMgmtVM)

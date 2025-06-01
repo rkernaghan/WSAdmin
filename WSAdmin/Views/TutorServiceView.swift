@@ -122,6 +122,8 @@ struct TutorServiceView: View {
 			Spacer()
 			
 		}
+		.navigationTitle("Tutor Service View")
+		
 		.alert(buttonErrorMsg, isPresented: $showAlert) {
 			Button("OK", role: .cancel) { }
 		}

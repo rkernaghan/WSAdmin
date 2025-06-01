@@ -104,6 +104,8 @@ struct TutorView: View {
 					Text("Add New Tutor")
 				}
 			}
+			.navigationTitle("Tutor Display")
+			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
 				Button("OK", role: .cancel) {
 					if dismissAlert {

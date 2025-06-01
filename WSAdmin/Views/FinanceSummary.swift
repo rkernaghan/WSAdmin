@@ -70,6 +70,7 @@ struct FinanceSummary: View {
 
 			}
 		}
+		.navigationTitle("Finance Summary")
 		
 	}
 }
