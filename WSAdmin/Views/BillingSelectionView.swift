@@ -80,7 +80,6 @@ struct BillingSelectionView: View {
 						Task {
 							billingMessages.windowMessageList.removeAll()
 							showInvoice = true
-							
 							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages)
 							
 						}

@@ -30,9 +30,11 @@ import Foundation
 		
 		var billedMonthTutors: Int = 0
 		var activeMonthTutors: Int = 0
+		var billedMonthStudents: Int = 0
+		
 		
 		var monthIndex = PgmConstants.systemStartMonthIndex
-		var yearIndex = PgmConstants.systemStartYearIndex
+		let yearIndex = PgmConstants.systemStartYearIndex
 		var yearNum = yearNumbersArray[yearIndex] 		// Set year number to 2024
 		let date = Date()
 		let calendar = Calendar.current
@@ -46,8 +48,9 @@ import Foundation
 			let tutorBillingFileName = tutorBillingFileNamePrefix + String(yearNum)
 			do {
 				let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
+				let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: studentBillingFileNamePrefix + String(yearNum))
 				
-				if tutorFileFound {
+				if tutorFileFound && studentFileFound {
 					// Loop through each Tutor Billing Month in the year
 					if yearNum == currentYearNum {
 						monthCount = currentMonthNum - 1	//assume current month not yet billed
@@ -64,55 +67,79 @@ import Foundation
 						if !readResult {
 							print("Warning: Could not load Tutor Billing Data for \(monthName)")
 						} else {
-							// For each Tutor Billing Month in the year, count the total number of active Tutors and the total number who had at least one billing session
 							
-							// Get the number of sessions, total cost, revenue and profit for the month
-							
-							
-							var tutorNum = 0
-							let tutorCount = tutorBillingMonth.tutorBillingRows.count
-							while tutorNum < tutorCount {
-								if tutorBillingMonth.tutorBillingRows[tutorNum].totalBilledSessions > 0 {
-//								if tutorBillingMonth.tutorBillingRows[tutorNum].monthBillingSessions > 0 {
-									monthSessionTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions
-									monthCostTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledCost
-									monthRevenueTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledRevenue
-									monthProfitTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledProfit
+							// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
+							let studentBillingMonth = StudentBillingMonth(monthName: monthName)
+							let readResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID, loadValidatedData: false)
+							if !readResult {
+								print(("Warning: Could not load Student Billing Data for \(monthName)"))
+							} else {
+								
+								
+								// For each Tutor Billing Month in the year, count the total number of active Tutors and the total number who had at least one billing session
+								
+								// Get the number of sessions, total cost, revenue and profit for the month
+								
+								
+								var tutorNum = 0
+								let tutorCount = tutorBillingMonth.tutorBillingRows.count
+								while tutorNum < tutorCount {
+									if tutorBillingMonth.tutorBillingRows[tutorNum].totalBilledSessions > 0 {
+										//								if tutorBillingMonth.tutorBillingRows[tutorNum].monthBillingSessions > 0 {
+										monthSessionTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions
+										monthCostTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledCost
+										monthRevenueTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledRevenue
+										monthProfitTotal += tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledProfit
+									}
+									
+									if tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions > 0 {
+										billedMonthTutors += 1
+									}
+									
+									if tutorBillingMonth.tutorBillingRows[tutorNum].tutorStatus == "Active" {
+										activeMonthTutors += 1
+									}
+									tutorNum += 1
+									
 								}
 								
-								if tutorBillingMonth.tutorBillingRows[tutorNum].monthBilledSessions > 0 {
-									billedMonthTutors += 1
+								// Get the Billed Student sheet for the month
+								
+								// Count the number of Students who had sessions that month
+								var studentNum = 0
+								let studentCount = studentBillingMonth.studentBillingRows.count
+								while studentNum < studentCount {
+									if studentBillingMonth.studentBillingRows[studentNum].monthBilledSessions > 0 {
+										billedMonthStudents += 1
+									}
+									studentNum += 1
 								}
 								
-								if tutorBillingMonth.tutorBillingRows[tutorNum].tutorStatus == "Active" {
-									activeMonthTutors += 1
-								}
-								tutorNum += 1
+								yearSessionTotal += monthSessionTotal
+								yearCostTotal += monthCostTotal
+								yearRevenueTotal += monthRevenueTotal
+								yearProfitTotal += monthProfitTotal
 								
+								totalSessionTotal += monthSessionTotal
+								totalCostTotal += monthCostTotal
+								totalRevenueTotal += monthRevenueTotal
+								totalProfitTotal += monthProfitTotal
+								// Add a new month to the array
+								let newFinanceSummaryRow = FinanceSummaryRow(year: String(yearNum), month: monthArray[monthIndex], activeTutorsForMonth: activeMonthTutors, billedTutorsForMonth: billedMonthTutors, billedStudentsForMonth: billedMonthStudents, monthSessions: monthSessionTotal, monthCost: monthCostTotal, monthRevenue: monthRevenueTotal, monthProfit: monthProfitTotal, yearSessions: yearSessionTotal, yearCost: yearCostTotal, yearRevenue: yearRevenueTotal, yearProfit: yearProfitTotal, totalSessions: totalSessionTotal, totalCost: totalCostTotal, totalRevenue: totalRevenueTotal, totalProfit: totalProfitTotal )
+								
+								financeSummaryArray.append(newFinanceSummaryRow)
+								
+								billedMonthTutors = 0
+								activeMonthTutors = 0
+								billedMonthStudents = 0
+								
+								monthSessionTotal = 0
+								monthCostTotal = 0.0
+								monthRevenueTotal = 0.0
+								monthProfitTotal = 0.0
+								
+								monthIndex += 1
 							}
-							yearSessionTotal += monthSessionTotal
-							yearCostTotal += monthCostTotal
-							yearRevenueTotal += monthRevenueTotal
-							yearProfitTotal += monthProfitTotal
-							
-							totalSessionTotal += monthSessionTotal
-							totalCostTotal += monthCostTotal
-							totalRevenueTotal += monthRevenueTotal
-							totalProfitTotal += monthProfitTotal
-							// Add a new month to the array
-							let newFinanceSummaryRow = FinanceSummaryRow(year: String(yearNum), month: monthArray[monthIndex], activeTutorsForMonth: activeMonthTutors, billedTutorsForMonth: billedMonthTutors, monthSessions: monthSessionTotal, monthCost: monthCostTotal, monthRevenue: monthRevenueTotal, monthProfit: monthProfitTotal, yearSessions: yearSessionTotal, yearCost: yearCostTotal, yearRevenue: yearRevenueTotal, yearProfit: yearProfitTotal, totalSessions: totalSessionTotal, totalCost: totalCostTotal, totalRevenue: totalRevenueTotal, totalProfit: totalProfitTotal )
-							
-							financeSummaryArray.append(newFinanceSummaryRow)
-							
-							billedMonthTutors = 0
-							activeMonthTutors = 0
-							
-							monthSessionTotal = 0
-							monthCostTotal = 0.0
-							monthRevenueTotal = 0.0
-							monthProfitTotal = 0.0
-							
-							monthIndex += 1
 						}
 						
 					}

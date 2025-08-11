@@ -253,7 +253,7 @@ import GoogleSignIn
 					dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
 					let fileDate = dateFormatter.string(from: Date())
 					
-					let fileName = "CSV Export File \(fileDate).csv"
+					let fileName = "CSV Export File for \(billingMonth) \(billingYear) generated on \(fileDate).csv"
 					let fileManager = FileManager.default
 					
 					// Get the path to the Documents directory

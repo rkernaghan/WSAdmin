@@ -9,6 +9,7 @@ import SwiftUI
 import OSLog
 
 struct PgmConstants {
+	// Row and column position of Reference Data spreadsheet data
 	static let dataCountTotalStudentsRow = 0
 	static let dataCountTotalStudentsCol = 0
 	static let dataCountActiveStudentsRow = 1
@@ -245,6 +246,7 @@ struct PgmConstants {
 	static let systemStartYearIndex = 0
 }
 
+// Defines the type of a Service
 enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
 	case Base
 	case Special
@@ -255,9 +257,9 @@ enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
 		
 		switch self {
 			case .Base:
-				return "Base"
+				return "Base"		// Base Services apply to all Tutors and new Base Services are added to all Tutors
 			case .Special:
-				return "Special"
+				return "Special"	// Special Services are assigned to individual Tutors
 		}
 	}
 }
@@ -272,9 +274,9 @@ enum BillingTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
 		
 		switch self {
 			case .Fixed:
-				return "Fixed"
+				return "Fixed"		// Fixed cost regardless of tutoring session duration
 			case .Variable:
-				return "Variable"
+				return "Variable"	// Cost is pro-rated based on the number of minutes
 		}
 	}
 }

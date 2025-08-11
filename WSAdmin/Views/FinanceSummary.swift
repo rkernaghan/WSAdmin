@@ -26,11 +26,17 @@ struct FinanceSummary: View {
 					     }
 					.width(min: 30, ideal: 40, max: 50)
 
-				TableColumn("Billed\nTutors") { data in
+				TableColumn("Billing\nTutors") { data in
 					Text(String(data.billedTutorsForMonth))
 						.frame(maxWidth: .infinity, alignment: .center)
 				}
 					.width(min: 30, ideal: 40, max: 50)
+				
+				TableColumn("Billed\nStudents") { data in
+					Text(String(data.billedStudentsForMonth))
+						.frame(maxWidth: .infinity, alignment: .center)
+				}
+				.width(min: 40, ideal: 50, max: 60)
 				
 				TableColumn("Month\nSessions") {data in
 					Text(String(data.monthSessions))
@@ -62,11 +68,11 @@ struct FinanceSummary: View {
 				}
 					.width(min: 30, ideal: 40, max: 60)
 				
-				TableColumn("Total\nProfit") {data in
-					Text(String(data.totalProfit.formatted(.number.precision(.fractionLength(0)))))
-						.frame(maxWidth: .infinity, alignment: .trailing)
-				}
-				.width(min: 35, ideal: 45, max: 60)
+//				TableColumn("Total\nProfit") {data in
+//					Text(String(data.totalProfit.formatted(.number.precision(.fractionLength(0)))))
+//						.frame(maxWidth: .infinity, alignment: .trailing)
+//				}
+//				.width(min: 35, ideal: 45, max: 60)
 
 			}
 		}
