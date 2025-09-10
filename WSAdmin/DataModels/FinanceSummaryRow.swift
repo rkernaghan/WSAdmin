@@ -26,10 +26,11 @@ class FinanceSummaryRow: Identifiable {
 	var totalCost: Float
 	var totalRevenue: Float
 	var totalProfit: Float
+	var monthProfitChange: String
 	let id = UUID()
 	
 	
-	init(year: String, month: String, activeTutorsForMonth: Int, billedTutorsForMonth: Int, billedStudentsForMonth: Int, monthSessions: Int, monthCost: Float, monthRevenue: Float, monthProfit: Float, yearSessions: Int, yearCost: Float, yearRevenue: Float, yearProfit: Float, totalSessions: Int, totalCost: Float, totalRevenue: Float, totalProfit: Float) {
+	init(year: String, month: String, activeTutorsForMonth: Int, billedTutorsForMonth: Int, billedStudentsForMonth: Int, monthSessions: Int, monthCost: Float, monthRevenue: Float, monthProfit: Float, yearSessions: Int, yearCost: Float, yearRevenue: Float, yearProfit: Float, totalSessions: Int, totalCost: Float, totalRevenue: Float, totalProfit: Float, monthProfitChange: String) {
 		self.year = year
 		self.month = month
 		self.activeTutorsForMonth = activeTutorsForMonth
@@ -47,6 +48,7 @@ class FinanceSummaryRow: Identifiable {
 		self.totalCost = totalCost
 		self.totalRevenue = totalRevenue
 		self.totalProfit = totalProfit
+		self.monthProfitChange = monthProfitChange
 	}
 	
 }

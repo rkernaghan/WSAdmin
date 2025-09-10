@@ -36,11 +36,14 @@ import Foundation
 		var monthIndex = PgmConstants.systemStartMonthIndex
 		let yearIndex = PgmConstants.systemStartYearIndex
 		var yearNum = yearNumbersArray[yearIndex] 		// Set year number to 2024
+		var displayYearNum = String(yearNum)			// year num to display so year number doesn't have to be displayed each month
 		let date = Date()
 		let calendar = Calendar.current
 		let currentYearNum = calendar.component(.year, from: date)
 		let currentMonthNum = calendar.component(.month, from: date)
 		var monthCount: Int = 0
+		var monthProfitChange: String = " "
+		var financeSummaryRowNumber: Int = 0			// Finance Summary array index
 		
 		// Loop through each year since system started
 		while yearNum <= currentYearNum {
@@ -124,8 +127,14 @@ import Foundation
 								totalCostTotal += monthCostTotal
 								totalRevenueTotal += monthRevenueTotal
 								totalProfitTotal += monthProfitTotal
+								
+								// Determine profit changed compared to same month a year ago (starting after one year of tracking)
+								financeSummaryRowNumber = financeSummaryArray.count
+								if financeSummaryRowNumber > 11 {
+									monthProfitChange = String( Int( round(monthProfitTotal / financeSummaryArray[financeSummaryRowNumber - 12].monthProfit * 100))) + "%"
+								}
 								// Add a new month to the array
-								let newFinanceSummaryRow = FinanceSummaryRow(year: String(yearNum), month: monthArray[monthIndex], activeTutorsForMonth: activeMonthTutors, billedTutorsForMonth: billedMonthTutors, billedStudentsForMonth: billedMonthStudents, monthSessions: monthSessionTotal, monthCost: monthCostTotal, monthRevenue: monthRevenueTotal, monthProfit: monthProfitTotal, yearSessions: yearSessionTotal, yearCost: yearCostTotal, yearRevenue: yearRevenueTotal, yearProfit: yearProfitTotal, totalSessions: totalSessionTotal, totalCost: totalCostTotal, totalRevenue: totalRevenueTotal, totalProfit: totalProfitTotal )
+								let newFinanceSummaryRow = FinanceSummaryRow(year: displayYearNum, month: monthArray[monthIndex], activeTutorsForMonth: activeMonthTutors, billedTutorsForMonth: billedMonthTutors, billedStudentsForMonth: billedMonthStudents, monthSessions: monthSessionTotal, monthCost: monthCostTotal, monthRevenue: monthRevenueTotal, monthProfit: monthProfitTotal, yearSessions: yearSessionTotal, yearCost: yearCostTotal, yearRevenue: yearRevenueTotal, yearProfit: yearProfitTotal, totalSessions: totalSessionTotal, totalCost: totalCostTotal, totalRevenue: totalRevenueTotal, totalProfit: totalProfitTotal, monthProfitChange: monthProfitChange)
 								
 								financeSummaryArray.append(newFinanceSummaryRow)
 								
@@ -139,11 +148,13 @@ import Foundation
 								monthProfitTotal = 0.0
 								
 								monthIndex += 1
+								displayYearNum = " "
 							}
 						}
 						
 					}
 					yearNum += 1
+					displayYearNum = String(yearNum)
 					monthIndex = 0
 					
 					yearSessionTotal = 0

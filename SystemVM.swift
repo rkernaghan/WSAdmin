@@ -15,6 +15,7 @@ import Foundation
 	//	- that the Service assigned count matches the number of Tutors with the Service actually assigned in their Tutor Details sheet
 	//	- that Services with a status of Unassigned are not assigned to any Tutors
 	//	- that Services with a status of Assigned are assigned to at least one Tutor
+	//	- that each Tutor is assigned all Base services
 	//	- that the Location count matches the number of Students with that Location
 	//	- that Locations with a status of Assigned have a Student count > 0
 	//	- that Locations with a status of Unassigned have a Student count = 0
@@ -23,7 +24,7 @@ import Foundation
 	//	- that Location names and keys are not duplicated
 	//	- that Tutor names and keys are not duplicated
 	//	- that the Student keys in the RefData match the Student keys in thr Tutor Details sheet for each Tutor
-	//	- that the Service keys in the RefData match the Student keys in thr Tutor Details sheet for each Tutor
+	//	- that the Service keys in the RefData match the Service keys in thr Tutor Details sheet for each Tutor
 	//	- that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 	//	- that each Student Name in the Reference Data is in the current Student Billing sheet
 	//	- that each Student Status is valid
@@ -112,11 +113,14 @@ import Foundation
 		
 		// Validate that each Service with a Status of Assigned is actually assigned to a Tutor and no Services with a Status of Unassigned is assigned to a Tutor
 		// Validate that the Use Count for each Service is equal to the number of Tutors the Service is assigned to
+		// Validate that each Base service is assigned to each Service
 		var serviceNum = 0
 		let serviceCount = referenceData.services.servicesList.count
 		while serviceNum < serviceCount {
-			var serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
-			var serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
+			let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+			let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
+			let serviceType = referenceData.services.servicesList[serviceNum].serviceType
+			
 			var tutorNum = 0
 			var tutorName: String = ""
 			var tutorServiceCount:Int = 0
@@ -128,6 +132,9 @@ import Foundation
 					if serviceFound {
 						tutorName = tutorName + referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 						tutorServiceCount += 1
+					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != "Deleted" {
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Base Service \(serviceName) not assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
+						
 					}
 				}
 				tutorNum += 1

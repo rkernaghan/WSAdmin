@@ -8,12 +8,12 @@
 import Foundation
 
 @Observable class Tutor: Identifiable {
-	var tutorKey: String
+	var tutorKey: String				// Unique key for the Tutor
 	var tutorName: String
 	var tutorEmail: String
 	var tutorPhone: String
-	var tutorStatus: String
-	var tutorAvailability: String
+	var tutorStatus: String				// Assigned, Unassigned, Suspended or Deleted
+//	var tutorAvailability: String			// Tutor availability data from Tutor's Timesheet
 	var tutorStartDate: String
 	var tutorEndDate: String
 	var tutorMaxStudents: Int
@@ -34,17 +34,17 @@ import Foundation
 		self.tutorEmail = tutorEmail
 		self.tutorPhone = tutorPhone
 		self.tutorStatus = tutorStatus
-		self.tutorAvailability = " "
+//		self.tutorAvailability = " "
 		self.tutorStartDate = tutorStartDate
 		self.tutorEndDate = tutorEndDate
 		self.tutorMaxStudents = tutorMaxStudents
-		self.tutorStudentCount = tutorStudentCount
-		self.tutorServiceCount = tutorServiceCount
-		self.tutorTotalSessions = tutorTotalSessions
-		self.tutorTotalCost = tutorTotalCost
+		self.tutorStudentCount = tutorStudentCount			// Count of Students assigned to Tutor
+		self.tutorServiceCount = tutorServiceCount			// Count of Services assigned to Tutor
+		self.tutorTotalSessions = tutorTotalSessions			// Total tutoring sessions held by this Tutor since system started in July/August 2025
+		self.tutorTotalCost = tutorTotalCost				// Total Tutor cost (paid to Tutor) since system started in July/August 2025
 		self.tutorTotalRevenue = tutorTotalRevenue
-		self.tutorTotalProfit = tutorTotalProfit
-		self.timesheetFileID = timesheetFileID
+		self.tutorTotalProfit = tutorTotalProfit			// Total profit from the Tutor since the system started in Jyly/August 2025
+		self.timesheetFileID = timesheetFileID				// Google Drive FileID for the Tutor's current year Timesheet
 	}
 	
 	// Find a Student assigned to this Tutor by Student Key

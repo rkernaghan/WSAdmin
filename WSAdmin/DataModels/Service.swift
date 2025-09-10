@@ -8,13 +8,13 @@
 import Foundation
 
 @Observable class Service: Identifiable {
-	var serviceKey: String
-	var serviceTimesheetName: String
-	var serviceInvoiceName: String
-	var serviceType: ServiceTypeOption
-	var serviceBillingType: BillingTypeOption
-	var serviceStatus: String
-	var serviceCount: Int
+	var serviceKey: String					// Unique key for the Service
+	var serviceTimesheetName: String			// Name to show on Tutor Timesheet
+	var serviceInvoiceName: String				// Name to show on client invoice
+	var serviceType: ServiceTypeOption			// Base or Variable
+	var serviceBillingType: BillingTypeOption		// Fixed or Variable
+	var serviceStatus: String				// Unassigned, Assigned, or Deleted
+	var serviceCount: Int					// Number of Tutors the Service is assigned to
 	var serviceCost1: Float
 	var serviceCost2: Float
 	var serviceCost3: Float
