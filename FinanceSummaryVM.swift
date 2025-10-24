@@ -32,8 +32,7 @@ import Foundation
 		var activeMonthTutors: Int = 0
 		var billedMonthStudents: Int = 0
 		
-		
-		var monthIndex = PgmConstants.systemStartMonthIndex
+		var monthIndex = PgmConstants.systemStartMonthIndex + 1	// Start one month after system start month as August 2024 only Stephen and Jesse were billed with this system
 		let yearIndex = PgmConstants.systemStartYearIndex
 		var yearNum = yearNumbersArray[yearIndex] 		// Set year number to 2024
 		var displayYearNum = String(yearNum)			// year num to display so year number doesn't have to be displayed each month
@@ -78,11 +77,9 @@ import Foundation
 								print(("Warning: Could not load Student Billing Data for \(monthName)"))
 							} else {
 								
-								
 								// For each Tutor Billing Month in the year, count the total number of active Tutors and the total number who had at least one billing session
 								
 								// Get the number of sessions, total cost, revenue and profit for the month
-								
 								
 								var tutorNum = 0
 								let tutorCount = tutorBillingMonth.tutorBillingRows.count

@@ -120,6 +120,7 @@ import Foundation
 			
 		}
 		
+		// Update the Service in the Reference Data using the data from the update service screen
 		referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
 		updateResult = await referenceData.services.saveServiceData()

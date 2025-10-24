@@ -56,6 +56,8 @@ import Foundation
 		
 		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
 		self.studentsList.append(newStudent)
+		//Sort Student list alphabetically
+		self.studentsList.sort { $0.studentName < $1.studentName }
 	}
 	
 	func printAll() {
@@ -79,6 +81,8 @@ import Foundation
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
 					loadStudentRows(studentCount: studentCount, sheetCells: sheetCells)
+					//Sort Student list alphabetically
+					self.studentsList.sort { $0.studentName < $1.studentName }
 				} else {
 					completionFlag = false
 				}

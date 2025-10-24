@@ -56,12 +56,12 @@ import GoogleSignIn
 					    addMessage = "Critical Error: Could not add Tutor \(tutorName) to Billed Tutor spreadsheet for \(prevMonthName)"
 				    } else {
 					    
-					    // Assign all Base Services to new Tutor
+					    // Assign all active Base Services to new Tutor
 					   
 					    var serviceNum = 0
 					    let serviceCount = referenceData.services.servicesList.count
 					    while serviceNum < serviceCount && addResult {
-						    if referenceData.services.servicesList[serviceNum].serviceType == .Base {
+						    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != "Deleted" {
 							    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
 							    addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 							    if !addResult {
