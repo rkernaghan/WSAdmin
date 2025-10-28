@@ -107,6 +107,7 @@ struct SideView: View {
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
 	@Environment(SystemVM.self) var systemVM: SystemVM
 	@Environment(FinanceSummaryVM.self) var financeSummaryVM: FinanceSummaryVM
+	@Environment(BillingVM.self) var billingVM: BillingVM
         
 	var body: some View {
  
@@ -238,6 +239,19 @@ struct SideView: View {
 						buttonErrorMsg = updateMessage
 					} else {
 						statusMessage = "Timesheet File IDs Update Successful"
+					}
+				}
+			}
+			
+			Button("Update Student Last Billed Dates") {
+				Task {
+					statusMessage = " "
+					let (updateResult, updateMessage) = await billingVM.updateStudentLastBilledDates(referenceData: referenceData)
+					if !updateResult {
+						showAlert.toggle()
+						buttonErrorMsg = updateMessage
+					} else {
+						statusMessage = "Student Last Billed Dates Updated Successful"
 					}
 				}
 			}

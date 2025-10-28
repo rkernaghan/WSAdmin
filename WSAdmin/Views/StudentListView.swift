@@ -83,7 +83,7 @@ struct StudentListView: View {
 							.width(min: 90, ideal: 160, max: 260)
 						
 						TableColumn("Status", value: \Student.studentStatus)
-							.width(min: 50, ideal: 70, max: 80)
+							.width(min: 50, ideal: 75, max: 90)
 						
 						TableColumn("Tutor Name",value: \Student.studentTutorName)
 							.width(min: 80, ideal: 120, max: 180)
@@ -104,7 +104,13 @@ struct StudentListView: View {
 					             
 					Group {
 						TableColumn("Start Date", value: \Student.studentStartDate)
-							.width(min: 60, ideal: 70, max: 90)
+							.width(min: 60, ideal: 75, max: 90)
+						
+						TableColumn("Assigned\nUnassigned\nDate", value: \Student.studentAssignedUnassignedDate)
+							.width(min: 60, ideal: 75, max: 90)
+						
+						TableColumn("Last Billed\nDate", value: \Student.studentLastBilledDate)
+							.width(min: 60, ideal: 75, max: 90)
 						
 						TableColumn("End Date", value: \Student.studentEndDate)
 							.width(min: 60, ideal: 70, max: 90)
@@ -128,7 +134,7 @@ struct StudentListView: View {
 //						.width(min: 60, ideal: 80, max: 90)
 //					}
 //					Group {
-						
+//
 //						TableColumn("Total Revenue") {data in
 //							Text(String(data.studentTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
 //								.frame(maxWidth: .infinity, alignment: .center)

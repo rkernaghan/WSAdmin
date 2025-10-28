@@ -78,6 +78,7 @@ import GoogleSignIn
 		var timesheetFileID: String = " "
 		var result: Bool = true
 		
+		
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
 		do {
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
@@ -240,6 +241,10 @@ import GoogleSignIn
 		
 		// First update the billing stats for Tutors, Students and Locations
 		generationFlag = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
+		
+		// Then update the Last Billed Date for each Student being billed
+		
+		
 		if !generationFlag {
 			generationMessage = "Error: Could not update Billing Stats"
 			print("Error: Could not update billing stats")
@@ -281,13 +286,16 @@ import GoogleSignIn
 					var invoiceLineNum = 0
 					let invoiceLineCount = invoice.invoiceLines.count
 					while invoiceLineNum < invoiceLineCount {
-						let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum])
+						let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
 						if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 							fileHandle.write(data)
 						}
 						invoiceLineNum += 1
 					}
-					// Close the file when done
+					// Save the Students List as the Last Billing Dates will have been updated
+					await referenceData.students.saveStudentData()
+					
+					// Close the CSV file when done
 					fileHandle.closeFile()
 					print("Lines written to CSV file successfully.")
 				} catch {
@@ -306,7 +314,7 @@ import GoogleSignIn
 	}
 	
 	// Format a CSV file line from an Invoice file line
-	func processInvoiceLine(invoiceLine: InvoiceLine) -> String {
+	func processInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
 		let invoiceClient = invoiceLine.clientName
 		let invoiceEmail = invoiceLine.clientEmail
@@ -322,7 +330,17 @@ import GoogleSignIn
 		let invoiceAmount = String(invoiceLine.amount.formatted(.number.precision(.fractionLength(2))))
 		let invoiceTaxCode = invoiceLine.taxCode
 		let invoiceServiceDate = invoiceLine.serviceDate
-		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceTerm + PgmConstants.csvSeperator +  invoiceLocation + PgmConstants.csvSeperator + invoiceTutor + PgmConstants.csvSeperator + invoiceItem + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator + invoiceRate + PgmConstants.csvSeperator + invoiceAmount + PgmConstants.csvSeperator + invoiceTaxCode + PgmConstants.csvSeperator + invoiceServiceDate 
+		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceTerm + PgmConstants.csvSeperator +  invoiceLocation + PgmConstants.csvSeperator + invoiceTutor + PgmConstants.csvSeperator + invoiceItem + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator + invoiceRate + PgmConstants.csvSeperator + invoiceAmount + PgmConstants.csvSeperator + invoiceTaxCode + PgmConstants.csvSeperator + invoiceServiceDate
+		
+		// Set the Last Billed Date for the Student to today's date
+		let studentName = invoiceLine.studentName
+		let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+		if studentFound {
+			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
+		} else {
+			print ("Error: Student not found when updating Student Last Billed Date")
+		}
+	print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		return(csvLine)
 	}
 	
@@ -396,6 +414,71 @@ import GoogleSignIn
 			
 			alreadyBilledTutorNum += 1
 		}
+	}
+	
+	// This function updates the Last Billed Dates for each Student by reading through all the Timesheets from system start (July 2025)
+	func updateStudentLastBilledDates(referenceData: ReferenceData) async -> (Bool, String) {
+		
+		var updateResult: Bool = true
+		var updateMessage: String = ""
+		var billingMessages = WindowMessages()
+		
+		// Loop through each Tutor
+		
+		var tutorNum = 0
+		while tutorNum < referenceData.tutors.tutorsList.count {
+			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+			print("\nProcessing Tutor: \(tutorName)")
+			
+			// For each Tutor read in each year's Timesheet (some inactive Tutors will not have a Timesheet each year)
+			var timesheetYearNum = 2024
+			var timesheetMonthNum = 7
+			while(timesheetYearNum < 2026) {
+				
+				let timesheetYearString = String(timesheetYearNum)
+				
+				while (timesheetMonthNum < 13) {
+					let timesheetMonthString = monthArray[timesheetMonthNum - 1]
+					print (timesheetYearString, timesheetMonthString)
+					
+					let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: timesheetYearString, timesheetMonth: timesheetMonthString, billingMessages: billingMessages, referenceData: referenceData)
+					
+					// For each month's Timesheet, read each row and update the Last Billed Date for that Student
+					var timesheetNum = 0
+					while timesheetNum < timesheet.timesheetRows.count {
+						
+						let studentName = timesheet.timesheetRows[timesheetNum].studentName
+						let serviceDate = timesheet.timesheetRows[timesheetNum].serviceDate
+						
+						let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+						if studentFound {
+							print ("\t\(studentName), \(serviceDate)")
+							referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: serviceDate)
+						} else {
+							print ("Could not find Student: \(studentName)")
+						}
+						
+						timesheetNum += 1
+					}
+					
+					timesheetMonthNum += 1
+				}
+				
+				timesheetYearNum += 1
+				timesheetMonthNum = 1
+			}
+			
+			
+			
+			tutorNum += 1
+		}
+		
+		// Save the updated Student List
+		
+		await referenceData.students.saveStudentData()
+		
+		return(updateResult, updateMessage)
+		
 	}
 	
 }

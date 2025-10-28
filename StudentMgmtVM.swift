@@ -287,20 +287,21 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
-    
+	// This function checks if the  email address associated with a Student is valid
 	func isValidEmail(_ email: String) -> Bool {
 		let emailRegex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,64}$"
 		let emailPredicate = NSPredicate(format: "SELF MATCHES[c] %@", emailRegex)
 		return emailPredicate.evaluate(with: email)
 	}
 	
+	// This funciton checks if the phone number associated with a Student is valid
 	func isValidPhone(_ phone: String)-> Bool {
 		let phoneRegex = "(\\([0-9]{3}\\) |[0-9]{3}-)[0-9]{3}-[0-9]{4}"
 		let phonePredicate = NSPredicate(format: "SELF MATCHES[c] %@", phoneRegex)
 		return phonePredicate.evaluate(with: phone)
 	}
     
-
+	// This function changes a Student's Status to "Deleted"
 	func deleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		
 		var deleteResult: Bool = true
@@ -310,13 +311,16 @@ import Foundation
 		
 		for objectID in indexes {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+				// Check that the Student is not assigned to a Tutor and is not already deleted
 				if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
+					// Change the Student's Status to Deleted and save the updated Student List data
 					let studentNum = index
 					referenceData.students.studentsList[studentNum].markDeleted()
 					deleteResult = await referenceData.students.saveStudentData()
 					if !deleteResult {
 						deleteMessage = "Error: Could not save Student Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 					} else {
+						// Decrease the system count of Active Students and the count of students at this student's Location
 						referenceData.dataCounts.decreaseActiveStudentCount()
 						// Decrease the counts of Students at the Location
 						let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
@@ -325,6 +329,7 @@ import Foundation
 							deleteMessage = "Error: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 						} else {
 							referenceData.locations.locationsList[locationNum].decreaseStudentCount()
+							// Save the updated Location List data
 							let saveResult = await referenceData.locations.saveLocationData()
 							if !saveResult {
 								print("Error: could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)")
@@ -388,7 +393,7 @@ import Foundation
 		return(deleteResult, deleteMessage)
 	}
 	
-    
+	// This function changes a Student's Status from "Deleted" to "Active"
 	func undeleteStudent(indexes: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unDeleteResult: Bool = true
 		var unDeleteMessage: String = " "
@@ -399,6 +404,7 @@ import Foundation
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.students.studentsList[index].studentStatus == "Deleted" {
 					let studentNum = index
+					// Change the Student's Status to "Active" and save the Student List data
 					referenceData.students.studentsList[studentNum].markUndeleted()
 					unDeleteResult = await referenceData.students.saveStudentData()
 					if unDeleteResult {
@@ -428,6 +434,7 @@ import Foundation
 		return(unDeleteResult, unDeleteMessage)
 	}
     
+	// This function assigns a Student to a Tutor
 	func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var assignResult: Bool = true
 		var assignMessage: String = ""
@@ -435,14 +442,16 @@ import Foundation
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
+				// Check that the Student Status is "Unassigned"
 				if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
-					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
+//					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
 					
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
 					assignResult = await referenceData.students.saveStudentData()
 					if !assignResult {
 						assignMessage = "Error: could not save Student Data when assigning Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) to Student: \(referenceData.students.studentsList[studentNum].studentName)"
 					} else {
+						// 
 						let dateFormatter = DateFormatter()
 						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())

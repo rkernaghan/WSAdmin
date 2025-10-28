@@ -15,6 +15,8 @@ import Foundation
 	var studentEmail: String
 	var studentType: StudentTypeOption
 	var studentStartDate: String
+	var studentAssignedUnassignedDate: String
+	var studentLastBilledDate: String
 	var studentEndDate: String
 	var studentStatus: String
 	var studentTutorKey: String
@@ -26,7 +28,7 @@ import Foundation
 	var studentTotalProfit: Float
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: StudentTypeOption, studentStartDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
+	init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: StudentTypeOption, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
 		self.studentKey = studentKey
 		self.studentName = studentName
 		self.studentGuardian = studentGuardian
@@ -34,6 +36,8 @@ import Foundation
 		self.studentEmail = studentEmail
 		self.studentType = studentType
 		self.studentStartDate = studentStartDate
+		self.studentAssignedUnassignedDate = studentAssignedUnassignedDate
+		self.studentLastBilledDate = studentLastBilledDate
 		self.studentEndDate = studentEndDate
 		self.studentStatus = studentStatus
 		self.studentTutorKey = studentTutorKey
@@ -66,15 +70,21 @@ import Foundation
 	}
 	
 	func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
-	    self.studentStatus = "Assigned"
-	    self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
-	    self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+		self.studentStatus = "Assigned"
+		self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+		self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "yyyy/MM/dd"
+		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
 
 	func unassignTutor() {
-	    self.studentStatus = "Unassigned"
-	    self.studentTutorKey = " "
-	    self.studentTutorName = " "
+		self.studentStatus = "Unassigned"
+		self.studentTutorKey = " "
+		self.studentTutorName = " "
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "yyyy/MM/dd"
+		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
     
 	func resetBillingStats(monthSessions: Int, monthCost: Float, monthRevenue: Float) {
@@ -82,6 +92,16 @@ import Foundation
 		self.studentTotalCost -= monthCost
 		self.studentTotalRevenue -= monthRevenue
 		self.studentTotalProfit -= monthRevenue - monthCost
+	}
+	
+	func updateLastBilledDate(serviceDate: String) {
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "dd/MM/yyyy"
+		let date = dateFormatter.date(from: serviceDate)
+		if let date = date {
+//			dateFormatter.dateFormat = "yyyy/MM/dd"
+			self.studentLastBilledDate = dateFormatter.string(from: date)
+		}
 	}
 	
 }

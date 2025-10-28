@@ -54,7 +54,7 @@ import Foundation
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())
 		
-		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
 		self.studentsList.append(newStudent)
 		//Sort Student list alphabetically
 		self.studentsList.sort { $0.studentName < $1.studentName }
@@ -129,8 +129,10 @@ import Foundation
 			let newStudentEmail = sheetCells[rowNumber][PgmConstants.studentEmailPosition]
 			let newStudentType:StudentTypeOption =  StudentTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.studentTypePosition]) ?? .Minor
 			let newStudentStartDateString = sheetCells[rowNumber][PgmConstants.studentStartDatePosition]
+			let newStudentAssignedUnassignedDateString = sheetCells[rowNumber][PgmConstants.studentAssignedUnassignedDatePosition]
 			//              let newStudentStartDate = dateFormatter.string(from: newStudentStartDateString)
 			//              let newStudentStartDate = dateFormatter.string(from: Date())
+			let newStudentLastBilledDateString = sheetCells[rowNumber][PgmConstants.studentLastBilledDatePosition]
 			let newStudentEndDateString = sheetCells[rowNumber][PgmConstants.studentEndDatePosition]
 			//              let newStudentEndDate = dateFormatter.date(from: newStudentEndDateString)
 			let newStudentStatus = sheetCells[rowNumber][PgmConstants.studentStatusPosition]
@@ -142,7 +144,7 @@ import Foundation
 			let newStudentRevenue = Float(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
 			let newStudentProfit = Float(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
 			
-			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
+			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
 			
 			self.studentsList.append(newStudent)
 			
@@ -166,6 +168,8 @@ import Foundation
 			let studentEmail = studentsList[studentNum].studentEmail
 			let studentType = String(describing: studentsList[studentNum].studentType)
 			let studentStartDate = studentsList[studentNum].studentStartDate
+			let studentAssignedUnassignedDate = studentsList[studentNum].studentAssignedUnassignedDate
+			let studentLastBilledDate = studentsList[studentNum].studentLastBilledDate
 			let studentEndDate = studentsList[studentNum].studentEndDate
 			let studentStatus = studentsList[studentNum].studentStatus
 			let studentTutorKey = studentsList[studentNum].studentTutorKey
@@ -176,7 +180,7 @@ import Foundation
 			let studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.precision(.fractionLength(2))))
 			let studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.precision(.fractionLength(2))))
 			
-			updateValues.insert([studentKey, studentName, studentGuardian, studentPhone, studentEmail, studentType, studentStartDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
+			updateValues.insert([studentKey, studentName, studentGuardian, studentPhone, studentEmail, studentType, studentStartDate, studentAssignedUnassignedDate, studentLastBilledDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
 			studentNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet

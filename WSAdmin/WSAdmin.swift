@@ -44,9 +44,9 @@ struct PgmConstants {
 	static let prodRefFileName = "ReferenceData"
 	static let dataCountRange = "Master!B2:B13"
 	static let tutorRange = "Master!D2:Q"
-	static let studentRange = "Master!T3:AI"
-	static let serviceRange = "Master!AL3:AX"
-	static let locationRange = "Master!BA2:BF"
+	static let studentRange = "Master!U3:AL"
+	static let serviceRange = "Master!AP3:BB"
+	static let locationRange = "Master!BF2:BK"
 	
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
@@ -99,15 +99,17 @@ struct PgmConstants {
 	static let studentEmailPosition = 4
 	static let studentTypePosition = 5
 	static let studentStartDatePosition = 6
-	static let studentEndDatePosition = 7
-	static let studentStatusPosition = 8
-	static let studentTutorKeyPosition = 9
-	static let studentTutorNamePosition = 10
-	static let studentLocationPosition = 11
-	static let studentSessionsPosition = 12
-	static let studentTotalCostPosition = 13
-	static let studentTotalRevenuePosition = 14
-	static let studentTotalProfitPosition = 15
+	static let studentAssignedUnassignedDatePosition = 7
+	static let studentLastBilledDatePosition = 8
+	static let studentEndDatePosition = 9
+	static let studentStatusPosition = 10
+	static let studentTutorKeyPosition = 11
+	static let studentTutorNamePosition = 12
+	static let studentLocationPosition = 13
+	static let studentSessionsPosition = 14
+	static let studentTotalCostPosition = 15
+	static let studentTotalRevenuePosition = 16
+	static let studentTotalProfitPosition = 17
 	
 	static let serviceStartingRowNumber = 3
 	static let serviceKeyPosition = 0
@@ -132,8 +134,8 @@ struct PgmConstants {
 	static let locationStudentCountPosition = 4
 	static let locationStatusPosition = 5
 	
-	static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
-	static let yearNames = ["2024","2025","2026","2027","2028","2029","2030","2031","2032","2032"]
+//	static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+//	static let yearNames = ["2024","2025","2026","2027","2028","2029","2030","2031","2032","2032"]
 	static let firstTimesheetRow = 5
 	static let servicePrompt = "Choose Service"
 	static let studentPrompt = "Choose Student"
