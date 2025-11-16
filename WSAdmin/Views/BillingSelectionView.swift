@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct BillingSelectionView: View {
+	// NOTE: BillingVM must be injected as .environmentObject(BillingVM()) higher in the view hierarchy.
 	
 	var referenceData: ReferenceData
 	
+//	@Environment var billingVM: BillingVM
 	@Environment(BillingVM.self) var billingVM: BillingVM
 	
 	@State private var selectedTutors = Set<Tutor.ID>()
@@ -24,7 +26,9 @@ struct BillingSelectionView: View {
 	@State private var billingMessages = WindowMessages()
 	@State private var alreadyBilledTutors = [String]()
 	@State private var billedTutorMonth = TutorBillingMonth(monthName: "")
-
+	@State private var showBillingDiagnostics: Bool = false
+	@State private var showEachSession: Bool = false
+	
 	
 	var body: some View {
 		
@@ -32,21 +36,32 @@ struct BillingSelectionView: View {
 			
 			let tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
 			
-			Toggle(isOn: Binding(
-				get: { selectedTutors.count == tutorList.count && !tutorList.isEmpty },
-				set: { isSelectAll in
-					if isSelectAll {
-						// Select all rows by adding all row IDs to selectedRows
-						selectedTutors = Set(tutorList.map { $0.id })
-					} else {
-						// Deselect all rows by clearing selectedRows
-						selectedTutors.removeAll()
+			HStack {
+				Toggle(isOn: Binding(
+					get: { selectedTutors.count == tutorList.count && !tutorList.isEmpty },
+					set: { isSelectAll in
+						if isSelectAll {
+							// Select all rows by adding all row IDs to selectedRows
+							selectedTutors = Set(tutorList.map { $0.id })
+						} else {
+							// Deselect all rows by clearing selectedRows
+							selectedTutors.removeAll()
+						}
 					}
+				)) {
+					Text("Select All")
 				}
-			)) {
-				Text("Select All")
+				.padding()
+				
+				// Toggle to allow user to specify if they want diagnostic data when running billin
+				Toggle("Show Diagnostic Data", isOn: $showBillingDiagnostics)
+				
+				// Toggle to allow user to specify if they want each tutoring session to be displayed
+				Toggle("Show Each Session", isOn: $showEachSession)
+				
+					.padding()
 			}
-			.padding()
+			
 			HStack {
 				Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}, selection: $selectedTutors, sortOrder: $sortOrder) {
 					
@@ -80,7 +95,7 @@ struct BillingSelectionView: View {
 						Task {
 							billingMessages.windowMessageList.removeAll()
 							showInvoice = true
-							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages)
+							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 							
 						}
 					} label: {

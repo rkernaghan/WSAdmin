@@ -16,7 +16,7 @@ import Foundation
 		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey + 1)
 		
 		let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
-		referenceData.locations.loadLocation(newLocation: newLocation)
+		referenceData.locations.addLocation(newLocation: newLocation)
 		
 		saveResult = await referenceData.locations.saveLocationData()
 		if !saveResult {
@@ -36,7 +36,7 @@ import Foundation
 		var updateResult: Bool = true
 		var updateMessage: String = ""
 		
-		referenceData.locations.locationsList[locationNum].updateLocation(locationName: newLocationName)
+		referenceData.locations.locationsList[locationNum].setLocationName(locationName: newLocationName)
 		updateResult = await referenceData.locations.saveLocationData()
 		if !updateResult {
 			updateMessage = "Critical Error: Could not save Location Data when updating Location \(newLocationName)"

@@ -11,10 +11,10 @@ import GoogleSignIn
 
 
 @Observable class BillingVM  {
-
+	
         // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
 	
-	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages) async -> (Invoice, TutorBillingMonth, [String]) {
+	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
 		var tutorBillingFileID: String = ""
@@ -36,7 +36,7 @@ import GoogleSignIn
 				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
 				tutorList.append(tutorName)
 				
-				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages, referenceData: referenceData)
+				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				
 				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
 			}
@@ -73,22 +73,35 @@ import GoogleSignIn
 	}
 	
 	// Read in a Timesheet for a Tutor
-	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages, referenceData: ReferenceData) async -> Timesheet {
+	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
 		
 		
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
+		if showBillingDiagnostics {
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                 Timesheet Name is: \(fileName)"))
+		}
+		
 		do {
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
+			
 			if result {
-				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
+				if showBillingDiagnostics {
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                 Timesheet FileID is: \(timesheetFileID)"))
+				}
+				
+				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				if !timesheetResult {
 					print("Error: Could not load Timesheet for Tutor \(tutorName)")
 					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 				}
+			} else {
+				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName); User may not have access to Timesheet"))
 			}
+				
+				
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName)"))
@@ -417,11 +430,11 @@ import GoogleSignIn
 	}
 	
 	// This function updates the Last Billed Dates for each Student by reading through all the Timesheets from system start (July 2025)
-	func updateStudentLastBilledDates(referenceData: ReferenceData) async -> (Bool, String) {
+	func updateStudentLastBilledDates(referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Bool, String) {
 		
-		var updateResult: Bool = true
-		var updateMessage: String = ""
-		var billingMessages = WindowMessages()
+		let updateResult: Bool = true
+		let updateMessage: String = ""
+		let billingMessages = WindowMessages()
 		
 		// Loop through each Tutor
 		
@@ -441,7 +454,7 @@ import GoogleSignIn
 					let timesheetMonthString = monthArray[timesheetMonthNum - 1]
 					print (timesheetYearString, timesheetMonthString)
 					
-					let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: timesheetYearString, timesheetMonth: timesheetMonthString, billingMessages: billingMessages, referenceData: referenceData)
+					let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: timesheetYearString, timesheetMonth: timesheetMonthString, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 					
 					// For each month's Timesheet, read each row and update the Last Billed Date for that Student
 					var timesheetNum = 0
@@ -482,3 +495,4 @@ import GoogleSignIn
 	}
 	
 }
+

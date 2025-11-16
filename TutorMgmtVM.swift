@@ -33,7 +33,7 @@ import GoogleSignIn
 		    //       let maxStudentsInt = Int(maxStudents) ?? 0
 		    
 		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
-		    referenceData.tutors.loadTutor(newTutor: newTutor)
+		    referenceData.tutors.addTutor(newTutor: newTutor)
 		    // Create a new Timesheet for the Tutor
 		    (addResult, newTimesheetFileID) = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
 		    if !addResult {

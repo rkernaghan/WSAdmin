@@ -16,8 +16,8 @@ import GoogleSignIn
 //		a string containing the Google FileID
 //
 func getFileID(fileName: String) async throws -> (Bool, String) {
-	var fileID: String = ""
-	var fileFound: Bool = false
+//	var fileID: String = ""
+//	var fileFound: Bool = false
 		
 	let tokenFound = await getAccessToken()
 	if tokenFound {
@@ -39,9 +39,6 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 			
 			let (data, response) = try await URLSession.shared.data(for: request)
 			
-			//        if let httpResponse = response as? HTTPURLResponse {
-			//            print("Find File ID Error: \(httpResponse.statusCode)")
-			//        }
 			// Check if the response is successful
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
@@ -200,7 +197,7 @@ func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
 		guard let presentingWindow = await NSApplication.shared.mainWindow else {
 			return(false)
 		}
-		let user = try await currentUser.addScopes(additionalScopes, presenting: presentingWindow)
+		let _ = try await currentUser.addScopes(additionalScopes, presenting: presentingWindow)
 		print("Additional scopes granted.")
 		
 		// Access granted scopes if needed
@@ -273,10 +270,9 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool
 //		sourceFileID: Google Drive FileID of the Google Drive file being copied
 //		newFileName: name of the Google Drive file to create and copy into
 //	Returns:
-//
+//		returns a response JSON
 //	Throws
 //
-
 func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws -> [String: Any]? {
 	
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"
@@ -320,7 +316,16 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 	return nil
 }
 
-// Function to add a permission to a Google Drive file
+// addPermissionToFile - Function to add a permission to a Google Drive file
+//	Parameters:
+//		fileID: the Google Drive FileID of the file
+//		role: file access permission being granted to user (e.g. "reader" or "writer")
+//		type: role type (e.g. "user", "group", "domain", "anyone"
+//		emailAddress: email address of user being given permission to the file
+//	Returns:
+//		returns a response JSON
+//	Throws:
+//
 func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
 	
 	let tokenFound = await getAccessToken()
@@ -361,7 +366,6 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
 			}
 			
-			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
 				print("Permission added successfully: \(json)")
@@ -373,7 +377,14 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 }
 
 
-// Function to get the sheet ID based on sheet name using spreadsheets.get
+// getSheetIDByName- Function to get the sheet ID of an individual sheet in a Google Drive spreadsheet
+//	Parameters:
+//		spreadsheetID: the Google Drive FileID of the spreadsheet
+//		sheetName: the name of individual sheet in the spreadsheet
+//	Returns:
+//		returns the fileID of the Google Drive spreadsheet sheet
+//	Throws:
+//
 func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> Int? {
 	    
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)?fields=sheets.properties"
@@ -421,6 +432,13 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 }
 
 // Function to add a new sheet to a Google Sheets spreadsheet
+//	Parameters:
+//		spreadsheetID: the Google Drive FileID of the spreadsheet
+//		sheetTitle: the name of the new sheet being added to the spreadsheet
+//	Returns:
+//		returns the fileID of the new Google Drive spreadsheet sheet
+//	Throws:
+//
 func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) async throws -> [String: Any]? {
 	
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
@@ -474,7 +492,15 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 }
 
 
-// Function to rename a specific sheet in a Google Sheets spreadsheet
+// renameSheetInSpreadsheet = Function to rename a specific sheet in a Google Sheets spreadsheet
+//	Parameters:
+//		spreadsheetID: the Google Drive FileID of the spreadsheet
+//		sheetID: the ID of the individual sheet in the spreadsheet to be renamed
+//		newSheetName: the name to rename the sheet in the spreadsheet to
+//	Returns:
+//		returns a success/fail boolean
+//	Throws:
+//
 func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws -> Bool {
 	var renameResult: Bool = true
 	    
@@ -536,7 +562,15 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 	return(renameResult)
 }
 
-// Function to delete a sheet from a Google Sheets spreadsheet
+// deleteSheet - Function to delete a sheet from a Google Sheets spreadsheet
+//	Parameters:
+//		spreadsheetID: the Google Drive FileID of the spreadsheet
+//		sheetID: the ID of the individual sheet in the spreadsheet to be deleted
+//		newSheetName: the name to rename the sheet in the spreadsheet to
+//	Returns:
+//		returns a response JSON
+//	Throws:
+//
 func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: Any]? {
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
 	
@@ -596,6 +630,13 @@ struct GoogleSheetsResponse: Codable {
 	let sheets: [Sheet]
 }
 
+// getSheetCount - Function to return the count of sheets in a Google Drive spreadsheet
+//	Parameters:
+//		spreadsheetID: the Google Drive FileID of the spreadsheet
+//	Returns:
+//		returns an integer count of sheets
+//	Throws: 
+//
 func getSheetCount(spreadsheetId: String) async throws -> Int {
 	var sheetCount: Int = 0
 	
@@ -607,25 +648,23 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 	if tokenFound {
 		let accessToken = oauth2Token.accessToken
 		if let accessToken = accessToken {
-//			let accessToken = oauth2Token.accessToken
-//			if let accessToken = accessToken {
-				var request = URLRequest(url: url)
-				request.httpMethod = "GET"
-				request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-				//		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-				
-				// Send the request with async/await
-				let (data, response) = try await URLSession.shared.data(for: request)
-				
-				// Check for HTTP errors
-				if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-					throw NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil)
-				}
-				
-				// Parse the JSON response
-				let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
-				sheetCount = googleSheetsResponse.sheets.count
-//			}
+
+			var request = URLRequest(url: url)
+			request.httpMethod = "GET"
+			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+			//		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			
+			// Send the request with async/await
+			let (data, response) = try await URLSession.shared.data(for: request)
+			
+			// Check for HTTP errors
+			if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+				throw NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil)
+			}
+			
+			// Parse the JSON response
+			let googleSheetsResponse = try JSONDecoder().decode(GoogleSheetsResponse.self, from: data)
+			sheetCount = googleSheetsResponse.sheets.count
 		}
 	}
 	// Return the count of sheets
@@ -633,14 +672,20 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 		
 }
 
-
+// getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
+//		if not attempt to refresh the Access Token
+//	Parameters:
+//		none
+//	Returns:
+//		returns a boolean indicating whether the user has a valid OAuth Access Token
+//	Throws:
+//
 func getAccessToken() async -> (Bool) {
 	var returnResult: Bool = true
 	
 	let accessToken = oauth2Token.accessToken
 	
 	if let accessToken = accessToken {
-//		print("Access Token before check \(accessToken)")
 		if isTokenExpired() {
 			print("access token expired")
 			do {
@@ -654,13 +699,10 @@ func getAccessToken() async -> (Bool) {
 				oauth2Token.expiresAt = newExpiryDate
 				print("New Token expires at \(oauth2Token.expiresAt!)")
 				oauth2Token.accessToken = newAccessToken
-//				print("Access Token after refresh \(oauth2Token.accessToken!)")
-//				print("Refresh Token after refresh \(oauth2Token.refreshToken!)")
 			} catch {
 				print("Could not refresh access Token")
 			}
 		} else {
-//			print("Utilities-getAccessToken: Access Token is not expired")
 			returnResult = true
 		}
 	} else {
@@ -670,18 +712,20 @@ func getAccessToken() async -> (Bool) {
 	
 	return(returnResult)
 }
-	
+
+// isTokenExpired - Function to check if the user's OAuth token is expired (i.e. current date/time is past expiry date/time)
+//	Parameters:
+//		none
+//	Returns:
+//		returns a boolean indicating whether the user's OAuth token is expired
+//	Throws:
+//
 func isTokenExpired() -> Bool {
 	let token = oauth2Token.accessToken
 	if let token = token {
 		let tokenExpiry = oauth2Token.expiresAt
+		// Check if current date/time > token expiry date/time and return result
 		if let tokenExpiry = tokenExpiry {
-//			print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
-//			if Date() >= tokenExpiry {
-//				print("Checking token expiry - time: \(Date()) expires at: \(tokenExpiry)")
-//			} else {
-//				print("Token not expired")
-//			}
 			return Date() >= tokenExpiry
 		} else {
 			return true
@@ -691,6 +735,13 @@ func isTokenExpired() -> Bool {
 	}
 }
 
+// refreshAccessToken - Function to attempt to refresh user's OAuth token
+//	Parameters:
+//		none
+//	Returns:
+//		the new token expiry date and new OAuth access token
+//	Throws:
+//
 func refreshAccessToken() async throws -> (Date?, String?) {
 	var newAccessToken: String?
 	var newTokenExpiryDate: Date?
@@ -761,6 +812,14 @@ func getCurrentMonthYear() -> (String, String) {
 	    return(currentMonthName, currentYearName)
 }
 
+// getPrevMonthYear - Function to check if the user has a valid, non-expired OAuth Access Token and
+//		if not attempt to refresh the Access Token
+//	Parameters:
+//		none
+//	Returns:
+//		returns strings containing the name of the previous month and the year of that month (in case previous month is December)
+//	Throws:
+//
 func getPrevMonthYear() -> (String, String) {
 	    var prevMonthName: String = ""
 	    var billingYear: String = ""
@@ -770,9 +829,11 @@ func getPrevMonthYear() -> (String, String) {
 			if prevMonthInt == -1 {
 				prevMonthInt = 11
 			}
+			// Get previous month name
 			prevMonthName = monthArray[prevMonthInt]
 	    }
 	    
+		// Check if previous month is December and if so, decrement year
 	    if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
 			if prevMonthName == monthArray[11] {            // if month is December than use previous year
 				billingYear = String(yearInt - 1)
@@ -783,6 +844,14 @@ func getPrevMonthYear() -> (String, String) {
 	    return(prevMonthName, billingYear)
 }
 
+// getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
+//		if not attempt to refresh the Access Token
+//	Parameters:
+//		none
+//	Returns:
+//		returns a boolean indicating whether the user has a valid OAuth Access Token
+//	Throws:
+//
 func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, String) {
 	    var prevMonthName: String = ""
 	    var prevYearName: String = ""
@@ -807,11 +876,27 @@ func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, St
 	    return(prevMonthName, prevYearName)
 }
 
+// removeCommas - This function removes all commas from a string
+//	Parameters:
+//		sourceString - a string to remove commas from
+//	Returns:
+//		returns the sourceString with the commas removed
+//	Throws:
+//
 func removeCommas(sourceString: String) -> String {
 	return(sourceString.replacingOccurrences(of: ",", with: ""))
 }
 
-// This function reads in the Availability data for a Tutor from the Availability tab on their Timesheet.  The data may not be filled in.
+// buildTutorAvailabilityRow - This function reads in the Availability data for a Tutor from the Availability tab on their Timesheet.  The data may not be filled in.
+//	Parameters:
+//		tutorName -
+//		timesheetFileID -
+//		tutorStatus -
+//		tutorStudentCount -
+//	Returns:
+//		returns a TutorAvailabilityRow
+//	Throws:
+//
 func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutorStatus: String, tutorStudentCount: Int) async throws -> TutorAvailabilityRow {
 	
 	var tutorAvailability: String = ""
@@ -985,7 +1070,13 @@ func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutor
 	return tutorAvailabilityRow
 }
 
-// This function checks is a Date string (from a Timesheet service entry) is for the month being billed.
+// validateDateField - This function checks if a Date string (from a Timesheet service entry) is for the month being billed.
+//	Parameters:
+//		dateField -
+//		monthName -
+//	Returns:
+//		returns a boolean indicating whether the date is for the month being billed
+//	Throws:
 //
 func validateDateField(dateField: String, monthName: String) -> Bool {
 	var validDateField: Bool

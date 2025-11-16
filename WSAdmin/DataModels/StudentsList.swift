@@ -15,6 +15,7 @@ import Foundation
 		isStudentDataLoaded = false
 	}
 	
+	// This function finds a Student object in the Students List object array by Student key
 	func findStudentByKey(studentKey: String) -> (Bool, Int) {
 		var found = false
 		
@@ -29,6 +30,7 @@ import Foundation
 		return(found, studentNum)
 	}
 	
+	// This function finds a Student object in the Students List object array by Student name
 	func findStudentByName(studentName: String) -> (Bool, Int) {
 		var found = false
 		
@@ -43,41 +45,34 @@ import Foundation
 		return(found, studentNum)
 	}
 	
-	func loadStudent(newStudent: Student, referenceData: ReferenceData) {
-		self.studentsList.append(newStudent)
-	}
-	
+	// This function creates a new Student object and adds it to the Students List object array.
 	func addNewStudent(studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String, referenceData: ReferenceData) {
 		
 		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey + 1)
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())
-		
+		// Create new Student object
 		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentGuardian: guardianName, studentPhone: contactPhone, studentEmail: contactEmail, studentType: studentType, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+		// Add new Student object to Students List object array
 		self.studentsList.append(newStudent)
 		//Sort Student list alphabetically
 		self.studentsList.sort { $0.studentName < $1.studentName }
 	}
-	
-	func printAll() {
-		for student in studentsList {
-			print ("Student Name is \(student.studentName)")
-		}
-	}
     
-    
+	// This function reads all the Students into a temporary 2D array from the Reference Data spreadsheet.  It then processes the 2D array and populates
+	// the Students List object array
 	func fetchStudentData(studentCount: Int) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		
-		// Read in the Student data from the Reference Data spreadsheet
 		if studentCount > 0 {
 			do {
+				// Read in the Student data from the Reference Data spreadsheet to a temporary 2D array
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1) )
-				// Build the Students list from the cells read in
+				// Build the Students List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
 					loadStudentRows(studentCount: studentCount, sheetCells: sheetCells)
@@ -94,13 +89,15 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function saves the Students List object data back to the Reference Data spreadsheet.
 	func saveStudentData() async -> Bool {
 		var completionFlag: Bool = true
-		// Write the Student rows to the Reference Data spreadsheet
+		// Put the Students List object array into a temporary 2D array (one row per Student)
 		let updateValues = unloadStudentRows()
 		let count = updateValues.count
 		let range = PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + count - 1)
 		do {
+			// Write the 2D array of Student data to the Reference Data spreadsheet
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
 				completionFlag = false
@@ -113,6 +110,7 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function takes a 2D array of all Student data and populates the Students List object array
 	func loadStudentRows(studentCount: Int, sheetCells: [[String]] ) {
 		
 		let dateFormatter = DateFormatter()
@@ -120,8 +118,9 @@ import Foundation
 		
 		var studentIndex = 0
 		var rowNumber = 0
+		// Loop through each row in the array
 		while studentIndex < studentCount {
-			
+			// Create a new Student object with each column of the 2D array
 			let newStudentKey = sheetCells[rowNumber][PgmConstants.studentKeyPosition]
 			let newStudentName = sheetCells[rowNumber][PgmConstants.studentNamePosition]
 			let newGuardianName = sheetCells[rowNumber][PgmConstants.studentGuardianPosition]
@@ -130,11 +129,8 @@ import Foundation
 			let newStudentType:StudentTypeOption =  StudentTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.studentTypePosition]) ?? .Minor
 			let newStudentStartDateString = sheetCells[rowNumber][PgmConstants.studentStartDatePosition]
 			let newStudentAssignedUnassignedDateString = sheetCells[rowNumber][PgmConstants.studentAssignedUnassignedDatePosition]
-			//              let newStudentStartDate = dateFormatter.string(from: newStudentStartDateString)
-			//              let newStudentStartDate = dateFormatter.string(from: Date())
 			let newStudentLastBilledDateString = sheetCells[rowNumber][PgmConstants.studentLastBilledDatePosition]
 			let newStudentEndDateString = sheetCells[rowNumber][PgmConstants.studentEndDatePosition]
-			//              let newStudentEndDate = dateFormatter.date(from: newStudentEndDateString)
 			let newStudentStatus = sheetCells[rowNumber][PgmConstants.studentStatusPosition]
 			let newStudentTutorKey = sheetCells[rowNumber][PgmConstants.studentTutorKeyPosition]
 			let newStudentTutorName = sheetCells[rowNumber][PgmConstants.studentTutorNamePosition]
@@ -143,23 +139,26 @@ import Foundation
 			let newStudentCost = Float(sheetCells[rowNumber][PgmConstants.studentTotalCostPosition]) ?? 0.0
 			let newStudentRevenue = Float(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
 			let newStudentProfit = Float(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
-			
+			// Create the new Student object
 			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentGuardian: newGuardianName, studentPhone: newStudentPhone, studentEmail: newStudentEmail, studentType: newStudentType, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
-			
+			// Add the new Student object to the Students List array
 			self.studentsList.append(newStudent)
 			
 			studentIndex += 1
 			rowNumber += 1
 		}
+		// When all rows have been processed, set the Flag that all Student data has been loaded
 		self.isStudentDataLoaded = true
-		//          referenceData.students.printAll()
+
 	}
 	
+	// This function takes the Students List object array and creates a 2D array of all the Student object data
 	func unloadStudentRows() -> [[String]] {
 		
 		var updateValues = [[String]]()
 		var studentNum = 0
 		let studentCount = self.studentsList.count
+		// Loop through each Student Object and extract the attributes
 		while studentNum < studentCount {
 			let studentKey = studentsList[studentNum].studentKey
 			let studentName = studentsList[studentNum].studentName
@@ -179,7 +178,7 @@ import Foundation
 			let studentTotalCost = String(studentsList[studentNum].studentTotalCost.formatted(.number.precision(.fractionLength(2))))
 			let studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.precision(.fractionLength(2))))
 			let studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.precision(.fractionLength(2))))
-			
+			// Add the Student object data to the 2D array
 			updateValues.insert([studentKey, studentName, studentGuardian, studentPhone, studentEmail, studentType, studentStartDate, studentAssignedUnassignedDate, studentLastBilledDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
 			studentNum += 1
 		}

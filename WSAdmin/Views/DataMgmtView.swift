@@ -56,12 +56,12 @@ struct DataMgmtView: View {
 							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
 							studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
 							tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-						} else if runMode == "SHADOW" {
-							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsShadowFileName)
-							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataShadowFileName)
+						} else if runMode == "COPY" {
+							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsCopyFileName)
+							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataCopyFileName)
 							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
-							studentBillingFileNamePrefix = PgmConstants.studentBillingShadowFileNamePrefix
-							tutorBillingFileNamePrefix = PgmConstants.tutorBillingShadowFileNamePrefix
+							studentBillingFileNamePrefix = PgmConstants.studentBillingCopyFileNamePrefix
+							tutorBillingFileNamePrefix = PgmConstants.tutorBillingCopyFileNamePrefix
 						} else if runMode == "TEST"{
 							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
 							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
@@ -246,7 +246,7 @@ struct SideView: View {
 			Button("Update Student Last Billed Dates") {
 				Task {
 					statusMessage = " "
-					let (updateResult, updateMessage) = await billingVM.updateStudentLastBilledDates(referenceData: referenceData)
+					let (updateResult, updateMessage) = await billingVM.updateStudentLastBilledDates(referenceData: referenceData, showBillingDiagnostics: false, showEachSession: false)
 					if !updateResult {
 						showAlert.toggle()
 						buttonErrorMsg = updateMessage

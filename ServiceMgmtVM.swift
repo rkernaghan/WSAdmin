@@ -34,7 +34,7 @@ import Foundation
 			
 			let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
 			
-			referenceData.services.loadService(newService: newService, referenceData: referenceData)
+			referenceData.services.addService(newService: newService, referenceData: referenceData)
 			
 			addResult = await referenceData.services.saveServiceData()
 			if !addResult {

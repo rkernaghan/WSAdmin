@@ -43,6 +43,7 @@ import Foundation
 		self.serviceTotalPrice = servicePrice1 + servicePrice2 + servicePrice3
 	}
 
+	// This function changes a Service's status to "Deleted" and sets the End Date for the Service
 	func markDeleted() {
 		serviceStatus = "Deleted"
 		let dateFormatter = DateFormatter()
@@ -50,6 +51,7 @@ import Foundation
 //        serviceEndDate = dateFormatter.string(from: Date())
 	}
     
+	// This function updates the attributes of a Service object
 	func updateService(timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 
 		self.serviceTimesheetName = timesheetName
@@ -68,17 +70,21 @@ import Foundation
 		self.servicePrice3 = price3
 		self.serviceTotalPrice = price1 + price2 + price3
 	}
-    
+	
+	// This function changes a Service's Status to "Unassigned"
 	func markUnDeleted() {
 		serviceStatus = "Unassigned"
 //        	serviceEndDate = " "
     }
-    
+	
+	// This function increases the use counter for a Service (after a Service is assigned to a Tutor).  It sets the Service's Status to Assigned in case it was not previously used
 	func increaseServiceUseCount() {
 		self.serviceCount += 1
 		serviceStatus = "Assigned"
     }
     
+	// This function decreases the use counter for a Service (after a Service is unassigned to a Tutor).  If the use count is now zero (assigned to no Tutors), the Service Status
+	// is set to "Unassigned"
 	func decreaseServiceUseCount() {
 		self.serviceCount -= 1
 		if serviceCount == 0 {

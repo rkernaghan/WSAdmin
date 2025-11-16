@@ -739,7 +739,7 @@ import Foundation
 					let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 					if result {
 						let timesheet = Timesheet()
-						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
+						let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: false, showEachSession: false)
 						if !timesheetResult {
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 						} else {
@@ -1084,7 +1084,7 @@ import Foundation
 						let (result, timesheetFileID) = try await getFileID(fileName: fileName)
 						if result {
 							let timesheet = Timesheet()
-							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData)
+							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: false, showEachSession: false)
 							if !timesheetResult {
 								print("Error: Could not load Timesheet for Tutor \(tutorName)")
 							} else {
@@ -1582,9 +1582,12 @@ import Foundation
 			// Copy the Reference Data spreadsheet
 			if runMode == "PROD" {
 				copyFileName = PgmConstants.referenceDataProdFileName + " Backup " + backupDate
+			} else if runMode == "COPY" {
+				copyFileName = PgmConstants.referenceDataCopyFileName + " Backup " + backupDate
 			} else {
 				copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
 			}
+			
 			let copyRefDataResult = try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
 			print("Reference Data spreadsheet copied to file: \(copyFileName)")
 			
@@ -1592,6 +1595,8 @@ import Foundation
 			// Copy the Tutor Details spreadsheet
 			if runMode == "PROD" {
 				copyFileName = PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate
+			} else if runMode == "COPY" {
+				copyFileName = PgmConstants.tutorDetailsCopyFileName + " Backup " + backupDate
 			} else {
 				copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
 			}

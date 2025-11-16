@@ -49,6 +49,7 @@ import Foundation
 		self.studentTotalProfit = studentTotalProfit
 	}
     
+	// This function updates a Student to change Status to Deleted and set the Student's End Date
 	func markDeleted() {
 		self.studentStatus = "Deleted"
 		let dateFormatter = DateFormatter()
@@ -56,19 +57,23 @@ import Foundation
 		self.studentEndDate = dateFormatter.string(from: Date())
 	}
     
+	// This function updates a Student to change Status to Unassigned.
 	func markUndeleted() {
 		self.studentStatus = "Unassigned"
 		self.studentEndDate = " "
 	}
-    
+	
+	// This function changes a Student's Status to Suspended
 	func suspendStudent() {
 		self.studentStatus = "Suspended"
 	}
 	
+	// This function updates a Student to change Status to Unassigned
 	func unsuspendStudent() {
 		self.studentStatus = "Unassigned"
 	}
 	
+	// This function updates a Student to assign a Tutor and set the Assigned/Unassigned Date
 	func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
 		self.studentStatus = "Assigned"
 		self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
@@ -77,7 +82,8 @@ import Foundation
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
-
+	
+	// This function updates a Student to unassigns a Tutor and set the Assigned/Unassigned Date
 	func unassignTutor() {
 		self.studentStatus = "Unassigned"
 		self.studentTutorKey = " "
@@ -87,6 +93,7 @@ import Foundation
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
     
+	// This function updates a Student's billing totals to subtract the current month's Session, Cost, Revenue and Profit totals.  It is used when a Student is rebilled for a month to prevent doubling the months values in the totals
 	func resetBillingStats(monthSessions: Int, monthCost: Float, monthRevenue: Float) {
 		self.studentSessions -= monthSessions
 		self.studentTotalCost -= monthCost
@@ -94,13 +101,15 @@ import Foundation
 		self.studentTotalProfit -= monthRevenue - monthCost
 	}
 	
+	// This function updates the Student's Last Billed Date.
 	func updateLastBilledDate(serviceDate: String) {
 		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "dd/MM/yyyy"
+		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let date = dateFormatter.date(from: serviceDate)
 		if let date = date {
-//			dateFormatter.dateFormat = "yyyy/MM/dd"
-			self.studentLastBilledDate = dateFormatter.string(from: date)
+			dateFormatter.dateFormat = "yyyy/MM/dd"
+			let formattedDate = dateFormatter.string(from: date)
+			self.studentLastBilledDate = formattedDate
 		}
 	}
 	

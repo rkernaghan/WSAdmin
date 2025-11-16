@@ -77,6 +77,7 @@ import Foundation
 		return(studentFound, tutorStudentNum)
 	}
 	
+	// Find a Service assigned to this Tutor by Service key
 	func findTutorServiceByKey(serviceKey: String) -> (Bool, Int) {
 		var serviceFound = false
 		var tutorServiceNum = 0
@@ -91,6 +92,7 @@ import Foundation
 		return(serviceFound, tutorServiceNum)
 	}
 	
+	// Find a Service assigned to this Tutor by Service Name
 	func findTutorServiceByName(serviceName: String) -> (Bool, Int) {
 		var serviceFound = false
 		var tutorServiceNum = 0
@@ -105,10 +107,12 @@ import Foundation
 		return(serviceFound, tutorServiceNum)
 	}
 	
-	func loadTutorStudent(newTutorStudent: TutorStudent) {
+	// This function adds a new Tutor object to the Tutors List object array
+	func addTutorStudent(newTutorStudent: TutorStudent) {
 		tutorStudents.append(newTutorStudent)
 	}
 	
+	// This function updates a Tutor to add a newly assigned Student
 	func addNewTutorStudent(newTutorStudent: TutorStudent) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -121,14 +125,8 @@ import Foundation
 		}
 		return(completionFlag)
 	}
-	
-	func updateTutor(tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
-		self.tutorName = tutorName
-		self.tutorEmail = contactEmail
-		self.tutorPhone = contactPhone
-		self.tutorMaxStudents = maxStudents
-	}
-	
+
+	// This function updates a Tutor to remove an (unassigned) Student
 	func removeTutorStudent(studentKey: String) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -149,10 +147,20 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function updates a Tutor's attributes
+	func updateTutor(tutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int) {
+		self.tutorName = tutorName
+		self.tutorEmail = contactEmail
+		self.tutorPhone = contactPhone
+		self.tutorMaxStudents = maxStudents
+	}
+	
+
 	func loadTutorService(newTutorService: TutorService) {
 		tutorServices.append(newTutorService)
 	}
-	
+
+	// This function updates a Tutor to add a newly assigned Service to the Tutor
 	func addNewTutorService(newTutorService: TutorService) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -184,6 +192,7 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function updates a Tutor to remove a Service that has been unassigned from the Tutor
 	func removeTutorService(serviceKey: String) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -200,6 +209,7 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function updates a Tutor to change Status to Deleted and set the Tutor End Date
 	func markDeleted() {
 		tutorStatus = "Deleted"
 		let dateFormatter = DateFormatter()
@@ -207,23 +217,24 @@ import Foundation
 		tutorEndDate = dateFormatter.string(from: Date())
 	}
 	
+	// This function updates a Tutor to change Tutor Status to Unassigned
 	func markUnDeleted() {
 		tutorStatus = "Unassigned"
 		tutorEndDate = " "
 	}
 	
-	func unassignTutor() {
-		
-	}
 	
+	// This function updates a Tutor Status to Suspended
 	func suspendTutor() {
 		self.tutorStatus = "Suspended"
 	}
 	
+	// This function updates a Tutor Status to Unassigned
 	func unsuspendTutor() {
 		self.tutorStatus = "Unassigned"
 	}
 	
+	// This function updates a Tutor's billing stats to remove the current month's sessions, cost, revenue and profit from the totals (when an already billed Tutor is billed again the same month to avoid double counting).
 	func resetBillingStats(sessions: Int, monthCost: Float, monthRevenue: Float) {
 		self.tutorTotalSessions -= sessions
 		self.tutorTotalCost -= monthCost
@@ -340,6 +351,7 @@ import Foundation
 		return(studentCount, serviceCount, timesheetFileID)
 	}
 	
+	// This function saves the Tutor's assigned Student data to the Tutor Details sheet for the Tutor
 	func saveTutorStudentData(tutorName: String) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -357,6 +369,7 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function reads in the Students assigned to a Tutor
 	func loadTutorStudentRows(tutorStudentCount: Int, sheetCells: [[String]] ) {
 		var rowNum = 0
 		var studentNum = 0
@@ -370,13 +383,14 @@ import Foundation
 			
 			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, assignedDate: assignedDate)
 			
-			self.loadTutorStudent( newTutorStudent: newTutorStudent)
+			self.addTutorStudent( newTutorStudent: newTutorStudent)
 			rowNum += 1
 			studentNum += 1
 		}
 		//       print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
 	
+	// This function creates a 2 dimensional array of the data for the Students assigned to a Tutor in preparation for writing it to the Tutor's Tutor Data sheet.
 	func unloadTutorStudentRows() -> [[String]] {
 		
 		var updateValues = [[String]]()
@@ -400,6 +414,7 @@ import Foundation
 		return(updateValues)
 	}
 	
+	// This function reads the Tutor's Services from the Tutor's Tutor Details sheet into a 2 dimensinoal array for processing
 	func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async -> Bool {
 		var completionFlag: Bool = true
 		
@@ -426,11 +441,13 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function writes the Tutor's assigned Services data to the Tutor's Tutor Details sheet
 	func saveTutorServiceData(tutorName: String) async -> Bool {
 		var completionFlag: Bool = true
 		
-		// Write the Tutor Services rows to the Tutor Details spreadsheet
+		// Get a 2D array of the Tutor Services data from the Tutor Services objects
 		let updateValues = unloadTutorServiceRows()
+		// Write the data
 		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
 		do {
@@ -469,6 +486,7 @@ import Foundation
 		}
 		//       print("Loaded \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
+	
 	
 	func unloadTutorServiceRows() -> [[String]] {
 		

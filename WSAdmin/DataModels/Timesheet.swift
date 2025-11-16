@@ -29,7 +29,7 @@ class Timesheet: Identifiable {
 //		month: the String name of the month to load the Timesheet data from
 //		timesheetID: the Google Drive File ID of the Tutor Timesheet
 //
-	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData) async -> Bool {
+	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var sheetData: SheetData?
@@ -39,7 +39,7 @@ class Timesheet: Identifiable {
 			sheetData = try await readSheetCells(fileID: timesheetID, range: range)
 			// Load the sheet cells into this Timesheet
 			if let sheetData = sheetData {
-				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, billingMessages: billingMessages, monthName: month, referenceData: referenceData)
+				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, billingMessages: billingMessages, monthName: month, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 			} else {
 				completionFlag = false
 			}
@@ -55,8 +55,13 @@ class Timesheet: Identifiable {
 // This function takes a 2 dimensional array of strings (spreadsheet cells from a Tutor Timesheet for a month) and loads them into this Timesheet object
 //		tutorName: the name of the tutor who's Timesheet is being loaded
 //		sheetCells: a 2 dimensional array of Strings with each element containing one spreadsheet cell
+//		billingMessages:
+//		monthName:
+//		referenceData:
+//		showBillingMessages:
+//		showEachSession:
 //
-	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages, monthName: String, referenceData: ReferenceData ) {
+	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages, monthName: String, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) {
 		
 		var duration: Int = 0
 		let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
@@ -135,7 +140,9 @@ class Timesheet: Identifiable {
 														let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
 														self.addTimesheetRow(timesheetRow: newTimesheetRow)
 														
-														billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "               Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
+														if showEachSession {
+															billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                      Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
+														}
 														
 														entryCounter += 1
 													}
@@ -151,6 +158,9 @@ class Timesheet: Identifiable {
 				}
 				rowNum += 1
 			}
+			// Display the total number of sessions for the Tutor in the Timesheet
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                 \(tutorName) Session Count for \(monthName): \(entryCounter)"))
+
 		}
 	}
 	

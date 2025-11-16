@@ -16,6 +16,7 @@ import Foundation
 		isServiceDataLoaded = false
 	}
 	
+	// This function finds a Service object in the Services List object array by Service key
 	func findServiceByKey(serviceKey: String) -> (Bool, Int) {
 		var found = false
 		
@@ -30,6 +31,7 @@ import Foundation
 		return(found, serviceNum)
 	}
 	
+	// This function finds a Service object in the Services List object array by Timesheet (Service) name
 	func findServiceByName(timesheetName: String) -> (Bool, Int) {
 		var found = false
 		
@@ -44,30 +46,23 @@ import Foundation
 		return(found, serviceNum)
 	}
 	
-	func loadService(newService: Service, referenceData: ReferenceData) {
+	// This function adds a new Service to the Services List object array
+	func addService(newService: Service, referenceData: ReferenceData) {
 		self.servicesList.append(newService)
-		
 	}
-	
-	func printAll() {
-		for service in servicesList {
-			print ("Service Name is \(service.serviceTimesheetName)")
-		}
-	}
-	
   
-    
+	// This function reads the Services data from the Reference Data spreadsheet to populate the Services List object array
 	func fetchServiceData(serviceCount: Int) async -> Bool {
 		var completionFlag = true
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		
-		// Read in the Services Data from the Reference Data spreadsheet
+		// Read the Services data into a 2D array from the Reference Data spreadsheet
 		if serviceCount > 0 {
 			do {
 				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + serviceCount - 1) )
-				// Build the Services list from the cells read in
+				// Build the Services List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
 					loadServiceRows(serviceCount: serviceCount, sheetCells: sheetCells)
@@ -83,14 +78,16 @@ import Foundation
 		return(completionFlag)
 	}
     
+	// This function saves the Services objects into the Reference Data spreadsheet
 	func saveServiceData() async -> Bool {
 		var completionFlag: Bool = true
 		
-		// Write the Service Data rows to the Reference Data spreadsheet
+		// Create a 2D array of Services List object attributes
 		let updateValues = unloadServiceRows()
 		let count = updateValues.count
 		let range = PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + updateValues.count - 1)
 		do {
+			// Write the 2D array of Services attributes to the Reference Data spreadsheet
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
 				completionFlag = false
@@ -104,9 +101,12 @@ import Foundation
 		return(completionFlag)
 	}
 	
+	// This function takes a 2D of Service object attributes read from the Reference Data spreadsheet and populates the
+	// Services List object array
 	func loadServiceRows(serviceCount: Int, sheetCells: [[String]] ) {
 		var serviceIndex = 0
 		var rowNumber = 0
+		// Loop through each row in the 2D array collecting the Service attributes
 		while serviceIndex < serviceCount {
 			
 			let newServiceKey = sheetCells[rowNumber][PgmConstants.serviceKeyPosition]
@@ -122,23 +122,24 @@ import Foundation
 			let newServicePrice1 = Float(sheetCells[rowNumber][PgmConstants.servicePrice1Position]) ?? 0.0
 			let newServicePrice2 = Float(sheetCells[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
 			let newServicePrice3 = Float(sheetCells[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
-			
+			// Create a new Service object using the Service attributes from the 2D array
 			let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
-			
+			// Add the new Service object to the Services List object array
 			self.servicesList.append(newService)
 			serviceIndex += 1
 			rowNumber += 1
 		}
-		//           referenceData.services.printAll()
+	
 		self.isServiceDataLoaded = true
 	}
 	
+	// This function creates a 2D array of Service object attributes (one row per Service)
 	func unloadServiceRows() -> [[String]] {
 		
 		var updateValues = [[String]]()
 		
 		var serviceNum = 0
-		
+		// Loop through each Service object in the Services List object array extracting the Service object attributes
 		let serviceCount = self.servicesList.count
 		while serviceNum < serviceCount {
 			let serviceKey = servicesList[serviceNum].serviceKey
@@ -154,7 +155,7 @@ import Foundation
 			let servicePrice1 = String(servicesList[serviceNum].servicePrice1.formatted(.number.precision(.fractionLength(2))))
 			let servicePrice2 = String(servicesList[serviceNum].servicePrice2.formatted(.number.precision(.fractionLength(2))))
 			let servicePrice3 = String(servicesList[serviceNum].servicePrice3.formatted(.number.precision(.fractionLength(2))))
-			
+			// Add the Service object attributes as a row in the 2D array of Services data
 			updateValues.insert([serviceKey, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCount, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
 			serviceNum += 1
 		}

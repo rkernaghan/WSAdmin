@@ -41,6 +41,7 @@ struct PgmConstants {
 	static let tutorDataServiceCountCol = 1
 	
 	static let testRefFileName = "ReferenceData - TEST"
+	static let copyRefFileName = "ReferenceData - PROD COPY"
 	static let prodRefFileName = "ReferenceData"
 	static let dataCountRange = "Master!B2:B13"
 	static let tutorRange = "Master!D2:Q"
@@ -148,16 +149,16 @@ struct PgmConstants {
 	static let locationKeyPrefix = "C"
 	
 	static let tutorDetailsTestFileName: String = "Tutor Details Data - TEST"
-	static let tutorDetailsShadowFileName: String = "Tutor Details Data - Shadow"
+	static let tutorDetailsCopyFileName: String = "Tutor Details Data - PROD COPY"
 	static let tutorDetailsProdFileName: String = "Tutor Details Data"
 	static let referenceDataTestFileName: String = "ReferenceData - TEST"
-	static let referenceDataShadowFileName: String = "ReferenceData - Shadow"
+	static let referenceDataCopyFileName: String = "ReferenceData - PROD COPY"
 	static let referenceDataProdFileName: String = "ReferenceData"
 	static let studentBillingTestFileNamePrefix: String = "Student Billing Summary - TEST "
-	static let studentBillingShadowFileNamePrefix: String = "Student Billing Summary - Shadow "
+	static let studentBillingCopyFileNamePrefix: String = "Student Billing Summary - PROD COPY "
 	static let studentBillingProdFileNamePrefix: String = "Student Billing Summary "
 	static let tutorBillingTestFileNamePrefix: String = "Tutor Billing Summary - TEST "
-	static let tutorBillingShadowFileNamePrefix: String = "Tutor Billing Summary - Shadow "
+	static let tutorBillingCopyFileNamePrefix: String = "Tutor Billing Summary - PROD COPY "
 	static let tutorBillingProdFileNamePrefix: String = "Tutor Billing Summary "
 	static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
 	static let timesheetTemplateProdFileName: String = "Template Timesheet"
@@ -396,7 +397,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "PROD"			// "PROD" for production data files, anything else (e.g. "TEST" for the test data files
+var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {
