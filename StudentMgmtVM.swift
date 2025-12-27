@@ -9,14 +9,14 @@ import Foundation
 
 @Observable class StudentMgmtVM  {
     
-	func addNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async -> (Bool, String) {
+	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, location: String) async -> (Bool, String) {
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
 		
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
-		referenceData.students.addNewStudent(studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location, referenceData: referenceData)
+		referenceData.students.addNewStudent(studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, location: location, referenceData: referenceData)
 		
 		let saveStudentsResult = await referenceData.students.saveStudentData()
 		if !saveStudentsResult {
@@ -81,7 +81,7 @@ import Foundation
 		return(completionFlag, completionMessage)
 	}
     
-	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, location: String) async -> (Bool, String) {
+	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, location: String) async -> (Bool, String) {
 
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
@@ -90,11 +90,12 @@ import Foundation
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
 		
 		referenceData.students.studentsList[studentNum].studentName = studentName
-		referenceData.students.studentsList[studentNum].studentGuardian = guardianName
-		referenceData.students.studentsList[studentNum].studentEmail = contactEmail
-		referenceData.students.studentsList[studentNum].studentPhone = contactPhone
+		referenceData.students.studentsList[studentNum].studentContactFirstName = contactFirstName
+		referenceData.students.studentsList[studentNum].studentContactLastName = contactLastName
+		referenceData.students.studentsList[studentNum].studentContactEmail = contactEmail
+		referenceData.students.studentsList[studentNum].studentContactPhone = contactPhone
+		referenceData.students.studentsList[studentNum].studentContactZipCode = contactZipCode
 		referenceData.students.studentsList[studentNum].studentLocation = location
-		referenceData.students.studentsList[studentNum].studentType = studentType
 		
 		completionFlag = await referenceData.students.saveStudentData()
 		if completionFlag {
@@ -118,7 +119,7 @@ import Foundation
 						let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
 						if tutorStudentFound {
 							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName = studentName
-							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = guardianName
+							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
 							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
 							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
 							completionFlag = await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
@@ -186,7 +187,7 @@ import Foundation
 	}
 	
 	
-	func validateNewStudent(referenceData: ReferenceData, studentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
+	func validateNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, locationName: String) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -195,9 +196,14 @@ import Foundation
 			validationMessage = "Student Name cannot be blank\n"
 		} else {
 			
-			if guardianName == "" || guardianName == " " {
+			if contactFirstName == "" || contactFirstName == " " {
 				validationResult = false
-				validationMessage = "Guardian Name cannot be blank\n"
+				validationMessage = "Contact First Name cannot be blank\n"
+			}
+			
+			if contactLastName == "" || contactLastName == " " {
+				validationResult = false
+				validationMessage = "Contact Last Name cannot be blank\n"
 			}
 			
 			let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
@@ -212,10 +218,16 @@ import Foundation
 				validationMessage = "Error: Student Name: \(studentName) Contains a Comma\n"
 			}
 			
-			commaFlag = guardianName.contains(",")
+			commaFlag = contactFirstName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma\n"
+				validationMessage = "Error: Contact Fist Name: \(contactFirstName) Contains a Comma\n"
+			}
+			
+			commaFlag = contactLastName.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact Fist Name: \(contactLastName) Contains a Comma\n"
 			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
@@ -239,7 +251,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
 	
-	func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, originalStudentName: String, guardianName: String, contactEmail: String, contactPhone: String, studentType: StudentTypeOption, locationName: String) -> (Bool, String) {
+	func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, locationName: String) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -248,9 +260,14 @@ import Foundation
 			validationMessage = "Student Name cannot be blank\n"
 		} else {
 			
-			if guardianName == "" || guardianName == " " {
+			if contactFirstName == "" || contactFirstName == " " {
 				validationResult = false
-				validationMessage = "Guardian Name cannot be blank\n"
+				validationMessage = "Contact First Name cannot be blank\n"
+			}
+			
+			if contactLastName == "" || contactLastName == " " {
+				validationResult = false
+				validationMessage = "Contact Lastt Name cannot be blank\n"
 			}
 			
 			let (studentFoundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
@@ -265,10 +282,16 @@ import Foundation
 				validationMessage = "Error: Student Name: \(studentName) Contains a Comma\n"
 			}
 			
-			commaFlag = guardianName.contains(",")
+			commaFlag = contactFirstName.contains(",")
 			if commaFlag {
 				validationResult = false
-				validationMessage = "Error: Guadian Name: \(guardianName) Contains a Comma\n"
+				validationMessage = "Error: Guadian First Name: \(contactFirstName) Contains a Comma\n"
+			}
+			
+			commaFlag = contactLastName.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Guadian Last Name: \(contactLastName) Contains a Comma\n"
 			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
@@ -455,7 +478,8 @@ import Foundation
 						let dateFormatter = DateFormatter()
 						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())
-						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
+						let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
+						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
 						assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
 						if !assignResult {
 							assignMessage = "Error: could not save Tutor Details data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) when assigning Student \(referenceData.students.studentsList[studentNum].studentName)"
@@ -493,7 +517,7 @@ import Foundation
 						let dateFormatter = DateFormatter()
 						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())
-						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentGuardian, clientEmail: referenceData.students.studentsList[studentNum].studentEmail, clientPhone: referenceData.students.studentsList[studentNum].studentPhone, assignedDate: assignedDate)
+						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
 						let unassignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
 						if unassignResult {
 							reassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count

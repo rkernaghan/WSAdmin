@@ -319,7 +319,6 @@ import Foundation
 		var deletedStudents = 0
 		
 		studentNum = 0
-		//		studentCount = referenceData.students.studentsList.count
 		while studentNum < studentCount {
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			
@@ -534,6 +533,16 @@ import Foundation
 			billedStudentTotalRevenue += billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue
 			billedStudentTotalCost += billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost
 			
+			let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue
+			let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost
+			let billedStudentProfit = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledProfit
+			let computedProfit = billedStudentRevenue - billedStudentCost
+			
+			// Check if Revenue - Cost == Profit for Student Billing row
+			if ( abs(computedProfit - billedStudentProfit) ) > 1.00  {
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student Profit \(billedStudentProfit) for for Student: \(billedStudentMonth.studentBillingRows[billedStudentNum].studentName)  does not match Revenue - Cost"))
+				
+			}
 			billedStudentNum += 1
 		}
 		
@@ -548,6 +557,16 @@ import Foundation
 			billedTutorSessionCount += billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledSessions
 			billedTutorTotalRevenue += billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue
 			billedTutorTotalCost += billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost
+			
+			let billedStudentRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue
+			let billedStudentCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost
+			let billedStudentProfit = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledProfit
+			let computedProfit = billedStudentRevenue - billedStudentCost
+			
+			// Check if Revenue - Cost == Profit for Tutor Billing row
+			if ( abs(computedProfit - billedStudentProfit) ) > 1.0  {
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor Profit \(billedStudentProfit)  does not match Revenue - Cost"))
+			}
 			
 			billedTutorNum += 1
 		}
@@ -619,6 +638,10 @@ import Foundation
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) "))
 						}
 					}
+					
+					if (referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost) != referenceData.students.studentsList[studentNum].studentTotalProfit {
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student profit \(referenceData.students.studentsList[studentNum].studentTotalProfit) does not match Revenue - Cost for Student \(studentName)  "))
+					}
 					studentNum += 1
 				}
 			}
@@ -640,6 +663,10 @@ import Foundation
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "))
 						}
 					}
+					if (referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost) != referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit {
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Tutor profit \(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) does not match Revenue - Cost for tutor \(tutorName)  "))
+					}
+					
 					tutorNum += 1
 				}
 			}
@@ -662,7 +689,7 @@ import Foundation
 			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)"))
 		}
 		
-		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students\
+		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students
 		
 		if billedStudentMonth.studentBillingRows.count != totalStudents {
 			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)"))
@@ -676,6 +703,7 @@ import Foundation
 					if !studentFoundFlag {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Student \(studentName) is in Billed Student list but not Reference Data Students"))
 					}
+					
 					studentNum += 1
 				}
 			}
@@ -1649,8 +1677,8 @@ import Foundation
 		
 		
 		if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
-			//			nextYear = String(yearInt + 1)
-			nextYear = "2025"
+			nextYear = String(yearInt + 1)
+//			nextYear = "2026"
 			
 			// Create the next year's Production Tutor Billing spreadsheet
 			
@@ -1811,11 +1839,12 @@ import Foundation
 				generateResult = false
 				generateMessage += "ERROR: could not create \(newStudentBillingTestFileName)\n"
 			}
+			
 			//  Create a Timesheet for each Tutor for the year
 			var tutorNum = 0
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" || referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Assigned"   {
 					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 					let tutorEmail = referenceData.tutors.tutorsList[tutorNum].tutorEmail
 					let newTutorTimesheetName = "Timesheet " + nextYear + " " + tutorName

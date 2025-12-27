@@ -10,10 +10,11 @@ import Foundation
 @Observable class Student: Identifiable {
 	var studentKey: String
 	var studentName: String
-	var studentGuardian: String
-	var studentPhone: String
-	var studentEmail: String
-	var studentType: StudentTypeOption
+	var studentContactFirstName: String
+	var studentContactLastName: String
+	var studentContactPhone: String
+	var studentContactEmail: String
+	var studentContactZipCode: String
 	var studentStartDate: String
 	var studentAssignedUnassignedDate: String
 	var studentLastBilledDate: String
@@ -28,13 +29,14 @@ import Foundation
 	var studentTotalProfit: Float
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentGuardian: String, studentPhone: String, studentEmail: String, studentType: StudentTypeOption, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
+	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
 		self.studentKey = studentKey
 		self.studentName = studentName
-		self.studentGuardian = studentGuardian
-		self.studentPhone = studentPhone
-		self.studentEmail = studentEmail
-		self.studentType = studentType
+		self.studentContactFirstName = studentContactFirstName
+		self.studentContactLastName = studentContactLastName
+		self.studentContactPhone = studentContactPhone
+		self.studentContactEmail = studentContactEmail
+		self.studentContactZipCode = studentContactZipCode
 		self.studentStartDate = studentStartDate
 		self.studentAssignedUnassignedDate = studentAssignedUnassignedDate
 		self.studentLastBilledDate = studentLastBilledDate

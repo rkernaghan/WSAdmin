@@ -290,7 +290,7 @@ import GoogleSignIn
 					// Open the file for writing
 					let fileHandle = try FileHandle(forWritingTo: fileURL)
 					
-					let csvLine = PgmConstants.csvHeader
+					let csvLine = PgmConstants.csvClientListHeader
 					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 						fileHandle.write(data)
 					}
@@ -356,6 +356,79 @@ import GoogleSignIn
 	print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		return(csvLine)
 	}
+	
+	// Create the CSV file from the Invoice and stores in on disk
+	func generateClientList(referenceData: ReferenceData) async -> (Bool, String) {
+		var generationFlag: Bool = true
+		var generationMessage: String = ""
+		
+		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
+		
+		
+		do {
+			// Create the file in the Documents directory
+			try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
+			
+			do {
+				let dateFormatter = DateFormatter()
+				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+				let fileDate = dateFormatter.string(from: Date())
+				
+				let fileName = "CSV Client List Generated on \(fileDate).csv"
+				let fileManager = FileManager.default
+				
+				// Get the path to the Documents directory
+				guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+					print("Could not find the Documents directory.")
+					return(false, "Count not find the Documents Directory")
+				}
+				
+				// Set the file path
+				let fileURL = documentsDirectory.appendingPathComponent(fileName)
+				
+				// Create the file if it doesn't exist
+				if !fileManager.fileExists(atPath: fileURL.path) {
+					fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+				}
+				// Open the file for writing
+				let fileHandle = try FileHandle(forWritingTo: fileURL)
+				
+				let csvLine = PgmConstants.csvClientListHeader
+				if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+					fileHandle.write(data)
+				}
+				
+				// Loop through the Students List in th ReferenceData and create a line in the CSV file for each client name
+				var studentNum =  0
+				let studentCount = referenceData.students.studentsList.count
+				while studentNum < studentCount {
+					let csvLine = referenceData.students.studentsList[studentNum].studentContactFirstName + "," + referenceData.students.studentsList[studentNum].studentContactLastName + "," + referenceData.students.studentsList[studentNum].studentContactEmail + "," + referenceData.students.studentsList[studentNum].studentContactPhone + "," + referenceData.students.studentsList[studentNum].studentContactZipCode
+					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+						fileHandle.write(data)
+					}
+					studentNum += 1
+				}
+				
+				// Close the CSV file when done
+				fileHandle.closeFile()
+				print("Lines written to CSV file successfully.")
+			} catch {
+				print("Error: Could not write to CSV file: \(error)")
+				generationFlag = false
+				generationMessage = "Error: Could not write to CSV file: \(error)"
+			}
+		} catch {
+			print("Error creating directory: \(error)")
+			generationFlag = false
+			generationMessage = "Error: could not create directory for CSV File"
+		}
+		
+		
+		return(generationFlag, generationMessage)
+	}
+	
+	
 	
 	// Reset Tutor, Student and Location billing stats in the Reference Data, Tutor Billing and Student Billing spreadsheets (when Tutor is rebilled for a month) by removing session, cost, revenue and profit counts for the current billing month
 	func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) {

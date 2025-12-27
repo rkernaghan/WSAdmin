@@ -45,9 +45,9 @@ struct PgmConstants {
 	static let prodRefFileName = "ReferenceData"
 	static let dataCountRange = "Master!B2:B13"
 	static let tutorRange = "Master!D2:Q"
-	static let studentRange = "Master!U3:AL"
-	static let serviceRange = "Master!AP3:BB"
-	static let locationRange = "Master!BF2:BK"
+	static let studentRange = "Master!U3:AM"
+	static let serviceRange = "Master!AQ3:BC"
+	static let locationRange = "Master!BG2:BL"
 	
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
@@ -95,22 +95,23 @@ struct PgmConstants {
 	static let studentStartingRowNumber = 3
 	static let studentKeyPosition = 0
 	static let studentNamePosition = 1
-	static let studentGuardianPosition = 2
-	static let studentPhonePosition = 3
-	static let studentEmailPosition = 4
-	static let studentTypePosition = 5
-	static let studentStartDatePosition = 6
-	static let studentAssignedUnassignedDatePosition = 7
-	static let studentLastBilledDatePosition = 8
-	static let studentEndDatePosition = 9
-	static let studentStatusPosition = 10
-	static let studentTutorKeyPosition = 11
-	static let studentTutorNamePosition = 12
-	static let studentLocationPosition = 13
-	static let studentSessionsPosition = 14
-	static let studentTotalCostPosition = 15
-	static let studentTotalRevenuePosition = 16
-	static let studentTotalProfitPosition = 17
+	static let studentContactFirstNamePosition = 2
+	static let studentContactLastNamePosition = 3
+	static let studentContactPhonePosition = 4
+	static let studentContactEmailPosition = 5
+	static let studentContactZipCodePosition = 6
+	static let studentStartDatePosition = 7
+	static let studentAssignedUnassignedDatePosition = 8
+	static let studentLastBilledDatePosition = 9
+	static let studentEndDatePosition = 10
+	static let studentStatusPosition = 11
+	static let studentTutorKeyPosition = 12
+	static let studentTutorNamePosition = 13
+	static let studentLocationPosition = 14
+	static let studentSessionsPosition = 15
+	static let studentTotalCostPosition = 16
+	static let studentTotalRevenuePosition = 17
+	static let studentTotalProfitPosition = 18
 	
 	static let serviceStartingRowNumber = 3
 	static let serviceKeyPosition = 0
@@ -238,7 +239,8 @@ struct PgmConstants {
 	static let taxCodeString: String = "N"
 	static let csvSeperator: String = ","
 	static let crlf: String = "\r\n"
-	static let csvHeader: String = "InvoiceNo,Customer,CustomerEmail,*InvoiceDate,*DueDate,Term,Location,TutorName,Item(Product/Service),ItemDescrip,ItemQuantity,ItemRate,*ItemAmount,*ItemTaxCode,ServiceDate"
+	static let csvInvoiceHeader: String = "InvoiceNo,Customer,CustomerEmail,*InvoiceDate,*DueDate,Term,Location,TutorName,Item(Product/Service),ItemDescrip,ItemQuantity,ItemRate,*ItemAmount,*ItemTaxCode,ServiceDate"
+	static let csvClientListHeader: String = "First Name,Last Name,EMAIL,Phone,ZIP"
 	
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"
 	static let writeSeattleEmail: String = "info@writeseattle.com"

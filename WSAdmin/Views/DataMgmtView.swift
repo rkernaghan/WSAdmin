@@ -152,7 +152,7 @@ struct SideView: View {
 			}
                 
 			NavigationLink {
-				StudentView(updateStudentFlag: false, originalStudentName: "", referenceData: referenceData, studentKey: "", studentName: "", guardianName: "", contactPhone: "", contactEmail: "", location: "", studentType: .Minor)
+				StudentView(updateStudentFlag: false, originalStudentName: "", referenceData: referenceData, studentKey: "", studentName: "", contactFirstName: "", contactLastName: "", contactPhone: "", contactEmail: "", contactZipCode: "", location: "")
 			} label: {
 				Label("Add Student", systemImage: "graduationcap")
 			}
@@ -176,6 +176,18 @@ struct SideView: View {
 					statusMessage = " "
 					tutorAvailabilityArray = await tutorMgmtVM.buildTutorAvailabilityArray(referenceData: referenceData)
 					showTutorAvailabilitySummary = true
+				}
+			}
+			
+			Button("Generate Client List for QuickBooks") {
+				Task {
+					statusMessage = " "
+					let (generationFlag, generationMessage)  = await billingVM.generateClientList(referenceData: referenceData)
+					if generationFlag {
+						statusMessage = "Client List CSV Generation Successful"
+					} else {
+						statusMessage = generationMessage
+					}
 				}
 			}
 			

@@ -27,7 +27,9 @@ struct StudentSelectionView: View {
 				
 				TableColumn("Student Name", value: \.studentName)
 					.width(min: 140, ideal: 180, max: 220)
-				TableColumn("Guardian Name", value: \.studentGuardian)
+				TableColumn("Contact First Name", value: \.studentContactFirstName)
+					.width(min: 140, ideal: 180, max: 220)
+				TableColumn("Contact Last Name", value: \.studentContactLastName)
 					.width(min: 140, ideal: 180, max: 220)
 				TableColumn("Status", value: \.studentStatus)
 					.width(min: 100, ideal: 120, max: 140)

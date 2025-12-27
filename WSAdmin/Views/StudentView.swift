@@ -15,11 +15,12 @@ struct StudentView: View {
 	var studentKey: String
 	
 	@State var studentName: String
-	@State var guardianName: String
+	@State var contactFirstName: String
+	@State var contactLastName: String
 	@State var contactPhone: String
 	@State var contactEmail: String
+	@State var contactZipCode: String
 	@State var location: String
-	@State var studentType: StudentTypeOption
 	
 	@State private var showAlert: Bool = false
 	
@@ -39,8 +40,12 @@ struct StudentView: View {
 			}
 			
 			HStack {
-				Text("Guardian Name")
-				TextField("Guardian Name", text: $guardianName)
+				Text("Contact Name")
+				TextField("Contact First Name", text: $contactFirstName)
+					.frame(width: 150)
+					.textFieldStyle(.roundedBorder)
+			
+				TextField("Contact Last Name", text: $contactLastName)
 					.frame(width: 150)
 					.textFieldStyle(.roundedBorder)
 			}
@@ -60,6 +65,13 @@ struct StudentView: View {
 			}
 			
 			HStack {
+				Text("Contact Zip Code")
+				TextField("Contact Zip Code", text: $contactZipCode)
+					.frame(width: 125)
+					.textFieldStyle(.roundedBorder)
+			}
+			
+			HStack {
 				Picker("Location", selection: $location) {
 					ForEach(referenceData.locations.locationsList) { option in
 						Text(String(option.locationName)).tag(option.locationName)
@@ -69,26 +81,19 @@ struct StudentView: View {
 				.clipped()
 			}
 			
-			HStack {
-				Picker("Student Type", selection: $studentType) {
-					ForEach(StudentTypeOption.allCases) { option in
-						Text(String(describing: option))
-					}
-				}
-				.frame(width: 200)
-				.clipped()
-			}
 			
 			Button(action: {
 				let studentName = studentName.trimmingCharacters(in: .whitespaces)
-				let guardianName = guardianName.trimmingCharacters(in: .whitespaces)
+				let contactFirstName = contactFirstName.trimmingCharacters(in: .whitespaces)
+				let contactLastName = contactLastName.trimmingCharacters(in: .whitespaces)
 				let contactEmail = contactEmail.trimmingCharacters(in: .whitespaces)
 				let contactPhone = contactPhone.trimmingCharacters(in: .whitespaces)
+				let contactZipCode = contactZipCode.trimmingCharacters(in: .whitespaces)
 				Task {
 					if updateStudentFlag {
-						let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
+						let (studentValidationResult, validationMessage) = studentMgmtVM.validateUpdatedStudent(referenceData: referenceData, studentName: studentName, originalStudentName: originalStudentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, locationName: location)
 						if studentValidationResult {
-							let (updateResult, updateMessage) = await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, originalStudentName: originalStudentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+							let (updateResult, updateMessage) = await studentMgmtVM.updateStudent(referenceData: referenceData, studentKey: studentKey, studentName: studentName, originalStudentName: originalStudentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, location: location)
 							if !updateResult {
 								buttonErrorMsg = updateMessage
 								showAlert = true
@@ -100,9 +105,9 @@ struct StudentView: View {
 							showAlert = true
 						}
 					} else {
-						let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, locationName: location)
+						let (studentValidationResult, validationMessage) = studentMgmtVM.validateNewStudent(referenceData: referenceData, studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, locationName: location)
 						if studentValidationResult {
-							let (addResult, addMessage) = await studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, guardianName: guardianName, contactEmail: contactEmail, contactPhone: contactPhone, studentType: studentType, location: location)
+							let (addResult, addMessage) = await studentMgmtVM.addNewStudent(referenceData: referenceData, studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, location: location)
 							if !addResult {
 								buttonErrorMsg = addMessage
 								showAlert = true

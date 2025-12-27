@@ -79,8 +79,11 @@ struct StudentListView: View {
 						TableColumn("Student Name", value: \Student.studentName)
 							.width(min: 90, ideal: 160, max: 260)
 						
-						TableColumn("Client", value: \Student.studentGuardian)
-							.width(min: 90, ideal: 160, max: 260)
+						TableColumn("Contact\nFirst Name", value: \Student.studentContactFirstName)
+							.width(min: 30, ideal: 40, max: 260)
+						
+						TableColumn("Contact\nLast Name", value: \Student.studentContactLastName)
+							.width(min: 30, ideal: 70, max: 260)
 						
 						TableColumn("Status", value: \Student.studentStatus)
 							.width(min: 50, ideal: 75, max: 90)
@@ -88,18 +91,16 @@ struct StudentListView: View {
 						TableColumn("Tutor Name",value: \Student.studentTutorName)
 							.width(min: 80, ideal: 120, max: 180)
 						
-						TableColumn("Phone", value: \Student.studentPhone)
+						TableColumn("Phone", value: \Student.studentContactPhone)
 							.width(min: 90, ideal: 100, max: 110)
 					}
 					Group {
 						
-						TableColumn("EMail", value: \Student.studentEmail)
+						TableColumn("EMail", value: \Student.studentContactEmail)
 							.width(min: 60, ideal: 100, max: 200)
 						
-						TableColumn("Student\nType") {data in
-							Text(data.studentType.rawValue)
-						}
-						.width(min: 40, ideal: 50, max: 90)
+						TableColumn("Zip Code", value: \Student.studentContactZipCode)
+							.width(min: 40, ideal: 50, max: 90)
 					}
 					             
 					Group {
@@ -351,8 +352,7 @@ struct StudentListView: View {
 			}
 			
 			.navigationDestination(isPresented: $editStudent) {
-				StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, guardianName: referenceData.students.studentsList[studentNumber].studentGuardian, contactPhone: referenceData.students.studentsList[studentNumber].studentPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentEmail, location: referenceData.students.studentsList[studentNumber].studentLocation,
-					    studentType: referenceData.students.studentsList[studentNumber].studentType )
+				StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, contactFirstName: referenceData.students.studentsList[studentNumber].studentContactFirstName, contactLastName: referenceData.students.studentsList[studentNumber].studentContactLastName, contactPhone: referenceData.students.studentsList[studentNumber].studentContactPhone, contactEmail: referenceData.students.studentsList[studentNumber].studentContactEmail, contactZipCode: referenceData.students.studentsList[studentNumber].studentContactZipCode, location: referenceData.students.studentsList[studentNumber].studentLocation)
 			}
 		}
 	}
