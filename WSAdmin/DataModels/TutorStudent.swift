@@ -15,6 +15,7 @@ class TutorStudent: Identifiable {
 	var clientEmail: String
 	var clientPhone: String
 	var assignedDate: String
+	var lastBilledDate: String
 	let id = UUID()
     
 	init(studentKey: String, studentName: String, clientName: String, clientEmail: String, clientPhone: String, assignedDate: String) {
@@ -24,6 +25,8 @@ class TutorStudent: Identifiable {
 		self.clientEmail = clientEmail
 		self.clientPhone = clientPhone
 		self.assignedDate = assignedDate
+		self.lastBilledDate = "N/A"
+
     }
     
     

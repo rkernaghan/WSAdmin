@@ -483,7 +483,7 @@ import Foundation
 				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
 				let (studentCount, serviceCount, timesheetFileID) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
 				if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)"))
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)"))
 				}
 				
 				if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {

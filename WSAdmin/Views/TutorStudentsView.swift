@@ -21,11 +21,24 @@ struct TutorStudentsView: View {
 		VStack {
 			Table(referenceData.tutors.tutorsList[tutorNum].tutorStudents, selection: $selectedStudents) {
 				TableColumn("Student Name", value: \.studentName)
+					.width(min:90, ideal: 120, max: 260)
+				
 				TableColumn("Client Name", value: \.clientName)
+					.width(min: 90, ideal: 120, max: 260)
+				
 				TableColumn("Assigned Date", value: \.assignedDate)
+					.width(min: 60, ideal: 75, max: 90)
+				
+				TableColumn("Last Billed Date", value: \.lastBilledDate)
+					.width(min: 60, ideal: 75, max: 90)
+				
 				TableColumn("Phone", value: \.clientPhone)
+					.width(min: 90, ideal: 110, max: 120)
+				
 				TableColumn("Email", value: \.clientEmail)
+					.width(min: 60, ideal: 100, max: 200)
 			}
+			
 			.contextMenu(forSelectionType: Student.ID.self) { items in
 				if items.isEmpty {
 					Button { } label: {

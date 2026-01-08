@@ -26,10 +26,16 @@ import Foundation
 			completionResult = false
 		} else {
 			if referenceData.dataCounts.isDataCountsLoaded {
+				
 				let fetchTutorsResult = await referenceData.tutors.fetchTutorData( tutorCount: referenceData.dataCounts.totalTutors)
+				
 				let fetchStudentsResult = await referenceData.students.fetchStudentData( studentCount:  referenceData.dataCounts.totalStudents)
+				
 				let fetchLocationsResult = await referenceData.locations.fetchLocationData( locationCount: referenceData.dataCounts.totalLocations)
+				
 				let fetchServicesResult = await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
+				
+				let buildResult = buildTutorStudentBilledDate(referenceData: referenceData)
 				
 				if !fetchTutorsResult || !fetchStudentsResult || !fetchLocationsResult || !fetchServicesResult {
 					completionResult = false
@@ -41,3 +47,31 @@ import Foundation
 	}
 	
 }
+
+func buildTutorStudentBilledDate(referenceData: ReferenceData) -> Bool {
+	var buildResult: Bool = true
+	
+	var tutorNum = 0
+	while tutorNum < referenceData.tutors.tutorsList.count {
+		
+		var studentNum = 0
+		while studentNum < referenceData.tutors.tutorsList[tutorNum].tutorStudents.count {
+			
+			let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[studentNum].studentKey
+			
+			let (studentFound, studentIndex) = referenceData.students.findStudentByKey(studentKey: studentKey)
+			
+			if studentFound {
+				referenceData.tutors.tutorsList[tutorNum].tutorStudents[studentNum].lastBilledDate = referenceData.students.studentsList[studentIndex].studentLastBilledDate
+			}
+			
+			studentNum += 1
+		}
+		
+		tutorNum += 1
+	}
+	
+	return (buildResult)
+	
+}
+

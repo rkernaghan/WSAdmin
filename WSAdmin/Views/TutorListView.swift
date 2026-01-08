@@ -124,11 +124,17 @@ struct TutorListView: View {
 						}
 						.width(min: 40, ideal: 50, max: 60)
 						
+						TableColumn("Total\nSessions") {data in
+							Text(String(data.tutorTotalSessions.formatted(.number.precision(.fractionLength(0)))))
+								.frame(maxWidth: .infinity, alignment: .trailing)
+						}
+						.width(min: 40, ideal: 50, max: 60)
+						
 						TableColumn("Total\nRevenue") {data in
 							Text(String(data.tutorTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
 								.frame(maxWidth: .infinity, alignment: .trailing)
 						}
-						.width(min: 40, ideal: 50, max: 60)
+						.width(min: 40, ideal: 40, max: 60)
 						
 						TableColumn("Total\nProfit") { data in
 							Text(String(data.tutorTotalProfit.formatted(.number.precision(.fractionLength(0)))))

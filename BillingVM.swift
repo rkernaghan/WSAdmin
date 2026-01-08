@@ -290,7 +290,7 @@ import GoogleSignIn
 					// Open the file for writing
 					let fileHandle = try FileHandle(forWritingTo: fileURL)
 					
-					let csvLine = PgmConstants.csvClientListHeader
+					let csvLine = PgmConstants.csvInvoiceHeader
 					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 						fileHandle.write(data)
 					}
