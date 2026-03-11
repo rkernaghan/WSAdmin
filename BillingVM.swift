@@ -47,7 +47,7 @@ import GoogleSignIn
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if !resultFlag {
-				print("Error: Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
+				print("Error: BillingVM.generateInvoice - Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
 			} else {
 				let loadBilledTutorFlag = await tutorBillingMonth.getTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 				if loadBilledTutorFlag {				// If no Tutors billed this month, the flag will be false, which is not an error
@@ -61,7 +61,7 @@ import GoogleSignIn
 				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 			}
 		} catch {
-			print("Error: could not load Billed Tutor Month")
+			print("Error: in BillingVM.generateInvoice - Could not load Billed Tutor Month")
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not load Billed Tutor Month"))
 			
 		}
@@ -94,17 +94,17 @@ import GoogleSignIn
 				
 				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				if !timesheetResult {
-					print("Error: Could not load Timesheet for Tutor \(tutorName)")
-					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
+					print("Error: in BillingVM.getTimesheet - Could not load Timesheet for Tutor \(tutorName) with File ID \(timesheetFileID)")
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not load Timesheet for Tutor \(tutorName) with File ID \(timesheetFileID)"))
 				}
 			} else {
-				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName); User may not have access to Timesheet"))
+				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not get timesheet fileID for \(fileName); User may not have access to Timesheet"))
 			}
 				
 				
 		} catch {
 			print("Error: could not get timesheet fileID for \(fileName)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not get timesheet fileID for \(fileName)"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet- Ccould not get timesheet fileID for \(fileName)"))
 		}
 
 		return(timesheet)
@@ -244,7 +244,8 @@ import GoogleSignIn
 		return(resultFlag)
 	}
 	
-	// Create the CSV file from the Invoice and stores in on disk
+	// Create the CSV file in from the Invoice and stores in on disk
+	//
 	func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
@@ -290,16 +291,17 @@ import GoogleSignIn
 					// Open the file for writing
 					let fileHandle = try FileHandle(forWritingTo: fileURL)
 					
-					let csvLine = PgmConstants.csvInvoiceHeader
+					//Create a csv header line in Xero format
+					let csvLine = PgmConstants.csvXeroInvoiceHeader
 					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 						fileHandle.write(data)
 					}
 					
-					// Loop through the invoice and create a line in the CSV file from each Invoice line
+					// Loop through the invoice and create a line in the CSV file from each Invoice line in format required by Xero package
 					var invoiceLineNum = 0
 					let invoiceLineCount = invoice.invoiceLines.count
 					while invoiceLineNum < invoiceLineCount {
-						let csvLine = processInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
+						let csvLine = processXeroInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
 						if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 							fileHandle.write(data)
 						}
@@ -325,9 +327,73 @@ import GoogleSignIn
 		
 		return(generationFlag, generationMessage)
 	}
+	// Format a CSV file line in Xero format from an Invoice file line
+	//
+	func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
+		let invoiceNum = invoiceLine.invoiceNum
+		let invoiceClient = invoiceLine.clientName
+		let invoiceEmail = invoiceLine.clientEmail
+		let invoiceDate = invoiceLine.invoiceDate
+		let invoiceDueDate = invoiceLine.dueDate
+		let invoiceReference = invoiceLine.studentName
+//		let invoiceTerm = invoiceLine.terms
+//		let invoiceLocation = invoiceLine.locationName
+//		let invoiceTutor = invoiceLine.tutorName
+		let invoiceItem = invoiceLine.itemName
+		var invoiceDescription = invoiceLine.serviceDate + " - " + invoiceLine.itemName
+		// If there are tutor Notes for the session, add them to the description text
+		if invoiceLine.description != "" {
+			invoiceDescription += " - " + invoiceLine.description
+		}
+//		let invoiceQuantity = invoiceLine.quantity
+		let invoiceServiceDate = invoiceLine.serviceDate
+		let invoiceRate = invoiceLine.rate
+		let invoiceAmount = String(invoiceLine.amount.formatted(.number.precision(.fractionLength(2))))
+		let invoiceTaxCode = invoiceLine.taxCode
+		let invoiceItemCode = invoiceLine.serviceCode
+
+		
+		let invoiceTaxType = "TAX EXEMPT"
+		let invoiceAccountCode = "4100"
+		let invoiceBrandingTheme = "Standard"
+		let invoiceQuantity = "1"
+//		let invoiceItemCode = "100"
+		
+//		let invoicePOAddress1 = ""
+//		let invoicePOAddress2 = ""
+//		let invoicePOAddress3 = ""
+//		let invoicePOAddress4 = ""
+//		let invoicePOCity = ""
+//		let invoicePORegion = ""
+//		let invoicePOPostalCode = ""
+//		let invoicePOCountry = ""
+//		let invoicePOReference = ""
+//		let invoiceDicount = ""
+//		let invoiceTrackingName1 = ""
+//		let invoiceTrackingoption1 = ""
+//		let invoiceTrackingName2 = ""
+//		let invoiceTrackingoption2 = ""
+//		let invoiceCurrency = ""
+
+		
+		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceReference + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceItemCode + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator +  invoiceAmount + PgmConstants.csvSeperator + invoiceAccountCode + PgmConstants.csvSeperator + invoiceTaxType + PgmConstants.csvSeperator + invoiceBrandingTheme
+		
+		// Set the Last Billed Date for the Student to today's date
+		let studentName = invoiceLine.studentName
+		let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+		if studentFound {
+			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
+		} else {
+			print ("Error: Student not found when updating Student Last Billed Date")
+		}
+		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
+		return(csvLine)
+	}
 	
-	// Format a CSV file line from an Invoice file line
-	func processInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
+	// Format a CSV file line In Quickbooks format from an Invoice file line
+	// This module is no longer used with the switch to Xero for accounting
+	//
+	func processQBInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
 		let invoiceClient = invoiceLine.clientName
 		let invoiceEmail = invoiceLine.clientEmail

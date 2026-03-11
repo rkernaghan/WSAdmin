@@ -44,8 +44,8 @@ class Timesheet: Identifiable {
 				completionFlag = false
 			}
 		} catch {
-			print("ERROR: could not read SheetCells for \(tutorName) Timesheet")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: could not read SheetCells for \(tutorName) Timesheet"))
+			print("ERROR: in Timesheet.loadTimesheetData - Could not read SheetCells for \(tutorName) Timesheet with File ID \(timesheetID)")
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: in Timesheet.loadTimesheetData - ould not read SheetCells for \(tutorName) Timesheet File ID \(timesheetID)"))
 			completionFlag = false
 		}
 		return(completionFlag)
@@ -66,7 +66,7 @@ class Timesheet: Identifiable {
 		var duration: Int = 0
 		let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 		if !tutorFoundFlag {
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " ** Error - Tutor \(tutorName) not found in Reference Data"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " ** Error in Timesheet.loadTimesheetRows - Tutor \(tutorName) not found in Reference Data"))
 		}
 		
 		if sheetCells.count > 0 {

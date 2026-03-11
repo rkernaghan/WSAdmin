@@ -15,6 +15,7 @@ struct ServiceView: View {
 	var referenceData: ReferenceData
 	var serviceKey: String
 	
+	@State var serviceCode: String
 	@State var timesheetName: String
 	@State var invoiceName: String
 	@State var serviceType: ServiceTypeOption
@@ -37,6 +38,13 @@ struct ServiceView: View {
 	var body: some View {
 		
 		VStack(alignment: .leading) {
+			HStack {
+				Text("Service Code")
+				TextField("Service Code", text: $serviceCode)
+					.frame(width: 350)
+					.textFieldStyle(.roundedBorder)
+			}
+			
 			HStack {
 				Text("Timesheet Name")
 				TextField("Timesheet Name", text: $timesheetName)
@@ -127,7 +135,7 @@ struct ServiceView: View {
 					if updateServiceFlag {
 						let (validationResult, validationMessage) = serviceMgmtVM.validateUpdatedService(referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 						if validationResult {
-							let (updateResult, updateMessage) = await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							let (updateResult, updateMessage) = await serviceMgmtVM.updateService(serviceNum: serviceNum, referenceData: referenceData, serviceCode: serviceCode, timesheetName: timesheetName, originalTimesheetName: originalTimesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
 								buttonErrorMsg = updateMessage
 								showAlert = true
@@ -141,7 +149,7 @@ struct ServiceView: View {
 					} else {
 						let (validationResult, validationMessage) = serviceMgmtVM.validateNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName:invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 						if validationResult {
-							let (addResult, addMessage) = await serviceMgmtVM.addNewService(referenceData: referenceData, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							let (addResult, addMessage) = await serviceMgmtVM.addNewService(referenceData: referenceData, serviceCode: serviceCode, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !addResult {
 								buttonErrorMsg = addMessage
 								showAlert = true

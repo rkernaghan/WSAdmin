@@ -107,44 +107,54 @@ class BillArray {
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 				if tutorFound {
 					timesheetServiceName = billClients[clientNum].billItems[billItemNum].timesheetServiceName
-					let (serviceFound, serviceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
-					if serviceFound {
-						duration = billClients[clientNum].billItems[billItemNum].duration
-						let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].computeSessionCostPrice(duration: duration)
-						// Get the Invoice Service Name and remove any commas from the name (there should not be any commas but this is a double check)
-						let invoiceServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[serviceNum].invoiceServiceName.replacingOccurrences(of: ",", with: "")
+					let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
+					if tutorServiceFound {
 						
-						newInvoice.totalRevenue += price	// Increment the running total Revenue for this invoice
-						newInvoice.totalCost += cost		// Increment the running total Cost for this invoice
-						newInvoice.totalSessions += 1		// Increment the running total sessions for this invoice
-						
-						let studentName = billClients[clientNum].billItems[billItemNum].studentName
-						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-						if !foundFlag {
-							print("Error: Could not find Student \(studentName) in Students List")
+						// Get the ServiceCode for the Service using TimesheetServiceName
+						let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
+						if !serviceFound {
+							print("Error: could not find Service: \(timesheetServiceName) to get Service Code")
 						} else {
-							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+							let serviceCode = referenceData.services.servicesList[serviceNum].serviceCode
 							
-							clientName = billClients[clientNum].clientName
-							clientEmail = billClients[clientNum].clientEmail
+							duration = billClients[clientNum].billItems[billItemNum].duration
 							
-							// If this is the same client as the previous tutoring session in this invoice, some attributes are blank as required by QuickBooks CSV format
-							if clientName == prevClientName {
-								clientName = ""
-								clientEmail = ""
-								clientDueDate = ""
-								clientInvoiceDate = ""
-								clientTerms = ""
-							} else {			// If this session is for a different client, fill in client name, due date, etc
-								prevClientName = clientName
-								clientDueDate = dueDateStr
-								clientTerms = PgmConstants.termsString
-								clientInvoiceDate = invoiceDate
+							let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].computeSessionCostPrice(duration: duration)
+							// Get the Invoice Service Name and remove any commas from the name (there should not be any commas but this is a double check)
+							let invoiceServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].invoiceServiceName.replacingOccurrences(of: ",", with: "")
+							
+							newInvoice.totalRevenue += price	// Increment the running total Revenue for this invoice
+							newInvoice.totalCost += cost		// Increment the running total Cost for this invoice
+							newInvoice.totalSessions += 1		// Increment the running total sessions for this invoice
+							
+							let studentName = billClients[clientNum].billItems[billItemNum].studentName
+							let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+							if !foundFlag {
+								print("Error: Could not find Student \(studentName) in Students List")
+							} else {
+								let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+								
+								clientName = billClients[clientNum].clientName
+								clientEmail = billClients[clientNum].clientEmail
+								
+								// If this is the same client as the previous tutoring session in this invoice, some attributes are blank as required by QuickBooks CSV format
+								if clientName == prevClientName {
+									clientName = ""
+									clientEmail = ""
+									clientDueDate = ""
+									clientInvoiceDate = ""
+									clientTerms = ""
+								} else {			// If this session is for a different client, fill in client name, due date, etc
+									prevClientName = clientName
+									clientDueDate = dueDateStr
+									clientTerms = PgmConstants.termsString
+									clientInvoiceDate = invoiceDate
+								}
+								// Add a line to the invoice with the tutoring session data
+								let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
+								newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 							}
-							// Add a line to the invoice with the tutoring session data
-							let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
-							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
-
+							
 						}
 						
 					}

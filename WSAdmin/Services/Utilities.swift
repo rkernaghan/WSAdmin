@@ -94,7 +94,7 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			//    print("After Read Cells URL Session call \(fileID)")
 			if let httpResponse = response as? HTTPURLResponse {
 				if httpResponse.statusCode != 200 {
-					print("Read Sheet Cells HTTP Result Error Code: \(httpResponse.statusCode)")
+					print("Utilities.readSheetCells - HTTP Result Error Code: \(httpResponse.statusCode) for File ID \(fileID)")
 				}
 			}
 			// Check if the response is successful
@@ -153,7 +153,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			
 			if let httpResponse = response as? HTTPURLResponse {
 				if httpResponse.statusCode != 200 {
-					print("Write Sheet Cells HTTP Result Error Code: \(httpResponse.statusCode)")
+					print("Utilties.writeSheetCells - HTTP Result Error Code: \(httpResponse.statusCode)")
 					completionFlag = false
 				}
 			}

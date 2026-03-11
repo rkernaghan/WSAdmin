@@ -9,6 +9,7 @@ import Foundation
 
 @Observable class Service: Identifiable {
 	var serviceKey: String					// Unique key for the Service
+	var serviceCode: String					// Accounting service code (not necessarily unique)
 	var serviceTimesheetName: String			// Name to show on Tutor Timesheet
 	var serviceInvoiceName: String				// Name to show on client invoice
 	var serviceType: ServiceTypeOption			// Base or Variable
@@ -25,8 +26,9 @@ import Foundation
 	var serviceTotalPrice: Float
 	let id = UUID()
 	
-	init(serviceKey: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
+	init(serviceKey: String, serviceCode: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
 		self.serviceKey = serviceKey
+		self.serviceCode = serviceCode
 		self.serviceTimesheetName = serviceTimesheetName
 		self.serviceInvoiceName = serviceInvoiceName
 		self.serviceType = serviceType
@@ -52,8 +54,9 @@ import Foundation
 	}
     
 	// This function updates the attributes of a Service object
-	func updateService(timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+	func updateService(serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
 
+		self.serviceCode = serviceCode
 		self.serviceTimesheetName = timesheetName
 		self.serviceInvoiceName = invoiceName
 		self.serviceType = serviceType

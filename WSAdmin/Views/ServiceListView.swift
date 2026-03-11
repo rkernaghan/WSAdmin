@@ -59,6 +59,7 @@ struct ServiceListView: View {
 			}
 			
 			let serviceArray: [Service] = assignedArray + unassignedArray + deletedArray
+
 			
 			VStack {
 				HStack {
@@ -71,6 +72,9 @@ struct ServiceListView: View {
 				
 				Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
 					Group {
+						TableColumn("Service\nCode", value: \Service.serviceCode)
+							.width(min: 45, ideal: 50, max: 60)
+						
 						TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
 							.width(min: 120, ideal: 160, max: 240)
 						
@@ -247,7 +251,7 @@ struct ServiceListView: View {
 				}
 				.navigationDestination(isPresented: $editService) {
 					if referenceData.services.servicesList.count > 0 {
-						ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
+						ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, serviceCode: referenceData.services.servicesList[serviceNumber].serviceCode, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)
 					}
 				}
 				.navigationDestination(isPresented: $listServiceCosts) {

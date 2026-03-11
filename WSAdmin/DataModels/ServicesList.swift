@@ -110,6 +110,7 @@ import Foundation
 		while serviceIndex < serviceCount {
 			
 			let newServiceKey = sheetCells[rowNumber][PgmConstants.serviceKeyPosition]
+			let newServiceCode = sheetCells[rowNumber][PgmConstants.serviceCodePosition]
 			let newServiceTimesheetName = sheetCells[rowNumber][PgmConstants.serviceTimesheetNamePosition]
 			let newServiceInvoiceName = sheetCells[rowNumber][PgmConstants.serviceInvoiceNamePosition]
 			let newServiceType: ServiceTypeOption =  ServiceTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceTypePosition]) ?? .Special
@@ -123,7 +124,7 @@ import Foundation
 			let newServicePrice2 = Float(sheetCells[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
 			let newServicePrice3 = Float(sheetCells[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
 			// Create a new Service object using the Service attributes from the 2D array
-			let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
+			let newService = Service(serviceKey: newServiceKey, serviceCode: newServiceCode, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
 			// Add the new Service object to the Services List object array
 			self.servicesList.append(newService)
 			serviceIndex += 1
@@ -143,6 +144,7 @@ import Foundation
 		let serviceCount = self.servicesList.count
 		while serviceNum < serviceCount {
 			let serviceKey = servicesList[serviceNum].serviceKey
+			let serviceCode = servicesList[serviceNum].serviceCode
 			let serviceTimesheetName = servicesList[serviceNum].serviceTimesheetName
 			let serviceInvoiceName = servicesList[serviceNum].serviceInvoiceName
 			let serviceType =  String(describing: servicesList[serviceNum].serviceType)
@@ -156,11 +158,11 @@ import Foundation
 			let servicePrice2 = String(servicesList[serviceNum].servicePrice2.formatted(.number.precision(.fractionLength(2))))
 			let servicePrice3 = String(servicesList[serviceNum].servicePrice3.formatted(.number.precision(.fractionLength(2))))
 			// Add the Service object attributes as a row in the 2D array of Services data
-			updateValues.insert([serviceKey, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCount, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
+			updateValues.insert([serviceKey, serviceCode, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCount, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
 			serviceNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "," "], at: serviceNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "," "], at: serviceNum)
 		
 		return(updateValues)
 	}

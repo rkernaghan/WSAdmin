@@ -16,7 +16,7 @@ import Foundation
 	var price2Float: Float = 0.0
 	var price3Float: Float = 0.0
     
-	func addNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
 		var addResult: Bool = true
 		var addMessage: String = ""
 		var newServiceKey: String = ""
@@ -32,7 +32,7 @@ import Foundation
 				newServiceKey = PgmConstants.serviceSpecialKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
 			}
 			
-			let newService = Service(serviceKey: newServiceKey, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
+			let newService = Service(serviceKey: newServiceKey, serviceCode: serviceCode, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
 			
 			referenceData.services.addService(newService: newService, referenceData: referenceData)
 			
@@ -111,7 +111,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
-	func updateService(serviceNum: Int, referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+	func updateService(serviceNum: Int, referenceData: ReferenceData, serviceCode: String, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
 		var updateResult: Bool = true
 		var updateMessage: String = ""
 		
@@ -121,7 +121,7 @@ import Foundation
 		}
 		
 		// Update the Service in the Reference Data using the data from the update service screen
-		referenceData.services.servicesList[serviceNum].updateService(timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+		referenceData.services.servicesList[serviceNum].updateService(serviceCode: serviceCode, timesheetName: timesheetName, invoiceName: invoiceName, serviceType: serviceType, billingType: billingType, serviceCount: serviceCount, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
         
 		updateResult = await referenceData.services.saveServiceData()
 		if !updateResult {

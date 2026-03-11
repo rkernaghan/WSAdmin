@@ -16,6 +16,7 @@ struct InvoiceLine: Identifiable {
 	var terms: String
 	var locationName: String
 	var tutorName: String
+	var serviceCode: String
 	var itemName: String
 	var description: String
 	var quantity: String
@@ -27,7 +28,7 @@ struct InvoiceLine: Identifiable {
 	var cost: Float
 	let id = UUID()
 	
-	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, itemName: String, description: String, quantity: String, rate: String, amount: Float, taxCode: String, serviceDate: String, studentName: String, cost: Float) {
+	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, rate: String, amount: Float, taxCode: String, serviceDate: String, studentName: String, cost: Float) {
 		self.invoiceNum = invoiceNum
 		self.clientName = clientName
 		self.clientEmail = clientEmail
@@ -36,6 +37,7 @@ struct InvoiceLine: Identifiable {
 		self.terms = terms
 		self.locationName = locationName
 		self.tutorName = tutorName
+		self.serviceCode = serviceCode
 		self.itemName = itemName
 		self.description = description.replacingOccurrences(of: ",", with: "")
 		self.quantity = quantity
