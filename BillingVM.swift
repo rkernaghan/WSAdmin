@@ -14,13 +14,14 @@ import GoogleSignIn
 	
         // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
 	
-	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Invoice, TutorBillingMonth, [String]) {
+	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool, startingInvoiceNumber: Int) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
 		var tutorBillingFileID: String = ""
 		var resultFlag: Bool = true
 		var alreadyBilledFlag: Bool = false
 		var alreadyBilledTutors = [String]()
+		referenceData.dataCounts.highestInvoiceNumber = startingInvoiceNumber - 1
 		
 		let tutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		
@@ -38,7 +39,7 @@ import GoogleSignIn
 				
 				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				
-				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
+				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages, referenceData: referenceData)
 			}
 		}
 		
@@ -72,7 +73,7 @@ import GoogleSignIn
 		
 	}
 	
-	// Read in a Timesheet for a Tutor
+	// Read in a yearly Timesheet for a Tutor
 	func getTimesheet(tutorName: String, timesheetYear: String, timesheetMonth: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Timesheet {
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
@@ -85,13 +86,14 @@ import GoogleSignIn
 		}
 		
 		do {
+			// Get the Google Sheets FileID for the Tutor's Timesheet for the year
 			(result, timesheetFileID) = try await getFileID(fileName: fileName)
 			
 			if result {
 				if showBillingDiagnostics {
 					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                 Timesheet FileID is: \(timesheetFileID)"))
 				}
-				
+				// Read in the Tutor's Timesheet for the year
 				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				if !timesheetResult {
 					print("Error: in BillingVM.getTimesheet - Could not load Timesheet for Tutor \(tutorName) with File ID \(timesheetFileID)")
@@ -258,7 +260,6 @@ import GoogleSignIn
 		
 		// Then update the Last Billed Date for each Student being billed
 		
-		
 		if !generationFlag {
 			generationMessage = "Error: Could not update Billing Stats"
 			print("Error: Could not update billing stats")
@@ -300,15 +301,18 @@ import GoogleSignIn
 					// Loop through the invoice and create a line in the CSV file from each Invoice line in format required by Xero package
 					var invoiceLineNum = 0
 					let invoiceLineCount = invoice.invoiceLines.count
+					
 					while invoiceLineNum < invoiceLineCount {
 						let csvLine = processXeroInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
 						if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 							fileHandle.write(data)
 						}
 						invoiceLineNum += 1
+//						referenceData.dataCounts.increaseHighestInvoiceNumber()
 					}
 					// Save the Students List as the Last Billing Dates will have been updated
 					await referenceData.students.saveStudentData()
+					await referenceData.dataCounts.saveDataCounts()
 					
 					// Close the CSV file when done
 					fileHandle.closeFile()
@@ -331,6 +335,7 @@ import GoogleSignIn
 	//
 	func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
+//		let invoiceNum = referenceData.dataCounts.highestInvoiceNumber + 1
 		let invoiceClient = invoiceLine.clientName
 		let invoiceEmail = invoiceLine.clientEmail
 		let invoiceDate = invoiceLine.invoiceDate
@@ -340,11 +345,7 @@ import GoogleSignIn
 //		let invoiceLocation = invoiceLine.locationName
 //		let invoiceTutor = invoiceLine.tutorName
 		let invoiceItem = invoiceLine.itemName
-		var invoiceDescription = invoiceLine.serviceDate + " - " + invoiceLine.itemName
-		// If there are tutor Notes for the session, add them to the description text
-		if invoiceLine.description != "" {
-			invoiceDescription += " - " + invoiceLine.description
-		}
+		let invoiceDescription = invoiceLine.description
 //		let invoiceQuantity = invoiceLine.quantity
 		let invoiceServiceDate = invoiceLine.serviceDate
 		let invoiceRate = invoiceLine.rate
@@ -352,9 +353,8 @@ import GoogleSignIn
 		let invoiceTaxCode = invoiceLine.taxCode
 		let invoiceItemCode = invoiceLine.serviceCode
 
-		
 		let invoiceTaxType = "TAX EXEMPT"
-		let invoiceAccountCode = "4100"
+		let invoiceAccountCode = referenceData.dataCounts.accountCode
 		let invoiceBrandingTheme = "Standard"
 		let invoiceQuantity = "1"
 //		let invoiceItemCode = "100"
@@ -376,7 +376,7 @@ import GoogleSignIn
 //		let invoiceCurrency = ""
 
 		
-		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceReference + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceItemCode + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator +  invoiceAmount + PgmConstants.csvSeperator + invoiceAccountCode + PgmConstants.csvSeperator + invoiceTaxType + PgmConstants.csvSeperator + invoiceBrandingTheme
+		let csvLine = String(invoiceNum) + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceReference + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceItemCode + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator +  invoiceAmount + PgmConstants.csvSeperator + invoiceAccountCode + PgmConstants.csvSeperator + invoiceTaxType + PgmConstants.csvSeperator + invoiceBrandingTheme
 		
 		// Set the Last Billed Date for the Student to today's date
 		let studentName = invoiceLine.studentName
@@ -419,7 +419,9 @@ import GoogleSignIn
 		} else {
 			print ("Error: Student not found when updating Student Last Billed Date")
 		}
-	print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
+		
+		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
+		
 		return(csvLine)
 	}
 	

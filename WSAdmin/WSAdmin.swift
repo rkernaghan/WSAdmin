@@ -34,6 +34,10 @@ struct PgmConstants {
 	static let dataCountActiveLocationsCol = 0
 	static let dataCountHighestLocationKeyRow = 11
 	static let dataCountHighestLocationKeyCol = 0
+	static let dataCountHighestInvoiceNumberRow = 12
+	static let dataCountHighestInvoiceNumberCol = 0
+	static let dataCountAccountCodeRow = 13
+	static let dataCountAccountCodeCol = 0
 	
 	static let tutorDataStudentCountRow = 3
 	static let tutorDataStudentCountCol = 1
@@ -43,7 +47,7 @@ struct PgmConstants {
 	static let testRefFileName = "ReferenceData - TEST"
 	static let copyRefFileName = "ReferenceData - PROD COPY"
 	static let prodRefFileName = "ReferenceData"
-	static let dataCountRange = "Master!B2:B13"
+	static let dataCountRange = "Master!B2:B15"
 	static let tutorRange = "Master!D2:Q"
 	static let studentRange = "Master!U3:AM"
 	static let serviceRange = "Master!AQ3:BD"

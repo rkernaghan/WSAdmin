@@ -24,32 +24,39 @@ class BillArray {
 		self.billClients.append(newBillClient)
 	}
 	
+	// Extract the data from a single Tutor Timesheet into arrays of BillItems under each applicable BillClient, each BillItem represents a single tutoring session.
+	// The BillArray contains one BillClient for each month's Clients and each tutoring session for that Client is represented by a BillItem under that BillClient
 	//
-	func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages) {
-		
-		var timesheetNum = 0
-		while timesheetNum < timesheet.timesheetRows.count {
-			let timesheetClientName = timesheet.timesheetRows[timesheetNum].clientName
+	func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages, referenceData: ReferenceData) {
+		var invoiceServiceName = "Not Found"
+		var timesheetRowNum = 0
+		while timesheetRowNum < timesheet.timesheetRows.count {
+			let timesheetClientName = timesheet.timesheetRows[timesheetRowNum].clientName
 			
+			// If this is the first session processed for a client that month, create a new BillClient in the BillArray
 			var (foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			if !foundFlag {
-				let newBillClient = BillClient(clientName: timesheetClientName, clientEmail: timesheet.timesheetRows[timesheetNum].clientEmail, clientPhone: timesheet.timesheetRows[timesheetNum].clientPhone)
+				let newBillClient = BillClient(clientName: timesheetClientName, clientEmail: timesheet.timesheetRows[timesheetRowNum].clientEmail, clientPhone: timesheet.timesheetRows[timesheetRowNum].clientPhone)
 				self.addBillClient(newBillClient: newBillClient)
 				(foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			}
 			
-			let studentName = timesheet.timesheetRows[timesheetNum].studentName
-			let serviceDate = timesheet.timesheetRows[timesheetNum].serviceDate
-			let duration = timesheet.timesheetRows[timesheetNum].duration
-			let timesheetServiceName = timesheet.timesheetRows[timesheetNum].timesheetServiceName
+			let studentName = timesheet.timesheetRows[timesheetRowNum].studentName
+			let serviceDate = timesheet.timesheetRows[timesheetRowNum].serviceDate
+			let duration = timesheet.timesheetRows[timesheetRowNum].duration
+			let timesheetServiceName = timesheet.timesheetRows[timesheetRowNum].timesheetServiceName
+			let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
+			if serviceFound {
+				invoiceServiceName = referenceData.services.servicesList[serviceNum].serviceInvoiceName
+			}
 			
-			let notes = timesheet.timesheetRows[timesheetNum].notes
-			let tutorName = timesheet.timesheetRows[timesheetNum].tutorName
-			let cost = timesheet.timesheetRows[timesheetNum].cost
+			let notes = timesheet.timesheetRows[timesheetRowNum].notes
+			let tutorName = timesheet.timesheetRows[timesheetRowNum].tutorName
+			let cost = timesheet.timesheetRows[timesheetRowNum].cost
 			
-			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, timesheetServiceName: timesheetServiceName, notes: notes, cost: cost, tutorName: tutorName)
+			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, timesheetServiceName: timesheetServiceName, invoiceServiceName: invoiceServiceName, notes: notes, cost: cost, tutorName: tutorName)
 			self.billClients[billClientNum].billItems.append(newBillItem)
-			timesheetNum += 1
+			timesheetRowNum += 1
 		}
 	}
         
@@ -76,6 +83,9 @@ class BillArray {
 		var clientDueDate: String = ""
 		var clientTerms: String = ""
 		var dueDateStr: String = ""
+		let brandingTheme = "Standard"
+		let accountCode = referenceData.dataCounts.accountCode
+		let fixedQuantity: String = "1.0"
 		
 		let newInvoice = Invoice()
 		var timesheetServiceName: String = ""
@@ -85,10 +95,10 @@ class BillArray {
 		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let invoiceDate = dateFormatter.string(from: Date())
 		
-		// Calculate the due date of the invoice, which is 14 days from today's date
+		// Calculate the due date of the invoice, which is 7 days from today's date
 		let calendar = Calendar.current
 		let now = Date()
-		let dueDate = calendar.date(byAdding: .day, value: 14, to: now)
+		let dueDate = calendar.date(byAdding: .day, value: 7, to: now)
 		if let dueDate = dueDate {
 			dueDateStr = dateFormatter.string(from: dueDate)
 		} else {
@@ -120,6 +130,7 @@ class BillArray {
 							duration = billClients[clientNum].billItems[billItemNum].duration
 							
 							let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].computeSessionCostPrice(duration: duration)
+							
 							// Get the Invoice Service Name and remove any commas from the name (there should not be any commas but this is a double check)
 							let invoiceServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].invoiceServiceName.replacingOccurrences(of: ",", with: "")
 							
@@ -128,6 +139,10 @@ class BillArray {
 							newInvoice.totalSessions += 1		// Increment the running total sessions for this invoice
 							
 							let studentName = billClients[clientNum].billItems[billItemNum].studentName
+							let notes = billClients[clientNum].billItems[billItemNum].notes
+							let serviceDate = billClients[clientNum].billItems[billItemNum].serviceDate
+							let timesheetServiceName = billClients[clientNum].billItems[billItemNum].timesheetServiceName
+							
 							let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							if !foundFlag {
 								print("Error: Could not find Student \(studentName) in Students List")
@@ -136,23 +151,25 @@ class BillArray {
 								
 								clientName = billClients[clientNum].clientName
 								clientEmail = billClients[clientNum].clientEmail
+								let description = serviceDate + " - " + invoiceServiceName + " - " + notes
 								
 								// If this is the same client as the previous tutoring session in this invoice, some attributes are blank as required by QuickBooks CSV format
-								if clientName == prevClientName {
-									clientName = ""
-									clientEmail = ""
-									clientDueDate = ""
-									clientInvoiceDate = ""
-									clientTerms = ""
-								} else {			// If this session is for a different client, fill in client name, due date, etc
+//								if clientName == prevClientName {
+//									clientName = ""
+//									clientEmail = ""
+//									clientDueDate = ""
+//									clientInvoiceDate = ""
+//									clientTerms = ""
+//								} else {			// If this session is for a different client, fill in client name, due date, etc
 									prevClientName = clientName
 									clientDueDate = dueDateStr
 									clientTerms = PgmConstants.termsString
 									clientInvoiceDate = invoiceDate
-								}
+//								}
 								// Add a line to the invoice with the tutoring session data
-								let invoiceLine = InvoiceLine(invoiceNum: String(clientNum + 100), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: billClients[clientNum].billItems[billItemNum].notes, quantity: String(quantity.formatted(.number.precision(.fractionLength(2)))), rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost)
-								newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
+							let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
+							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
+							referenceData.dataCounts.increaseHighestInvoiceNumber()
 							}
 							
 						}
@@ -163,6 +180,7 @@ class BillArray {
 			}
 			clientNum += 1
 		}
+
 		
 		newInvoice.totalProfit = newInvoice.totalRevenue - newInvoice.totalCost
 		newInvoice.isInvoiceLoaded = true

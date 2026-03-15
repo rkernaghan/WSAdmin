@@ -13,16 +13,18 @@ class BillItem {
 	var serviceDate: String
 	var duration: Int
 	var timesheetServiceName: String
+	var invoiceServiceName: String
 	var notes: String
 	var cost: Float
 	//    var tutorKey: String
 	var tutorName: String
 	
-	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, notes: String, cost: Float, tutorName: String) {
+	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, invoiceServiceName: String, notes: String, cost: Float, tutorName: String) {
 		self.studentName = studentName
 		self.serviceDate = serviceDate
 		self.duration = duration
 		self.timesheetServiceName = timesheetServiceName
+		self.invoiceServiceName = invoiceServiceName
 		self.notes = notes
 		self.cost = cost
 		//        self.tutorKey = tutorKey

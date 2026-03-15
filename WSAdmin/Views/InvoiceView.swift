@@ -46,38 +46,48 @@ struct InvoiceView: View {
 				}
 				VStack {
 					Table(invoice.invoiceLines) {
-						//                    Group {
-						//                    TableColumn("Invoice Num", value: \.invoiceNum)
-						TableColumn("Client Name", value: \.clientName)
-							.width(min: 80, ideal: 120, max: 200)
-						//                        TableColumn("Client Email", value: \.clientEmail)
-						//                        TableColumn("Invoice Date", value: \.invoiceDate)
-						// TableColumn("Due Date", value: \.dueDate)
-						TableColumn("Location", value: \.locationName)
-							.width(min: 50, ideal: 60, max: 80)
-						TableColumn("Terms", value: \.terms)
-							.width(min: 60, ideal: 60, max: 80)
-						//                  }
-						//                  Group {
-						TableColumn("Tutor Name", value: \.tutorName)
-							.width(min: 60, ideal: 100, max: 140)
-						TableColumn("Item", value: \.itemName)
-							.width(min: 100, ideal: 150, max: 220)
-						TableColumn("Description", value: \.description)
-							.width(min: 70, ideal: 90, max: 120)
-						TableColumn("Quantity", value: \.quantity) 
-							.width(min: 40, ideal: 40, max: 60)
-						TableColumn("Rate", value: \.rate)
-							.width(min: 40, ideal: 40, max: 50)
+					    Group {
+						TableColumn("Invoice\nNum", value: \InvoiceLine.invoiceNum)
+							.width(min: 30, ideal: 42, max: 50)
+						TableColumn("Client Name", value: \InvoiceLine.clientName)
+							.width(min: 60, ideal: 100, max: 200)
+						TableColumn("Client Email", value: \InvoiceLine.clientEmail)
+						// TableColumn("Invoice Date", value: \InvoiceLine.invoiceDate)
+						// TableColumn("Due Date", value: \InvoiceLine.dueDate)
+						TableColumn("Reference", value: \InvoiceLine.studentName)
+							    .width(min: 60, ideal: 80, max: 120)
+						TableColumn("Invoice Date", value: \InvoiceLine.invoiceDate)
+							.width(min: 55, ideal: 60, max: 80)
+						TableColumn("Due Date", value: \InvoiceLine.dueDate)
+							.width(min: 55, ideal: 60, max: 80)
+						  }
+						
+					  Group {
+						TableColumn("Item\nCode", value: \InvoiceLine.serviceCode)
+							  .width(min: 20, ideal: 30, max: 40)
+//						TableColumn("Tutor Name", value: \InvoiceLine.tutorName)
+//							.width(min: 60, ideal: 100, max: 140)
+//						TableColumn("Item", value: \InvoiceLine.itemName)
+//							.width(min: 100, ideal: 150, max: 220)
+						TableColumn("Description", value: \InvoiceLine.description)
+							.width(min: 140, ideal: 200, max: 260)
+						TableColumn("Quantity", value: \InvoiceLine.quantity)
+							.width(min: 35, ideal: 35, max: 50)
+//						TableColumn("Rate", value: \InvoiceLine.rate)
+//							.width(min: 40, ideal: 40, max: 50)
 						//                       TableColumn("Amount", value: \.amount)
 						TableColumn("Amount") { data in
 							Text(String(data.amount.formatted(.number.precision(.fractionLength(2)))))
+							}
+							.width(min: 40, ideal: 40, max: 50)
+//						TableColumn("Tax Code", value: \InvoiceLine.taxCode)
+						TableColumn("Account\nCode", value: \InvoiceLine.accountCode)
+							  .width(min: 40, ideal: 40, max: 50)
+						TableColumn("Branding\nTheme", value: \InvoiceLine.brandingTheme)
+							  .width(min: 60, ideal: 70, max: 85)
+//						TableColumn("Service Date", value: \InvoiceLine.serviceDate)
+//							.width(min: 50, ideal: 60, max: 80)
 						}
-						.width(min: 40, ideal: 40, max: 50)
-						//              TableColumn("Tax Code", value: \.taxCode)
-						TableColumn("Service Date", value: \.serviceDate)
-							.width(min: 50, ideal: 60, max: 80)
-						//                 }
 					}
 					HStack {
 						Button(action: {
@@ -111,3 +121,4 @@ struct InvoiceView: View {
 // #Preview {
 //    TutorStudentsView()
 // }
+

@@ -771,7 +771,7 @@ import Foundation
 						if !timesheetResult {
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not load Timesheet for Tutor \(tutorName)"))
 						} else {
-							billArray.processTimesheet(timesheet: timesheet, billingMessages: validationMessages)
+							billArray.processTimesheet(timesheet: timesheet, billingMessages: validationMessages, referenceData: referenceData)
 						}
 					}
 				} catch {
@@ -1116,7 +1116,7 @@ import Foundation
 							if !timesheetResult {
 								print("Error: Could not load Timesheet for Tutor \(tutorName)")
 							} else {
-								billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages)
+								billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages, referenceData: referenceData)
 							}
 						}
 					} catch {

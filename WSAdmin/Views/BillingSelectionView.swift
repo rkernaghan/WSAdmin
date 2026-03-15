@@ -11,7 +11,7 @@ struct BillingSelectionView: View {
 	// NOTE: BillingVM must be injected as .environmentObject(BillingVM()) higher in the view hierarchy.
 	
 	var referenceData: ReferenceData
-	
+	@State var startingInvoiceNumber: Int
 //	@Environment var billingVM: BillingVM
 	@Environment(BillingVM.self) var billingVM: BillingVM
 	
@@ -28,7 +28,6 @@ struct BillingSelectionView: View {
 	@State private var billedTutorMonth = TutorBillingMonth(monthName: "")
 	@State private var showBillingDiagnostics: Bool = false
 	@State private var showEachSession: Bool = false
-	
 	
 	var body: some View {
 		
@@ -77,6 +76,11 @@ struct BillingSelectionView: View {
 				}
 				
 				VStack {
+					Text("Starting Invoice Number")
+					TextField("Invoice Num", value: $startingInvoiceNumber, format: .number)
+						.frame(width: 45)
+						.textFieldStyle(.roundedBorder)
+					
 					Picker("Month", selection: $selectedMonth) {
 						ForEach(monthArray, id: \.self) { item in
 							Text(item)
@@ -95,7 +99,7 @@ struct BillingSelectionView: View {
 						Task {
 							billingMessages.windowMessageList.removeAll()
 							showInvoice = true
-							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
+							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession, startingInvoiceNumber: startingInvoiceNumber)
 							
 						}
 					} label: {

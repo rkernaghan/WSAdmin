@@ -140,7 +140,7 @@ struct SideView: View {
 			}
 
 			NavigationLink {
-				BillingSelectionView(referenceData: referenceData)
+				BillingSelectionView(referenceData: referenceData, startingInvoiceNumber: referenceData.dataCounts.highestInvoiceNumber + 1)
 			} label: {
 				Label("Billing", systemImage: "person")
 			}

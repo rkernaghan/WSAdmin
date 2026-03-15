@@ -20,6 +20,8 @@ class DataCounts {
 	var totalLocations: Int = 0
 	var activeLocations: Int = 0
 	var highestLocationKey: Int = 0
+	var highestInvoiceNumber: Int = 0
+	var accountCode: String = ""
 	var isDataCountsLoaded: Bool
 	
 	init() {
@@ -79,6 +81,11 @@ class DataCounts {
 	
 	func decreaseActiveLocationCount() {
 		activeLocations -= 1
+	}
+	
+	func increaseHighestInvoiceNumber() {
+		highestInvoiceNumber += 1
+		
 	}
 	
 	func fetchDataCounts(referenceData: ReferenceData) async -> Bool {
@@ -145,6 +152,8 @@ class DataCounts {
 		self.totalLocations = Int(sheetCells[PgmConstants.dataCountTotalLocationsRow][PgmConstants.dataCountTotalLocationsCol]) ?? 0
 		self.activeLocations = Int(sheetCells[PgmConstants.dataCountActiveLocationsRow][PgmConstants.dataCountActiveLocationsCol]) ?? 0
 		self.highestLocationKey = Int(sheetCells[PgmConstants.dataCountHighestLocationKeyRow][PgmConstants.dataCountHighestLocationKeyCol]) ?? 0
+		self.highestInvoiceNumber =  Int(sheetCells[PgmConstants.dataCountHighestInvoiceNumberRow][PgmConstants.dataCountHighestInvoiceNumberCol]) ?? 0
+		self.accountCode = sheetCells[PgmConstants.dataCountAccountCodeRow][PgmConstants.dataCountAccountCodeCol]
 		self.isDataCountsLoaded = true
 	}
 	
@@ -164,6 +173,7 @@ class DataCounts {
 		updateValues.insert([String(totalLocations)], at: PgmConstants.dataCountTotalLocationsRow)
 		updateValues.insert([String(activeLocations)], at: PgmConstants.dataCountActiveLocationsRow)
 		updateValues.insert([String(highestLocationKey)], at: PgmConstants.dataCountHighestLocationKeyRow)
+		updateValues.insert([String(highestInvoiceNumber)], at: PgmConstants.dataCountHighestInvoiceNumberRow)
 		
 		return(updateValues)
 	}

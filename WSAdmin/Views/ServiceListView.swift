@@ -73,7 +73,7 @@ struct ServiceListView: View {
 				Table(serviceArray, selection: $selectedServices, sortOrder: $sortOrder) {
 					Group {
 						TableColumn("Service\nCode", value: \Service.serviceCode)
-							.width(min: 45, ideal: 50, max: 60)
+							.width(min: 30, ideal: 35, max: 50)
 						
 						TableColumn("Timesheet Name", value: \Service.serviceTimesheetName)
 							.width(min: 120, ideal: 160, max: 240)
