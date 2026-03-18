@@ -7,13 +7,15 @@
 
 import Foundation
 
+// The data and functions for an individual Location (city)
+//
 @Observable class Location: Identifiable {
-	var locationKey: String
-	var locationName: String
-	var locationMonthRevenue: Float
-	var locationTotalRevenue: Float
-	var locationStudentCount: Int
-	var locationStatus: String
+	var locationKey: String				// Unique key for the Location
+	var locationName: String			// Name of the Location
+	var locationMonthRevenue: Float			// Total revenue for the Location (not used)
+	var locationTotalRevenue: Float			// Total revenue for the Location since Location created (or system initiated)
+	var locationStudentCount: Int			// Count of current Students from this Location\
+	var locationStatus: String			// Status of the Location
 	let id = UUID()
 	
 	init(locationKey: String, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float, locationStudentCount: Int, locationStatus: String) {

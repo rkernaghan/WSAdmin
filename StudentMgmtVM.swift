@@ -541,6 +541,7 @@ import Foundation
 		return(reassignResult, reassignMessage)
 	}
     
+	// Unassign a Student by changing Student Status to Unassigned, removing Tutor from Student record, removing Student from Tutor's details sheet and decreasing Tutor's assigned Tutor count in Ref data and Tutor Details
 	func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var unassignResult: Bool = true
 		var unassignMessage: String = ""

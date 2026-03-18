@@ -7,10 +7,12 @@
 
 import Foundation
 
+// The data and functions to track general count and other data about the system.  Counts are used to read and write data to the Reference Data sheet
+//
 class DataCounts {
-	var totalStudents: Int = 0
-	var activeStudents: Int = 0
-	var highestStudentKey: Int = 0
+	var totalStudents: Int = 0			// Total Students in the system
+	var activeStudents: Int = 0			// Active (Status not Deleted or Suspended)
+	var highestStudentKey: Int = 0			// Highest unique key number for the Students
 	var totalTutors: Int = 0
 	var activeTutors: Int = 0
 	var highestTutorKey: Int = 0
@@ -20,8 +22,8 @@ class DataCounts {
 	var totalLocations: Int = 0
 	var activeLocations: Int = 0
 	var highestLocationKey: Int = 0
-	var highestInvoiceNumber: Int = 0
-	var accountCode: String = ""
+	var highestInvoiceNumber: Int = 0		// Highest invoice number already used, used for billing
+	var accountCode: String = ""			// Accunting code for invoices, used for billing
 	var isDataCountsLoaded: Bool
 	
 	init() {
@@ -118,26 +120,6 @@ class DataCounts {
 		return(completionFlag)
 	}
 	
-	
-	func saveDataCounts() async -> Bool {
-		var completionFlag: Bool = true
-// Write the Data Counts to the Reference Data spreadsheet
-		let updateValues = unloadLocationRows()
-		
-		let range = PgmConstants.dataCountRange
-		do {
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
-			if !result {
-				completionFlag = false
-			}
-		} catch {
-			print ("Error: Saving Data Count rows failed")
-			completionFlag = false
-		}
-		
-		return(completionFlag)
-	}
-
 	func loadDataCountRows(sheetCells: [[String]] ) {
 		
 		self.totalStudents = Int(sheetCells[PgmConstants.dataCountTotalStudentsRow][PgmConstants.dataCountTotalStudentsCol]) ?? 0
@@ -156,6 +138,28 @@ class DataCounts {
 		self.accountCode = sheetCells[PgmConstants.dataCountAccountCodeRow][PgmConstants.dataCountAccountCodeCol]
 		self.isDataCountsLoaded = true
 	}
+	
+	
+	func saveDataCounts() async -> Bool {
+		var completionFlag: Bool = true
+		// Write the Data Counts to the Reference Data spreadsheet
+		let updateValues = unloadLocationRows()
+		
+		let range = PgmConstants.dataCountRange
+		do {
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+			}
+		} catch {
+			print ("Error: Saving Data Count rows failed")
+			completionFlag = false
+		}
+		
+		return(completionFlag)
+	}
+
+
 	
 	func unloadLocationRows() -> [[String]] {
 		

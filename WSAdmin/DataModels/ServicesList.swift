@@ -10,7 +10,7 @@ import Foundation
 
 @Observable class ServicesList {
 	var servicesList = [Service]()
-	var isServiceDataLoaded: Bool
+	var isServiceDataLoaded: Bool			// Indicator as to whether the Service data has been read in from the ReferenceData sheet yet
 	
 	init() {
 		isServiceDataLoaded = false
@@ -78,29 +78,6 @@ import Foundation
 		return(completionFlag)
 	}
     
-	// This function saves the Services objects into the Reference Data spreadsheet
-	func saveServiceData() async -> Bool {
-		var completionFlag: Bool = true
-		
-		// Create a 2D array of Services List object attributes
-		let updateValues = unloadServiceRows()
-		let count = updateValues.count
-		let range = PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + updateValues.count - 1)
-		do {
-			// Write the 2D array of Services attributes to the Reference Data spreadsheet
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
-			if !result {
-				completionFlag = false
-				print("Error: Saving Services data rows failed")
-			}
-		} catch {
-			print ("Error: Saving Services Data rows failed")
-			completionFlag = false
-		}
-		
-		return(completionFlag)
-	}
-	
 	// This function takes a 2D of Service object attributes read from the Reference Data spreadsheet and populates the
 	// Services List object array
 	func loadServiceRows(serviceCount: Int, sheetCells: [[String]] ) {
@@ -130,9 +107,33 @@ import Foundation
 			serviceIndex += 1
 			rowNumber += 1
 		}
-	
+		
 		self.isServiceDataLoaded = true
 	}
+	
+	// This function saves the Services objects into the Reference Data spreadsheet
+	func saveServiceData() async -> Bool {
+		var completionFlag: Bool = true
+		
+		// Create a 2D array of Services List object attributes
+		let updateValues = unloadServiceRows()
+		let count = updateValues.count
+		let range = PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + updateValues.count - 1)
+		do {
+			// Write the 2D array of Services attributes to the Reference Data spreadsheet
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+				print("Error: Saving Services data rows failed")
+			}
+		} catch {
+			print ("Error: Saving Services Data rows failed")
+			completionFlag = false
+		}
+		
+		return(completionFlag)
+	}
+	
 	
 	// This function creates a 2D array of Service object attributes (one row per Service)
 	func unloadServiceRows() -> [[String]] {

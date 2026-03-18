@@ -12,8 +12,8 @@ import Foundation
 
 class BillArray {
     
-	var billClients = [BillClient]()
-	var monthName: String
+	var billClients = [BillClient]()			// Array of BillClients (one for each client in the invoice)
+	var monthName: String					// Name of the month the invoice is for
 	
 	init(monthName: String) {
 		self.monthName = monthName
@@ -40,7 +40,7 @@ class BillArray {
 				self.addBillClient(newBillClient: newBillClient)
 				(foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			}
-			
+			// Pull the data from the Timesheet row for a session
 			let studentName = timesheet.timesheetRows[timesheetRowNum].studentName
 			let serviceDate = timesheet.timesheetRows[timesheetRowNum].serviceDate
 			let duration = timesheet.timesheetRows[timesheetRowNum].duration
@@ -53,7 +53,7 @@ class BillArray {
 			let notes = timesheet.timesheetRows[timesheetRowNum].notes
 			let tutorName = timesheet.timesheetRows[timesheetRowNum].tutorName
 			let cost = timesheet.timesheetRows[timesheetRowNum].cost
-			
+			//Create new BillItem instance and add it to the BillClients array
 			let newBillItem = BillItem(studentName: studentName, serviceDate: serviceDate, duration: duration, timesheetServiceName: timesheetServiceName, invoiceServiceName: invoiceServiceName, notes: notes, cost: cost, tutorName: tutorName)
 			self.billClients[billClientNum].billItems.append(newBillItem)
 			timesheetRowNum += 1

@@ -9,7 +9,7 @@ import Foundation
 
 @Observable class StudentsList {
 	var studentsList = [Student]()
-	var isStudentDataLoaded: Bool
+	var isStudentDataLoaded: Bool			// Indicator as to whether the Service data has been read in from the ReferenceData sheet yet
 	
 	init() {
 		isStudentDataLoaded = false

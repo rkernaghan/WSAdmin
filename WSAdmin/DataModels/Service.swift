@@ -7,17 +7,19 @@
 
 import Foundation
 
+// The Service object contains the data for a Service and functions to manage that data
+//
 @Observable class Service: Identifiable {
 	var serviceKey: String					// Unique key for the Service
 	var serviceCode: String					// Accounting service code (not necessarily unique)
 	var serviceTimesheetName: String			// Name to show on Tutor Timesheet
 	var serviceInvoiceName: String				// Name to show on client invoice
-	var serviceType: ServiceTypeOption			// Base or Variable
-	var serviceBillingType: BillingTypeOption		// Fixed or Variable
+	var serviceType: ServiceTypeOption			// Base (assigned to all Tutors) or Special (only one or more Tutors) Service
+	var serviceBillingType: BillingTypeOption		// Fixed (fixed cost per session regardless of time) or Variable (per minute) billing
 	var serviceStatus: String				// Unassigned, Assigned, or Deleted
-	var serviceCount: Int					// Number of Tutors the Service is assigned to
-	var serviceCost1: Float
-	var serviceCost2: Float
+	var serviceCount: Int					// Number of Tutors this Service is assigned to
+	var serviceCost1: Float					// Tutoring cost of the service (paid to the tutor)
+	var serviceCost2: Float					// Travel cost
 	var serviceCost3: Float
 	var serviceTotalCost: Float
 	var servicePrice1: Float

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// This view displays a list of all of the Services.  It contains a filter to display Services in the list based on the Status of the Service
+//
 struct ServiceListView: View {
 	var referenceData: ReferenceData
 	

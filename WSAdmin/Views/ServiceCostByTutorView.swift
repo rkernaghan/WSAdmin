@@ -7,6 +7,8 @@
 import Foundation
 import SwiftUI
 
+// This view displays each Tutor's rates for a specific Service so they can be compared
+//
 struct ServiceCostByTutorView: View {
 	@Binding var serviceNum: Int
 	@Binding var serviceCostList: TutorServiceCostList

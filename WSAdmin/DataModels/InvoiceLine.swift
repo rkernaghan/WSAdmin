@@ -7,26 +7,28 @@
 
 import Foundation
 
+// An InvoiceLine object contains the attributes for billing one tutoring session.
+//
 struct InvoiceLine: Identifiable {
-	var invoiceNum: String
-	var clientName: String
-	var clientEmail: String
-	var invoiceDate: String
-	var dueDate: String
-	var terms: String
-	var locationName: String
-	var tutorName: String
-	var serviceCode: String
-	var itemName: String
-	var description: String
-	var quantity: String
-	var rate: String
-	var amount: Float
-	var taxCode: String
-	var serviceDate: String
-	var studentName: String
-	var accountCode: String
-	var brandingTheme: String
+	var invoiceNum: String			// Invoice number
+	var clientName: String			// Client name
+	var clientEmail: String			// Client email
+	var invoiceDate: String			// Date of the Invoice
+	var dueDate: String			// Due date of the invoice
+	var terms: String			// Payment terms (e.g. net 7 days)
+	var locationName: String		// Student location (city)
+	var tutorName: String			// Tutor's name
+	var serviceCode: String			// Accounting code for the Service
+	var itemName: String			// Name of the tutoring service
+	var description: String			// Description of the Service (for Xero: session date
+	var quantity: String			// Number of sessions
+	var rate: String			// Rate of the session
+	var amount: Float			// Invoice amount
+	var taxCode: String			// Tax code of the Invoice
+	var serviceDate: String			// Date of the tutoring session
+	var studentName: String			// Name of the Student
+	var accountCode: String			// Accounting code for the invoice
+	var brandingTheme: String		// Branding theme
 	var cost: Float
 	let id = UUID()
 	

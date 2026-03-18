@@ -8,10 +8,11 @@
 import Foundation
 import GoogleSignIn
 
-
+// Data and functions to maintain an array of Location objects
+//
 @Observable class LocationsList: Identifiable {
-	var locationsList = [Location]()
-	var isLocationDataLoaded: Bool
+	var locationsList = [Location]()			// Array of Location objects
+	var isLocationDataLoaded: Bool				// Indicator as to whether the Location data has been read in from the ReferenceData sheet yet
 	var id = UUID()
 	
 	init() {
@@ -80,28 +81,6 @@ import GoogleSignIn
 		return(completionFlag)
 	}
 	
-	// This function saves the Location objects in the Locations List object array back to the Reference Data spreadsheet
-	func saveLocationData() async -> Bool {
-		var completionFlag: Bool = true
-		// Build a 2D array of Location data for writing to the Reference Data spreadsheet
-		let updateValues = unloadLocationRows()
-		let count = updateValues.count
-		let range = PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + updateValues.count - 1)
-		do {
-			// Write the 2D array of Location data to the Reference Data spreadsheet
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
-			if !result {
-				completionFlag = false
-				print("Error: saving Location data rows failed")
-			}
-		} catch {
-			print ("Error: Saving Location Data rows failed")
-			completionFlag = false
-		}
-		
-		return(completionFlag)
-	}
-	
 	// This function takes a 2D array of Location attributes (one row per Location) and builds the Locations List object array
 	func loadLocationRows(locationCount: Int, sheetCells: [[String]] ) {
 		
@@ -125,8 +104,31 @@ import GoogleSignIn
 			locationIndex += 1
 			rowNumber += 1
 		}
-
+		
 		self.isLocationDataLoaded = true
+	}
+	
+	
+	// This function saves the Location objects in the Locations List object array back to the Reference Data spreadsheet
+	func saveLocationData() async -> Bool {
+		var completionFlag: Bool = true
+		// Build a 2D array of Location data for writing to the Reference Data spreadsheet
+		let updateValues = unloadLocationRows()
+		let count = updateValues.count
+		let range = PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + updateValues.count - 1)
+		do {
+			// Write the 2D array of Location data to the Reference Data spreadsheet
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			if !result {
+				completionFlag = false
+				print("Error: saving Location data rows failed")
+			}
+		} catch {
+			print ("Error: Saving Location Data rows failed")
+			completionFlag = false
+		}
+		
+		return(completionFlag)
 	}
 	
 	// This function extracts the Location attributes from the Locations List object array and builds a 2D array (one row per Location) for writing to the Reference Data spreadsheet
@@ -153,5 +155,7 @@ import GoogleSignIn
 		
 		return(updateValues)
 	}
+
+
 	
 }

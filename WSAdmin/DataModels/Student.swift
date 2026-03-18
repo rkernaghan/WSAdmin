@@ -7,26 +7,27 @@
 
 import Foundation
 
+// This object contains the data and functions for a Student object
 @Observable class Student: Identifiable {
-	var studentKey: String
-	var studentName: String
-	var studentContactFirstName: String
-	var studentContactLastName: String
-	var studentContactPhone: String
-	var studentContactEmail: String
-	var studentContactZipCode: String
-	var studentStartDate: String
-	var studentAssignedUnassignedDate: String
-	var studentLastBilledDate: String
-	var studentEndDate: String
-	var studentStatus: String
-	var studentTutorKey: String
-	var studentTutorName: String
-	var studentLocation: String
-	var studentSessions: Int
-	var studentTotalCost: Float
-	var studentTotalRevenue: Float
-	var studentTotalProfit: Float
+	var studentKey: String				// The unique key for the Student
+	var studentName: String				// Student's name
+	var studentContactFirstName: String		// Client's first name  (client is not necessarily the student)
+	var studentContactLastName: String		// Client's last name
+	var studentContactPhone: String			// Client's phone number
+	var studentContactEmail: String			// Client's email
+	var studentContactZipCode: String		// Client's zip code
+	var studentStartDate: String			// Date Student was added to the system
+	var studentAssignedUnassignedDate: String	// Date the Student was assigned to or unassigned from a Tutor
+	var studentLastBilledDate: String		// Date of Student's last billed tutoring session
+	var studentEndDate: String			// Date that the Student was soft deleted
+	var studentStatus: String			// Student Status (Unassigned, Assigned, Suspended, Deleted)
+	var studentTutorKey: String			// Unique key of assigned Tutor, blank if unassigned
+	var studentTutorName: String			// Name of assigned Tutor, blank if unassigned
+	var studentLocation: String			// City of Student
+	var studentSessions: Int			// Count of total sessions for this Student since Student started (or system initiated)
+	var studentTotalCost: Float			// Sum of total tutoring cost for this Student since Student started (or system initiated)
+	var studentTotalRevenue: Float			// Sum of total tutoring revenue for this Student since Student started (or system initiated)
+	var studentTotalProfit: Float			// Sum of total tutoring profit for this Student since Student started (or system initiated)
 	let id = UUID()
     
 	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {

@@ -540,7 +540,7 @@ import Foundation
 			
 			// Check if Revenue - Cost == Profit for Student Billing row
 			if ( abs(computedProfit - billedStudentProfit) ) > 1.00  {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student Profit \(billedStudentProfit) for for Student: \(billedStudentMonth.studentBillingRows[billedStudentNum].studentName)  does not match Revenue - Cost"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student Profit \(billedStudentProfit) for for Student: \(billedStudentMonth.studentBillingRows[billedStudentNum].studentName)  does not match Revenue - Cost \(computedProfit)"))
 				
 			}
 			billedStudentNum += 1
@@ -565,7 +565,7 @@ import Foundation
 			
 			// Check if Revenue - Cost == Profit for Tutor Billing row
 			if ( abs(computedProfit - billedStudentProfit) ) > 1.0  {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor Profit \(billedStudentProfit)  does not match Revenue - Cost"))
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor Profit \(billedStudentProfit)  does not match Revenue - Cost \(computedProfit)"))
 			}
 			
 			billedTutorNum += 1
@@ -639,8 +639,8 @@ import Foundation
 						}
 					}
 					
-					if (referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost) != referenceData.students.studentsList[studentNum].studentTotalProfit {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student profit \(referenceData.students.studentsList[studentNum].studentTotalProfit) does not match Revenue - Cost for Student \(studentName)  "))
+					if (abs(referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost - referenceData.students.studentsList[studentNum].studentTotalProfit) > 1.0) {
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student profit \(referenceData.students.studentsList[studentNum].studentTotalProfit) does not match Revenue - Cost \(referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost) for Student \(studentName)  "))
 					}
 					studentNum += 1
 				}
@@ -663,8 +663,8 @@ import Foundation
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "))
 						}
 					}
-					if (referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost) != referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Tutor profit \(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) does not match Revenue - Cost for tutor \(tutorName)  "))
+					if (abs (referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost - referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) > 1.0) {
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Tutor profit \(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) does not match Revenue - Cost \(referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost) for tutor \(tutorName)  "))
 					}
 					
 					tutorNum += 1

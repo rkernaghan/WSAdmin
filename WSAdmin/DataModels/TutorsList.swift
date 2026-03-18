@@ -7,9 +7,11 @@
 
 import Foundation
 
+// The TutorsList contains an array of Tutor objects and the functions to manage the array
+//
 @Observable class TutorsList {
-	var tutorsList = [Tutor]()
-	var isTutorDataLoaded: Bool
+	var tutorsList = [Tutor]()				// Array or Tutor objects
+	var isTutorDataLoaded: Bool				// Indicator as to whether the Tutor data has been read in from the ReferenceData sheet yet
 	
 	init() {
 		isTutorDataLoaded = false
@@ -77,26 +79,7 @@ import Foundation
 		}
 		return(completionFlag)
 	}
-	//
-	// This function saves the Tutors List object array data back to the ReferenceData spreadsheet.
-	// It returns a success/fail boolean.  There will always be at least one (blank) row.
-	//
-	func saveTutorData() async -> Bool {
-		var result: Bool = true
-		// Create a 2D array of Tutor data from the Tutors List object array
-		let updateValues = unloadTutorRows()
-		// Write the 2D array back to the Reference Data spreadsheet
-		let count = updateValues.count
-		let range = PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + updateValues.count - 1)
-		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
-		} catch {
-			print ("Critical Error: Saving Tutor Data rows failed")
-			result = false
-		}
-		
-		return(result)
-	}
+	
 	//
 	// This function takes a 2 dimensional array of Tutor data, read from the ReferenceData spreadsheet, and
 	// populates the Tutors List object array
@@ -143,6 +126,28 @@ import Foundation
 		
 		return(completionFlag)
 	}
+	
+	//
+	// This function saves the Tutors List object array data back to the ReferenceData spreadsheet.
+	// It returns a success/fail boolean.  There will always be at least one (blank) row.
+	//
+	func saveTutorData() async -> Bool {
+		var result: Bool = true
+		// Create a 2D array of Tutor data from the Tutors List object array
+		let updateValues = unloadTutorRows()
+		// Write the 2D array back to the Reference Data spreadsheet
+//		let count = updateValues.count
+		let range = PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + updateValues.count - 1)
+		do {
+			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+		} catch {
+			print ("Critical Error: Saving Tutor Data rows failed")
+			result = false
+		}
+		
+		return(result)
+	}
+
 	//
 	// This function takes the attributes for each Tutor object in the Tutors List object array and copies them to a 2 dimensional array, which it returns,
 	// for saving to the ReferenceData spreadsheet

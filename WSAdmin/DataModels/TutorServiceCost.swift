@@ -6,10 +6,12 @@
 //
 import Foundation
 
+// This object contains the data and functions for an individual Tutor's rates for a specific Service
+//
 class TutorServiceCost: Identifiable {
     
-    var tutorKey: String
-    var tutorName: String
+    var tutorKey: String			// Unique key for the Tutor
+    var tutorName: String			// Tutor name
     var cost1: Float
     var cost2: Float
     var cost3: Float
