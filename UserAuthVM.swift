@@ -20,51 +20,45 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	
 	init() {
 //		print("UserAuthVM-init: Starting")
-		restoreSignIn()
+		Task {
+			await restoreSignIn()
+		}
 //		print("UserAuthVM-init: Finished")
 	}
 	
 
-	func signIn() {
+	func signIn() async {
 		
-		guard let presentingWindow = NSApplication.shared.mainWindow else {
+		guard let presentingWindow = await NSApplication.shared.mainWindow else {
 			print("UserAuthVM-signin: Could not get presenting window")
 			return}
-		
-//		print("UserAuthVM-signIn: Starting Signin")
 
-		GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) {signInResult, error in
-			guard let result = signInResult else {
-				print("UserAuthVM-signin: Signin request failed \(String(describing: error?.localizedDescription))")
-				return
-			}
-			
-			if let error = error  {
-				print("UserAuthVM-signIn: Sign in error: \(error.localizedDescription)")
-				return
-			}
+		do {
+			let _ = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow)
 			print("UserAuthVM-signIn: Sign In Request Successful")
+			await checkSignInStatus()
 			
-			self.checkSignInStatus()
+		} catch {
+			print("UserAuthVM-signin: Signin request failed \(error.localizedDescription)")
 		}
+		
+//		await self.checkSignInStatus()
+//		}
 	}
 	
 	
 	
-	// Attempts to restore previousGoogle signin
+	// Attempts to restore previous Google signin
 	//
-	func restoreSignIn() {
-		
-//		print("UserAuthVM-restoreSignIn: Starting restoreSignIn function")
-
-		GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
-			if let error = error {
-				self.errorMessage = "error: \(error.localizedDescription)"
-				print("UserAuthVM-restoreSignIn: Could not restore previous signin \(self.errorMessage)")
-			} else {
-				print("UserAuthVM-restoreSignIn: Successfully restored previous signin")
-				self.checkSignInStatus()
-			}
+	func restoreSignIn() async {
+		do {
+			try await GIDSignIn.sharedInstance.restorePreviousSignIn()
+			print("UserAuthVM-restoreSignIn: Successfully restored previous signin")
+			await checkSignInStatus()
+			
+		} catch {
+			self.errorMessage = "error: \(error.localizedDescription)"
+			print("UserAuthVM-restoreSignIn: Could not restore previous signin \(self.errorMessage)")
 		}
 	}
 	
@@ -72,13 +66,13 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	//		- sets up OAuth attributes to manage token expiry
 	//		- determines whether the user already has necessary Google scope
 	//
-	func checkSignInStatus() {
+	func checkSignInStatus() async {
 		var tokenExpirationDate: Date?
 		
 		print("UserAuthVM-checkSignInStatus: Starting checkSignInStatus")
 		
 		if (GIDSignIn.sharedInstance.currentUser != nil) {
-			print("UserAuthVM-checkstatus: User is logged in")
+			print("UserAuthVM-checkSignInStatus: User is logged in")
 			
 			let user = GIDSignIn.sharedInstance.currentUser
 			guard let user = user else {
@@ -111,7 +105,7 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 				let scopeStatus = checkAuthScope()
 				if !scopeStatus {
 					print("UserAuthVM-checkSignInStatus: User did not have scope, requesting it")
-					let scopeRequest = getAuthScope()
+					let scopeRequest = await getAuthScope()
 					if scopeRequest {
 						print("UserAuthVM-checkSignInStatus: Scope request succeeded")
 						self.isLoggedIn = true
@@ -157,7 +151,7 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	//	https://www.googleapis.com/auth/spreadsheets scope is required to read and write spreadsheets
 	//	https://www.googleapis.com/auth/drive scope is required to get fileIDs, create new timesheets, rename spreadsheets/timesheets, etc.
 	//
-	func getAuthScope( ) -> Bool {
+	func getAuthScope( ) async -> Bool {
 		var gotAuthScope: Bool = false
 		
 		print("UserAuthVM-getAuthScope: Starting")
@@ -166,24 +160,12 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 			print("UserAuthVM-getAuthScope: Not signed in")
 			return(gotAuthScope) ;  /* Not signed in. */
 		}
-		guard let presentingWindow = NSApplication.shared.mainWindow else {
+		guard let presentingWindow = await NSApplication.shared.mainWindow else {
 			print("UserAuthVM-getAuthScope: No presenting window")
 			return(gotAuthScope)}
 		
-		currentUser.addScopes(additionalScopes, presenting: presentingWindow) { signInResult, error in
-			if let error = error {
-				print("UserAuthVM-getAuthScope: Error requesting additional scopes: \(error.localizedDescription)")
-				self.isLoggedIn = false
-			} else {
-				print("UserAuthVM-getAuthScope: Additional scopes granted.")
-				self.isLoggedIn = true
-				gotAuthScope = true
-				// Can now use the updated user to make authenticated API requests
-				if let grantedScopes = currentUser.grantedScopes {
-					print("UserAuthVM-getAuthScope: Granted scopes: \(grantedScopes)")
-				}
-			}
-		}
+		gotAuthScope = await requestAdditionalScopes(additionalScopes: additionalScopes)
+		
 		return(gotAuthScope)
 	}
 
@@ -192,7 +174,6 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 		print("UserAuthVM-signOut - Starting")
 		GIDSignIn.sharedInstance.signOut()
 		isLoggedIn = false
-//		self.checkStatus()
 	}
 }
 

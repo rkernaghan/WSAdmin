@@ -187,7 +187,7 @@ import Foundation
 			studentNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " "], at: studentNum)
+		updateValues.insert([" ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " ", " ", " ", " "], at: studentNum)
 		return( updateValues)
 	}
 	

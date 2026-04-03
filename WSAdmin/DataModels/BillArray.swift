@@ -169,7 +169,7 @@ class BillArray {
 								// Add a line to the invoice with the tutoring session data
 							let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
-							referenceData.dataCounts.increaseHighestInvoiceNumber()
+							
 							}
 							
 						}
@@ -179,6 +179,7 @@ class BillArray {
 				billItemNum += 1
 			}
 			clientNum += 1
+			referenceData.dataCounts.increaseHighestInvoiceNumber()				// Invoice numbers increase for each client (not each session)
 		}
 
 		

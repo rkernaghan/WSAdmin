@@ -47,7 +47,7 @@ struct InvoiceView: View {
 				VStack {
 					Table(invoice.invoiceLines) {
 					    Group {
-						TableColumn("Invoice\nNum", value: \InvoiceLine.invoiceNum)
+						TableColumn("Invoice\nNumber", value: \InvoiceLine.invoiceNum)
 							.width(min: 30, ideal: 42, max: 50)
 						TableColumn("Client Name", value: \InvoiceLine.clientName)
 							.width(min: 60, ideal: 100, max: 200)

@@ -20,7 +20,9 @@ struct SignInView: View {
 					Spacer()
             
 					GoogleSignInButton(action: {
-						userAuthVM.signIn()  })
+						Task {
+							await userAuthVM.signIn()
+						}})
 					.accessibilityIdentifier("GoogleSignInButton")
 					.accessibility(hint: Text("Sign in with Google button."))
 					.padding()

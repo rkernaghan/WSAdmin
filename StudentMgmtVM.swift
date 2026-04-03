@@ -517,7 +517,7 @@ import Foundation
 						let dateFormatter = DateFormatter()
 						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())
-						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
+						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
 						let unassignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
 						if unassignResult {
 							reassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
