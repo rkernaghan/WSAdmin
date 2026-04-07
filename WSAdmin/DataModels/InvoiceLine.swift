@@ -23,16 +23,16 @@ struct InvoiceLine: Identifiable {
 	var description: String			// Description of the Service (for Xero: session date
 	var quantity: String			// Number of sessions
 	var rate: String			// Rate of the session
-	var amount: Float			// Invoice amount
+	var amount: Double			// Invoice amount
 	var taxCode: String			// Tax code of the Invoice
 	var serviceDate: String			// Date of the tutoring session
 	var studentName: String			// Name of the Student
 	var accountCode: String			// Accounting code for the invoice
 	var brandingTheme: String		// Branding theme
-	var cost: Float
+	var cost: Double
 	let id = UUID()
 	
-	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, rate: String, amount: Float, taxCode: String, serviceDate: String, studentName: String, cost: Float, accountCode: String, brandingTheme: String) {
+	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, rate: String, amount: Double, taxCode: String, serviceDate: String, studentName: String, cost: Double, accountCode: String, brandingTheme: String) {
 		self.invoiceNum = invoiceNum
 		self.clientName = clientName
 		self.clientEmail = clientEmail

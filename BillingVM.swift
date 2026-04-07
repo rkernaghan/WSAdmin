@@ -14,7 +14,7 @@ import GoogleSignIn
 	
         // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
 	
-	func generateInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool, startingInvoiceNumber: Int) async -> (Invoice, TutorBillingMonth, [String]) {
+	@MainActor func buildInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool, startingInvoiceNumber: Int) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
 		var tutorList = [String]()
 		var tutorBillingFileID: String = ""
@@ -43,8 +43,9 @@ import GoogleSignIn
 			}
 		}
 		
-		// Load Billed Tutor month for current month. If this month has already been billed, get list of already billed Tutors for the month. Then
+		// Load Billed Tutor month sheet for current month. If this month has already been billed, get list of already billed Tutors for the month. Then
 		// generate the Invoice.
+		//
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if !resultFlag {
@@ -115,7 +116,7 @@ import GoogleSignIn
 
 	// Update the billing stats for Tutors, Students and Locations in the Reference Data, Student Billing and Tutor Billing spreadsheets.  If the Tutor was already billed, reset the billing stats
 	// for that Tutor before updating the billing stats
-	func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
 		
 		print(" Starting updating billing stats for \(billingMonth)")
 		
@@ -248,7 +249,7 @@ import GoogleSignIn
 	
 	// Create the CSV file in from the Invoice and stores in on disk
 	//
-	func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
+	@MainActor func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
 		
@@ -333,7 +334,7 @@ import GoogleSignIn
 	}
 	// Format a CSV file line in Xero format from an Invoice file line
 	//
-	func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
+	@MainActor func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
 //		let invoiceNum = referenceData.dataCounts.highestInvoiceNumber + 1
 		let invoiceClient = invoiceLine.clientName
@@ -393,7 +394,7 @@ import GoogleSignIn
 	// Format a CSV file line In Quickbooks format from an Invoice file line
 	// This module is no longer used with the switch to Xero for accounting
 	//
-	func processQBInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
+	@MainActor func processQBInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
 		let invoiceNum = invoiceLine.invoiceNum
 		let invoiceClient = invoiceLine.clientName
 		let invoiceEmail = invoiceLine.clientEmail
@@ -426,7 +427,7 @@ import GoogleSignIn
 	}
 	
 	// Create the CSV file from the Invoice and stores in on disk
-	func generateClientList(referenceData: ReferenceData) async -> (Bool, String) {
+	@MainActor func generateClientList(referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
 		
@@ -499,7 +500,7 @@ import GoogleSignIn
 	
 	
 	// Reset Tutor, Student and Location billing stats in the Reference Data, Tutor Billing and Student Billing spreadsheets (when Tutor is rebilled for a month) by removing session, cost, revenue and profit counts for the current billing month
-	func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) {
+	@MainActor func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) {
 		
 		// Loop through each Tutor that was already billed
 		var alreadyBilledTutorNum = 0
@@ -571,7 +572,7 @@ import GoogleSignIn
 	}
 	
 	// This function updates the Last Billed Dates for each Student by reading through all the Timesheets from system start (July 2025)
-	func updateStudentLastBilledDates(referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Bool, String) {
+	@MainActor func updateStudentLastBilledDates(referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Bool, String) {
 		
 		let updateResult: Bool = true
 		let updateMessage: String = ""

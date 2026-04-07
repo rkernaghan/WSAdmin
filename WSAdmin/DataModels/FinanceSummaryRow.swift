@@ -15,22 +15,22 @@ class FinanceSummaryRow: Identifiable {
 	var billedTutorsForMonth: Int
 	var billedStudentsForMonth: Int
 	var monthSessions: Int
-	var monthCost: Float
-	var monthRevenue: Float
-	var monthProfit: Float
+	var monthCost: Double
+	var monthRevenue: Double
+	var monthProfit: Double
 	var yearSessions: Int
-	var yearCost: Float
-	var yearRevenue: Float
-	var yearProfit: Float
+	var yearCost: Double
+	var yearRevenue: Double
+	var yearProfit: Double
 	var totalSessions: Int
-	var totalCost: Float
-	var totalRevenue: Float
-	var totalProfit: Float
+	var totalCost: Double
+	var totalRevenue: Double
+	var totalProfit: Double
 	var monthProfitChange: String
 	let id = UUID()
 	
 	
-	init(year: String, month: String, activeTutorsForMonth: Int, billedTutorsForMonth: Int, billedStudentsForMonth: Int, monthSessions: Int, monthCost: Float, monthRevenue: Float, monthProfit: Float, yearSessions: Int, yearCost: Float, yearRevenue: Float, yearProfit: Float, totalSessions: Int, totalCost: Float, totalRevenue: Float, totalProfit: Float, monthProfitChange: String) {
+	init(year: String, month: String, activeTutorsForMonth: Int, billedTutorsForMonth: Int, billedStudentsForMonth: Int, monthSessions: Int, monthCost: Double, monthRevenue: Double, monthProfit: Double, yearSessions: Int, yearCost: Double, yearRevenue: Double, yearProfit: Double, totalSessions: Int, totalCost: Double, totalRevenue: Double, totalProfit: Double, monthProfitChange: String) {
 		self.year = year
 		self.month = month
 		self.activeTutorsForMonth = activeTutorsForMonth

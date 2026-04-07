@@ -27,7 +27,7 @@ class BillArray {
 	// Extract the data from a single Tutor Timesheet into arrays of BillItems under each applicable BillClient, each BillItem represents a single tutoring session.
 	// The BillArray contains one BillClient for each month's Clients and each tutoring session for that Client is represented by a BillItem under that BillClient
 	//
-	func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages, referenceData: ReferenceData) {
+	@MainActor func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages, referenceData: ReferenceData) {
 		var invoiceServiceName = "Not Found"
 		var timesheetRowNum = 0
 		while timesheetRowNum < timesheet.timesheetRows.count {
@@ -75,8 +75,8 @@ class BillArray {
 		return(found, billClientNum)
 	}
     
-	//
-	func generateInvoice(alreadyBilledTutors: [String], referenceData: ReferenceData) -> Invoice {
+	// 
+	@MainActor func generateInvoice(alreadyBilledTutors: [String], referenceData: ReferenceData) -> Invoice {
 		var clientName: String = ""
 		var clientEmail: String = ""
 		var clientInvoiceDate: String = ""

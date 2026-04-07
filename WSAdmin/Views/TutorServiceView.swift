@@ -16,12 +16,12 @@ struct TutorServiceView: View {
 	var timesheetName: String
 	var invoiceName: String
 	var billingType: BillingTypeOption
-	@State var cost1: Float
-	@State var cost2: Float
-	@State var cost3: Float
-	@State var price1: Float
-	@State var price2: Float
-	@State var price3: Float
+	@State var cost1: Double
+	@State var cost2: Double
+	@State var cost3: Double
+	@State var price1: Double
+	@State var price2: Double
+	@State var price3: Double
 	
 	@State private var showAlert: Bool = false
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM

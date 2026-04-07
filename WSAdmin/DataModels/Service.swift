@@ -18,17 +18,17 @@ import Foundation
 	var serviceBillingType: BillingTypeOption		// Fixed (fixed cost per session regardless of time) or Variable (per minute) billing
 	var serviceStatus: String				// Unassigned, Assigned, or Deleted
 	var serviceCount: Int					// Number of Tutors this Service is assigned to
-	var serviceCost1: Float					// Tutoring cost of the service (paid to the tutor)
-	var serviceCost2: Float					// Travel cost
-	var serviceCost3: Float
-	var serviceTotalCost: Float
-	var servicePrice1: Float
-	var servicePrice2: Float
-	var servicePrice3: Float
-	var serviceTotalPrice: Float
+	var serviceCost1: Double					// Tutoring cost of the service (paid to the tutor)
+	var serviceCost2: Double					// Travel cost
+	var serviceCost3: Double
+	var serviceTotalCost: Double
+	var servicePrice1: Double
+	var servicePrice2: Double
+	var servicePrice3: Double
+	var serviceTotalPrice: Double
 	let id = UUID()
 	
-	init(serviceKey: String, serviceCode: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Float, serviceCost2: Float, serviceCost3: Float, servicePrice1: Float, servicePrice2: Float, servicePrice3: Float) {
+	init(serviceKey: String, serviceCode: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Double, serviceCost2: Double, serviceCost3: Double, servicePrice1: Double, servicePrice2: Double, servicePrice3: Double) {
 		self.serviceKey = serviceKey
 		self.serviceCode = serviceCode
 		self.serviceTimesheetName = serviceTimesheetName
@@ -56,7 +56,7 @@ import Foundation
 	}
     
 	// This function updates the attributes of a Service object
-	func updateService(serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+	func updateService(serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) {
 
 		self.serviceCode = serviceCode
 		self.serviceTimesheetName = timesheetName

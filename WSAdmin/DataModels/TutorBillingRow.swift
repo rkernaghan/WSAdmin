@@ -9,24 +9,24 @@
 class TutorBillingRow {
 	var tutorName: String
 	var monthBilledSessions: Int
-	var monthBilledCost: Float
-	var monthBilledRevenue: Float
-	var monthBilledProfit: Float
+	var monthBilledCost: Double
+	var monthBilledRevenue: Double
+	var monthBilledProfit: Double
 	var totalBilledSessions: Int
-	var totalBilledCost: Float
-	var totalBilledRevenue: Float
-	var totalBilledProfit: Float
+	var totalBilledCost: Double
+	var totalBilledRevenue: Double
+	var totalBilledProfit: Double
 	var tutorStatus: String
 	var monthValidatedSessions: Int
-	var monthValidatedCost: Float
-	var monthValidatedRevenue: Float
-	var monthValidatedProfit: Float
+	var monthValidatedCost: Double
+	var monthValidatedRevenue: Double
+	var monthValidatedProfit: Double
 	var totalValidatedSessions: Int
-	var totalValidatedCost: Float
-	var totalValidatedRevenue: Float
-	var totalValidatedProfit: Float
+	var totalValidatedCost: Double
+	var totalValidatedRevenue: Double
+	var totalValidatedProfit: Double
 	
-	init(tutorName: String, monthBillingSessions: Int, monthBillingCost: Float, monthBillingRevenue: Float, monthBillingProfit: Float, totalBillingSessions: Int, totalBillingCost: Float, totalBillingRevenue: Float, totalBillingProfit: Float, tutorStatus: String, monthValidatedSessions: Int, monthValidatedCost: Float, monthValidatedRevenue: Float, monthValidatedProfit: Float, totalValidatedSessions: Int, totalValidatedCost: Float, totalValidatedRevenue: Float, totalValidatedProfit: Float) {
+	init(tutorName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
 		self.tutorName = tutorName
 		self.monthBilledSessions = monthBillingSessions
 		self.monthBilledCost = monthBillingCost

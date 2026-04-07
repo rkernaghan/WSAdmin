@@ -7,16 +7,17 @@
 
 import Foundation
 
+@MainActor
 @Observable class ServiceMgmtVM  {
   
-	var cost1Float: Float = 0.0
-	var cost2Float: Float = 0.0
-	var cost3Float: Float = 0.0
-	var price1Float: Float = 0.0
-	var price2Float: Float = 0.0
-	var price3Float: Float = 0.0
+	var cost1Double: Double = 0.0
+	var cost2Double: Double = 0.0
+	var cost3Double: Double = 0.0
+	var price1Double: Double = 0.0
+	var price2Double: Double = 0.0
+	var price3Double: Double = 0.0
     
-	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
 		var addResult: Bool = true
 		var addMessage: String = ""
 		var newServiceKey: String = ""
@@ -73,7 +74,7 @@ import Foundation
 		return(addResult, addMessage)
 	}
     
-	func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+	func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -92,7 +93,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
 
-	func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) -> (Bool, String) {
+	func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -111,7 +112,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
-	func updateService(serviceNum: Int, referenceData: ReferenceData, serviceCode: String, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+	func updateService(serviceNum: Int, referenceData: ReferenceData, serviceCode: String, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
 		var updateResult: Bool = true
 		var updateMessage: String = ""
 		

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 @Observable class StudentMgmtVM  {
     
 	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, location: String) async -> (Bool, String) {

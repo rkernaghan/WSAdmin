@@ -62,14 +62,14 @@ class StudentBillingMonth {
 	// Builds a StudentBillingMonth array from the data read from the Student Billing sheet for a month.
 	func loadStudentBillingRows(studentBillingCount: Int, sheetCells: [[String]], loadValidationDataFlag: Bool) {
 		var monthValidatedSessions: Int = 0
-		var monthValidatedCost: Float =  0.0
-		var monthValidatedRevenue: Float = 0.0
-		var monthValidatedProfit: Float = 0.0
+		var monthValidatedCost: Double =  0.0
+		var monthValidatedRevenue: Double = 0.0
+		var monthValidatedProfit: Double = 0.0
 		
 		var totalValidatedSessions: Int = 0
-		var totalValidatedCost: Float = 0.0
-		var totalValidatedRevenue: Float = 0.0
-		var totalValidatedProfit: Float = 0.0
+		var totalValidatedCost: Double = 0.0
+		var totalValidatedRevenue: Double = 0.0
+		var totalValidatedProfit: Double = 0.0
 		
 		var studentBillingIndex = 0
 		var rowNumber = 0
@@ -77,26 +77,26 @@ class StudentBillingMonth {
 		while studentBillingIndex < studentBillingCount {
 			let studentName = sheetCells[rowNumber][PgmConstants.studentBillingStudentCol]
 			let monthBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
-			let monthBillingCost: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingMonthCostCol]) ?? 0.0
-			let monthBillingRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingMonthRevenueCol]) ?? 0.0
-			let monthBillingProfit: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingMonthProfitCol]) ?? 0.0
+			let monthBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthCostCol]) ?? 0.0
+			let monthBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthRevenueCol]) ?? 0.0
+			let monthBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthProfitCol]) ?? 0.0
 			
 			let totalBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.studentBillingTotalSessionCol]) ?? 0
-			let totalBillingCost: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
-			let totalBillingRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
-			let totalBillingProfit: Float = Float(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
+			let totalBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
+			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
+			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
 			let studentStatus: String = sheetCells[rowNumber][PgmConstants.studentBillingStatusCol]
 			
 			if loadValidationDataFlag {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.studentValidatedMonthSessionCol]) ?? 0
-				monthValidatedCost = Float(sheetCells[rowNumber][PgmConstants.studentValidatedMonthCostCol]) ?? 0.0
-				monthValidatedRevenue = Float(sheetCells[rowNumber][PgmConstants.studentValidatedMonthRevenueCol]) ?? 0.0
-				monthValidatedProfit = Float(sheetCells[rowNumber][PgmConstants.studentValidatedMonthProfitCol]) ?? 0.0
+				monthValidatedCost = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthCostCol]) ?? 0.0
+				monthValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthRevenueCol]) ?? 0.0
+				monthValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthProfitCol]) ?? 0.0
 				
 				totalValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.studentValidatedTotalSessionCol]) ?? 0
-				totalValidatedCost = Float(sheetCells[rowNumber][PgmConstants.studentValidatedTotalCostCol]) ?? 0.0
-				totalValidatedRevenue = Float(sheetCells[rowNumber][PgmConstants.studentValidatedTotalRevenueCol]) ?? 0.0
-				totalValidatedProfit = Float(sheetCells[rowNumber][PgmConstants.studentValidatedTotalProfitCol]) ?? 0.0
+				totalValidatedCost = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalCostCol]) ?? 0.0
+				totalValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalRevenueCol]) ?? 0.0
+				totalValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalProfitCol]) ?? 0.0
 			}
 			
 			let rowSize = sheetCells[rowNumber].count
@@ -240,7 +240,7 @@ class StudentBillingMonth {
 	
 	// Copies a previous month's Student Billing month rows (totals only not previous month values) into this (self) Student Billing Month instance.  Used to create a new Student Billing month instance when billing a new month that
 	// hasn't been billing before.
-	func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
 		var completionFlag: Bool = true
 		// Determine the file name of the previous month Student Billiing spreadsheet (could be a previous year)
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)

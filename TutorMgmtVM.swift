@@ -10,7 +10,7 @@ import SwiftUI
 import GoogleSignIn
 
 
-
+@MainActor
 @Observable class TutorMgmtVM  {
     
     
@@ -687,7 +687,7 @@ import GoogleSignIn
 		}
 		return(unassignResult, unassignMsg)
 	}
-	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) async -> (Bool, String) {
+	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
 		
 		var updateResult: Bool = true
 		var updateMessage: String = ""

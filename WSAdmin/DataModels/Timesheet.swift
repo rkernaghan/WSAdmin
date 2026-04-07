@@ -29,7 +29,7 @@ class Timesheet: Identifiable {
 //		month: the String name of the month to load the Timesheet data from
 //		timesheetID: the Google Drive File ID of the Tutor Timesheet
 //
-	func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Bool {
+	@MainActor func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Bool {
 		var completionFlag: Bool = true
 		
 		var sheetData: SheetData?
@@ -61,7 +61,7 @@ class Timesheet: Identifiable {
 //		showBillingMessages:
 //		showEachSession:
 //
-	func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages, monthName: String, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) {
+	@MainActor func loadTimesheetRows(tutorName: String, sheetCells: [[String]], billingMessages: WindowMessages, monthName: String, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) {
 		
 		var duration: Int = 0
 		let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
@@ -132,7 +132,7 @@ class Timesheet: Identifiable {
 														billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Client Name cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 													} else {
 														
-														let cost = Float(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
+														let cost = Double(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
 														
 														let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
 														let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]

@@ -7,9 +7,10 @@
 
 import Foundation
 
+@MainActor
 @Observable class LocationMgmtVM  {
     
-	func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float) async -> (Bool, String) {
+	func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double) async -> (Bool, String) {
 		var saveResult: Bool = true
 		var saveMessage: String = ""
 		

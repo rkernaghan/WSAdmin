@@ -12,17 +12,17 @@ class TutorServiceCost: Identifiable {
     
     var tutorKey: String			// Unique key for the Tutor
     var tutorName: String			// Tutor name
-    var cost1: Float
-    var cost2: Float
-    var cost3: Float
-    var totalCost: Float
-    var price1: Float
-    var price2: Float
-    var price3: Float
-    var totalPrice: Float
+    var cost1: Double
+    var cost2: Double
+    var cost3: Double
+    var totalCost: Double
+    var price1: Double
+    var price2: Double
+    var price3: Double
+    var totalPrice: Double
     let id = UUID()
     
-    init(tutorKey: String, tutorName: String, cost1: Float, cost2: Float, cost3: Float, price1: Float, price2: Float, price3: Float) {
+    init(tutorKey: String, tutorName: String, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) {
         self.tutorKey = tutorKey
         self.tutorName = tutorName
         self.cost1 = cost1

@@ -21,6 +21,7 @@ class FileData {
 	var prodStudentBillingFile: String = " "
 	}
 
+@MainActor
 class ReferenceData {
 	var tutors = TutorsList()
 	var students = StudentsList()

@@ -43,7 +43,7 @@ import Foundation
 	//	- that the count of Tutor Details sheets equals the number of non-deleted Tutors
 
 	
-	func validateSystem(referenceData: ReferenceData, validationMessages: WindowMessages) async {
+	@MainActor func validateSystem(referenceData: ReferenceData, validationMessages: WindowMessages) async {
 		
 		var billedTutorMonth = TutorBillingMonth(monthName: "")
 		var billedStudentMonth = StudentBillingMonth(monthName: "")
@@ -65,11 +65,11 @@ import Foundation
 			billedMonthName = prevMonthName
 		}
 		
-		var locationRevenue: Float = 0.0
-		var studentRevenue: Float = 0.0
-		var studentCost: Float = 0.0
-		var tutorRevenue: Float = 0.0
-		var tutorCost: Float = 0.0
+		var locationRevenue: Double = 0.0
+		var studentRevenue: Double = 0.0
+		var studentCost: Double = 0.0
+		var tutorRevenue: Double = 0.0
+		var tutorCost: Double = 0.0
 		
 		var tutorSessions: Int = 0
 		var studentSessions: Int = 0
@@ -89,7 +89,7 @@ import Foundation
 			var assignedTutors:String = ""
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
-				let (studentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
+				let (studentFound, tutorStudentNum) = await referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
 				if studentFound {
 					assignedCount += 1
 					assignedTutors += referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
@@ -524,8 +524,8 @@ import Foundation
 		
 		// Get the session count, total cost and total revenue for the previous Billed Student month (current month may not be done yet)
 		var billedStudentSessionCount: Int  = 0
-		var billedStudentTotalCost: Float = 0.0
-		var billedStudentTotalRevenue: Float = 0.0
+		var billedStudentTotalCost: Double = 0.0
+		var billedStudentTotalRevenue: Double = 0.0
 		var billedStudentNum = 0
 		let billedStudentCount = billedStudentMonth.studentBillingRows.count
 		while billedStudentNum < billedStudentCount {
@@ -548,8 +548,8 @@ import Foundation
 		
 		// Get the session count, total cost and total revenue for the previous Bill Tutor month (current month may not be done yet)
 		var billedTutorSessionCount: Int  = 0
-		var billedTutorTotalCost: Float = 0.0
-		var billedTutorTotalRevenue: Float = 0.0
+		var billedTutorTotalCost: Double = 0.0
+		var billedTutorTotalRevenue: Double = 0.0
 		var billedTutorNum = 0
 		let billedTutorCount = billedTutorMonth.tutorBillingRows.count
 		while billedTutorNum < billedTutorCount {
@@ -713,7 +713,7 @@ import Foundation
 	}
 	
 	// This function compares a Reference Data total (e.g. revenue) against the Billed data to see if they are close and returns a boolean based on the result
-	func CompareTotals(referenceDataTotal: Float, billedDataTotal: Float) -> Bool {
+	func CompareTotals(referenceDataTotal: Double, billedDataTotal: Double) -> Bool {
 		if billedDataTotal == 0 {
 			return true
 		} else {
@@ -742,7 +742,7 @@ import Foundation
 	// Step 13 - compare the Validated Tutor billing stat data against the Reference data Tutor billing stat date
 	// Step 14 - compare the validated Student billing stat data against the Reference data STudent billing stat data
 	//
-	func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: WindowMessages) async {
+	@MainActor func ValidateMonthBillingData(referenceData: ReferenceData, monthName: String, yearName: String, validationMessages: WindowMessages) async {
 		
 		let billingMessages = WindowMessages()
 		
@@ -1070,7 +1070,7 @@ import Foundation
 	// ** This Function is Obsolete **
 	// This function validates the Tutor and Student Billing data for the year by reading through all the Timesheets and checking the timesheet data against the Tutor and Student Billing data.
 	//
-	func ValidateBillingData(referenceData: ReferenceData) async {
+	@MainActor func ValidateBillingData(referenceData: ReferenceData) async {
 		var yearBillArray = [BillArray]()					// The monthly processed Timesheet data
 		var yearTutorBilling = [TutorBillingMonth]()				// The monthly Tutor Billing data from the Tutor Billing spreadsheets
 		var yearStudentBilling = [StudentBillingMonth]()			// The monthly Student billing data from the Student Billing spreadsheets
@@ -1450,17 +1450,17 @@ import Foundation
 		// Sum up total Costs, Revenue and Sessions for Tutors and Students from Bill Students, Billed Tutors, Compare Students and Compare Tutors
 		
 		monthIndex -= 1				// Set to last processed month
-		var totalBilledTutorCosts: Float = 0.0
-		var totalBilledTutorRevenue: Float = 0.0
+		var totalBilledTutorCosts: Double = 0.0
+		var totalBilledTutorRevenue: Double = 0.0
 		var totalBilledTutorSessions: Int = 0
-		var totalCompareTutorCosts: Float = 0.0
-		var totalCompareTutorRevenue: Float = 0.0
+		var totalCompareTutorCosts: Double = 0.0
+		var totalCompareTutorRevenue: Double = 0.0
 		var totalCompareTutorSessions: Int = 0
-		var totalBilledStudentCosts: Float = 0.0
-		var totalBilledStudentRevenue: Float = 0.0
+		var totalBilledStudentCosts: Double = 0.0
+		var totalBilledStudentRevenue: Double = 0.0
 		var totalBilledStudentSessions: Int = 0
-		var totalCompareStudentCosts: Float = 0.0
-		var totalCompareStudentRevenue: Float = 0.0
+		var totalCompareStudentCosts: Double = 0.0
+		var totalCompareStudentRevenue: Double = 0.0
 		var totalCompareStudentSessions: Int = 0
 		
 		var tutorNum: Int = 0
@@ -1499,8 +1499,8 @@ import Foundation
 			studentNum += 1
 		}
 		
-		var totalReferenceTutorCosts:Float = 0.0
-		var totalReferenceTutorRevenue:Float = 0.0
+		var totalReferenceTutorCosts:Double = 0.0
+		var totalReferenceTutorRevenue:Double = 0.0
 		var totalReferenceTutorSessions:Int = 0
 		tutorNum = 0
 		tutorCount = referenceData.tutors.tutorsList.count
@@ -1537,8 +1537,8 @@ import Foundation
 			tutorNum += 1
 		}
 		
-		var totalReferenceStudentCosts:Float = 0.0
-		var totalReferenceStudentRevenue:Float = 0.0
+		var totalReferenceStudentCosts:Double = 0.0
+		var totalReferenceStudentRevenue:Double = 0.0
 		var totalReferenceStudentSessions:Int = 0
 		studentNum = 0
 		studentCount = referenceData.students.studentsList.count
@@ -1668,7 +1668,7 @@ import Foundation
 	
 	// This function generates the next year's spreadsheets (Tutor Billing, Student Billing) and a new Timesheet for each Tutor
 	//
-	func generateNewYearFiles(referenceData: ReferenceData) async -> (Bool, String) {
+	@MainActor func generateNewYearFiles(referenceData: ReferenceData) async -> (Bool, String) {
 		var generateResult: Bool = true
 		var generateMessage: String = ""
 		
@@ -1889,7 +1889,7 @@ import Foundation
 		return(generateResult, generateMessage)
 	}
 	
-	func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
+	@MainActor func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
 		var updateResult: Bool = true
 		var updateMessage: String = ""
 		

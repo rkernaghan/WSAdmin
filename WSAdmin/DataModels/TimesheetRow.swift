@@ -14,14 +14,14 @@ class TimesheetRow: Identifiable {
 	var duration: Int			// Session duration in minutes
 	var timesheetServiceName: String	// Service name from Timesheet
 	var notes: String			// Tutor's note for the session (if any)
-	var cost: Float				// Cost to be paid to Tutor
+	var cost: Double				// Cost to be paid to Tutor
 	var clientName: String			// Name of Client (not necessarily Student)
 	var clientEmail: String			// Client Email
 	var clientPhone: String			// Client Phone
 	var tutorName: String			// Tutor who conducted session
 	let id = UUID()
 	
-	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, notes: String, cost: Float, clientName: String, clientEmail: String, clientPhone: String, tutorName: String) {
+	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, notes: String, cost: Double, clientName: String, clientEmail: String, clientPhone: String, tutorName: String) {
 		self.studentName = studentName
 		self.serviceDate = serviceDate
 		self.duration = duration

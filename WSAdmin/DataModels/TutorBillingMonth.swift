@@ -130,41 +130,41 @@ class TutorBillingMonth {
 	func loadTutorBillingRows(tutorBillingCount: Int, sheetCells: [[String]], loadValidatedData: Bool) {
 		
 		var monthValidatedSessions: Int = 0
-		var monthValidatedCost: Float =  0.0
-		var monthValidatedRevenue: Float = 0.0
-		var monthValidatedProfit: Float = 0.0
+		var monthValidatedCost: Double =  0.0
+		var monthValidatedRevenue: Double = 0.0
+		var monthValidatedProfit: Double = 0.0
 		
 		var totalValidatedSessions: Int = 0
-		var totalValidatedCost: Float = 0.0
-		var totalValidatedRevenue: Float = 0.0
-		var totalValidatedProfit: Float = 0.0
+		var totalValidatedCost: Double = 0.0
+		var totalValidatedRevenue: Double = 0.0
+		var totalValidatedProfit: Double = 0.0
 		
 		var tutorBillingIndex = 0
 		var rowNumber = 0
 		while tutorBillingIndex < tutorBillingCount {
 			let tutorName = sheetCells[rowNumber][PgmConstants.tutorBillingTutorCol]
 			let monthBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
-			let monthBillingCost: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingMonthCostCol]) ?? 0.0
-			let monthBillingRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
-			let monthBillingProfit: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
+			let monthBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthCostCol]) ?? 0.0
+			let monthBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
+			let monthBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
 			
 			let totalBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingTotalSessionCol]) ?? 0
-			let totalBillingCost: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
-			let totalBillingRevenue: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
-			let totalBillingProfit: Float = Float(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
+			let totalBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
+			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
+			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
 			
 			let tutorStatus: String = sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]
 			
 			if loadValidatedData {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthSessionCol]) ?? 0
-				monthValidatedCost = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthCostCol]) ?? 0.0
-				monthValidatedRevenue = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthRevenueCol]) ?? 0.0
-				monthValidatedProfit = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthProfitCol]) ?? 0.0
+				monthValidatedCost = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthCostCol]) ?? 0.0
+				monthValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthRevenueCol]) ?? 0.0
+				monthValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthProfitCol]) ?? 0.0
 				
 				totalValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalSessionCol]) ?? 0
-				totalValidatedCost = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalCostCol]) ?? 0.0
-				totalValidatedRevenue = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalRevenueCol]) ?? 0.0
-				totalValidatedProfit = Float(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalProfitCol]) ?? 0.0
+				totalValidatedCost = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalCostCol]) ?? 0.0
+				totalValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalRevenueCol]) ?? 0.0
+				totalValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalProfitCol]) ?? 0.0
 			}
 			
 			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: monthBillingSessions, monthBillingCost: monthBillingCost, monthBillingRevenue: monthBillingRevenue, monthBillingProfit: monthBillingProfit, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorStatus: tutorStatus, monthValidatedSessions: monthValidatedSessions, monthValidatedCost: monthValidatedCost, monthValidatedRevenue: monthValidatedRevenue, monthValidatedProfit: monthValidatedProfit, totalValidatedSessions: totalValidatedSessions, totalValidatedCost: totalValidatedCost, totalValidatedRevenue: totalValidatedRevenue, totalValidatedProfit: totalValidatedProfit)
@@ -258,7 +258,7 @@ class TutorBillingMonth {
 // So if March is being billed it copies the Tutor data from February.  If a Tutor already exists in the current month's sheet
 // that Tutor is not copied again.
 //
-	func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
 		var completionFlag: Bool = true
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)

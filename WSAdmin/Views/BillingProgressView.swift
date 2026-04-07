@@ -22,6 +22,8 @@ struct BillingProgressView: View {
 	@State private var showInvoice: Bool = false
 	@State private var showAlert: Bool = false
 	
+//	@State private var isInvoiceProcessing = false				// To disable Generate Invoice button when already processing Invoice
+	
 	var body: some View {
 						
 		VStack {
@@ -32,6 +34,7 @@ struct BillingProgressView: View {
 			Button("Show Invoice") {
 				showInvoice = true
 			}
+			
 		}
 		.navigationTitle("Billing Progress View")
 		

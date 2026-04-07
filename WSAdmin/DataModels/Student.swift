@@ -25,12 +25,12 @@ import Foundation
 	var studentTutorName: String			// Name of assigned Tutor, blank if unassigned
 	var studentLocation: String			// City of Student
 	var studentSessions: Int			// Count of total sessions for this Student since Student started (or system initiated)
-	var studentTotalCost: Float			// Sum of total tutoring cost for this Student since Student started (or system initiated)
-	var studentTotalRevenue: Float			// Sum of total tutoring revenue for this Student since Student started (or system initiated)
-	var studentTotalProfit: Float			// Sum of total tutoring profit for this Student since Student started (or system initiated)
+	var studentTotalCost: Double			// Sum of total tutoring cost for this Student since Student started (or system initiated)
+	var studentTotalRevenue: Double			// Sum of total tutoring revenue for this Student since Student started (or system initiated)
+	var studentTotalProfit: Double			// Sum of total tutoring profit for this Student since Student started (or system initiated)
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Float, studentTotalRevenue: Float, studentTotalProfit: Float) {
+	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
 		self.studentKey = studentKey
 		self.studentName = studentName
 		self.studentContactFirstName = studentContactFirstName
@@ -77,7 +77,7 @@ import Foundation
 	}
 	
 	// This function updates a Student to assign a Tutor and set the Assigned/Unassigned Date
-	func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
+	@MainActor func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
 		self.studentStatus = "Assigned"
 		self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
 		self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
@@ -97,7 +97,7 @@ import Foundation
 	}
     
 	// This function updates a Student's billing totals to subtract the current month's Session, Cost, Revenue and Profit totals.  It is used when a Student is rebilled for a month to prevent doubling the months values in the totals
-	func resetBillingStats(monthSessions: Int, monthCost: Float, monthRevenue: Float) {
+	func resetBillingStats(monthSessions: Int, monthCost: Double, monthRevenue: Double) {
 		self.studentSessions -= monthSessions
 		self.studentTotalCost -= monthCost
 		self.studentTotalRevenue -= monthRevenue

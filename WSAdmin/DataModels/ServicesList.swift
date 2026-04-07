@@ -94,12 +94,12 @@ import Foundation
 			let newServiceBillingType: BillingTypeOption = BillingTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceBillingTypePosition]) ?? .Fixed
 			let newServiceStatus = sheetCells[rowNumber][PgmConstants.serviceStatusPosition]
 			let newServiceCount = Int(sheetCells[rowNumber][PgmConstants.serviceCountPosition]) ?? 0
-			let newServiceCost1 = Float(sheetCells[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
-			let newServiceCost2 = Float(sheetCells[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
-			let newServiceCost3 = Float(sheetCells[rowNumber][PgmConstants.serviceCost3Position]) ?? 0.0
-			let newServicePrice1 = Float(sheetCells[rowNumber][PgmConstants.servicePrice1Position]) ?? 0.0
-			let newServicePrice2 = Float(sheetCells[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
-			let newServicePrice3 = Float(sheetCells[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
+			let newServiceCost1 = Double(sheetCells[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
+			let newServiceCost2 = Double(sheetCells[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
+			let newServiceCost3 = Double(sheetCells[rowNumber][PgmConstants.serviceCost3Position]) ?? 0.0
+			let newServicePrice1 = Double(sheetCells[rowNumber][PgmConstants.servicePrice1Position]) ?? 0.0
+			let newServicePrice2 = Double(sheetCells[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
+			let newServicePrice3 = Double(sheetCells[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
 			// Create a new Service object using the Service attributes from the 2D array
 			let newService = Service(serviceKey: newServiceKey, serviceCode: newServiceCode, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
 			// Add the new Service object to the Services List object array

@@ -46,7 +46,7 @@ import Foundation
 	}
 	
 	// This function creates a new Student object and adds it to the Students List object array.
-	func addNewStudent(studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String,  contactZipCode: String, location: String, referenceData: ReferenceData) {
+	@MainActor func addNewStudent(studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String,  contactZipCode: String, location: String, referenceData: ReferenceData) {
 		
 		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey + 1)
 		let dateFormatter = DateFormatter()
@@ -138,9 +138,9 @@ import Foundation
 			let newStudentTutorName = sheetCells[rowNumber][PgmConstants.studentTutorNamePosition]
 			let newStudentLocation = sheetCells[rowNumber][PgmConstants.studentLocationPosition]
 			let newStudentTotalSessions = Int(sheetCells[rowNumber][PgmConstants.studentSessionsPosition]) ?? 0
-			let newStudentCost = Float(sheetCells[rowNumber][PgmConstants.studentTotalCostPosition]) ?? 0.0
-			let newStudentRevenue = Float(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
-			let newStudentProfit = Float(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
+			let newStudentCost = Double(sheetCells[rowNumber][PgmConstants.studentTotalCostPosition]) ?? 0.0
+			let newStudentRevenue = Double(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
+			let newStudentProfit = Double(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
 			// Create the new Student object
 			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentContactFirstName: newContactFirstName, studentContactLastName: newContactLastName,studentContactPhone: newContactPhone, studentContactEmail: newContactEmail, studentContactZipCode: newContactZipCode, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
 			// Add the new Student object to the Students List array

@@ -12,13 +12,13 @@ import Foundation
 @Observable class Location: Identifiable {
 	var locationKey: String				// Unique key for the Location
 	var locationName: String			// Name of the Location
-	var locationMonthRevenue: Float			// Total revenue for the Location (not used)
-	var locationTotalRevenue: Float			// Total revenue for the Location since Location created (or system initiated)
+	var locationMonthRevenue: Double			// Total revenue for the Location (not used)
+	var locationTotalRevenue: Double			// Total revenue for the Location since Location created (or system initiated)
 	var locationStudentCount: Int			// Count of current Students from this Location\
 	var locationStatus: String			// Status of the Location
 	let id = UUID()
 	
-	init(locationKey: String, locationName: String, locationMonthRevenue: Float, locationTotalRevenue: Float, locationStudentCount: Int, locationStatus: String) {
+	init(locationKey: String, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double, locationStudentCount: Int, locationStatus: String) {
 		self.locationKey = locationKey
 		self.locationName = locationName
 		self.locationMonthRevenue = locationMonthRevenue
@@ -60,7 +60,7 @@ import Foundation
 	
 	// This function reverses this month's billing data from the Location billing totals (when a Student
 	// at this Location is being billed again this month to avoid double counting).
-	func resetBillingStats(monthRevenue: Float) {
+	func resetBillingStats(monthRevenue: Double) {
 		self.locationMonthRevenue -= monthRevenue
 		self.locationTotalRevenue -= monthRevenue
 	}

@@ -12,7 +12,6 @@ struct BillingSelectionView: View {
 	
 	var referenceData: ReferenceData
 	@State var startingInvoiceNumber: Int
-//	@Environment var billingVM: BillingVM
 	@Environment(BillingVM.self) var billingVM: BillingVM
 	
 	@State private var selectedTutors = Set<Tutor.ID>()
@@ -99,7 +98,7 @@ struct BillingSelectionView: View {
 						Task {
 							billingMessages.windowMessageList.removeAll()
 							showInvoice = true
-							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.generateInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession, startingInvoiceNumber: startingInvoiceNumber)
+							(invoice, billedTutorMonth, alreadyBilledTutors) = await billingVM.buildInvoice(tutorSet: selectedTutors, billingYear: selectedYear, billingMonth: selectedMonth, referenceData: referenceData, billingMessages: billingMessages, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession, startingInvoiceNumber: startingInvoiceNumber)
 							
 						}
 					} label: {

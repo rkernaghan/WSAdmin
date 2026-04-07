@@ -25,6 +25,8 @@ struct InvoiceView: View {
 	@State private var editTutorService = false
 	@State private var unassignTutorService = false
 	@State private var showAlert: Bool = false
+	
+	@State private var isCSVProcessing = false				// To disable Generate CSV file button when already processing CSV file
 	//    @State private var sortOrder = [KeyPathComparator(\TutorService.timesheetServiceName)]
 	
 	
@@ -92,7 +94,9 @@ struct InvoiceView: View {
 					HStack {
 						Button(action: {
 							Task {
+								isCSVProcessing = true
 								let (csvGenerationResult, csvGenerationMessage) = await billingVM.generateCSVFile(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, tutorBillingMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
+								isCSVProcessing = false
 								if csvGenerationResult {
 									dismiss()
 								} else {
@@ -101,8 +105,13 @@ struct InvoiceView: View {
 								}
 							}
 						}){
-							Text("Generate CSV File")
+							if isCSVProcessing {
+								ProgressView()
+							} else {
+								Text("Generate CSV File")
+							}
 						}
+						.disabled(isCSVProcessing)
 						.alert(buttonErrorMsg, isPresented: $showAlert) {
 							Button("OK", role: .cancel) { }
 						}

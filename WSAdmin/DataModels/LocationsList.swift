@@ -92,8 +92,8 @@ import GoogleSignIn
 			
 			let newLocationKey = sheetCells[rowNumber][PgmConstants.locationKeyPosition]
 			let newLocationName = sheetCells[rowNumber][PgmConstants.locationNamePosition]
-			let newLocationMonthRevenue = Float(sheetCells[rowNumber][PgmConstants.locationMonthRevenuePosition]) ?? 0.0
-			let newLocationTotalRevenue = Float(sheetCells[rowNumber][PgmConstants.locationTotalRevenuePosition]) ?? 0.0
+			let newLocationMonthRevenue = Double(sheetCells[rowNumber][PgmConstants.locationMonthRevenuePosition]) ?? 0.0
+			let newLocationTotalRevenue = Double(sheetCells[rowNumber][PgmConstants.locationTotalRevenuePosition]) ?? 0.0
 			let newLocationStudentCount = Int(sheetCells[rowNumber][PgmConstants.locationStudentCountPosition]) ?? 0
 			let newLocationStatus = sheetCells[rowNumber][PgmConstants.locationStatusPosition]
 			// Create a new Location object from the extracted Location attributes

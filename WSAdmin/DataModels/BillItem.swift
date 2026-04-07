@@ -15,11 +15,11 @@ class BillItem {
 	var timesheetServiceName: String	// Service name from Timesheet
 	var invoiceServiceName: String		// Service name for Invoice
 	var notes: String			// Tutor's notes for the session
-	var cost: Float				// Cost of session (amount for tutor)
+	var cost: Double				// Cost of session (amount for tutor)
 	//    var tutorKey: String
 	var tutorName: String			// Name of Tutor who did session
 	
-	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, invoiceServiceName: String, notes: String, cost: Float, tutorName: String) {
+	init(studentName: String, serviceDate: String, duration: Int, timesheetServiceName: String, invoiceServiceName: String, notes: String, cost: Double, tutorName: String) {
 		self.studentName = studentName
 		self.serviceDate = serviceDate
 		self.duration = duration

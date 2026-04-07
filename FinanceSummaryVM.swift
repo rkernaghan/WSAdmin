@@ -14,19 +14,19 @@ import Foundation
 		var financeSummaryArray = [FinanceSummaryRow]()
 		
 		var monthSessionTotal = 0
-		var monthCostTotal: Float = 0.0
-		var monthRevenueTotal: Float = 0.0
-		var monthProfitTotal: Float = 0.0
+		var monthCostTotal: Double = 0.0
+		var monthRevenueTotal: Double = 0.0
+		var monthProfitTotal: Double = 0.0
 		
 		var yearSessionTotal = 0
-		var yearCostTotal: Float = 0.0
-		var yearRevenueTotal: Float = 0.0
-		var yearProfitTotal: Float = 0.0
+		var yearCostTotal: Double = 0.0
+		var yearRevenueTotal: Double = 0.0
+		var yearProfitTotal: Double = 0.0
 
 		var totalSessionTotal = 0
-		var totalCostTotal: Float = 0.0
-		var totalRevenueTotal: Float = 0.0
-		var totalProfitTotal: Float = 0.0
+		var totalCostTotal: Double = 0.0
+		var totalRevenueTotal: Double = 0.0
+		var totalProfitTotal: Double = 0.0
 		
 		var billedMonthTutors: Int = 0
 		var activeMonthTutors: Int = 0

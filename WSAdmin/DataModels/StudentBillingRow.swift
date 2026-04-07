@@ -10,25 +10,25 @@
 class StudentBillingRow {
 	var studentName: String
 	var monthBilledSessions: Int
-	var monthBilledCost: Float
-	var monthBilledRevenue: Float
-	var monthBilledProfit: Float
+	var monthBilledCost: Double
+	var monthBilledRevenue: Double
+	var monthBilledProfit: Double
 	var totalBilledSessions: Int
-	var totalBilledCost: Float
-	var totalBilledRevenue: Float
-	var totalBilledProfit: Float
+	var totalBilledCost: Double
+	var totalBilledRevenue: Double
+	var totalBilledProfit: Double
 	var tutorName: String
 	var studentStatus: String
 	var monthValidatedSessions: Int
-	var monthValidatedCost: Float
-	var monthValidatedRevenue: Float
-	var monthValidatedProfit: Float
+	var monthValidatedCost: Double
+	var monthValidatedRevenue: Double
+	var monthValidatedProfit: Double
 	var totalValidatedSessions: Int
-	var totalValidatedCost: Float
-	var totalValidatedRevenue: Float
-	var totalValidatedProfit: Float
+	var totalValidatedCost: Double
+	var totalValidatedRevenue: Double
+	var totalValidatedProfit: Double
 	
-	init(studentName: String, monthBillingSessions: Int, monthBillingCost: Float, monthBillingRevenue: Float, monthBillingProfit: Float, totalBillingSessions: Int, totalBillingCost: Float, totalBillingRevenue: Float, totalBillingProfit: Float, tutorName: String, studentStatus: String, monthValidatedSessions: Int, monthValidatedCost: Float, monthValidatedRevenue: Float, monthValidatedProfit: Float, totalValidatedSessions: Int, totalValidatedCost: Float, totalValidatedRevenue: Float, totalValidatedProfit: Float) {
+	init(studentName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorName: String, studentStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
 		self.studentName = studentName
 		self.monthBilledSessions = monthBillingSessions
 		self.monthBilledCost = monthBillingCost
@@ -52,7 +52,7 @@ class StudentBillingRow {
 	}
 	
 	// Resets a Student's Billed Tutor session, cost, revenue and profit numbers for a month when a Student is billed again after being previously billed that month
-	func resetBilledStudentMonth(sessions: Int, cost: Float, revenue: Float, profit: Float) {
+	func resetBilledStudentMonth(sessions: Int, cost: Double, revenue: Double, profit: Double) {
 		
 		self.totalBilledSessions -= sessions
 		self.totalBilledCost -= cost
