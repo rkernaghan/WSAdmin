@@ -17,21 +17,17 @@ class TutorBillingMonth {
 	}
 	
 	func findBilledTutorByName(billedTutorName: String) -> (Bool, Int) {
-		var found = false
 		
-		var billedTutorNum = 0
-		while billedTutorNum < tutorBillingRows.count && !found {
-			if tutorBillingRows[billedTutorNum].tutorName == billedTutorName {
-				found = true
-			} else {
-				billedTutorNum += 1
-			}
+		if let index = tutorBillingRows.firstIndex(
+			where: { $0.tutorName == billedTutorName }
+		) {
+			return (true, index)
 		}
-		return(found, billedTutorNum)
+		return (false, 0)
 	}
     
 	func addNewBilledTutor(tutorName: String) {
-		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorBillingStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 		self.tutorBillingRows.append(newTutorBillingRow)
 	}
 	
@@ -40,7 +36,7 @@ class TutorBillingMonth {
 	}
 	
 	func deleteBilledTutor(billedTutorNum: Int) {
-		self.tutorBillingRows[billedTutorNum].tutorStatus = "Deleted"
+		self.tutorBillingRows[billedTutorNum].tutorBillingStatus = "Deleted"
 	}
 	
 	
@@ -153,7 +149,7 @@ class TutorBillingMonth {
 			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
 			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
 			
-			let tutorStatus: String = sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]
+			let tutorBillingStatus: String = sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]
 			
 			if loadValidatedData {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthSessionCol]) ?? 0
@@ -167,7 +163,7 @@ class TutorBillingMonth {
 				totalValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.tutorValidatedTotalProfitCol]) ?? 0.0
 			}
 			
-			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: monthBillingSessions, monthBillingCost: monthBillingCost, monthBillingRevenue: monthBillingRevenue, monthBillingProfit: monthBillingProfit, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorStatus: tutorStatus, monthValidatedSessions: monthValidatedSessions, monthValidatedCost: monthValidatedCost, monthValidatedRevenue: monthValidatedRevenue, monthValidatedProfit: monthValidatedProfit, totalValidatedSessions: totalValidatedSessions, totalValidatedCost: totalValidatedCost, totalValidatedRevenue: totalValidatedRevenue, totalValidatedProfit: totalValidatedProfit)
+			let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: monthBillingSessions, monthBillingCost: monthBillingCost, monthBillingRevenue: monthBillingRevenue, monthBillingProfit: monthBillingProfit, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorBillingStatus: tutorBillingStatus, monthValidatedSessions: monthValidatedSessions, monthValidatedCost: monthValidatedCost, monthValidatedRevenue: monthValidatedRevenue, monthValidatedProfit: monthValidatedProfit, totalValidatedSessions: totalValidatedSessions, totalValidatedCost: totalValidatedCost, totalValidatedRevenue: totalValidatedRevenue, totalValidatedProfit: totalValidatedProfit)
 			
 			self.insertBilledTutorRow(tutorBillingRow: newTutorBillingRow)
 			
@@ -204,7 +200,7 @@ class TutorBillingMonth {
 			let totalBillingCost: String = String(tutorBillingRows[billedTutorNum].totalBilledCost)
 			let totalBillingRevenue: String = String(tutorBillingRows[billedTutorNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(tutorBillingRows[billedTutorNum].totalBilledProfit)
-			let tutorStatus: String = tutorBillingRows[billedTutorNum].tutorStatus
+			let tutorBillingStatus: String = tutorBillingRows[billedTutorNum].tutorBillingStatus
 			
 			if saveValidatedTutorData {
 				monthValidatedSessions = String(tutorBillingRows[billedTutorNum].monthValidatedSessions)
@@ -217,11 +213,11 @@ class TutorBillingMonth {
 				totalValidatedProfit = String(tutorBillingRows[billedTutorNum].totalValidatedProfit)
 			}
 			
-			updateValues.insert([tutorName, monthBillingSessions, monthBillingCost, monthBillingRevenue, monthBillingProfit, totalBillingSessions, totalBillingCost, totalBillingRevenue, totalBillingProfit, tutorStatus, " ", monthValidatedSessions, monthValidatedCost, monthValidatedRevenue, monthValidatedProfit, totalValidatedSessions, totalValidatedCost, totalValidatedRevenue, totalValidatedProfit], at: billedTutorNum)
+			updateValues.insert([tutorName, monthBillingSessions, monthBillingCost, monthBillingRevenue, monthBillingProfit, totalBillingSessions, totalBillingCost, totalBillingRevenue, totalBillingProfit, tutorBillingStatus, " ", monthValidatedSessions, monthValidatedCost, monthValidatedRevenue, monthValidatedProfit, totalValidatedSessions, totalValidatedCost, totalValidatedRevenue, totalValidatedProfit], at: billedTutorNum)
 			billedTutorNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedTutorNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedTutorNum)
 		return(updateValues)
 	}
 //
@@ -284,8 +280,8 @@ class TutorBillingMonth {
 									let totalBillingCost = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledCost
 									let totalBillingRevenue = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledRevenue
 									let totalBillingProfit = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledProfit
-									let tutorStatus = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorStatus
-									let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorStatus: tutorStatus,  monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+									let tutorBillingStatus = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorBillingStatus
+									let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorBillingStatus: tutorBillingStatus,  monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 									self.tutorBillingRows.append(newTutorBillingRow)
 								}
 //							}

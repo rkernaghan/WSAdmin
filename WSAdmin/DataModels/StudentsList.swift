@@ -7,7 +7,7 @@
 
 import Foundation
 
-@Observable class StudentsList {
+@MainActor @Observable class StudentsList {
 	var studentsList = [Student]()
 	var isStudentDataLoaded: Bool			// Indicator as to whether the Service data has been read in from the ReferenceData sheet yet
 	
@@ -17,32 +17,24 @@ import Foundation
 	
 	// This function finds a Student object in the Students List object array by Student key
 	func findStudentByKey(studentKey: String) -> (Bool, Int) {
-		var found = false
 		
-		var studentNum = 0
-		while studentNum < studentsList.count && !found {
-			if studentsList[studentNum].studentKey == studentKey {
-				found = true
-			} else {
-				studentNum += 1
-			}
+		if let index = studentsList.firstIndex(
+			where: { $0.studentKey == studentKey }
+		) {
+			return (true, index)
 		}
-		return(found, studentNum)
+		return (false, 0)
 	}
 	
 	// This function finds a Student object in the Students List object array by Student name
 	func findStudentByName(studentName: String) -> (Bool, Int) {
-		var found = false
 		
-		var studentNum = 0
-		while studentNum < studentsList.count && !found {
-			if studentsList[studentNum].studentName == studentName {
-				found = true
-			} else {
-				studentNum += 1
-			}
+		if let index = studentsList.firstIndex(
+			where: { $0.studentName == studentName }
+		) {
+			return (true, index)
 		}
-		return(found, studentNum)
+		return (false, 0)
 	}
 	
 	// This function creates a new Student object and adds it to the Students List object array.

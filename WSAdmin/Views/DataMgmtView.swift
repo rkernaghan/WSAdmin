@@ -109,7 +109,12 @@ struct SideView: View {
 	@Environment(SystemVM.self) var systemVM: SystemVM
 	@Environment(FinanceSummaryVM.self) var financeSummaryVM: FinanceSummaryVM
 	@Environment(BillingVM.self) var billingVM: BillingVM
-        
+	
+	@State private var isFinanceSummaryProcessing = false				// To disable Finance Summary button when already processing
+	@State private var isSystemValidating = false					// To disable System Data Validation button when processing
+	@State private var isSystemBackingUp = false					// To disable Backup System button when processing
+	@State private var creatingNewYearsFiles = false				// To disable Create New Years Files button when processing
+	
 	var body: some View {
  
 		List {
@@ -192,35 +197,64 @@ struct SideView: View {
 				}
 			}
 			
-			Button("Finance Summary") {
+			Button(action: {
 				Task {
 					statusMessage = " "
+					isFinanceSummaryProcessing = true
 					financeSummaryArray = await financeSummaryVM.buildFinanceSummary()
+					isFinanceSummaryProcessing = false
+					
 					showFinanceSummary = true
 				}
+			}) {
+				if isFinanceSummaryProcessing {
+					ProgressView()
+				} else {
+					Text("Finance Summary")
+				}
 			}
+			.disabled(isFinanceSummaryProcessing)
 			
-			Button("Validate System Data Integrity") {
+			
+			Button(action: {
 				Task {
 					statusMessage = " "
+					isSystemValidating = true
 					await systemVM.validateSystem(referenceData: referenceData, validationMessages: validationMessages)
+					isSystemValidating = false
 					showDataIntegritySummary = true
 				}
-
+			}) {
+				if isSystemValidating {
+					ProgressView()
+				} else {
+					Text("Validate System Data Integrity")
+				}
 			}
+			.disabled(isSystemValidating)
 	
 			
-			Button("Backup System") {
+			Button(action: {
 				Task {
 					statusMessage = " "
+					isSystemBackingUp = true
 					let backupFlag = await systemVM.backupSystem()
+					isSystemBackingUp = false
 					if backupFlag {
 						statusMessage = "Backup Successful"
 					} else {
 						statusMessage = "Backup Failed"
 					}
 				}
+			} ) {
+				if isSystemBackingUp {
+					ProgressView()
+				} else {
+					Text("Backup System")
+				}
 			}
+			.disabled(isSystemBackingUp)
+			
 			
 			NavigationLink {
 				ValidationMonthSelectionView(referenceData: referenceData)
@@ -230,10 +264,13 @@ struct SideView: View {
 			}
 			
 			
-			Button("Create Next Years Files") {
+			Button(action: {
 				Task {
 					statusMessage = " "
+					creatingNewYearsFiles = true
 					let (generateResult, generateMessage) = await systemVM.generateNewYearFiles(referenceData: referenceData)
+					creatingNewYearsFiles = false
+					
 					if !generateResult {
 						showAlert.toggle()
 						buttonErrorMsg = generateMessage
@@ -241,7 +278,15 @@ struct SideView: View {
 						statusMessage = "Files Generated For New Year"
 					}
 				}
+			} ) {
+				if isSystemBackingUp {
+					ProgressView()
+				} else {
+					Text("Create New Years Files")
+				}
 			}
+			.disabled(creatingNewYearsFiles)
+			
 			
 			Button("Update Tutor Timesheet File IDs") {
 				Task {

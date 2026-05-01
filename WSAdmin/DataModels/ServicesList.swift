@@ -8,7 +8,7 @@
 import Foundation
 
 
-@Observable class ServicesList {
+@MainActor @Observable class ServicesList {
 	var servicesList = [Service]()
 	var isServiceDataLoaded: Bool			// Indicator as to whether the Service data has been read in from the ReferenceData sheet yet
 	
@@ -18,32 +18,25 @@ import Foundation
 	
 	// This function finds a Service object in the Services List object array by Service key
 	func findServiceByKey(serviceKey: String) -> (Bool, Int) {
-		var found = false
 		
-		var serviceNum = 0
-		while serviceNum < servicesList.count && !found {
-			if servicesList[serviceNum].serviceKey == serviceKey {
-				found = true
-			} else {
-				serviceNum += 1
-			}
+		if let index = servicesList.firstIndex(
+			where: { $0.serviceKey == serviceKey }
+		) {
+			return (true, index)
 		}
-		return(found, serviceNum)
+		return (false, 0)
 	}
 	
 	// This function finds a Service object in the Services List object array by Timesheet (Service) name
 	func findServiceByName(timesheetName: String) -> (Bool, Int) {
-		var found = false
 		
-		var serviceNum = 0
-		while serviceNum < servicesList.count && !found {
-			if servicesList[serviceNum].serviceTimesheetName == timesheetName {
-				found = true
-			} else {
-				serviceNum += 1
-			}
+		if let index = servicesList.firstIndex(
+			where: { $0.serviceTimesheetName == timesheetName }
+		) {
+			return (true, index)
 		}
-		return(found, serviceNum)
+		return (false, 0)
+	
 	}
 	
 	// This function adds a new Service to the Services List object array

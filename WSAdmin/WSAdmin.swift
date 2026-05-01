@@ -310,6 +310,91 @@ enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
 	}
 }
 
+enum StudentStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case Unassigned
+	case Assigned
+	case Suspended
+	case Deleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .Unassigned:
+				return "Unassigned"
+			case .Assigned:
+				return "Assigned"
+			case .Suspended:
+				return "Suspended"
+			case .Deleted:
+				return "Deleted"
+		}
+	}
+}
+
+enum TutorStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case Unassigned
+	case Assigned
+	case Suspended
+	case Deleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .Unassigned:
+				return "Unassigned"
+			case .Assigned:
+				return "Assigned"
+			case .Suspended:
+				return "Suspended"
+			case .Deleted:
+				return "Deleted"
+		}
+	}
+}
+
+enum ServiceStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case Unassigned
+	case Assigned
+	case Deleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .Unassigned:
+				return "Unassigned"
+			case .Assigned:
+				return "Assigned"
+			case .Deleted:
+				return "Deleted"
+		}
+	}
+}
+enum LocationStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case Unassigned
+	case Assigned
+	case Deleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .Unassigned:
+				return "Unassigned"
+			case .Assigned:
+				return "Assigned"
+			case .Deleted:
+				return "Deleted"
+		}
+	}
+}
+
 enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
 	case January
 	case February
@@ -406,7 +491,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "TEST"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

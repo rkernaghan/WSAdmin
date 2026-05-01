@@ -9,7 +9,7 @@ import Foundation
 
 // The data and functions to track general count and other data about the system.  Counts are used to read and write data to the Reference Data sheet
 //
-class DataCounts {
+@MainActor class DataCounts {
 	var totalStudents: Int = 0			// Total Students in the system
 	var activeStudents: Int = 0			// Active (Status not Deleted or Suspended)
 	var highestStudentKey: Int = 0			// Highest unique key number for the Students

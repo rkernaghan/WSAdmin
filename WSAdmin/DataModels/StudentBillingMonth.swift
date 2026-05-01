@@ -16,17 +16,13 @@ class StudentBillingMonth {
 	}
 	
 	func findBilledStudentByStudentName(billedStudentName: String) -> (Bool, Int) {
-		var found = false
 		
-		var billedStudentNum = 0
-		while billedStudentNum < studentBillingRows.count && !found {
-			if studentBillingRows[billedStudentNum].studentName == billedStudentName {
-				found = true
-			} else {
-				billedStudentNum += 1
-			}
+		if let index = studentBillingRows.firstIndex(
+			where: { $0.studentName == billedStudentName }
+		) {
+			return (true, index)
 		}
-		return(found, billedStudentNum)
+		return (false, 0)
 	}
 	
 	func findBilledStudentsByTutorName(tutorName: String) -> (Bool, [Int]) {
@@ -46,7 +42,7 @@ class StudentBillingMonth {
 	
 	// Adds a new StudentBillingRow instance to the StudentBillingRows array.
 	func addNewBilledStudent(studentName: String) {
-		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorName: "", studentStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorName: "", studentBillingStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 		self.studentBillingRows.append(newStudentBillingRow)
 	}
 	// Adds a StudentBillingRow instance read from the StudentBilling spreadsheet to the StudentBillingRows array.
@@ -56,7 +52,7 @@ class StudentBillingMonth {
 	
 	// Marks a StudentBillingRow instance as Deleted (when a Student is deleted).  StudentBillingRow is kept so the totals are kept in sync with Student data.
 	func deleteBilledStudent(billedStudentNum: Int) {
-		self.studentBillingRows[billedStudentNum].studentStatus = "Deleted"
+		self.studentBillingRows[billedStudentNum].studentBillingStatus = "Deleted"
 	}
 	
 	// Builds a StudentBillingMonth array from the data read from the Student Billing sheet for a month.
@@ -105,7 +101,7 @@ class StudentBillingMonth {
 				tutorName = sheetCells[rowNumber][PgmConstants.studentBillingTutorCol]
 			}
 			
-			let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: monthBillingSessions, monthBillingCost: monthBillingCost, monthBillingRevenue: monthBillingRevenue, monthBillingProfit: monthBillingProfit, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentStatus: studentStatus, monthValidatedSessions: monthValidatedSessions, monthValidatedCost: monthValidatedCost, monthValidatedRevenue: monthValidatedRevenue, monthValidatedProfit: monthValidatedProfit, totalValidatedSessions: totalValidatedSessions, totalValidatedCost: totalValidatedCost, totalValidatedRevenue: totalValidatedRevenue, totalValidatedProfit: totalValidatedProfit)
+			let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: monthBillingSessions, monthBillingCost: monthBillingCost, monthBillingRevenue: monthBillingRevenue, monthBillingProfit: monthBillingProfit, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentBillingStatus: studentStatus, monthValidatedSessions: monthValidatedSessions, monthValidatedCost: monthValidatedCost, monthValidatedRevenue: monthValidatedRevenue, monthValidatedProfit: monthValidatedProfit, totalValidatedSessions: totalValidatedSessions, totalValidatedCost: totalValidatedCost, totalValidatedRevenue: totalValidatedRevenue, totalValidatedProfit: totalValidatedProfit)
 			
 			self.insertBilledStudentRow(studentBillingRow: newStudentBillingRow)
 			
@@ -140,7 +136,7 @@ class StudentBillingMonth {
 			let totalBillingRevenue: String = String(studentBillingRows[billedStudentNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(studentBillingRows[billedStudentNum].totalBilledProfit)
 			let tutorName: String = studentBillingRows[billedStudentNum].tutorName
-			let studentStatus: String = studentBillingRows[billedStudentNum].studentStatus
+			let studentBillingStatus: String = studentBillingRows[billedStudentNum].studentBillingStatus
 			
 			if saveValidatedStudentData {
 				monthValidatedSessions = String(studentBillingRows[billedStudentNum].monthValidatedSessions)
@@ -153,11 +149,11 @@ class StudentBillingMonth {
 				totalValidatedProfit = String(studentBillingRows[billedStudentNum].totalValidatedProfit)
 			}
 			
-			updateValues.insert([studentName, monthBillingSessions, monthBillingCost, monthBillingRevenue, monthBillingProfit, totalBillingSessions, totalBillingCost, totalBillingRevenue, totalBillingProfit, tutorName, studentStatus, "", monthValidatedSessions, monthValidatedCost, monthValidatedRevenue, monthValidatedProfit, totalValidatedSessions, totalValidatedCost, totalValidatedRevenue, totalValidatedProfit], at: billedStudentNum)
+			updateValues.insert([studentName, monthBillingSessions, monthBillingCost, monthBillingRevenue, monthBillingProfit, totalBillingSessions, totalBillingCost, totalBillingRevenue, totalBillingProfit, tutorName, studentBillingStatus, "", monthValidatedSessions, monthValidatedCost, monthValidatedRevenue, monthValidatedProfit, totalValidatedSessions, totalValidatedCost, totalValidatedRevenue, totalValidatedProfit], at: billedStudentNum)
 			billedStudentNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
+		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: billedStudentNum)
 		return(updateValues)
 	}
 
@@ -269,8 +265,8 @@ class StudentBillingMonth {
 									let totalBillingRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledRevenue
 									let totalBillingProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledProfit
 									let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
-									let studentStatus = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentStatus
-									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentStatus: studentStatus, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+									let studentBillingStatus = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentBillingStatus
+									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentBillingStatus: studentBillingStatus, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 									self.studentBillingRows.append(newStudentBillingRow)
 								}
 //							}

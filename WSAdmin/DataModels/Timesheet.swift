@@ -45,7 +45,7 @@ class Timesheet: Identifiable {
 			}
 		} catch {
 			print("ERROR: in Timesheet.loadTimesheetData - Could not read SheetCells for \(tutorName) Timesheet with File ID \(timesheetID)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: in Timesheet.loadTimesheetData - ould not read SheetCells for \(tutorName) Timesheet File ID \(timesheetID)"))
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: in Timesheet.loadTimesheetData - could not read SheetCells for \(tutorName) Timesheet File ID \(timesheetID)"))
 			completionFlag = false
 		}
 		return(completionFlag)

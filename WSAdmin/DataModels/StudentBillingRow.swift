@@ -18,7 +18,7 @@ class StudentBillingRow {
 	var totalBilledRevenue: Double
 	var totalBilledProfit: Double
 	var tutorName: String
-	var studentStatus: String
+	var studentBillingStatus: String
 	var monthValidatedSessions: Int
 	var monthValidatedCost: Double
 	var monthValidatedRevenue: Double
@@ -28,7 +28,7 @@ class StudentBillingRow {
 	var totalValidatedRevenue: Double
 	var totalValidatedProfit: Double
 	
-	init(studentName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorName: String, studentStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
+	init(studentName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorName: String, studentBillingStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
 		self.studentName = studentName
 		self.monthBilledSessions = monthBillingSessions
 		self.monthBilledCost = monthBillingCost
@@ -39,7 +39,7 @@ class StudentBillingRow {
 		self.totalBilledRevenue = totalBillingRevenue
 		self.totalBilledProfit = totalBillingProfit
 		self.tutorName = tutorName
-		self.studentStatus = studentStatus
+		self.studentBillingStatus = studentBillingStatus
 		self.monthValidatedSessions = monthValidatedSessions
 		self.monthValidatedCost = monthValidatedCost
 		self.monthValidatedRevenue = monthValidatedRevenue

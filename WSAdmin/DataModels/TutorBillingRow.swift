@@ -16,7 +16,7 @@ class TutorBillingRow {
 	var totalBilledCost: Double
 	var totalBilledRevenue: Double
 	var totalBilledProfit: Double
-	var tutorStatus: String
+	var tutorBillingStatus: String
 	var monthValidatedSessions: Int
 	var monthValidatedCost: Double
 	var monthValidatedRevenue: Double
@@ -26,7 +26,7 @@ class TutorBillingRow {
 	var totalValidatedRevenue: Double
 	var totalValidatedProfit: Double
 	
-	init(tutorName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
+	init(tutorName: String, monthBillingSessions: Int, monthBillingCost: Double, monthBillingRevenue: Double, monthBillingProfit: Double, totalBillingSessions: Int, totalBillingCost: Double, totalBillingRevenue: Double, totalBillingProfit: Double, tutorBillingStatus: String, monthValidatedSessions: Int, monthValidatedCost: Double, monthValidatedRevenue: Double, monthValidatedProfit: Double, totalValidatedSessions: Int, totalValidatedCost: Double, totalValidatedRevenue: Double, totalValidatedProfit: Double) {
 		self.tutorName = tutorName
 		self.monthBilledSessions = monthBillingSessions
 		self.monthBilledCost = monthBillingCost
@@ -36,7 +36,7 @@ class TutorBillingRow {
 		self.totalBilledCost = totalBillingCost
 		self.totalBilledRevenue = totalBillingRevenue
 		self.totalBilledProfit = totalBillingProfit
-		self.tutorStatus = tutorStatus
+		self.tutorBillingStatus = tutorBillingStatus
 		
 		self.monthValidatedSessions = monthValidatedSessions
 		self.monthValidatedCost = monthValidatedCost
@@ -54,7 +54,7 @@ class TutorBillingRow {
 		self.totalBilledSessions -= self.monthBilledSessions
 		self.totalBilledCost -= self.monthBilledCost
 		self.totalBilledRevenue -= self.monthBilledRevenue
-		self.totalBilledProfit -= self.monthBilledRevenue - self.monthBilledCost
+		self.totalBilledProfit -= self.monthBilledProfit
 
 		self.monthBilledSessions = 0
 		self.monthBilledCost = 0.0

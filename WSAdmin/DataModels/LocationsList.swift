@@ -10,7 +10,7 @@ import GoogleSignIn
 
 // Data and functions to maintain an array of Location objects
 //
-@Observable class LocationsList: Identifiable {
+@MainActor @Observable class LocationsList {
 	var locationsList = [Location]()			// Array of Location objects
 	var isLocationDataLoaded: Bool				// Indicator as to whether the Location data has been read in from the ReferenceData sheet yet
 	var id = UUID()
@@ -21,32 +21,24 @@ import GoogleSignIn
 	
 	// This function finds a Location object in the Locations List object array by Location key
 	func findLocationByKey(locationKey: String) -> (Bool, Int) {
-		var found = false
 		
-		var locationNum = 0
-		while locationNum < locationsList.count && !found {
-			if locationsList[locationNum].locationKey == locationKey {
-				found = true
-			} else {
-				locationNum += 1
-			}
+		if let index = locationsList.firstIndex(
+			where: { $0.locationKey == locationKey }
+		) {
+			return (true, index)
 		}
-		return(found, locationNum)
+		return (false, 0)
 	}
 	
 	// This function finds a Location object in the Locations List object array by Location name
 	func findLocationByName(locationName: String) -> (Bool, Int) {
-		var found = false
 		
-		var locationNum = 0
-		while locationNum < locationsList.count && !found {
-			if locationsList[locationNum].locationName == locationName {
-				found = true
-			} else {
-				locationNum += 1
-			}
+		if let index = locationsList.firstIndex(
+			where: { $0.locationName == locationName }
+		) {
+			return (true, index)
 		}
-		return(found, locationNum)
+		return (false, 0)
 	}
 	
 	// This function adds a new Location object to the Locations List object array

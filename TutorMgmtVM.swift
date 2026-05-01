@@ -761,11 +761,11 @@ import GoogleSignIn
 					newTimesheetFileID = fileID
 					
 					do {
-						var copyFileData = try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail)
+						var copyFileData = try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
 						if let copyFileData = copyFileData {
-							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail)
-							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail)
-							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail)
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+							try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
 							
 							let range = PgmConstants.timesheetTutorNameCell
 							do {
@@ -778,7 +778,7 @@ import GoogleSignIn
 							copyResult = false
 						}
 						// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
-						copyFileData = try await addPermissionToFile(fileId: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail)
+						copyFileData = try await addPermissionToFile(fileId: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
 						if let copyFileData = copyFileData {
 							print("Granted Tutor \(tutorName) read access to Tutor Details File Name")
 						} else {

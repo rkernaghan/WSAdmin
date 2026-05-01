@@ -9,7 +9,7 @@ import Foundation
 
 // The TutorsList contains an array of Tutor objects and the functions to manage the array
 //
-@Observable class TutorsList {
+@MainActor @Observable class TutorsList {
 	var tutorsList = [Tutor]()				// Array or Tutor objects
 	var isTutorDataLoaded: Bool				// Indicator as to whether the Tutor data has been read in from the ReferenceData sheet yet
 	
@@ -19,32 +19,24 @@ import Foundation
 	
 	// This function finds a Tutor object in the Tutors List object array by Tutor key
 	func findTutorByKey(tutorKey: String) -> (Bool, Int) {
-		var found = false
 		
-		var tutorNum = 0
-		while tutorNum < tutorsList.count && !found {
-			if tutorsList[tutorNum].tutorKey == tutorKey {
-				found = true
-			} else {
-				tutorNum += 1
-			}
+		if let index = tutorsList.firstIndex(
+			where: { $0.tutorKey == tutorKey }
+		) {
+			return (true, index)
 		}
-		return(found, tutorNum)
+		return (false, 0)
 	}
 	
 	// This function finds a Tutor object in the Tutors List object array by Tutor name
 	func findTutorByName(tutorName: String) -> (Bool, Int) {
-		var found = false
 		
-		var tutorNum = 0
-		while tutorNum < tutorsList.count && !found {
-			if tutorsList[tutorNum].tutorName == tutorName {
-				found = true
-			} else {
-				tutorNum += 1
-			}
+		if let index = tutorsList.firstIndex(
+			where: { $0.tutorName == tutorName }
+		) {
+			return (true, index)
 		}
-		return(found, tutorNum)
+		return (false, 0)
 	}
 	
 	// This function adds a new Tutor object to the Tutors List object array

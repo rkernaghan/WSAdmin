@@ -62,21 +62,18 @@ class BillArray {
         
 	// Finds a client in a BillArray by client name
 	func findBillClientByName(billClientName: String) -> (Bool, Int) {
-		var found = false
 		
-		var billClientNum = 0
-		while billClientNum < billClients.count && !found {
-			if self.billClients[billClientNum].clientName == billClientName {
-				found = true
-			} else {
-				billClientNum += 1
-			}
+		
+		if let index = billClients.firstIndex(
+			where: { $0.clientName == billClientName }
+		) {
+			return (true, index)
 		}
-		return(found, billClientNum)
+		return (false, 0)
 	}
     
 	// 
-	@MainActor func generateInvoice(alreadyBilledTutors: [String], referenceData: ReferenceData) -> Invoice {
+	@MainActor func generateInvoice( referenceData: ReferenceData) -> Invoice {
 		var clientName: String = ""
 		var clientEmail: String = ""
 		var clientInvoiceDate: String = ""

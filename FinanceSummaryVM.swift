@@ -96,7 +96,7 @@ import Foundation
 										billedMonthTutors += 1
 									}
 									
-									if tutorBillingMonth.tutorBillingRows[tutorNum].tutorStatus == "Active" {
+									if tutorBillingMonth.tutorBillingRows[tutorNum].tutorBillingStatus == "Active" {
 										activeMonthTutors += 1
 									}
 									tutorNum += 1

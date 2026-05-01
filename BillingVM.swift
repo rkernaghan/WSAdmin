@@ -60,7 +60,7 @@ import GoogleSignIn
 						billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Tutors already billed for month: \(alreadyBilledTutors)"))
 					}
 				}
-				invoice = billArray.generateInvoice(alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
+				invoice = billArray.generateInvoice(referenceData: referenceData)
 			}
 		} catch {
 			print("Error: in BillingVM.generateInvoice - Could not load Billed Tutor Month")

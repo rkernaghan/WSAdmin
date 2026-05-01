@@ -326,14 +326,14 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 //		returns a response JSON
 //	Throws:
 //
-func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil) async throws -> [String: Any]? {
+func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil, sendNotificationEmail: Bool) async throws -> [String: Any]? {
 	
 	let tokenFound = await getAccessToken()
 	if tokenFound {
 		let accessToken = oauth2Token.accessToken
 		if let accessToken = accessToken {
 			
-			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions"
+			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions?sendNotificationEmail=\(sendNotificationEmail)"
 			
 			guard let url = URL(string: urlString) else {
 				throw URLError(.badURL)
@@ -671,6 +671,7 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 	return sheetCount
 		
 }
+
 
 // getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
 //		if not attempt to refresh the Access Token

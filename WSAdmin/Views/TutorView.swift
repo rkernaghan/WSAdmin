@@ -20,6 +20,7 @@ struct TutorView: View {
 	
 	@State private var showAlert = false
 	@State private var dismissAlert = false
+	@State private var isTutorUpdateInProcess = false				// To disable Add/Update Tutor button when already processing
 	
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
@@ -79,9 +80,11 @@ struct TutorView: View {
 						}
 					} else {
 						// Add a new Tutor
+						isTutorUpdateInProcess = true
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
 							let (addResult, addMessage) = await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents)
+							isTutorUpdateInProcess = false
 							if !addResult {
 								buttonErrorMsg = addMessage
 								showAlert = true
@@ -91,6 +94,7 @@ struct TutorView: View {
 								dismissAlert = true
 							}
 						} else {
+							isTutorUpdateInProcess = false
 							buttonErrorMsg = validationMessage
 							showAlert = true
 						}
@@ -98,12 +102,18 @@ struct TutorView: View {
 				}
 				
 			}){
-				if updateTutorFlag {
-					Text("Update Tutor \(originalTutorName)")
+				if isTutorUpdateInProcess {
+					ProgressView()
 				} else {
-					Text("Add New Tutor")
+			
+					if updateTutorFlag {
+						Text("Update Tutor \(originalTutorName)")
+					} else {
+						Text("Add New Tutor")
+					}
 				}
 			}
+			.disabled(isTutorUpdateInProcess)
 			.navigationTitle("Tutor Display")
 			
 			.alert(buttonErrorMsg, isPresented: $showAlert) {
