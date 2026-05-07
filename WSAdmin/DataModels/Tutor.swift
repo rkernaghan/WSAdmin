@@ -86,7 +86,7 @@ import Foundation
 	}
 	
 	// This function updates a Tutor's billing stats to remove the current month's sessions, cost, revenue and profit from the totals (when an already billed Tutor is billed again the same month to avoid double counting).
-	func resetBillingStats(sessions: Int, monthCost: Double, monthRevenue: Double) {
+	func resetTutorBillingStats(sessions: Int, monthCost: Double, monthRevenue: Double) {
 		self.tutorTotalSessions -= sessions
 		self.tutorTotalCost -= monthCost
 		self.tutorTotalRevenue -= monthRevenue

@@ -25,6 +25,7 @@ class StudentBillingMonth {
 		return (false, 0)
 	}
 	
+	// Return a count of the number of Students billed to a specific Tutor for the month and a Boolean indicating if any were found.
 	func findBilledStudentsByTutorName(tutorName: String) -> (Bool, [Int]) {
 		var found = false
 		var billedStudentNumbers: [Int] = []
@@ -236,8 +237,9 @@ class StudentBillingMonth {
 	
 	// Copies a previous month's Student Billing month rows (totals only not previous month values) into this (self) Student Billing Month instance.  Used to create a new Student Billing month instance when billing a new month that
 	// hasn't been billing before.
-	@MainActor func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		var completionFlag: Bool = true
+		var completionMessage: String = ""
 		// Determine the file name of the previous month Student Billiing spreadsheet (could be a previous year)
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		var prevStudentNum: Int = 0
@@ -248,41 +250,45 @@ class StudentBillingMonth {
 		do {
 			// Get the File ID of the previous month Student Billing Month spreadsheet
 			let (resultFlag, prevMonthStudentFileID) = try await getFileID(fileName: prevMonthStudentFileName)
-			if resultFlag {
-				completionFlag = await prevStudentBillingMonth.getStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID, loadValidatedData: false)
-				if completionFlag {
-					// Loop through each row in the previous month entries and copy to self instance
-					let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
-					while prevStudentNum < prevStudentCount {
-						let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
-						let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-						if foundFlag {
-//							if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
-								let (foundFlag, billedStudentNum) = self.findBilledStudentByStudentName(billedStudentName: studentName)
-								if !foundFlag {
-									let totalBillingSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledSessions
-									let totalBillingCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledCost
-									let totalBillingRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledRevenue
-									let totalBillingProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledProfit
-									let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
-									let studentBillingStatus = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentBillingStatus
-									let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentBillingStatus: studentBillingStatus, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
-									self.studentBillingRows.append(newStudentBillingRow)
-								}
-//							}
-						}
-						prevStudentNum += 1
+			guard resultFlag else {
+				print(" Error: could not get FileID for previous month Student Billing file \(prevMonthStudentFileName)")
+				return(false, " Error: could not get FileID for previous month Student Billing file \(prevMonthStudentFileName)")
+			}
+			// Read in the previous month Student Billing sheet
+			completionFlag = await prevStudentBillingMonth.getStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID, loadValidatedData: false)
+			guard completionFlag else {
+				print("Critical Error: Could not load \(prevMonth) Student Billing Data)")
+				return(false, "Critical Error: Could not load \(prevMonth) Student Billing Data")
+			}
+			// Loop through each row in the previous month entries and copy to self (current month) instance if Student does not already exist in current Student BillingMonth sheet
+			let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
+			while prevStudentNum < prevStudentCount {
+				
+				//if Student does not already exist in StudentBilling sheet, copy Student data from previous StudentBilling month if Student does not already exist in current StudentBilling month sheet
+				let studentName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentName
+				let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+				if foundFlag {
+					let (foundFlag, billedStudentNum) = self.findBilledStudentByStudentName(billedStudentName: studentName)
+					if !foundFlag {
+						let totalBillingSessions = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledSessions
+						let totalBillingCost = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledCost
+						let totalBillingRevenue = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledRevenue
+						let totalBillingProfit = prevStudentBillingMonth.studentBillingRows[prevStudentNum].totalBilledProfit
+						let tutorName = prevStudentBillingMonth.studentBillingRows[prevStudentNum].tutorName
+						let studentBillingStatus = prevStudentBillingMonth.studentBillingRows[prevStudentNum].studentBillingStatus
+						let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorName: tutorName, studentBillingStatus: studentBillingStatus, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+						self.studentBillingRows.append(newStudentBillingRow)
 					}
 				}
-			} else {
-				completionFlag = false
+				prevStudentNum += 1
 			}
+				
 		} catch {
 			print("Critical Error: Could not load \(prevMonth) Student Billing Data")
 			completionFlag = false
 		}
 		
-		return(completionFlag)
+		return(completionFlag, completionMessage)
 	}
 	
 }

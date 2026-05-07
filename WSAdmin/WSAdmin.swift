@@ -191,9 +191,15 @@ struct PgmConstants {
 	static let timesheetClientNameCol = 6
 	static let timesheetClientEmailCol = 7
 	static let timesheetClientPhoneCol = 8
-	static let timesheetDataRange = "!A1:I100"
+	static let timesheetHeaderRange = "!A1:I4"					// Header rows of Timesheet (includes number of billed sessions
+	static let timesheetSessionCountLocationRow: Int = 2				// Cell B3
+	static let timesheetSessionCountLocationCol: Int = 1
+	static let timesheetHeaderRowCount = 4
+	static let timesheetSessionRange = "!A5:I"
+//	static let timesheetDataRange = "!A1:I100"
 	static let timesheetTutorNameCell = "RefData!A2:A2"
 	static let timesheetAvailabilityDataRange = "Availability!A1:C10"
+	static let timesheetMaxBlankRowCount: Int = 12					// The maximum number of blank rows within the sessions of a Timesheet before its an error
 	
 	static let studentBillingCountRange = "!A2:A2"
 	static let studentBillingRange = "!A4:T"
@@ -491,7 +497,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: String = "TEST"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

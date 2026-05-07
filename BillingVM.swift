@@ -116,7 +116,7 @@ import GoogleSignIn
 
 	// Update the billing stats for Tutors, Students and Locations in the Reference Data, Student Billing and Tutor Billing spreadsheets.  If the Tutor was already billed, reset the billing stats
 	// for that Tutor before updating the billing stats
-	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		
 		print(" Starting updating billing stats for \(billingMonth)")
 		
@@ -137,106 +137,126 @@ import GoogleSignIn
 			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
 			if resultFlag {
 				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID, loadValidatedData: false)
+				guard  resultFlag else {
+					return(false, "Could not read in the Student Billing Month for \(billingMonth) with File Name \(billingMonthStudentFileName)")
+				}
+				
+				var (resultFlag, resultMessage) = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+				guard resultFlag else {
+					return(false, resultMessage)
+				}
+				
+				(resultFlag, resultMessage) = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+				guard resultFlag else {
+					return(false,resultMessage)
+				}
+						
+				if alreadyBilledTutors.count > 0 {
+					let (resetSuccess, resetMessage) = resetBillingStats(alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData, billingMonth: billingMonth, billingYear: billingYear)
+					guard resetSuccess else {
+						return (false, resetMessage)
+					}
+				}
+				
+				// Go through each line in the Invoice and update the Student, Tutor and Location billing stats in the Reference Data and
+				// Tutor Billing and Student Billing spreadsheets
+				var invoiceLineNum: Int = 0
+				let invoiceLineCount: Int = invoice.invoiceLines.count
+				while invoiceLineNum < invoiceLineCount {
+					let tutorName = invoice.invoiceLines[invoiceLineNum].tutorName
+					let studentName = invoice.invoiceLines[invoiceLineNum].studentName
+					
+					// Look for Billed Tutor in BilledTutor file for month.  However, Tutor may not be present if this is the first month the Tutor is being billed
+					let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
+					if billedTutorFound {
+						
+						// Look for Billed Student in BillStudent file for month.  However, Student may not be present if this is the first month the Student is being billed
+						let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
+						if billedStudentFound {
+							
+							let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+							guard tutorFound else {
+								return(false,"Error: BillingVM:updateBillingStats: Could not find tutor: \(tutorName) in Reference Data")
+							}
+							
+							let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+							guard studentFound  else {
+								return(false,"Error: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data")
+							}
+							
+							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+							let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+							guard locationFound else {
+								return(false,"Error: BillingVM:updateBillingStats: Could not find location \(studentLocation) for student: \(studentName) in Reference Data")
+							}
+							
+							let cost = invoice.invoiceLines[invoiceLineNum].cost
+							let revenue = invoice.invoiceLines[invoiceLineNum].amount
+							let profit = revenue - cost
+							
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions += 1
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledSessions += 1
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost += cost
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledCost += cost
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue += revenue
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue += revenue
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledProfit += profit
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledProfit += profit
+							
+							studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions += 1
+							studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledSessions += 1
+							studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost += cost
+							studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledCost += cost
+							studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue += revenue
+							studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledRevenue += revenue
+							studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledProfit += profit
+							studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledProfit += profit
+							studentBillingMonth.studentBillingRows[billedStudentNum].tutorName = tutorName
+							
+							referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
+							referenceData.tutors.tutorsList[tutorNum].tutorTotalCost += cost
+							referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue += revenue
+							referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit += profit
+							
+							referenceData.students.studentsList[studentNum].studentSessions += 1
+							referenceData.students.studentsList[studentNum].studentTotalCost += cost
+							referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
+							referenceData.students.studentsList[studentNum].studentTotalProfit += profit
+							
+							referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
+							referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
+							}
+						}
+					
+					invoiceLineNum += 1
+					}
+				
+				// After looping through each Invoice line and updating billing stats, save the Reference Data, Student Billing and Tutor Billing spreadsheets
 				if resultFlag {
-					resultFlag = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+					resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth, saveValidatedStudentData: false)
 					if resultFlag {
-						resultFlag = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
-						if resultFlag {
-							
-							if alreadyBilledTutors.count > 0 {
-								resetBillingStats(alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, studentBillingMonth: studentBillingMonth, referenceData: referenceData, billingMonth: billingMonth, billingYear: billingYear)
-							}
-							
-							// Go through each line in the Invoice and update the Student, Tutor and Location billing stats in the Reference Data and
-							// Tutor Billing and Student Billing spreadsheets
-							var invoiceLineNum: Int = 0
-							let invoiceLineCount: Int = invoice.invoiceLines.count
-							while invoiceLineNum < invoiceLineCount {
-								let tutorName = invoice.invoiceLines[invoiceLineNum].tutorName
-								let studentName = invoice.invoiceLines[invoiceLineNum].studentName
-								let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
-								if billedTutorFound {
-									let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-									if billedStudentFound {
-										let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-										if tutorFound {
-											let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-											if studentFound {
-												let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
-												let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-												if locationFound {
-												
-													let cost = invoice.invoiceLines[invoiceLineNum].cost
-													let revenue = invoice.invoiceLines[invoiceLineNum].amount
-													let profit = revenue - cost
-													
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions += 1
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledSessions += 1
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost += cost
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledCost += cost
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue += revenue
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue += revenue
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledProfit += profit
-													tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledProfit += profit
-													
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions += 1
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledSessions += 1
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost += cost
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledCost += cost
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue += revenue
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledRevenue += revenue
-													studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledProfit += profit
-													studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledProfit += profit
-													studentBillingMonth.studentBillingRows[billedStudentNum].tutorName = tutorName
-													
-													referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions += 1
-													referenceData.tutors.tutorsList[tutorNum].tutorTotalCost += cost
-													referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue += revenue
-													referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit += profit
-													
-													referenceData.students.studentsList[studentNum].studentSessions += 1
-													referenceData.students.studentsList[studentNum].studentTotalCost += cost
-													referenceData.students.studentsList[studentNum].studentTotalRevenue += revenue
-													referenceData.students.studentsList[studentNum].studentTotalProfit += profit
-													
-													referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
-													referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-												}
-											}
-										}
-									}
-								}
-								invoiceLineNum += 1
-							}
-							
-							// After looping through each Invoice line and updating billing stats, save the Reference Data, Student Billing and Tutor Billing spreadsheets
+						do {
+							(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
 							if resultFlag {
-								resultFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: billingMonthStudentFileID, billingMonth: billingMonth, saveValidatedStudentData: false)
+								
+								resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth, saveValidatedTutorData: false)
 								if resultFlag {
-									do {
-										(resultFlag, billingMonthTutorFileID) = try await getFileID(fileName: billingMonthTutorFileName)
-										if resultFlag {
-											
-											resultFlag = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: billingMonthTutorFileID, billingMonth: billingMonth, saveValidatedTutorData: false)
-											if resultFlag {
-												let saveTutorResult = await referenceData.tutors.saveTutorData()
-												let saveStudentResult = await referenceData.students.saveStudentData()
-												let saveLocationResult = await referenceData.locations.saveLocationData()
-												if !saveTutorResult || !saveStudentResult || !saveLocationResult {
-													resultFlag = false
-												}
-											}
-										} else {
-											print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
-										}
-									} catch {
-										print("Error Saving Tutor Billing Data")
+									let saveTutorResult = await referenceData.tutors.saveTutorData()
+									let saveStudentResult = await referenceData.students.saveStudentData()
+									let saveLocationResult = await referenceData.locations.saveLocationData()
+									if !saveTutorResult || !saveStudentResult || !saveLocationResult {
 										resultFlag = false
 									}
 								}
+							} else {
+								print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
 							}
+						} catch {
+							print("Error Saving Tutor Billing Data")
+							resultFlag = false
 						}
 					}
+					
 				}
 			}
 		} catch {
@@ -244,7 +264,7 @@ import GoogleSignIn
 			resultFlag = false
 		}
 		
-		return(resultFlag)
+		return(resultFlag, "Sucessfully Reset Billing Stats")
 	}
 	
 	// Create the CSV file in from the Invoice and stores in on disk
@@ -257,13 +277,12 @@ import GoogleSignIn
 		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
 		// First update the billing stats for Tutors, Students and Locations
-		generationFlag = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
+		(generationFlag, generationMessage) = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
 		
 		// Then update the Last Billed Date for each Student being billed
 		
 		if !generationFlag {
-			generationMessage = "Error: Could not update Billing Stats"
-			print("Error: Could not update billing stats")
+			print(generationMessage)
 		} else {
 			do {
 				// Create the file in the Documents directory
@@ -426,7 +445,8 @@ import GoogleSignIn
 		return(csvLine)
 	}
 	
-	// Create the CSV file from the Invoice and stores in on disk
+	// Generate a CSV file of client data (student name, contact name, email, phone, zip code)
+	//
 	@MainActor func generateClientList(referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
@@ -493,14 +513,13 @@ import GoogleSignIn
 			generationMessage = "Error: could not create directory for CSV File"
 		}
 		
-		
 		return(generationFlag, generationMessage)
 	}
 	
 	
 	
 	// Reset Tutor, Student and Location billing stats in the Reference Data, Tutor Billing and Student Billing spreadsheets (when Tutor is rebilled for a month) by removing session, cost, revenue and profit counts for the current billing month
-	@MainActor func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) {
+	@MainActor func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) -> (Bool, String) {
 		
 		// Loop through each Tutor that was already billed
 		var alreadyBilledTutorNum = 0
@@ -508,67 +527,70 @@ import GoogleSignIn
 		while alreadyBilledTutorNum < alreadyBilledTutorCount {
 			
 			let tutorName = alreadyBilledTutors[alreadyBilledTutorNum]
+			
+			// Get a count of the number of Students already billed to this Tutor for the month
 			let (billedStudentFound, alreadyBilledStudentNumbers) = studentBillingMonth.findBilledStudentsByTutorName(tutorName: tutorName)
 			
-			if billedStudentFound {
-				
-				// Loop through each Student assigned to the already billed Tutor
-				var alreadyBilledStudentNum = 0
-				while alreadyBilledStudentNum < alreadyBilledStudentNumbers.count {
-					
-					let billedStudentNum = alreadyBilledStudentNumbers[alreadyBilledStudentNum]
-					let studentName = studentBillingMonth.studentBillingRows[billedStudentNum].studentName
-			
-					let sessions = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions
-					let cost = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost
-					let revenue = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue
-					
-					// Reset the Student Billing month data for the Student
-					studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(sessions: sessions, cost: cost, revenue: revenue, profit: revenue - cost)
-					
-					let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-					if studentFound {
-						// Reset the Reference Data for the Student
-						referenceData.students.studentsList[studentNum].resetBillingStats(monthSessions: sessions, monthCost: cost, monthRevenue: revenue)
-						
-						// Reset the Location data associated with the Student
-						let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
-						let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-						if locationFound {
-							referenceData.locations.locationsList[locationNum].resetBillingStats(monthRevenue: revenue)
-						}
-					} else {
-						print ("Error: Student \(studentName) not found in Reference Data")
-					}
-					
-					alreadyBilledStudentNum += 1
-				}
-			} else {
+			guard billedStudentFound else {
 				print("Error: Billed Student assigned to Tutor \(tutorName) not found in Student Billing Month \(billingMonth) \(billingYear)")
+				return(false, "Error: Billed Students assigned to Tutor \(tutorName) not found in Student Billing Month \(billingMonth) \(billingYear)")
 			}
 			
+			// Loop through each Student assigned to the already billed Tutor
+			var alreadyBilledStudentNum = 0
+			while alreadyBilledStudentNum < alreadyBilledStudentNumbers.count {
+				
+				let billedStudentNum = alreadyBilledStudentNumbers[alreadyBilledStudentNum]
+				let studentName = studentBillingMonth.studentBillingRows[billedStudentNum].studentName
+		
+				let sessions = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions
+				let cost = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledCost
+				let revenue = studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledRevenue
+				
+				// Reset the Student Billing month data for the Student
+				studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(sessions: sessions, cost: cost, revenue: revenue, profit: revenue - cost)
+				
+				let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+				guard studentFound else {
+					print ("Error: Student \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
+					return(false, "Error: Student \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
+				}
+				// Reset the Reference Data for the Student
+				referenceData.students.studentsList[studentNum].resetStudentBillingStats(monthSessions: sessions, monthCost: cost, monthRevenue: revenue)
+				
+				// Reset the Location data associated with the Student
+				let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
+				let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
+				guard locationFound  else {
+					print ("Error: Location \(studentLocation) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
+					return (false, "Error: Location \(studentLocation) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
+				}
+				referenceData.locations.locationsList[locationNum].resetLocationBillingStats(monthRevenue: revenue)
+							
+				alreadyBilledStudentNum += 1
+				}
 			
 			let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
-			if billedTutorFound {
-				
-				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-				if tutorFound {
-					// Reset the Billed Tutor month data for the Tutor and the ReferenceData Tutor data
-					let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
-					let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost
-					let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
-					tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth()
-					referenceData.tutors.tutorsList[tutorNum].resetBillingStats(sessions: monthTutorSessions, monthCost: monthTutorCost, monthRevenue: monthTutorRevenue)
-					
-				} else {
-					print("Error: Tutor \(tutorName) not found in Reference Data")
-				}
-			} else {
+			guard billedTutorFound else {
 				print("Error: Tutor \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)")
+				return(false, "Error: Tutor \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)")
 			}
-			
+				
+			let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+			guard tutorFound else {
+				print("Error: Tutor \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
+				return(false, "Error: Tutor \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
+			}
+			// Reset the Billed Tutor month data for the Tutor and the ReferenceData Tutor data
+			let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
+			let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost
+			let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
+			tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth()
+			referenceData.tutors.tutorsList[tutorNum].resetTutorBillingStats(sessions: monthTutorSessions, monthCost: monthTutorCost, monthRevenue: monthTutorRevenue)
+
 			alreadyBilledTutorNum += 1
 		}
+		return(true, "Billing Statistics Reset for \(alreadyBilledTutorCount) Tutors")
 	}
 	
 	// This function updates the Last Billed Dates for each Student by reading through all the Timesheets from system start (July 2025)

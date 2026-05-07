@@ -254,8 +254,9 @@ class TutorBillingMonth {
 // So if March is being billed it copies the Tutor data from February.  If a Tutor already exists in the current month's sheet
 // that Tutor is not copied again.
 //
-	@MainActor func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> Bool {
+	@MainActor func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		var completionFlag: Bool = true
+		var completionMessage: String = ""
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		// Load the Billed Tutor data from the previous month's sheet
@@ -263,48 +264,51 @@ class TutorBillingMonth {
 		let prevMonthTutorFileName = tutorBillingFileNamePrefix + prevMonthYear
 		do {
 			let (resultFlag, prevMonthTutorFileID) = try await getFileID(fileName: prevMonthTutorFileName)
-			if resultFlag {
-				completionFlag = await prevTutorBillingMonth.getTutorBillingMonth(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID, loadValidatedData: false)
-				if completionFlag {
-					// Loop through each Tutor from the previous month's Billed Tutor sheet
-					var prevTutorNum: Int = 0
-					let prevTutorCount = prevTutorBillingMonth.tutorBillingRows.count
-					while prevTutorNum < prevTutorCount {
-						let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
-						let (foundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-						if foundFlag {
-//							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
-								let (foundFlag, billedTutorNum) = self.findBilledTutorByName(billedTutorName: tutorName)
-								if !foundFlag {
-									let totalBillingSessions = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledSessions
-									let totalBillingCost = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledCost
-									let totalBillingRevenue = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledRevenue
-									let totalBillingProfit = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledProfit
-									let tutorBillingStatus = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorBillingStatus
-									let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorBillingStatus: tutorBillingStatus,  monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
-									self.tutorBillingRows.append(newTutorBillingRow)
-								}
-//							}
-						}
-						//   print("Month: \(prevTutorNum)\(self.tutorBillingRows[prevTutorNum].monthBillingSessions) \(self.tutorBillingRows[prevTutorNum].monthBillingCost) \(self.tutorBillingRows[prevTutorNum].monthBillingRevenue) ")
-						prevTutorNum += 1
-					}
-					
-				} else {
-					print("Error: could not load prev month Billed Tutor month")
-					completionFlag = false
-				}
-			} else {
+			guard resultFlag else {
 				print("Error: could not get File ID for \(prevMonthTutorFileName)")
-				completionFlag = false
+				return(false, "Error: could not get File ID for \(prevMonthTutorFileName)")
+			}
+				
+			completionFlag = await prevTutorBillingMonth.getTutorBillingMonth(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID, loadValidatedData: false)
+			guard completionFlag else {
+				print("Error: could not load prev month Billed Tutor month \(billingMonth) \(billingMonthYear)")
+				return(false, "Error: could not load prev month Billed Tutor month \(billingMonth) \(billingMonthYear)")
+			}
+			
+			// Loop through each Tutor from the previous month's Billed Tutor sheet
+			var prevTutorNum: Int = 0
+			let prevTutorCount = prevTutorBillingMonth.tutorBillingRows.count
+			while prevTutorNum < prevTutorCount {
+				let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
+				let (foundTutorFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+				guard foundTutorFlag  else {
+					print("Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
+					return(false, "Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
+				}
+				
+				// If Tutor does not already exist in Billed Tutor file for month, copy previous month's data
+				let (billedTutorFoundFlag, billedTutorNum) = self.findBilledTutorByName(billedTutorName: tutorName)
+				// Check if Tutor exists in previous month's TutorBilling sheet and copy data if found.
+				if !billedTutorFoundFlag {
+					let totalBillingSessions = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledSessions
+					let totalBillingCost = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledCost
+					let totalBillingRevenue = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledRevenue
+					let totalBillingProfit = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].totalBilledProfit
+					let tutorBillingStatus = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorBillingStatus
+					let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: totalBillingSessions, totalBillingCost: totalBillingCost, totalBillingRevenue: totalBillingRevenue, totalBillingProfit: totalBillingProfit, tutorBillingStatus: tutorBillingStatus,  monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+					self.tutorBillingRows.append(newTutorBillingRow)
+					}
+
+				//   print("Month: \(prevTutorNum)\(self.tutorBillingRows[prevTutorNum].monthBillingSessions) \(self.tutorBillingRows[prevTutorNum].monthBillingCost) \(self.tutorBillingRows[prevTutorNum].monthBillingRevenue) ")
+				prevTutorNum += 1
 			}
 		} catch {
 			print("Error: Could not load \(prevMonth) Tutor Billing Data")
+			completionMessage = "Error: Could not load \(prevMonth) Tutor Billing Data"
 			completionFlag = false
 		}
 		
-		return(completionFlag)
-		
+		return(completionFlag,completionMessage)
 	}
 	
 }

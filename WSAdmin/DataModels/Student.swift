@@ -97,7 +97,7 @@ import Foundation
 	}
     
 	// This function updates a Student's billing totals to subtract the current month's Session, Cost, Revenue and Profit totals.  It is used when a Student is rebilled for a month to prevent doubling the months values in the totals
-	func resetBillingStats(monthSessions: Int, monthCost: Double, monthRevenue: Double) {
+	func resetStudentBillingStats(monthSessions: Int, monthCost: Double, monthRevenue: Double) {
 		self.studentSessions -= monthSessions
 		self.studentTotalCost -= monthCost
 		self.studentTotalRevenue -= monthRevenue

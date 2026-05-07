@@ -60,7 +60,7 @@ import Foundation
 	
 	// This function reverses this month's billing data from the Location billing totals (when a Student
 	// at this Location is being billed again this month to avoid double counting).
-	func resetBillingStats(monthRevenue: Double) {
+	func resetLocationBillingStats(monthRevenue: Double) {
 		self.locationMonthRevenue -= monthRevenue
 		self.locationTotalRevenue -= monthRevenue
 	}

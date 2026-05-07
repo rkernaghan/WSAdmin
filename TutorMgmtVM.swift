@@ -49,7 +49,7 @@ import GoogleSignIn
 				    addMessage = "Error: could not create Tutor Details sheet for new Tutor \(tutorName)"
 			    } else {
 			    
-				    // Add the new Tutor to the Billed Tutor list for the previous month
+				    // Add the new Tutor to the Billed Tutor list for the previous month so there is data to copy to current month when updating billing stats
 				    let (prevMonthName, prevMonthYear) = getPrevMonthYear()
 				    addResult = await self.addTutorToBilledTutorMonth(tutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
 				    if !addResult {
