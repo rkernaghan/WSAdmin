@@ -38,28 +38,28 @@ struct TutorListView: View {
 			
 			var deletedArray: [Tutor] {
 				if showDeleted  {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Deleted"}
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorDeleted}
 				} else {
 					return emptyArray
 				}
 			}
 			var unassignedArray: [Tutor] {
 				if showUnassigned {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Unassigned"}
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorUnassigned}
 				} else {
 					return emptyArray
 				}
 			}
 			var suspendedArray: [Tutor] {
 				if showSuspended  {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Suspended"}
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorSuspended}
 				} else {
 					return emptyArray
 				}
 			}
 			var assignedArray: [Tutor] {
 				if showAssigned {
-					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
+					return referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorAssigned}
 				} else {
 					return emptyArray
 				}
@@ -83,8 +83,10 @@ struct TutorListView: View {
 						TableColumn("Tutor Name", value: \Tutor.tutorName)
 							.width(min: 70, ideal: 100, max: 180)
 						
-						TableColumn("Status", value: \Tutor.tutorStatus)
-							.width(min: 50, ideal: 70, max: 80)
+						TableColumn("Tutor\nStatus") { (data: Tutor) in
+							Text(String(describing: data.tutorStatus))
+						}
+						.width(min: 50, ideal: 70, max: 180)
 						
 						TableColumn("Student\nCount") {data in
 							Text(String(data.tutorStudentCount))

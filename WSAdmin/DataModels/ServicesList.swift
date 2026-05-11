@@ -85,7 +85,7 @@ import Foundation
 			let newServiceInvoiceName = sheetCells[rowNumber][PgmConstants.serviceInvoiceNamePosition]
 			let newServiceType: ServiceTypeOption =  ServiceTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceTypePosition]) ?? .Special
 			let newServiceBillingType: BillingTypeOption = BillingTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceBillingTypePosition]) ?? .Fixed
-			let newServiceStatus = sheetCells[rowNumber][PgmConstants.serviceStatusPosition]
+			let newServiceStatus: ServiceStatusOption = ServiceStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceStatusPosition]) ?? .ServiceAssigned
 			let newServiceCount = Int(sheetCells[rowNumber][PgmConstants.serviceCountPosition]) ?? 0
 			let newServiceCost1 = Double(sheetCells[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
 			let newServiceCost2 = Double(sheetCells[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
@@ -143,7 +143,7 @@ import Foundation
 			let serviceInvoiceName = servicesList[serviceNum].serviceInvoiceName
 			let serviceType =  String(describing: servicesList[serviceNum].serviceType)
 			let serviceBillingType = String(describing: servicesList[serviceNum].serviceBillingType)
-			let serviceStatus = servicesList[serviceNum].serviceStatus
+			let serviceStatus = String(describing: servicesList[serviceNum].serviceStatus)
 			let serviceCount = String(servicesList[serviceNum].serviceCount)
 			let serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.precision(.fractionLength(2))))
 			let serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.precision(.fractionLength(2))))

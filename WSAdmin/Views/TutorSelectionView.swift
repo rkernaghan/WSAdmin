@@ -21,7 +21,7 @@ struct TutorSelectionView: View {
 	var body: some View {
 		
 		var activeTutors: [Tutor] {
-			return referenceData.tutors.tutorsList.filter{$0.tutorStatus != "Deleted" && $0.tutorStatus != "Suspended"}
+			return referenceData.tutors.tutorsList.filter{$0.tutorStatus != .TutorDeleted && $0.tutorStatus != .TutorSuspended}
 		}
 		
 		VStack {
@@ -29,8 +29,12 @@ struct TutorSelectionView: View {
 				
 				TableColumn("Tutor Name", value: \.tutorName)
 					.width(min: 120, ideal: 140, max: 180)
-				TableColumn("Tutor Status", value: \.tutorStatus)
-					.width(min: 100, ideal: 120, max: 200)
+				
+				TableColumn("Tutor\nStatus") { (data: Tutor) in
+					Text( String( describing: data.tutorStatus ))
+				}
+				.width(min: 50, ideal: 70, max: 80)
+	
 			}
 			
 			.contextMenu(forSelectionType: Tutor.ID.self) {items in

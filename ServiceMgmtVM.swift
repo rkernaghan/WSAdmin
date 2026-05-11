@@ -33,7 +33,7 @@ import Foundation
 				newServiceKey = PgmConstants.serviceSpecialKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
 			}
 			
-			let newService = Service(serviceKey: newServiceKey, serviceCode: serviceCode, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: "Unassigned", serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
+			let newService = Service(serviceKey: newServiceKey, serviceCode: serviceCode, serviceTimesheetName: timesheetName, serviceInvoiceName: invoiceName, serviceType: serviceType, serviceBillingType: billingType, serviceStatus: .ServiceUnassigned, serviceCount: 0, serviceCost1: cost1, serviceCost2: cost2, serviceCost3: cost3, servicePrice1: price1, servicePrice2: price2, servicePrice3: price3)
 			
 			referenceData.services.addService(newService: newService, referenceData: referenceData)
 			
@@ -47,14 +47,14 @@ import Foundation
 					if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
 						var tutorNum = 0
 						while tutorNum < referenceData.tutors.tutorsList.count && addResult {
-							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 								let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 								addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 								if !addResult {
 									addMessage = "Critical Error: Could not save new Base Service \(timesheetName) in Tutor Details sheet for \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 								}
 								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-								referenceData.services.servicesList[serviceNum].serviceStatus = "Assigned"
+								referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
 							}
 							tutorNum += 1
 						}
@@ -133,7 +133,7 @@ import Foundation
 			if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
 				var tutorNum = 0
 				while tutorNum < referenceData.tutors.tutorsList.count && updateResult {
-					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 						let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
 						if serviceFound {
 							updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
@@ -156,7 +156,7 @@ import Foundation
 		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.services.servicesList[serviceNum].serviceStatus == "Unassigned" {
+				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned {
 					print("deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markDeleted()
 					deleteResult = await referenceData.services.saveServiceData()
@@ -185,7 +185,7 @@ import Foundation
 		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.services.servicesList[serviceNum].serviceStatus == "Deleted" {
+				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceDeleted {
 					print("Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markUnDeleted()
 					unDeleteResult = await referenceData.services.saveServiceData()

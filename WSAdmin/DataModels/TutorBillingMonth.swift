@@ -27,7 +27,7 @@ class TutorBillingMonth {
 	}
     
 	func addNewBilledTutor(tutorName: String) {
-		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorBillingStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+		let newTutorBillingRow = TutorBillingRow(tutorName: tutorName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorBillingStatus: .BilledTutorActive, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 		self.tutorBillingRows.append(newTutorBillingRow)
 	}
 	
@@ -36,7 +36,7 @@ class TutorBillingMonth {
 	}
 	
 	func deleteBilledTutor(billedTutorNum: Int) {
-		self.tutorBillingRows[billedTutorNum].tutorBillingStatus = "Deleted"
+		self.tutorBillingRows[billedTutorNum].tutorBillingStatus = .BilledTutorDeleted
 	}
 	
 	
@@ -149,7 +149,7 @@ class TutorBillingMonth {
 			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
 			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
 			
-			let tutorBillingStatus: String = sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]
+			let tutorBillingStatus = TutorBillingStatusOption( rawValue: sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]) ?? .BilledTutorActive
 			
 			if loadValidatedData {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.tutorValidatedMonthSessionCol]) ?? 0
@@ -200,7 +200,7 @@ class TutorBillingMonth {
 			let totalBillingCost: String = String(tutorBillingRows[billedTutorNum].totalBilledCost)
 			let totalBillingRevenue: String = String(tutorBillingRows[billedTutorNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(tutorBillingRows[billedTutorNum].totalBilledProfit)
-			let tutorBillingStatus: String = tutorBillingRows[billedTutorNum].tutorBillingStatus
+			let tutorBillingStatus = String( describing: tutorBillingRows[billedTutorNum].tutorBillingStatus)
 			
 			if saveValidatedTutorData {
 				monthValidatedSessions = String(tutorBillingRows[billedTutorNum].monthValidatedSessions)

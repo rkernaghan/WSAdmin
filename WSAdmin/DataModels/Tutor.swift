@@ -13,7 +13,7 @@ import Foundation
 	var tutorName: String				// Tutor's name
 	var tutorEmail: String				// Tutor's email
 	var tutorPhone: String				// Tutor's phone number
-	var tutorStatus: String				// Assigned, Unassigned, Suspended or Deleted
+	var tutorStatus: TutorStatusOption		// Assigned, Unassigned, Suspended or Deleted
 //	var tutorAvailability: String			// Tutor availability data from Tutor's Timesheet
 	var tutorStartDate: String			// Date the Tutor was created (entered into the system)
 	var tutorEndDate: String			// Date the Tutor was soft deleted
@@ -29,7 +29,7 @@ import Foundation
 	var timesheetFileID: String			// The Google Sheets fileID of the Tutor's Timesheet
 	let id = UUID()
 	
-	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: String, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Double, tutorTotalRevenue: Double, tutorTotalProfit: Double, timesheetFileID:String) {
+	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: TutorStatusOption, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Double, tutorTotalRevenue: Double, tutorTotalProfit: Double, timesheetFileID:String) {
 		self.tutorKey = tutorKey
 		self.tutorName = tutorName
 		self.tutorEmail = tutorEmail
@@ -62,7 +62,7 @@ import Foundation
 	
 	// This function updates a Tutor to change Status to "Deleted" and set the Tutor End Date
 	func markDeleted() {
-		tutorStatus = "Deleted"
+		tutorStatus = .TutorDeleted
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		tutorEndDate = dateFormatter.string(from: Date())
@@ -70,19 +70,19 @@ import Foundation
 	
 	// This function updates a Tutor to change Tutor Status from "Deleted" to "Unassigned"
 	func markUnDeleted() {
-		tutorStatus = "Unassigned"
+		tutorStatus = .TutorUnassigned
 		tutorEndDate = " "
 	}
 	
 	
 	// This function updates a Tutor Status to "Suspended"
 	func suspendTutor() {
-		self.tutorStatus = "Suspended"
+		self.tutorStatus = .TutorSuspended
 	}
 	
 	// This function updates a Tutor Status to "Unassigned"
 	func unsuspendTutor() {
-		self.tutorStatus = "Unassigned"
+		self.tutorStatus = .TutorUnassigned
 	}
 	
 	// This function updates a Tutor's billing stats to remove the current month's sessions, cost, revenue and profit from the totals (when an already billed Tutor is billed again the same month to avoid double counting).
@@ -226,7 +226,7 @@ import Foundation
 		if completionFlag {
 			tutorStudentCount += 1
 			completionFlag = await saveTutorDataCounts()
-			self.tutorStatus = "Assigned"
+			self.tutorStatus = .TutorAssigned
 		}
 		return(completionFlag)
 	}
@@ -245,7 +245,7 @@ import Foundation
 				completionFlag = await saveTutorDataCounts()
 				
 				if tutorStudentCount == 0 {
-					self.tutorStatus = "Unassigned"
+					self.tutorStatus = .TutorUnassigned
 				}
 			}
 		}

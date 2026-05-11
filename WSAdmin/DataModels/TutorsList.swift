@@ -89,7 +89,7 @@ import Foundation
 			let newTutorName = sheetCells[rowNumber][PgmConstants.tutorNamePosition]
 			let newTutorEmail = sheetCells[rowNumber][PgmConstants.tutorEmailPosition]
 			let newTutorPhone = sheetCells[rowNumber][PgmConstants.tutorPhonePosition]
-			let newTutorStatus = sheetCells[rowNumber][PgmConstants.tutorStatusPosition]
+			let newTutorStatus: TutorStatusOption = TutorStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.tutorStatusPosition]) ?? .TutorAssigned
 			let newTutorStartDateString = sheetCells[rowNumber][PgmConstants.tutorStartDatePosition]
 			let newTutorEndDateString = sheetCells[rowNumber][PgmConstants.tutorEndDatePosition]
 			let newTutorMaxStudents = Int(sheetCells[rowNumber][PgmConstants.tutorMaxStudentPosition]) ?? 0
@@ -105,7 +105,7 @@ import Foundation
 			self.tutorsList.append(newTutor)
 			
 			// If the Tutor Status is not "Deleted", load in the Tutors Services and Students data
-			if newTutorStatus != "Deleted" {
+			if newTutorStatus != .TutorDeleted {
 				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorName: newTutorName, tutorDataFileID: tutorDetailsFileID)
 			}
 			print("Loaded Tutor \(newTutorName)")
@@ -155,7 +155,7 @@ import Foundation
 			let tutorName = tutorsList[tutorNum].tutorName
 			let tutorPhone = tutorsList[tutorNum].tutorPhone
 			let tutorEmail = tutorsList[tutorNum].tutorEmail
-			let tutorStatus = tutorsList[tutorNum].tutorStatus
+			let tutorStatus = String(describing: tutorsList[tutorNum].tutorStatus)
 			let tutorStartDate = tutorsList[tutorNum].tutorStartDate
 			let tutorEndDate = tutorsList[tutorNum].tutorEndDate
 			let tutorMaxStudents = String(tutorsList[tutorNum].tutorMaxStudents)

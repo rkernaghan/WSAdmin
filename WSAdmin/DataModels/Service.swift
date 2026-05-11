@@ -16,10 +16,10 @@ import Foundation
 	var serviceInvoiceName: String				// Name to show on client invoice
 	var serviceType: ServiceTypeOption			// Base (assigned to all Tutors) or Special (only one or more Tutors) Service
 	var serviceBillingType: BillingTypeOption		// Fixed (fixed cost per session regardless of time) or Variable (per minute) billing
-	var serviceStatus: String				// Unassigned, Assigned, or Deleted
+	var serviceStatus: ServiceStatusOption			// Unassigned, Assigned, or Deleted
 	var serviceCount: Int					// Number of Tutors this Service is assigned to
-	var serviceCost1: Double					// Tutoring cost of the service (paid to the tutor)
-	var serviceCost2: Double					// Travel cost
+	var serviceCost1: Double				// Tutoring cost of the service (paid to the tutor)
+	var serviceCost2: Double				// Travel cost
 	var serviceCost3: Double
 	var serviceTotalCost: Double
 	var servicePrice1: Double
@@ -28,7 +28,7 @@ import Foundation
 	var serviceTotalPrice: Double
 	let id = UUID()
 	
-	init(serviceKey: String, serviceCode: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: String, serviceCount: Int, serviceCost1: Double, serviceCost2: Double, serviceCost3: Double, servicePrice1: Double, servicePrice2: Double, servicePrice3: Double) {
+	init(serviceKey: String, serviceCode: String, serviceTimesheetName: String, serviceInvoiceName: String, serviceType: ServiceTypeOption, serviceBillingType: BillingTypeOption, serviceStatus: ServiceStatusOption, serviceCount: Int, serviceCost1: Double, serviceCost2: Double, serviceCost3: Double, servicePrice1: Double, servicePrice2: Double, servicePrice3: Double) {
 		self.serviceKey = serviceKey
 		self.serviceCode = serviceCode
 		self.serviceTimesheetName = serviceTimesheetName
@@ -49,7 +49,7 @@ import Foundation
 
 	// This function changes a Service's status to "Deleted" and sets the End Date for the Service
 	func markDeleted() {
-		serviceStatus = "Deleted"
+		serviceStatus = .ServiceDeleted
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())
@@ -78,14 +78,14 @@ import Foundation
 	
 	// This function changes a Service's Status to "Unassigned"
 	func markUnDeleted() {
-		serviceStatus = "Unassigned"
+		serviceStatus = .ServiceUnassigned
 //        	serviceEndDate = " "
     }
 	
 	// This function increases the use counter for a Service (after a Service is assigned to a Tutor).  It sets the Service's Status to Assigned in case it was not previously used
 	func increaseServiceUseCount() {
 		self.serviceCount += 1
-		serviceStatus = "Assigned"
+		serviceStatus = .ServiceAssigned
     }
     
 	// This function decreases the use counter for a Service (after a Service is unassigned to a Tutor).  If the use count is now zero (assigned to no Tutors), the Service Status
@@ -93,7 +93,7 @@ import Foundation
 	func decreaseServiceUseCount() {
 		self.serviceCount -= 1
 		if serviceCount == 0 {
-			serviceStatus = "Unassigned"
+			serviceStatus = .ServiceUnassigned
 		}
 	}
 }

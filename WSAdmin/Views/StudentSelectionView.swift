@@ -23,7 +23,7 @@ struct StudentSelectionView: View {
 		//        for objectID in tutorIndex {
 		//            if let idx = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == tutorIndex} ) {
 		VStack {
-			Table(referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}, selection: $selectedStudents, sortOrder: $sortOrder) {
+			Table(referenceData.students.studentsList.filter{$0.studentStatus == .StudentUnassigned}, selection: $selectedStudents, sortOrder: $sortOrder) {
 				
 				TableColumn("Student Name", value: \.studentName)
 					.width(min: 140, ideal: 180, max: 220)
@@ -31,8 +31,11 @@ struct StudentSelectionView: View {
 					.width(min: 140, ideal: 180, max: 220)
 				TableColumn("Contact Last Name", value: \.studentContactLastName)
 					.width(min: 140, ideal: 180, max: 220)
-				TableColumn("Status", value: \.studentStatus)
-					.width(min: 100, ideal: 120, max: 140)
+				
+				TableColumn("Student\nStatus") { (data: Student) in
+					Text( String( describing: data.studentStatus ))
+				}
+				.width(min: 100, ideal: 120, max: 140)
 			}
 			
 			.contextMenu(forSelectionType: Tutor.ID.self) { items in

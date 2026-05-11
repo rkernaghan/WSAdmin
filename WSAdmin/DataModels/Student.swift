@@ -20,7 +20,7 @@ import Foundation
 	var studentAssignedUnassignedDate: String	// Date the Student was assigned to or unassigned from a Tutor
 	var studentLastBilledDate: String		// Date of Student's last billed tutoring session
 	var studentEndDate: String			// Date that the Student was soft deleted
-	var studentStatus: String			// Student Status (Unassigned, Assigned, Suspended, Deleted)
+	var studentStatus: StudentStatusOption		// Student Status (Unassigned, Assigned, Suspended, Deleted)
 	var studentTutorKey: String			// Unique key of assigned Tutor, blank if unassigned
 	var studentTutorName: String			// Name of assigned Tutor, blank if unassigned
 	var studentLocation: String			// City of Student
@@ -30,7 +30,7 @@ import Foundation
 	var studentTotalProfit: Double			// Sum of total tutoring profit for this Student since Student started (or system initiated)
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: String, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
+	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: StudentStatusOption, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
 		self.studentKey = studentKey
 		self.studentName = studentName
 		self.studentContactFirstName = studentContactFirstName
@@ -54,7 +54,7 @@ import Foundation
     
 	// This function updates a Student to change Status to Deleted and set the Student's End Date
 	func markDeleted() {
-		self.studentStatus = "Deleted"
+		self.studentStatus = .StudentDeleted
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentEndDate = dateFormatter.string(from: Date())
@@ -62,23 +62,23 @@ import Foundation
     
 	// This function updates a Student to change Status to Unassigned.
 	func markUndeleted() {
-		self.studentStatus = "Unassigned"
+		self.studentStatus = .StudentUnassigned
 		self.studentEndDate = " "
 	}
 	
 	// This function changes a Student's Status to Suspended
 	func suspendStudent() {
-		self.studentStatus = "Suspended"
+		self.studentStatus = .StudentSuspended
 	}
 	
 	// This function updates a Student to change Status to Unassigned
 	func unsuspendStudent() {
-		self.studentStatus = "Unassigned"
+		self.studentStatus = .StudentUnassigned
 	}
 	
 	// This function updates a Student to assign a Tutor and set the Assigned/Unassigned Date
 	@MainActor func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
-		self.studentStatus = "Assigned"
+		self.studentStatus = .StudentAssigned
 		self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
 		self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 		let dateFormatter = DateFormatter()
@@ -88,7 +88,7 @@ import Foundation
 	
 	// This function updates a Student to unassigns a Tutor and set the Assigned/Unassigned Date
 	func unassignTutor() {
-		self.studentStatus = "Unassigned"
+		self.studentStatus = .StudentUnassigned
 		self.studentTutorKey = " "
 		self.studentTutorName = " "
 		let dateFormatter = DateFormatter()

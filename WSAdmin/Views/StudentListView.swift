@@ -34,28 +34,28 @@ struct StudentListView: View {
 
 			var deletedArray: [Student] {
 				if showDeleted  {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Deleted"}
+					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentDeleted}
 				} else {
 					return emptyArray
 				}
 			}
 			var unassignedArray: [Student] {
 				if showUnassigned {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Unassigned"}
+					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentUnassigned}
 				} else {
 					return emptyArray
 				}
 			}
 			var suspendedArray: [Student] {
 				if showSuspended  {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Suspended"}
+					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentSuspended}
 				} else {
 					return emptyArray
 				}
 			}
 			var assignedArray: [Student] {
 				if showAssigned {
-					return referenceData.students.studentsList.filter{$0.studentStatus == "Assigned"}
+					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentAssigned}
 				} else {
 					return emptyArray
 				}
@@ -84,9 +84,11 @@ struct StudentListView: View {
 						
 						TableColumn("Contact\nLast Name", value: \Student.studentContactLastName)
 							.width(min: 30, ideal: 70, max: 260)
-						
-						TableColumn("Status", value: \Student.studentStatus)
-							.width(min: 50, ideal: 75, max: 90)
+												
+						TableColumn("Student\nStatus") { (data: Student) in
+							Text( String(describing: data.studentStatus))
+						}
+						.width(min: 50, ideal: 75, max: 90)
 						
 						TableColumn("Tutor Name",value: \Student.studentTutorName)
 							.width(min: 80, ideal: 120, max: 180)

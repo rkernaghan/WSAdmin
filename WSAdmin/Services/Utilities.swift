@@ -898,7 +898,7 @@ func removeCommas(sourceString: String) -> String {
 //		returns a TutorAvailabilityRow
 //	Throws:
 //
-func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutorStatus: String, tutorStudentCount: Int) async throws -> TutorAvailabilityRow {
+func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutorStatus: TutorStatusOption, tutorStudentCount: Int) async throws -> TutorAvailabilityRow {
 	
 	var tutorAvailability: String = ""
 	var mondayAvailability: String = ""

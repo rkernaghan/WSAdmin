@@ -38,7 +38,7 @@ struct ServiceListView: View {
 			
 			var deletedArray: [Service] {
 				if showDeleted  {
-					return referenceData.services.servicesList.filter{$0.serviceStatus == "Deleted"}
+					return referenceData.services.servicesList.filter{$0.serviceStatus == .ServiceDeleted}
 				} else {
 					return emptyArray
 				}
@@ -46,7 +46,7 @@ struct ServiceListView: View {
 			
 			var unassignedArray: [Service] {
 				if showUnassigned {
-					return referenceData.services.servicesList.filter{$0.serviceStatus == "Unassigned"}
+					return referenceData.services.servicesList.filter{$0.serviceStatus == .ServiceUnassigned}
 				} else {
 					return emptyArray
 				}
@@ -54,7 +54,7 @@ struct ServiceListView: View {
 
 			var assignedArray: [Service] {
 				if showAssigned {
-					return referenceData.services.servicesList.filter{$0.serviceStatus == "Assigned"}
+					return referenceData.services.servicesList.filter{$0.serviceStatus == .ServiceAssigned}
 				} else {
 					return emptyArray
 				}
@@ -93,8 +93,11 @@ struct ServiceListView: View {
 						}
 						.width(min: 40, ideal: 50, max: 60)
 						
-						TableColumn("Service\nStatus", value: \Service.serviceStatus)
-							.width(min: 50, ideal: 70, max: 80)
+						TableColumn("Service\nStatus") { (data: Service) in
+							Text( String( describing: data.serviceStatus))
+						}
+						.width(min: 50, ideal: 70, max: 80)
+						
 						
 						TableColumn("Assigned\nTutors" ) { (data: Service) in
 							Text(String(data.serviceCount))

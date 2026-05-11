@@ -27,7 +27,7 @@ struct LocationListView: View {
 				if showDeleted {
 					return referenceData.locations.locationsList
 				} else {
-					return referenceData.locations.locationsList.filter{$0.locationStatus != "Deleted"}
+					return referenceData.locations.locationsList.filter{$0.locationStatus != .LocationDeleted}
 				}
 			}
 			
@@ -59,9 +59,11 @@ struct LocationListView: View {
 							.frame(maxWidth: . infinity, alignment: .trailing)
 					}
 					.width(min: 50, ideal: 60, max: 80)
-					
-					TableColumn("Location\nStatus", value: \.locationStatus)
-						.width(min: 50, ideal: 70, max: 80)
+	
+					TableColumn("Location\nStatus") { (data: Location) in
+						Text( String( describing: data.locationStatus))
+					}
+					.width(min: 50, ideal: 70, max: 80)
 				}
 				.contextMenu(forSelectionType: Location.ID.self) { items in
 					if items.isEmpty {

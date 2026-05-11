@@ -45,7 +45,7 @@ import Foundation
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())
 		// Create new Student object
-		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentContactFirstName: contactFirstName, studentContactLastName: contactLastName, studentContactPhone: contactPhone, studentContactEmail: contactEmail, studentContactZipCode: contactZipCode, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: "Unassigned", studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentContactFirstName: contactFirstName, studentContactLastName: contactLastName, studentContactPhone: contactPhone, studentContactEmail: contactEmail, studentContactZipCode: contactZipCode, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: .StudentUnassigned, studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
 		// Add new Student object to Students List object array
 		self.studentsList.append(newStudent)
 		//Sort Student list alphabetically
@@ -125,7 +125,7 @@ import Foundation
 			let newStudentAssignedUnassignedDateString = sheetCells[rowNumber][PgmConstants.studentAssignedUnassignedDatePosition]
 			let newStudentLastBilledDateString = sheetCells[rowNumber][PgmConstants.studentLastBilledDatePosition]
 			let newStudentEndDateString = sheetCells[rowNumber][PgmConstants.studentEndDatePosition]
-			let newStudentStatus = sheetCells[rowNumber][PgmConstants.studentStatusPosition]
+			let newStudentStatus: StudentStatusOption = StudentStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.studentStatusPosition]) ?? .StudentAssigned
 			let newStudentTutorKey = sheetCells[rowNumber][PgmConstants.studentTutorKeyPosition]
 			let newStudentTutorName = sheetCells[rowNumber][PgmConstants.studentTutorNamePosition]
 			let newStudentLocation = sheetCells[rowNumber][PgmConstants.studentLocationPosition]
@@ -166,7 +166,7 @@ import Foundation
 			let studentAssignedUnassignedDate = studentsList[studentNum].studentAssignedUnassignedDate
 			let studentLastBilledDate = studentsList[studentNum].studentLastBilledDate
 			let studentEndDate = studentsList[studentNum].studentEndDate
-			let studentStatus = studentsList[studentNum].studentStatus
+			let studentStatus = String(describing: studentsList[studentNum].studentStatus)
 			let studentTutorKey = studentsList[studentNum].studentTutorKey
 			let studentTutorName = studentsList[studentNum].studentTutorName
 			let studentLocation = studentsList[studentNum].studentLocation

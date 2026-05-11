@@ -32,7 +32,7 @@ struct BillingSelectionView: View {
 		
 		VStack {
 			
-			let tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}
+			let tutorList: [Tutor] = referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorAssigned}
 			
 			HStack {
 				Toggle(isOn: Binding(
@@ -61,7 +61,7 @@ struct BillingSelectionView: View {
 			}
 			
 			HStack {
-				Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus == "Assigned"}, selection: $selectedTutors, sortOrder: $sortOrder) {
+				Table(referenceData.tutors.tutorsList.filter{$0.tutorStatus == .TutorAssigned}, selection: $selectedTutors, sortOrder: $sortOrder) {
 					
 					TableColumn("Tutor Name", value: \.tutorName)
 						.width(min: 120, ideal: 140, max: 200)
@@ -71,7 +71,11 @@ struct BillingSelectionView: View {
 					}
 					.width(min: 60, ideal: 80, max: 100)
 					
-					TableColumn("Tutor Status", value: \.tutorStatus)
+					TableColumn("Tutor\nStatus") { (data: Tutor) in
+						Text( String( describing: data.tutorStatus))
+					}
+					.width(min: 50, ideal: 70, max: 80)
+
 				}
 				
 				VStack {

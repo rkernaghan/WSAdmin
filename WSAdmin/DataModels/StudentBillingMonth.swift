@@ -43,7 +43,7 @@ class StudentBillingMonth {
 	
 	// Adds a new StudentBillingRow instance to the StudentBillingRows array.
 	func addNewBilledStudent(studentName: String) {
-		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorName: "", studentBillingStatus: "Active", monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
+		let newStudentBillingRow = StudentBillingRow(studentName: studentName, monthBillingSessions: 0, monthBillingCost: 0.0, monthBillingRevenue: 0.0, monthBillingProfit: 0.0, totalBillingSessions: 0, totalBillingCost: 0.0, totalBillingRevenue: 0.0, totalBillingProfit: 0.0, tutorName: "", studentBillingStatus: .BilledStudentActive, monthValidatedSessions: 0, monthValidatedCost: 0.0, monthValidatedRevenue: 0.0, monthValidatedProfit: 0.0, totalValidatedSessions: 0, totalValidatedCost: 0.0, totalValidatedRevenue: 0.0, totalValidatedProfit: 0.0)
 		self.studentBillingRows.append(newStudentBillingRow)
 	}
 	// Adds a StudentBillingRow instance read from the StudentBilling spreadsheet to the StudentBillingRows array.
@@ -53,7 +53,7 @@ class StudentBillingMonth {
 	
 	// Marks a StudentBillingRow instance as Deleted (when a Student is deleted).  StudentBillingRow is kept so the totals are kept in sync with Student data.
 	func deleteBilledStudent(billedStudentNum: Int) {
-		self.studentBillingRows[billedStudentNum].studentBillingStatus = "Deleted"
+		self.studentBillingRows[billedStudentNum].studentBillingStatus = .BilledStudentDeleted
 	}
 	
 	// Builds a StudentBillingMonth array from the data read from the Student Billing sheet for a month.
@@ -82,7 +82,7 @@ class StudentBillingMonth {
 			let totalBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
 			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
 			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
-			let studentStatus: String = sheetCells[rowNumber][PgmConstants.studentBillingStatusCol]
+			let studentStatus = StudentBillingStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.studentBillingStatusCol]) ?? .BilledStudentActive
 			
 			if loadValidationDataFlag {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.studentValidatedMonthSessionCol]) ?? 0
@@ -137,7 +137,7 @@ class StudentBillingMonth {
 			let totalBillingRevenue: String = String(studentBillingRows[billedStudentNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(studentBillingRows[billedStudentNum].totalBilledProfit)
 			let tutorName: String = studentBillingRows[billedStudentNum].tutorName
-			let studentBillingStatus: String = studentBillingRows[billedStudentNum].studentBillingStatus
+			let studentBillingStatus = String(describing: studentBillingRows[billedStudentNum].studentBillingStatus)
 			
 			if saveValidatedStudentData {
 				monthValidatedSessions = String(studentBillingRows[billedStudentNum].monthValidatedSessions)

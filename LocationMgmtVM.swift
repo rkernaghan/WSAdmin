@@ -16,7 +16,7 @@ import Foundation
 		
 		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey + 1)
 		
-		let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: "Active")
+		let newLocation = Location(locationKey: newLocationKey, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0, locationStudentCount: 0, locationStatus: .LocationActive)
 		referenceData.locations.addLocation(newLocation: newLocation)
 		
 		saveResult = await referenceData.locations.saveLocationData()
@@ -140,7 +140,7 @@ import Foundation
 		
 		for objectID in indexes {
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.locations.locationsList[locationNum].locationStatus == "Deleted" {
+				if referenceData.locations.locationsList[locationNum].locationStatus == .LocationDeleted {
 					print("undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)")
 					referenceData.locations.locationsList[locationNum].markUndeleted()
 					referenceData.dataCounts.increaseActiveLocationCount()

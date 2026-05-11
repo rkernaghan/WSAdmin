@@ -12,13 +12,13 @@ import Foundation
 @Observable class Location: Identifiable {
 	var locationKey: String				// Unique key for the Location
 	var locationName: String			// Name of the Location
-	var locationMonthRevenue: Double			// Total revenue for the Location (not used)
-	var locationTotalRevenue: Double			// Total revenue for the Location since Location created (or system initiated)
+	var locationMonthRevenue: Double		// Total revenue for the Location (not used)
+	var locationTotalRevenue: Double		// Total revenue for the Location since Location created (or system initiated)
 	var locationStudentCount: Int			// Count of current Students from this Location\
-	var locationStatus: String			// Status of the Location
+	var locationStatus: LocationStatusOption	// Status of the Location
 	let id = UUID()
 	
-	init(locationKey: String, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double, locationStudentCount: Int, locationStatus: String) {
+	init(locationKey: String, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double, locationStudentCount: Int, locationStatus: LocationStatusOption) {
 		self.locationKey = locationKey
 		self.locationName = locationName
 		self.locationMonthRevenue = locationMonthRevenue
@@ -34,7 +34,7 @@ import Foundation
 	
 	// This function changes a Location's Status attribute to "Deleted" and sets the Location's End Date
 	func markDeleted() {
-		locationStatus = "Deleted"
+		locationStatus = .LocationDeleted
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())
@@ -42,7 +42,7 @@ import Foundation
 	
 	// This function changes a Location's Status attribute to "Active"
 	func markUndeleted() {
-		locationStatus = "Active"
+		locationStatus = .LocationActive
 //		let dateFormatter = DateFormatter()
 //		dateFormatter.dateFormat = "yyyy/MM/dd"
 //        serviceEndDate = dateFormatter.string(from: Date())

@@ -94,7 +94,7 @@ import Foundation
 					assignedCount += 1
 					assignedTutors += referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 					
-					if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
+					if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Student \(studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
 					}
 				}
@@ -104,7 +104,7 @@ import Foundation
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"     Validation Warning: \(studentName) assigned to Tutors \(assignedTutors)"))
 			}
 			
-			if assignedCount == 0 && referenceData.students.studentsList[studentNum].studentStatus == "Assigned" {
+			if assignedCount == 0 && referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Assigned Student \(studentName) assigned to no Tutor"))
 			}
 			
@@ -126,13 +126,13 @@ import Foundation
 			var tutorServiceCount:Int = 0
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 		
 					let (serviceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
 					if serviceFound {
 						tutorName = tutorName + referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 						tutorServiceCount += 1
-					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != "Deleted" {
+					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Base Service \(serviceName) not assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
 						
 					}
@@ -143,34 +143,34 @@ import Foundation
 			if referenceData.services.servicesList[serviceNum].serviceCount != tutorServiceCount {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Service \(serviceName) Use Count \(referenceData.services.servicesList[serviceNum].serviceCount) does not match assigned Tutor Count \(tutorServiceCount)"))
 			}
-			if referenceData.services.servicesList[serviceNum].serviceStatus == "Assigned" && tutorServiceCount == 0 {
+			if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceAssigned && tutorServiceCount == 0 {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Assigned Service \(serviceName) assigned to no Tutor"))
 			}
 			
-			if referenceData.services.servicesList[serviceNum].serviceStatus == "Unassigned" && tutorServiceCount > 0 {
+			if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned && tutorServiceCount > 0 {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Service \(serviceName) assigned to Tutor \(tutorName)"))
 			}
 			serviceNum += 1
 		}
 		
 		// Validate that the Location count equals the number of (non-deleted) Students with that Location
-		// Validate that no Location with a status of Unassigned has a Student Count > 0
+		// Validate that no Location with a status of Deleted has a Student Count > 0
 		// Validate that no Location with a status of Assigned has a Student Count == 0
 		var locationNum = 0
 		let locationCount = referenceData.locations.locationsList.count
 		while locationNum < locationCount {
-			if referenceData.locations.locationsList[locationNum].locationStatus == "Unassigned" && referenceData.locations.locationsList[locationNum].locationStudentCount > 0 {
+			if referenceData.locations.locationsList[locationNum].locationStatus == .LocationDeleted && referenceData.locations.locationsList[locationNum].locationStudentCount > 0 {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"))
 			}
 			
-			if referenceData.locations.locationsList[locationNum].locationStatus == "Assigned" && referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Assigned Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"))
+			if referenceData.locations.locationsList[locationNum].locationStatus == .LocationActive && referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Active Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"))
 			}
 			
 			studentNum = 0
 			var studentLocationCount = 0
 			while studentNum < studentCount {
-				if referenceData.students.studentsList[studentNum].studentLocation == referenceData.locations.locationsList[locationNum].locationName && referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+				if referenceData.students.studentsList[studentNum].studentLocation == referenceData.locations.locationsList[locationNum].locationName && referenceData.students.studentsList[studentNum].studentStatus != .StudentDeleted {
 					studentLocationCount += 1
 				}
 				studentNum += 1
@@ -323,12 +323,12 @@ import Foundation
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			
 			switch referenceData.students.studentsList[studentNum].studentStatus {
-				case "Assigned":
+				case .StudentAssigned:
 					activeStudents += 1
 					assignedStudentCount += 1
-				case "Unassigned", "Suspended":
+				case .StudentUnassigned, .StudentSuspended:
 					activeStudents += 1
-				case "Deleted":
+				case .StudentDeleted:
 					deletedStudents += 1
 				default:
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Invalid Status for Student \(studentName)"))
@@ -339,7 +339,7 @@ import Foundation
 			studentSessions += referenceData.students.studentsList[studentNum].studentSessions
 			
 			// Check if Student found in Billed Student List for current/previous month
-			if referenceData.students.studentsList[studentNum].studentStatus != "Deleted" {
+			if referenceData.students.studentsList[studentNum].studentStatus != .StudentDeleted {
 				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if !studentFoundFlag {
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)"))
@@ -374,9 +374,9 @@ import Foundation
 		serviceNum = 0
 		while serviceNum < serviceCount {
 			switch referenceData.services.servicesList[serviceNum].serviceStatus {
-				case "Unassigned", "Assigned":
+				case .ServiceUnassigned, .ServiceAssigned:
 					activeServices += 1
-				case "Deleted", "Suspended":
+				case .ServiceDeleted, .ServiceSuspended:
 					deletedServices += 1
 				default:
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error - Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"))
@@ -405,9 +405,9 @@ import Foundation
 		var locationStudents = 0
 		while locationNum < locationCount {
 			switch referenceData.locations.locationsList[locationNum].locationStatus {
-				case "Active":
+				case .LocationActive:
 					activeLocations += 1
-				case "Deleted":
+				case .LocationDeleted:
 					deletedLocations += 1
 				default:
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
@@ -445,15 +445,15 @@ import Foundation
 		while tutorNum < tutorCount {
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 			switch referenceData.tutors.tutorsList[tutorNum].tutorStatus {
-				case "Assigned":
+				case .TutorAssigned:
 					activeTutors += 1
 					tutorStudentCount += referenceData.tutors.tutorsList[tutorNum].tutorStudentCount
-				case "Unassigned", "Suspended":
+				case .TutorUnassigned, .TutorSuspended:
 					activeTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned"))
 					}
-				case "Deleted":
+				case .TutorDeleted:
 					deletedTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is Deleted"))
@@ -463,7 +463,7 @@ import Foundation
 			}
 			
 			
-			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 				// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
 				do {
 					sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
@@ -760,7 +760,7 @@ import Foundation
 		while tutorNum < refTutorCount {
 			
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Processing \(monthName) Timesheet for \(tutorName)"))
 				let fileName = "Timesheet " + yearName + " " + tutorName
 				do {
@@ -1105,7 +1105,7 @@ import Foundation
 			while tutorNum < tutorCount {
 				
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 					print("Processing \(monthName) Timesheet for \(tutorName)")
 					let fileName = "Timesheet " + currentMonthYear + " " + tutorName
 					do {
@@ -1844,7 +1844,7 @@ import Foundation
 			var tutorNum = 0
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" || referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Assigned"   {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorUnassigned || referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorAssigned   {
 					let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 					let tutorEmail = referenceData.tutors.tutorsList[tutorNum].tutorEmail
 					let newTutorTimesheetName = "Timesheet " + nextYear + " " + tutorName
@@ -1898,7 +1898,7 @@ import Foundation
 		var tutorNum = 0
 		let tutorCount = referenceData.tutors.tutorsList.count
 		while tutorNum < tutorCount {
-			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != "Deleted" {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 				let timesheetFileName = "Timesheet " + currentMonthYear + " " + tutorName
 				do {

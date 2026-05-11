@@ -336,7 +336,7 @@ import Foundation
 		for objectID in indexes {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				// Check that the Student is not assigned to a Tutor and is not already deleted
-				if referenceData.students.studentsList[index].studentStatus != "Assigned" && referenceData.students.studentsList[index].studentStatus != "Deleted" {
+				if referenceData.students.studentsList[index].studentStatus != .StudentAssigned && referenceData.students.studentsList[index].studentStatus != .StudentDeleted {
 					// Change the Student's Status to Deleted and save the updated Student List data
 					let studentNum = index
 					referenceData.students.studentsList[studentNum].markDeleted()
@@ -426,7 +426,7 @@ import Foundation
 		
 		for objectID in indexes {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.students.studentsList[index].studentStatus == "Deleted" {
+				if referenceData.students.studentsList[index].studentStatus == .StudentDeleted {
 					let studentNum = index
 					// Change the Student's Status to "Active" and save the Student List data
 					referenceData.students.studentsList[studentNum].markUndeleted()
@@ -467,7 +467,7 @@ import Foundation
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
 				// Check that the Student Status is "Unassigned"
-				if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 //					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
 					
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
@@ -508,7 +508,7 @@ import Foundation
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
-				if referenceData.students.studentsList[studentNum].studentStatus == "Assigned" {
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
 					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
 					let tutorName = referenceData.students.studentsList[studentNum].studentTutorName
 					
@@ -551,7 +551,7 @@ import Foundation
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
 				
-				if referenceData.students.studentsList[studentNum].studentStatus == "Assigned"  {
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
 					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
 					let tutorName = referenceData.students.studentsList[studentNum].studentTutorName
 					
@@ -622,7 +622,7 @@ import Foundation
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.students.studentsList[studentNum].studentStatus == "Unassigned" {
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 					referenceData.students.studentsList[studentNum].suspendStudent()
 					suspendResult = await referenceData.students.saveStudentData()
 					if !suspendResult {
@@ -643,7 +643,7 @@ import Foundation
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.students.studentsList[studentNum].studentStatus == "Suspended" {
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentSuspended {
 					referenceData.students.studentsList[studentNum].unsuspendStudent()
 					unsuspendResult = await referenceData.students.saveStudentData()
 					if !unsuspendResult {

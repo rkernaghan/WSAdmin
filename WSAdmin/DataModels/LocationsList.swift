@@ -87,7 +87,7 @@ import GoogleSignIn
 			let newLocationMonthRevenue = Double(sheetCells[rowNumber][PgmConstants.locationMonthRevenuePosition]) ?? 0.0
 			let newLocationTotalRevenue = Double(sheetCells[rowNumber][PgmConstants.locationTotalRevenuePosition]) ?? 0.0
 			let newLocationStudentCount = Int(sheetCells[rowNumber][PgmConstants.locationStudentCountPosition]) ?? 0
-			let newLocationStatus = sheetCells[rowNumber][PgmConstants.locationStatusPosition]
+			let newLocationStatus = LocationStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.locationStatusPosition]) ?? .LocationActive
 			// Create a new Location object from the extracted Location attributes
 			let newLocation = Location(locationKey: newLocationKey, locationName: newLocationName, locationMonthRevenue: newLocationMonthRevenue, locationTotalRevenue: newLocationTotalRevenue, locationStudentCount: newLocationStudentCount, locationStatus: newLocationStatus)
 			// Add the new Location object to the Locations List object array
@@ -136,7 +136,7 @@ import GoogleSignIn
 			let locationMonthRevenue = String(locationsList[locationNum].locationMonthRevenue)
 			let locationTotalRevenue = String(locationsList[locationNum].locationTotalRevenue)
 			let locationStudentCount = String(locationsList[locationNum].locationStudentCount)
-			let locationStatus = locationsList[locationNum].locationStatus
+			let locationStatus = String(describing:locationsList[locationNum].locationStatus)
 			
 			// Add another row to the 2D Location Data array
 			updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue, locationStudentCount, locationStatus], at: locationNum)

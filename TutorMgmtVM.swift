@@ -32,7 +32,7 @@ import GoogleSignIn
 		    let startDate = dateFormatter.string(from: Date())
 		    //       let maxStudentsInt = Int(maxStudents) ?? 0
 		    
-		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: "Unassigned", tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
+		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorStatus: .TutorUnassigned, tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
 		    referenceData.tutors.addTutor(newTutor: newTutor)
 		    // Create a new Timesheet for the Tutor
 		    (addResult, newTimesheetFileID) = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
@@ -61,7 +61,7 @@ import GoogleSignIn
 					    var serviceNum = 0
 					    let serviceCount = referenceData.services.servicesList.count
 					    while serviceNum < serviceCount && addResult {
-						    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != "Deleted" {
+						    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
 							    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
 							    addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 							    if !addResult {
@@ -705,7 +705,7 @@ import GoogleSignIn
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorUnassigned {
 					referenceData.tutors.tutorsList[tutorNum].suspendTutor()
 					suspendResult = await referenceData.tutors.saveTutorData()
 					if !suspendResult {
@@ -726,7 +726,7 @@ import GoogleSignIn
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Suspended" {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
 					referenceData.tutors.tutorsList[tutorNum].unsuspendTutor()
 					unsuspendResult = await referenceData.tutors.saveTutorData()
 					if !unsuspendResult {
@@ -911,7 +911,7 @@ import GoogleSignIn
 		// Loop through all Tutors selecting those that are Assigned or Unassigned (ignore Suspended and Deleted Tutors)
 		var tutorNum = 0
 		while tutorNum < referenceData.tutors.tutorsList.count {
-			if referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Assigned" || referenceData.tutors.tutorsList[tutorNum].tutorStatus == "Unassigned" {
+			if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorAssigned || referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorUnassigned {
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 				let tutorStatus = referenceData.tutors.tutorsList[tutorNum].tutorStatus
 				let tutorStudentCount = referenceData.tutors.tutorsList[tutorNum].tutorStudentCount

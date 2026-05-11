@@ -317,86 +317,120 @@ enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConverti
 }
 
 enum StudentStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Unassigned
-	case Assigned
-	case Suspended
-	case Deleted
+	case StudentUnassigned
+	case StudentAssigned
+	case StudentSuspended
+	case StudentDeleted
 	
 	var id: Self { self }
 	
 	var description: String {
 		
 		switch self {
-			case .Unassigned:
+			case .StudentUnassigned:
 				return "Unassigned"
-			case .Assigned:
+			case .StudentAssigned:
 				return "Assigned"
-			case .Suspended:
+			case .StudentSuspended:
 				return "Suspended"
-			case .Deleted:
+			case .StudentDeleted:
+				return "Deleted"
+		}
+	}
+}
+
+enum StudentBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case BilledStudentActive
+	case BilledStudentDeleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .BilledStudentActive:
+				return "Active"
+			case .BilledStudentDeleted:
 				return "Deleted"
 		}
 	}
 }
 
 enum TutorStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Unassigned
-	case Assigned
-	case Suspended
-	case Deleted
+	case TutorUnassigned
+	case TutorAssigned
+	case TutorSuspended
+	case TutorDeleted
 	
 	var id: Self { self }
 	
 	var description: String {
 		
 		switch self {
-			case .Unassigned:
+			case .TutorUnassigned:
 				return "Unassigned"
-			case .Assigned:
+			case .TutorAssigned:
 				return "Assigned"
-			case .Suspended:
+			case .TutorSuspended:
 				return "Suspended"
-			case .Deleted:
+			case .TutorDeleted:
+				return "Deleted"
+		}
+	}
+}
+
+enum TutorBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+	case BilledTutorActive
+	case BilledTutorDeleted
+	
+	var id: Self { self }
+	
+	var description: String {
+		
+		switch self {
+			case .BilledTutorActive:
+				return "Active"
+			case .BilledTutorDeleted:
 				return "Deleted"
 		}
 	}
 }
 
 enum ServiceStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Unassigned
-	case Assigned
-	case Deleted
+	case ServiceUnassigned
+	case ServiceAssigned
+	case ServiceDeleted
+	case ServiceSuspended
 	
 	var id: Self { self }
 	
 	var description: String {
 		
 		switch self {
-			case .Unassigned:
+			case .ServiceUnassigned:
 				return "Unassigned"
-			case .Assigned:
+			case .ServiceAssigned:
 				return "Assigned"
-			case .Deleted:
+			case .ServiceDeleted:
 				return "Deleted"
+			case .ServiceSuspended:
+				return "Suspended"
 		}
 	}
 }
 enum LocationStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Unassigned
-	case Assigned
-	case Deleted
+	case LocationDeleted
+	case LocationActive
 	
 	var id: Self { self }
 	
 	var description: String {
 		
 		switch self {
-			case .Unassigned:
-				return "Unassigned"
-			case .Assigned:
-				return "Assigned"
-			case .Deleted:
+			case .LocationDeleted:
 				return "Deleted"
+			case .LocationActive:
+				return "Active"
 		}
 	}
 }

@@ -13,7 +13,7 @@ import Foundation
 class TutorAvailabilityRow: Identifiable {
 	var tutorName: String
 	var tutorAvailability: String
-	var tutorStatus: String
+	var tutorStatus: TutorStatusOption
 	var tutorStudentCount: Int
 	var mondayAvailability: String
 	var mondayLocation: String
@@ -31,7 +31,7 @@ class TutorAvailabilityRow: Identifiable {
 	var sundayLocation: String
 	let id = UUID()
 	
-	init(tutorName: String, tutorAvailability: String, tutorStatus: String, tutorStudentCount: Int, mondayAvailability: String, mondayLocation: String, tuesdayAvailability: String, tuesdayLocation: String, wednesdayAvailability: String, wednesdayLocation: String, thursdayAvailability: String, thursdayLocation: String, fridayAvailability: String, fridayLocation: String, saturdayAvailability: String, saturdayLocation: String, sundayAvailability: String, sundayLocation: String) {
+	init(tutorName: String, tutorAvailability: String, tutorStatus: TutorStatusOption, tutorStudentCount: Int, mondayAvailability: String, mondayLocation: String, tuesdayAvailability: String, tuesdayLocation: String, wednesdayAvailability: String, wednesdayLocation: String, thursdayAvailability: String, thursdayLocation: String, fridayAvailability: String, fridayLocation: String, saturdayAvailability: String, saturdayLocation: String, sundayAvailability: String, sundayLocation: String) {
 		self.tutorName = tutorName
 		self.tutorAvailability = tutorAvailability
 		self.tutorStatus = tutorStatus
