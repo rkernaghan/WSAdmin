@@ -38,14 +38,14 @@ import Foundation
 	}
 	
 	// This function creates a new Student object and adds it to the Students List object array.
-	@MainActor func addNewStudent(studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String,  contactZipCode: String, location: String, referenceData: ReferenceData) {
+	@MainActor func addNewStudent(studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String,  contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String, referenceData: ReferenceData) {
 		
 		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey + 1)
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())
 		// Create new Student object
-		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentContactFirstName: contactFirstName, studentContactLastName: contactLastName, studentContactPhone: contactPhone, studentContactEmail: contactEmail, studentContactZipCode: contactZipCode, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: .StudentUnassigned, studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
+		let newStudent = Student(studentKey: newStudentKey, studentName: studentName, studentContactFirstName: contactFirstName, studentContactLastName: contactLastName, studentContactPhone: contactPhone, studentContactEmail: contactEmail, studentContactAddress1: contactAddress1, studentContactAddress2: contactAddress2, studentContactCity: contactCity, studentContactState: contactState, studentContactZipCode: contactZipCode, studentStartDate: startDate, studentAssignedUnassignedDate: " ", studentLastBilledDate: " ", studentEndDate: " ", studentStatus: .StudentUnassigned, studentTutorKey: " ", studentTutorName: " ", studentLocation: location, studentSessions: 0, studentTotalCost: 0.0, studentTotalRevenue: 0.0, studentTotalProfit: 0.0)
 		// Add new Student object to Students List object array
 		self.studentsList.append(newStudent)
 		//Sort Student list alphabetically
@@ -119,6 +119,10 @@ import Foundation
 			let newContactLastName = sheetCells[rowNumber][PgmConstants.studentContactLastNamePosition]
 			let newContactPhone = sheetCells[rowNumber][PgmConstants.studentContactPhonePosition]
 			let newContactEmail = sheetCells[rowNumber][PgmConstants.studentContactEmailPosition]
+			let newContactAddress1 = sheetCells[rowNumber][PgmConstants.studentContactAddress1Position]
+			let newContactAddress2 = sheetCells[rowNumber][PgmConstants.studentContactAddress2Position]
+			let newContactState = sheetCells[rowNumber][PgmConstants.studentContactStatePosition]
+			let newContactCity = sheetCells[rowNumber][PgmConstants.studentContactCityPosition]
 			let newContactZipCode = sheetCells[rowNumber][PgmConstants.studentContactZipCodePosition]
 
 			let newStudentStartDateString = sheetCells[rowNumber][PgmConstants.studentStartDatePosition]
@@ -134,7 +138,7 @@ import Foundation
 			let newStudentRevenue = Double(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
 			let newStudentProfit = Double(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
 			// Create the new Student object
-			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentContactFirstName: newContactFirstName, studentContactLastName: newContactLastName,studentContactPhone: newContactPhone, studentContactEmail: newContactEmail, studentContactZipCode: newContactZipCode, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
+			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentContactFirstName: newContactFirstName, studentContactLastName: newContactLastName, studentContactPhone: newContactPhone, studentContactEmail: newContactEmail, studentContactAddress1: newContactAddress1, studentContactAddress2: newContactAddress2, studentContactCity: newContactCity, studentContactState: newContactState, studentContactZipCode: newContactZipCode, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentTutorKey: newStudentTutorKey, studentTutorName: newStudentTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
 			// Add the new Student object to the Students List array
 			self.studentsList.append(newStudent)
 			
@@ -160,6 +164,10 @@ import Foundation
 			let studentContactLastName = studentsList[studentNum].studentContactLastName
 			let studentContactPhone = studentsList[studentNum].studentContactPhone
 			let studentContactEmail = studentsList[studentNum].studentContactEmail
+			let studentContactAddress1 = studentsList[studentNum].studentContactAddress1
+			let studentContactAddress2 = studentsList[studentNum].studentContactAddress2
+			let studentContactCity = studentsList[studentNum].studentContactCity
+			let studentContactState = studentsList[studentNum].studentContactState
 			let studentContactZipCode = studentsList[studentNum].studentContactZipCode
 	
 			let studentStartDate = studentsList[studentNum].studentStartDate
@@ -175,7 +183,7 @@ import Foundation
 			let studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.precision(.fractionLength(2))))
 			let studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.precision(.fractionLength(2))))
 			// Add the Student object data to the 2D array
-			updateValues.insert([studentKey, studentName, studentContactFirstName, studentContactLastName, studentContactPhone, studentContactEmail, studentContactZipCode, studentStartDate, studentAssignedUnassignedDate, studentLastBilledDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
+			updateValues.insert([studentKey, studentName, studentContactFirstName, studentContactLastName, studentContactPhone, studentContactEmail, studentContactAddress1, studentContactAddress2, studentContactCity, studentContactState, studentContactZipCode, studentStartDate, studentAssignedUnassignedDate, studentLastBilledDate, studentEndDate, studentStatus, studentTutorKey, studentTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
 			studentNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet

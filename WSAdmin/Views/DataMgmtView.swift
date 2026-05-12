@@ -158,7 +158,7 @@ struct SideView: View {
 			}
                 
 			NavigationLink {
-				StudentView(updateStudentFlag: false, originalStudentName: "", referenceData: referenceData, studentKey: "", studentName: "", contactFirstName: "", contactLastName: "", contactPhone: "", contactEmail: "", contactZipCode: "", location: "")
+				StudentView(updateStudentFlag: false, originalStudentName: "", referenceData: referenceData, studentKey: "", studentName: "", contactFirstName: "", contactLastName: "", contactPhone: "",  contactAddress1: "", contactAddress2: "", contactCity: "", contactState: "", contactZipCode: "", contactEmail: "", location: "")
 			} label: {
 				Label("Add Student", systemImage: "graduationcap")
 			}

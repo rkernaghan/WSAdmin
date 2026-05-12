@@ -10,14 +10,14 @@ import Foundation
 @MainActor
 @Observable class StudentMgmtVM  {
     
-	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, location: String) async -> (Bool, String) {
+	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
 		
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
-		referenceData.students.addNewStudent(studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactZipCode: contactZipCode, location: location, referenceData: referenceData)
+		referenceData.students.addNewStudent(studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactAddress1: contactAddress2, contactAddress2: contactAddress2, contactCity: contactCity, contactState: contactState, contactZipCode: contactZipCode, location: location, referenceData: referenceData)
 		
 		let saveStudentsResult = await referenceData.students.saveStudentData()
 		if !saveStudentsResult {
@@ -82,7 +82,7 @@ import Foundation
 		return(completionFlag, completionMessage)
 	}
     
-	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, location: String) async -> (Bool, String) {
+	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
 
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
@@ -95,6 +95,10 @@ import Foundation
 		referenceData.students.studentsList[studentNum].studentContactLastName = contactLastName
 		referenceData.students.studentsList[studentNum].studentContactEmail = contactEmail
 		referenceData.students.studentsList[studentNum].studentContactPhone = contactPhone
+		referenceData.students.studentsList[studentNum].studentContactAddress1 = contactAddress1
+		referenceData.students.studentsList[studentNum].studentContactAddress2 = contactAddress2
+		referenceData.students.studentsList[studentNum].studentContactCity = contactCity
+		referenceData.students.studentsList[studentNum].studentContactState = contactState
 		referenceData.students.studentsList[studentNum].studentContactZipCode = contactZipCode
 		referenceData.students.studentsList[studentNum].studentLocation = location
 		
@@ -188,7 +192,7 @@ import Foundation
 	}
 	
 	
-	func validateNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, locationName: String) -> (Bool, String) {
+	func validateNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, locationName: String) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -231,6 +235,36 @@ import Foundation
 				validationMessage = "Error: Contact Fist Name: \(contactLastName) Contains a Comma\n"
 			}
 			
+			commaFlag = contactAddress1.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact Address1: \(contactAddress1) Contains a Comma\n"
+			}
+			
+			commaFlag = contactAddress2.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact Address2: \(contactAddress2) Contains a Comma\n"
+			}
+			
+			commaFlag = contactCity.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact City: \(contactCity) Contains a Comma\n"
+			}
+			
+			commaFlag = contactState.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact State: \(contactState) Contains a Comma\n"
+			}
+			
+			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
+			if !locationFoundFlag {
+				validationResult = false
+				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
+			}
+			
 			let validEmailFlag = isValidEmail(contactEmail)
 			if !validEmailFlag {
 				validationResult = false
@@ -252,7 +286,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
 	
-	func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactZipCode: String, locationName: String) -> (Bool, String) {
+	func validateUpdatedStudent(referenceData: ReferenceData, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, locationName: String) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
 		
@@ -293,6 +327,36 @@ import Foundation
 			if commaFlag {
 				validationResult = false
 				validationMessage = "Error: Guadian Last Name: \(contactLastName) Contains a Comma\n"
+			}
+			
+			commaFlag = contactAddress1.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact Address1: \(contactAddress1) Contains a Comma\n"
+			}
+			
+			commaFlag = contactAddress2.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact Address2: \(contactAddress2) Contains a Comma\n"
+			}
+			
+			commaFlag = contactCity.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact City: \(contactCity) Contains a Comma\n"
+			}
+			
+			commaFlag = contactState.contains(",")
+			if commaFlag {
+				validationResult = false
+				validationMessage = "Error: Contact State: \(contactState) Contains a Comma\n"
+			}
+			
+			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
+			if !locationFoundFlag {
+				validationResult = false
+				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
 			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)

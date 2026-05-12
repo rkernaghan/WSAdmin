@@ -15,6 +15,10 @@ import Foundation
 	var studentContactLastName: String		// Client's last name
 	var studentContactPhone: String			// Client's phone number
 	var studentContactEmail: String			// Client's email
+	var studentContactAddress1: String		// Client's mailing address 1
+	var studentContactAddress2: String		// Client's mailing address 2
+	var studentContactCity: String			// Client mailing address city
+	var studentContactState: String			// Client's mailing address state
 	var studentContactZipCode: String		// Client's zip code
 	var studentStartDate: String			// Date Student was added to the system
 	var studentAssignedUnassignedDate: String	// Date the Student was assigned to or unassigned from a Tutor
@@ -30,13 +34,17 @@ import Foundation
 	var studentTotalProfit: Double			// Sum of total tutoring profit for this Student since Student started (or system initiated)
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: StudentStatusOption, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
+	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactAddress1: String, studentContactAddress2: String, studentContactCity: String, studentContactState: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: StudentStatusOption, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
 		self.studentKey = studentKey
 		self.studentName = studentName
 		self.studentContactFirstName = studentContactFirstName
 		self.studentContactLastName = studentContactLastName
 		self.studentContactPhone = studentContactPhone
 		self.studentContactEmail = studentContactEmail
+		self.studentContactAddress1 = studentContactAddress1
+		self.studentContactAddress2 = studentContactAddress2
+		self.studentContactCity = studentContactCity
+		self.studentContactState = studentContactState
 		self.studentContactZipCode = studentContactZipCode
 		self.studentStartDate = studentStartDate
 		self.studentAssignedUnassignedDate = studentAssignedUnassignedDate
