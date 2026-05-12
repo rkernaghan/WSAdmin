@@ -200,7 +200,7 @@ class TutorBillingMonth {
 			let totalBillingCost: String = String(tutorBillingRows[billedTutorNum].totalBilledCost)
 			let totalBillingRevenue: String = String(tutorBillingRows[billedTutorNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(tutorBillingRows[billedTutorNum].totalBilledProfit)
-			let tutorBillingStatus = String( describing: tutorBillingRows[billedTutorNum].tutorBillingStatus)
+			let tutorBillingStatus = String( describing: tutorBillingRows[billedTutorNum].tutorBillingStatus.rawValue)
 			
 			if saveValidatedTutorData {
 				monthValidatedSessions = String(tutorBillingRows[billedTutorNum].monthValidatedSessions)

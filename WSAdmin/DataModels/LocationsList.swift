@@ -136,7 +136,7 @@ import GoogleSignIn
 			let locationMonthRevenue = String(locationsList[locationNum].locationMonthRevenue)
 			let locationTotalRevenue = String(locationsList[locationNum].locationTotalRevenue)
 			let locationStudentCount = String(locationsList[locationNum].locationStudentCount)
-			let locationStatus = String(describing:locationsList[locationNum].locationStatus)
+			let locationStatus = String(describing:locationsList[locationNum].locationStatus.rawValue)
 			
 			// Add another row to the 2D Location Data array
 			updateValues.insert([locationKey, locationName, locationMonthRevenue, locationTotalRevenue, locationStudentCount, locationStatus], at: locationNum)

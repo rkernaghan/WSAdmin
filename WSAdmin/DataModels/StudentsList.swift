@@ -166,7 +166,7 @@ import Foundation
 			let studentAssignedUnassignedDate = studentsList[studentNum].studentAssignedUnassignedDate
 			let studentLastBilledDate = studentsList[studentNum].studentLastBilledDate
 			let studentEndDate = studentsList[studentNum].studentEndDate
-			let studentStatus = String(describing: studentsList[studentNum].studentStatus)
+			let studentStatus = String(describing: studentsList[studentNum].studentStatus.rawValue)
 			let studentTutorKey = studentsList[studentNum].studentTutorKey
 			let studentTutorName = studentsList[studentNum].studentTutorName
 			let studentLocation = studentsList[studentNum].studentLocation

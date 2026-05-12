@@ -523,7 +523,7 @@ import Foundation
 			let serviceKey = tutorServices[tutorServiceNum].serviceKey
 			let timesheetName = tutorServices[tutorServiceNum].timesheetServiceName
 			let invoiceName = tutorServices[tutorServiceNum].invoiceServiceName
-			let billingType = String(describing: tutorServices[tutorServiceNum].billingType)
+			let billingType = String(describing: tutorServices[tutorServiceNum].billingType.rawValue)
 			let cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
 			let cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
 			let cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))

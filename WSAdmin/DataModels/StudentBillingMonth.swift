@@ -137,7 +137,7 @@ class StudentBillingMonth {
 			let totalBillingRevenue: String = String(studentBillingRows[billedStudentNum].totalBilledRevenue)
 			let totalBillingProfit: String = String(studentBillingRows[billedStudentNum].totalBilledProfit)
 			let tutorName: String = studentBillingRows[billedStudentNum].tutorName
-			let studentBillingStatus = String(describing: studentBillingRows[billedStudentNum].studentBillingStatus)
+			let studentBillingStatus = String(describing: studentBillingRows[billedStudentNum].studentBillingStatus.rawValue)
 			
 			if saveValidatedStudentData {
 				monthValidatedSessions = String(studentBillingRows[billedStudentNum].monthValidatedSessions)

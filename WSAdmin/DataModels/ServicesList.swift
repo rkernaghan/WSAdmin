@@ -141,9 +141,9 @@ import Foundation
 			let serviceCode = servicesList[serviceNum].serviceCode
 			let serviceTimesheetName = servicesList[serviceNum].serviceTimesheetName
 			let serviceInvoiceName = servicesList[serviceNum].serviceInvoiceName
-			let serviceType =  String(describing: servicesList[serviceNum].serviceType)
-			let serviceBillingType = String(describing: servicesList[serviceNum].serviceBillingType)
-			let serviceStatus = String(describing: servicesList[serviceNum].serviceStatus)
+			let serviceType =  String(describing: servicesList[serviceNum].serviceType.rawValue)
+			let serviceBillingType = String(describing: servicesList[serviceNum].serviceBillingType.rawValue)
+			let serviceStatus = String(describing: servicesList[serviceNum].serviceStatus.rawValue)
 			let serviceCount = String(servicesList[serviceNum].serviceCount)
 			let serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.precision(.fractionLength(2))))
 			let serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.precision(.fractionLength(2))))

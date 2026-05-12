@@ -155,7 +155,7 @@ import Foundation
 			let tutorName = tutorsList[tutorNum].tutorName
 			let tutorPhone = tutorsList[tutorNum].tutorPhone
 			let tutorEmail = tutorsList[tutorNum].tutorEmail
-			let tutorStatus = String(describing: tutorsList[tutorNum].tutorStatus)
+			let tutorStatus = String(describing: tutorsList[tutorNum].tutorStatus.rawValue)
 			let tutorStartDate = tutorsList[tutorNum].tutorStartDate
 			let tutorEndDate = tutorsList[tutorNum].tutorEndDate
 			let tutorMaxStudents = String(tutorsList[tutorNum].tutorMaxStudents)
