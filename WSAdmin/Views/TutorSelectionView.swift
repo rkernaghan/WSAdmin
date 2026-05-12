@@ -31,7 +31,7 @@ struct TutorSelectionView: View {
 					.width(min: 120, ideal: 140, max: 180)
 				
 				TableColumn("Tutor\nStatus") { (data: Tutor) in
-					Text( String( describing: data.tutorStatus ))
+					Text( String( describing: data.tutorStatus.rawValue))
 				}
 				.width(min: 50, ideal: 70, max: 80)
 	

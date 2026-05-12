@@ -94,7 +94,7 @@ struct ServiceListView: View {
 						.width(min: 40, ideal: 50, max: 60)
 						
 						TableColumn("Service\nStatus") { (data: Service) in
-							Text( String( describing: data.serviceStatus))
+							Text( String( describing: data.serviceStatus.rawValue))
 						}
 						.width(min: 50, ideal: 70, max: 80)
 						

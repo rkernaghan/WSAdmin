@@ -265,174 +265,184 @@ struct PgmConstants {
 }
 
 // Defines the type of a Service
-enum ServiceTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Base
-	case Special
+enum ServiceTypeOption: String, CaseIterable, Identifiable {
+	case Base = "Base"
+	case Special = "Special"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .Base:
-				return "Base"		// Base Services apply to all Tutors and new Base Services are added to all Tutors
-			case .Special:
-				return "Special"	// Special Services are assigned to individual Tutors
-		}
-	}
+//		switch self {
+//			case .Base:
+//				return "Base"		// Base Services apply to all Tutors and new Base Services are added to all Tutors
+//			case .Special:
+//				return "Special"	// Special Services are assigned to individual Tutors
+//		}
+//	}
 }
 
-enum BillingTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Fixed
-	case Variable
+// enum BillingTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum BillingTypeOption: String, CaseIterable, Identifiable {
+	case Fixed = "Fixed"
+	case Variable = "Variable"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .Fixed:
-				return "Fixed"		// Fixed cost regardless of tutoring session duration
-			case .Variable:
-				return "Variable"	// Cost is pro-rated based on the number of minutes
-		}
-	}
+//		switch self {
+//			case .Fixed:
+//				return "Fixed"		// Fixed cost regardless of tutoring session duration
+//			case .Variable:
+//				return "Variable"	// Cost is pro-rated based on the number of minutes
+//		}
+//	}
 }
 
-enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Minor
-	case Adult
+// enum StudentTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum StudentTypeOption: String, CaseIterable, Identifiable  {
+	case Minor = "Minor"
+	case Adult = "Adult"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .Minor:
-				return "Minor"
-			case .Adult:
-				return "Adult"
-		}
-	}
+//		switch self {
+//			case .Minor:
+//				return "Minor"
+//			case .Adult:
+//				return "Adult"
+//		}
+//	}
 }
 
-enum StudentStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case StudentUnassigned
-	case StudentAssigned
-	case StudentSuspended
-	case StudentDeleted
+// enum StudentStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum StudentStatusOption: String, CaseIterable, Identifiable {
+	case StudentUnassigned = "Unassigned"
+	case StudentAssigned = "Assigned"
+	case StudentSuspended = "Suspended"
+	case StudentDeleted = "Deleted"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .StudentUnassigned:
-				return "Unassigned"
-			case .StudentAssigned:
-				return "Assigned"
-			case .StudentSuspended:
-				return "Suspended"
-			case .StudentDeleted:
-				return "Deleted"
-		}
-	}
+//		switch self {
+//			case .StudentUnassigned:
+//				return "Unassigned"
+//			case .StudentAssigned:
+//				return "Assigned"
+//			case .StudentSuspended:
+//				return "Suspended"
+//			case .StudentDeleted:
+//				return "Deleted"
+//		}
+//	}
 }
 
-enum StudentBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case BilledStudentActive
-	case BilledStudentDeleted
+//enum StudentBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum StudentBillingStatusOption: String, CaseIterable, Identifiable {
+	case BilledStudentActive = "Active"
+	case BilledStudentDeleted = "Deleted"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .BilledStudentActive:
-				return "Active"
-			case .BilledStudentDeleted:
-				return "Deleted"
-		}
-	}
+//		switch self {
+//			case .BilledStudentActive:
+//				return "Active"
+//			case .BilledStudentDeleted:
+//				return "Deleted"
+//		}
+//	}
 }
 
-enum TutorStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case TutorUnassigned
-	case TutorAssigned
-	case TutorSuspended
-	case TutorDeleted
+// enum TutorStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum TutorStatusOption: String, CaseIterable, Identifiable {
+	case TutorUnassigned = "Unassigned"
+	case TutorAssigned = "Assigned"
+	case TutorSuspended = "Suspended"
+	case TutorDeleted = "Deleted"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .TutorUnassigned:
-				return "Unassigned"
-			case .TutorAssigned:
-				return "Assigned"
-			case .TutorSuspended:
-				return "Suspended"
-			case .TutorDeleted:
-				return "Deleted"
-		}
-	}
+//		switch self {
+//			case .TutorUnassigned:
+//				return "Unassigned"
+//			case .TutorAssigned:
+//				return "Assigned"
+//			case .TutorSuspended:
+//				return "Suspended"
+//			case .TutorDeleted:
+//				return "Deleted"
+//		}
+//	}
 }
 
-enum TutorBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case BilledTutorActive
-	case BilledTutorDeleted
+// enum TutorBillingStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum TutorBillingStatusOption:  String, CaseIterable, Identifiable  {
+	case BilledTutorActive = "Active"
+	case BilledTutorDeleted = "Deleted"
 	
 	var id: Self { self }
-	
-	var description: String {
-		
-		switch self {
-			case .BilledTutorActive:
-				return "Active"
-			case .BilledTutorDeleted:
-				return "Deleted"
-		}
-	}
+//
+//	var description: String {
+//
+//		switch self {
+//			case .BilledTutorActive:
+//				return "Active"
+//			case .BilledTutorDeleted:
+//				return "Deleted"
+//		}
+//	}
 }
 
-enum ServiceStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case ServiceUnassigned
-	case ServiceAssigned
-	case ServiceDeleted
-	case ServiceSuspended
+
+// enum ServiceStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum ServiceStatusOption: String, CaseIterable, Identifiable {
+	case ServiceUnassigned = "Unassigned"
+	case ServiceAssigned = "Assigned"
+	case ServiceDeleted = "Deleted"
+	case ServiceSuspended = "Suspended"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .ServiceUnassigned:
-				return "Unassigned"
-			case .ServiceAssigned:
-				return "Assigned"
-			case .ServiceDeleted:
-				return "Deleted"
-			case .ServiceSuspended:
-				return "Suspended"
-		}
-	}
+//		switch self {
+//			case .ServiceUnassigned:
+//				return "Unassigned"
+//			case .ServiceAssigned:
+//				return "Assigned"
+//			case .ServiceDeleted:
+//				return "Deleted"
+//			case .ServiceSuspended:
+//				return "Suspended"
+//		}
+//	}
 }
-enum LocationStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case LocationDeleted
-	case LocationActive
+
+// enum LocationStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum LocationStatusOption: String, CaseIterable, Identifiable {
+	case LocationDeleted = "Deleted"
+	case LocationActive = "Active"
 	
 	var id: Self { self }
 	
-	var description: String {
+//	var description: String {
 		
-		switch self {
-			case .LocationDeleted:
-				return "Deleted"
-			case .LocationActive:
-				return "Active"
-		}
-	}
+//		switch self {
+//			case .LocationDeleted:
+//				return "Deleted"
+//			case .LocationActive:
+//				return "Active"
+//		}
+//	}
 }
 
 enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
@@ -482,22 +492,6 @@ enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible 
 	}
 }
 
-enum TypeSelector: String, CaseIterable, Identifiable, CustomStringConvertible {
-	case Minor
-	case Adult
-	
-	var id: Self { self }
-	
-	var description: String {
-		
-		switch self {
-			case .Minor:
-				return "Minor"
-			case .Adult:
-				return "Adult"
-		}
-	}
-}
 
 struct SheetData: Decodable {
 	let range: String
@@ -531,7 +525,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "TEST"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

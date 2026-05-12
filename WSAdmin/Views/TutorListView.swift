@@ -84,7 +84,7 @@ struct TutorListView: View {
 							.width(min: 70, ideal: 100, max: 180)
 						
 						TableColumn("Tutor\nStatus") { (data: Tutor) in
-							Text(String(describing: data.tutorStatus))
+							Text(String(describing: data.tutorStatus.rawValue))
 						}
 						.width(min: 50, ideal: 70, max: 180)
 						

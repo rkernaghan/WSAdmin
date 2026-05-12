@@ -33,7 +33,7 @@ struct StudentSelectionView: View {
 					.width(min: 140, ideal: 180, max: 220)
 				
 				TableColumn("Student\nStatus") { (data: Student) in
-					Text( String( describing: data.studentStatus ))
+					Text( String( describing: data.studentStatus.rawValue ))
 				}
 				.width(min: 100, ideal: 120, max: 140)
 			}

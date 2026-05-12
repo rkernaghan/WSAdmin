@@ -86,7 +86,7 @@ struct StudentListView: View {
 							.width(min: 30, ideal: 70, max: 260)
 												
 						TableColumn("Student\nStatus") { (data: Student) in
-							Text( String(describing: data.studentStatus))
+							Text( String(describing: data.studentStatus.rawValue))
 						}
 						.width(min: 50, ideal: 75, max: 90)
 						

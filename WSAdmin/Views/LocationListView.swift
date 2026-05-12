@@ -61,7 +61,7 @@ struct LocationListView: View {
 					.width(min: 50, ideal: 60, max: 80)
 	
 					TableColumn("Location\nStatus") { (data: Location) in
-						Text( String( describing: data.locationStatus))
+						Text( String( describing: data.locationStatus.rawValue))
 					}
 					.width(min: 50, ideal: 70, max: 80)
 				}
