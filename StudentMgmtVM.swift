@@ -17,7 +17,7 @@ import Foundation
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
-		referenceData.students.addNewStudent(studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactAddress1: contactAddress2, contactAddress2: contactAddress2, contactCity: contactCity, contactState: contactState, contactZipCode: contactZipCode, location: location, referenceData: referenceData)
+		referenceData.students.addNewStudent(studentName: studentName, contactFirstName: contactFirstName, contactLastName: contactLastName, contactEmail: contactEmail, contactPhone: contactPhone, contactAddress1: contactAddress1, contactAddress2: contactAddress2, contactCity: contactCity, contactState: contactState, contactZipCode: contactZipCode, location: location, referenceData: referenceData)
 		
 		let saveStudentsResult = await referenceData.students.saveStudentData()
 		if !saveStudentsResult {
@@ -259,11 +259,11 @@ import Foundation
 				validationMessage = "Error: Contact State: \(contactState) Contains a Comma\n"
 			}
 			
-			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
-			if !locationFoundFlag {
-				validationResult = false
-				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
-			}
+//			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
+//			if !locationFoundFlag {
+//				validationResult = false
+//				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
+//			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
 			if !validEmailFlag {
@@ -353,11 +353,11 @@ import Foundation
 				validationMessage = "Error: Contact State: \(contactState) Contains a Comma\n"
 			}
 			
-			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
-			if !locationFoundFlag {
-				validationResult = false
-				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
-			}
+//			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: contactCity)
+//			if !locationFoundFlag {
+//				validationResult = false
+//				validationMessage = "Error: Contact City: \(contactCity) Not in Locations List\n"
+//			}
 			
 			let validEmailFlag = isValidEmail(contactEmail)
 			if !validEmailFlag {

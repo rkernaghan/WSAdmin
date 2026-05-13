@@ -1,9 +1,11 @@
+
 //
 //  StudentsView.swift
 //  WSAdmin
 //
 //  Created by Russell Kernaghan on 2024-11-03.
 //
+
 import SwiftUI
 
 struct StudentListView: View {
@@ -29,35 +31,33 @@ struct StudentListView: View {
 	@State private var emptyArray = [Student]()
 	@State private var studentNumber: Int = 0
 	
-	@State private var buttonErrorMsg: String = ""
-	
 	var body: some View {
 		if referenceData.students.isStudentDataLoaded {
-
+			
 			var deletedArray: [Student] {
-				if showDeleted  {
-					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentDeleted}
+				if showDeleted {
+					return referenceData.students.studentsList.filter { $0.studentStatus == .StudentDeleted }
 				} else {
 					return emptyArray
 				}
 			}
 			var unassignedArray: [Student] {
 				if showUnassigned {
-					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentUnassigned}
+					return referenceData.students.studentsList.filter { $0.studentStatus == .StudentUnassigned }
 				} else {
 					return emptyArray
 				}
 			}
 			var suspendedArray: [Student] {
-				if showSuspended  {
-					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentSuspended}
+				if showSuspended {
+					return referenceData.students.studentsList.filter { $0.studentStatus == .StudentSuspended }
 				} else {
 					return emptyArray
 				}
 			}
 			var assignedArray: [Student] {
 				if showAssigned {
-					return referenceData.students.studentsList.filter{$0.studentStatus == .StudentAssigned}
+					return referenceData.students.studentsList.filter { $0.studentStatus == .StudentAssigned }
 				} else {
 					return emptyArray
 				}
@@ -77,82 +77,75 @@ struct StudentListView: View {
 				}
 				
 				Table(studentArray, selection: $selectedStudents) {
+					// Each Group keeps at most 2-3 columns so the type checker
+					// handles each chunk in a small, bounded amount of work.
 					Group {
 						TableColumn("Student Name", value: \Student.studentName)
 							.width(min: 90, ideal: 160, max: 260)
 						
 						TableColumn("Contact\nFirst Name", value: \Student.studentContactFirstName)
 							.width(min: 30, ideal: 40, max: 260)
-						
-						TableColumn("Contact\nLast Name", value: \Student.studentContactLastName)
-							.width(min: 30, ideal: 70, max: 260)
-												
-						TableColumn("Student\nStatus") { (data: Student) in
-							Text( String(describing: data.studentStatus.rawValue))
-						}
-						.width(min: 50, ideal: 75, max: 90)
-						
-						TableColumn("Tutor Name",value: \Student.studentTutorName)
-							.width(min: 80, ideal: 120, max: 180)
 					}
 					
 					Group {
-//						TableColumn("Phone", value: \Student.studentContactPhone)
-//							.width(min: 90, ideal: 100, max: 110)
+						TableColumn("Contact\nLast Name", value: \Student.studentContactLastName)
+							.width(min: 30, ideal: 70, max: 260)
 						
-//						TableColumn("EMail", value: \Student.studentContactEmail)
-//							.width(min: 60, ideal: 100, max: 200)
-						
-//						TableColumn("Zip Code", value: \Student.studentContactZipCode)
-//							.width(min: 40, ideal: 50, max: 90)
+						TableColumn("Student\nStatus") { (data: Student) in
+							Text(String(describing: data.studentStatus.rawValue))
+						}
+						.width(min: 50, ideal: 75, max: 90)
 					}
-					             
+					
+					Group {
+						TableColumn("Tutor Name", value: \Student.studentTutorName)
+							.width(min: 80, ideal: 120, max: 180)
+						
+						TableColumn("Phone", value: \Student.studentContactPhone)
+							.width(min: 90, ideal: 100, max: 110)
+					}
+					
+					Group {
+						TableColumn("EMail", value: \Student.studentContactEmail)
+							.width(min: 60, ideal: 100, max: 200)
+						
+	//					TableColumn("Zip Code", value: \Student.studentContactZipCode)
+	//						.width(min: 40, ideal: 50, max: 90)
+					}
+					
 					Group {
 						TableColumn("Start Date", value: \Student.studentStartDate)
 							.width(min: 60, ideal: 75, max: 90)
 						
 						TableColumn("Assigned\nUnassigned\nDate", value: \Student.studentAssignedUnassignedDate)
 							.width(min: 60, ideal: 75, max: 90)
-						
+					}
+					
+					Group {
 						TableColumn("Last Billed\nDate", value: \Student.studentLastBilledDate)
 							.width(min: 60, ideal: 75, max: 90)
 						
 						TableColumn("End Date", value: \Student.studentEndDate)
 							.width(min: 60, ideal: 70, max: 90)
 					}
+					
 					Group {
+						TableColumn("Location", value: \Student.studentLocation)
+							.width(min: 70, ideal: 80, max: 140)
 						
-						
-//						TableColumn("Location", value: \Student.studentLocation)
-//							.width(min: 70, ideal: 80, max: 140)
-						
-						TableColumn("Total\nSessions") {data in
+						TableColumn("Total\nSessions") { (data: Student) in
 							Text(String(data.studentSessions))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 60)
-						
-//						TableColumn("Total Cost") {data in
-//							Text(String(data.studentTotalCost.formatted(.number.precision(.fractionLength(0)))))
-//								.frame(maxWidth: .infinity, alignment: .center)
-//						}
-//						.width(min: 60, ideal: 80, max: 90)
-//					}
-//					Group {
-//
-//						TableColumn("Total Revenue") {data in
-//							Text(String(data.studentTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
-//								.frame(maxWidth: .infinity, alignment: .center)
-//						}
-//						.width(min: 60, ideal: 80, max: 90)
-						
-						TableColumn("Total\nProfit") { data in
-							let profit = data.studentTotalProfit.formatted(.number.precision(.fractionLength(0)))
-							Text(String(profit))
+					}
+					
+					Group {
+						TableColumn("Total\nProfit") { (data: Student) in
+							Text(String(data.studentTotalProfit.formatted(.number.precision(.fractionLength(0)))))
 								.frame(maxWidth: .infinity, alignment: .center)
 						}
 						.width(min: 40, ideal: 50, max: 60)
-
 					}
 				}
 				.frame(minWidth: 600, idealWidth: 1200)
@@ -165,8 +158,11 @@ struct StudentListView: View {
 						VStack {
 							
 							Button {
-								Task {
-									await handleAssignTutor(items: items)
+								for objectID in items {
+									if let idx = referenceData.students.studentsList.firstIndex(where: { $0.id == objectID }) {
+										studentNumber = idx
+										assignTutor.toggle()
+									}
 								}
 							} label: {
 								Label("Assign Tutor to Student", systemImage: "square.and.arrow.up")
@@ -174,7 +170,11 @@ struct StudentListView: View {
 							
 							Button {
 								Task {
-									await handleUnassignStudent(items: items)
+									let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+									if !unassignResult {
+										showAlert = true
+										buttonErrorMsg = unassignMessage
+									}
 								}
 							} label: {
 								Label("Unassign Student", systemImage: "square.and.arrow.up")
@@ -182,7 +182,12 @@ struct StudentListView: View {
 							
 							Button {
 								Task {
-									await handleEditStudent(items: items)
+									for objectID in items {
+										if let idx = referenceData.students.studentsList.firstIndex(where: { $0.id == objectID }) {
+											studentNumber = idx
+											editStudent.toggle()
+										}
+									}
 								}
 							} label: {
 								Label("Edit Student", systemImage: "square.and.arrow.up")
@@ -190,7 +195,12 @@ struct StudentListView: View {
 							
 							Button {
 								Task {
-									await handleReassignStudent(items: items)
+									for objectID in items {
+										if let idx = referenceData.students.studentsList.firstIndex(where: { $0.id == objectID }) {
+											studentNumber = idx
+											reassignStudent.toggle()
+										}
+									}
 								}
 							} label: {
 								Label("ReAssign Student", systemImage: "square.and.arrow.up")
@@ -198,63 +208,101 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									await handleSuspendStudent(items: items)
+									let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+									if suspendResult == false {
+										showAlert = true
+										buttonErrorMsg = suspendMessage
+									}
 								}
 							} label: {
 								Label("Suspend Student", systemImage: "trash")
 							}
-//							.alert(buttonErrorMsg, isPresented: $showAlert) {
-//								Button("OK", role: .cancel) { }
-//							}
 							
 							Button(role: .destructive) {
 								Task {
-									await handleUnsuspendStudent(items: items)
+									let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+									if unsuspendResult == false {
+										showAlert = true
+										buttonErrorMsg = unsuspendMessage
+									}
 								}
 							} label: {
 								Label("UnSuspend Student", systemImage: "trash")
 							}
-//							.alert(buttonErrorMsg, isPresented: $showAlert) {
-//								Button("OK", role: .cancel) { }
-//							}
-							
 							
 							Button(role: .destructive) {
 								Task {
-									await handleDeleteStudent(items: items)
+									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+									}
 								}
 							} label: {
 								Label("Delete Student", systemImage: "trash")
 							}
-//							.alert(buttonErrorMsg, isPresented: $showAlert) {
-//								Button("OK", role: .cancel) { }
-//							}
-							
-//							Button(role: .destructive) {
-//								Task {
-//									let (unDeleteResult, unDeleteMessage) = await studentMgmtVM.undeleteStudent(indexes: items, referenceData: referenceData)
-//									if unDeleteResult == false {
-//										showAlert = true
-//										buttonErrorMsg = unDeleteMessage
-//									}
-//								}
-//							} label: {
-//								Label("UnDelete Student", systemImage: "trash")
-//							}
-//							.alert(buttonErrorMsg, isPresented: $showAlert) {
-//								Button("OK", role: .cancel) { }
-//							}
 						}
-						
 					} else {
 						
-						deleteMultipleAlertButton(items: items)
+						Button(role: .destructive) {
+							Task {
+								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+								if deleteResult == false {
+									showAlert = true
+									buttonErrorMsg = deleteMessage
+								}
+							}
+						} label: {
+							Label("Delete Multiple Students", systemImage: "trash")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
 						
-						unassignMultipleAlertButton(items: items)
+						Button {
+							Task {
+								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+								if !unassignResult {
+									showAlert = true
+									buttonErrorMsg = unassignMessage
+								}
+							}
+						} label: {
+							Label("Unassign Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
 						
-						suspendMultipleAlertButton(items: items)
+						Button {
+							Task {
+								let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+								if suspendResult == false {
+									showAlert = true
+									buttonErrorMsg = suspendMessage
+								}
+							}
+						} label: {
+							Label("Suspend Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
 						
-						unsuspendMultipleAlertButton(items: items)
+						Button {
+							Task {
+								let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+								if unsuspendResult == false {
+									showAlert = true
+									buttonErrorMsg = unsuspendMessage
+								}
+							}
+						} label: {
+							Label("UnSuspend Multiple Students", systemImage: "square.and.arrow.up")
+						}
+						.alert(buttonErrorMsg, isPresented: $showAlert) {
+							Button("OK", role: .cancel) { }
+						}
 					}
 				} primaryAction: { items in
 					//              store.favourite(items)
@@ -276,143 +324,8 @@ struct StudentListView: View {
 			}
 			
 			.navigationDestination(isPresented: $editStudent) {
-				let student = referenceData.students.studentsList[studentNumber]
-				StudentView(updateStudentFlag: true, originalStudentName: student.studentName, referenceData: referenceData, studentKey: student.studentKey, studentName: student.studentName, contactFirstName: student.studentContactFirstName, contactLastName: student.studentContactLastName, contactPhone: student.studentContactPhone, contactAddress1: student.studentContactAddress1, contactAddress2: student.studentContactAddress2, contactCity: student.studentContactCity, contactState: student.studentContactState,  contactZipCode: student.contactZipCode, contactEmail: student.studentContactEmail, location: student.studentLocation)
+				StudentView(updateStudentFlag: true, originalStudentName: referenceData.students.studentsList[studentNumber].studentName, referenceData: referenceData, studentKey: referenceData.students.studentsList[studentNumber].studentKey, studentName: referenceData.students.studentsList[studentNumber].studentName, contactFirstName: referenceData.students.studentsList[studentNumber].studentContactFirstName, contactLastName: referenceData.students.studentsList[studentNumber].studentContactLastName, contactPhone: referenceData.students.studentsList[studentNumber].studentContactPhone, contactAddress1: referenceData.students.studentsList[studentNumber].studentContactAddress1, contactAddress2: referenceData.students.studentsList[studentNumber].studentContactAddress2, contactCity: referenceData.students.studentsList[studentNumber].studentContactCity, contactState: referenceData.students.studentsList[studentNumber].studentContactState,  contactZipCode: referenceData.students.studentsList[studentNumber].studentContactZipCode, contactEmail: referenceData.students.studentsList[studentNumber].studentContactEmail, location: referenceData.students.studentsList[studentNumber].studentLocation)
 			}
-		}
-	}
-	
-	// MARK: - Helper extracted buttons for multiple selection alert buttons
-	
-	@ViewBuilder
-	private func deleteMultipleAlertButton(items: Set<Student.ID>) -> some View {
-		Button(role: .destructive) {
-			Task {
-				let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-				if deleteResult == false {
-					showAlert = true
-					buttonErrorMsg = deleteMessage
-				}
-			}
-		} label: {
-			Label("Delete Multiple Students", systemImage: "trash")
-		}
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
-		}
-	}
-	
-	@ViewBuilder
-	private func unassignMultipleAlertButton(items: Set<Student.ID>) -> some View {
-		Button {
-			Task {
-				let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
-				if !unassignResult {
-					showAlert = true
-					buttonErrorMsg = unassignMessage
-				}
-			}
-		} label: {
-			Label("Unassign Multiple Students", systemImage: "square.and.arrow.up")
-		}
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
-		}
-	}
-	
-	@ViewBuilder
-	private func suspendMultipleAlertButton(items: Set<Student.ID>) -> some View {
-		Button {
-			Task {
-				let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
-				if suspendResult == false {
-					showAlert = true
-					buttonErrorMsg = suspendMessage
-				}
-			}
-		} label: {
-			Label("Suspend Multiple Students", systemImage: "square.and.arrow.up")
-		}
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
-		}
-	}
-	
-	@ViewBuilder
-	private func unsuspendMultipleAlertButton(items: Set<Student.ID>) -> some View {
-		Button {
-			Task {
-				let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
-				if unsuspendResult == false {
-					showAlert = true
-					buttonErrorMsg = unsuspendMessage
-				}
-			}
-		} label: {
-			Label("UnSuspend Multiple Students", systemImage: "square.and.arrow.up")
-		}
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
-		}
-	}
-	
-	// MARK: - Helper async functions for context menu single item buttons
-	
-	private func handleAssignTutor(items: Set<Student.ID>) async {
-		for objectID in items {
-			if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				studentNumber = idx
-				assignTutor.toggle()
-			}
-		}
-	}
-	
-	private func handleUnassignStudent(items: Set<Student.ID>) async {
-		let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
-		if !unassignResult {
-			showAlert = true
-			buttonErrorMsg = unassignMessage
-		}
-	}
-	
-	private func handleEditStudent(items: Set<Student.ID>) async {
-		for objectID in items {
-			if let idx = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				studentNumber = idx
-				editStudent.toggle()
-			}
-		}
-	}
-	
-	private func handleReassignStudent(items: Set<Student.ID>) async {
-		guard let objectID = items.first,
-			  let idx = referenceData.students.studentsList.firstIndex(where: { $0.id == objectID }) else { return }
-		studentNumber = idx
-		reassignStudent.toggle()
-	}
-	
-	private func handleSuspendStudent(items: Set<Student.ID>) async {
-		let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
-		if suspendResult == false {
-			showAlert = true
-			buttonErrorMsg = suspendMessage
-		}
-	}
-	
-	private func handleUnsuspendStudent(items: Set<Student.ID>) async {
-		let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
-		if unsuspendResult == false {
-			showAlert = true
-			buttonErrorMsg = unsuspendMessage
-		}
-	}
-	
-	private func handleDeleteStudent(items: Set<Student.ID>) async {
-		let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
-		if deleteResult == false {
-			showAlert = true
-			buttonErrorMsg = deleteMessage
 		}
 	}
 }
-
