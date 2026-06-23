@@ -148,7 +148,10 @@ class BillArray {
 								
 								clientName = billClients[clientNum].clientName
 								clientEmail = billClients[clientNum].clientEmail
-								let description = serviceDate + " - " + invoiceServiceName + " - " + notes
+								var description = serviceDate + " - " + invoiceServiceName
+								if (notes != "") {
+									description += " - " + notes
+								}
 								
 								// If this is the same client as the previous tutoring session in this invoice, some attributes are blank as required by QuickBooks CSV format
 //								if clientName == prevClientName {
@@ -164,7 +167,7 @@ class BillArray {
 									clientInvoiceDate = invoiceDate
 //								}
 								// Add a line to the invoice with the tutoring session data
-							let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
+								let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, duration: duration, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 							
 							}

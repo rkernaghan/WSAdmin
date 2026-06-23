@@ -14,6 +14,7 @@ struct InvoiceView: View {
 	var billedTutorMonth: TutorBillingMonth
 	var alreadyBilledTutors: [String]
 	var referenceData: ReferenceData
+	@Binding var path: NavigationPath
 	
 	@Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -34,6 +35,7 @@ struct InvoiceView: View {
 		if invoice.isInvoiceLoaded {
 			VStack {
 				HStack {
+					Text("Billed Month: \(billingMonth)")
 					Text("Total Sessions: \(String(invoice.totalSessions))")
 					Text("Total Cost: \(String(invoice.totalCost.formatted(.number.precision(.fractionLength(2)))))")
 					Text("Total Price: \(String(invoice.totalRevenue.formatted(.number.precision(.fractionLength(2)))))")
@@ -98,7 +100,8 @@ struct InvoiceView: View {
 								let (csvGenerationResult, csvGenerationMessage) = await billingVM.generateCSVFile(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, tutorBillingMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 								isCSVProcessing = false
 								if csvGenerationResult {
-									dismiss()
+//									dismiss()
+									path = NavigationPath()
 								} else {
 									buttonErrorMsg = csvGenerationMessage
 									showAlert = true

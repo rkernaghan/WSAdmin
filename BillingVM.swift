@@ -130,8 +130,11 @@ import GoogleSignIn
 		
 		let billingMonthStudentFileName = studentBillingFileNamePrefix + billingYear
 		let billingMonthTutorFileName = tutorBillingFileNamePrefix + billingYear
-
 		
+		let billingQuarter = getQuarterNum(monthName: billingMonth)
+
+	print("updateBillingStats: \(alreadyBilledTutors) \(alreadyBilledTutors.count)")
+	
 		do {
 			// Read in the current month Student Billing month, copy the previous month's Student and Tutor billing months to current month's files
 			(resultFlag, billingMonthStudentFileID) = try await getFileID(fileName: billingMonthStudentFileName)
@@ -146,6 +149,7 @@ import GoogleSignIn
 					return(false, resultMessage)
 				}
 				
+			print("updateBillingStats already Billed Tutors \(tutorBillingMonth.tutorBillingRows.count)")
 				(resultFlag, resultMessage) = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 				guard resultFlag else {
 					return(false,resultMessage)
@@ -190,18 +194,55 @@ import GoogleSignIn
 								return(false,"Error: BillingVM:updateBillingStats: Could not find location \(studentLocation) for student: \(studentName) in Reference Data")
 							}
 							
+							let duration = invoice.invoiceLines[invoiceLineNum].duration
 							let cost = invoice.invoiceLines[invoiceLineNum].cost
 							let revenue = invoice.invoiceLines[invoiceLineNum].amount
 							let profit = revenue - cost
 							
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions += 1
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledSessions += 1
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledHours += Double(duration) / 60.0
+							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledHours += Double(duration) / 60.0
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost += cost
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledCost += cost
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue += revenue
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue += revenue
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledProfit += profit
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledProfit += profit
+							
+							
+//							let quarterNum = getCurrentQuarter()
+							switch billingQuarter {
+								case 1:		// First quarter
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledSessions += 1
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledHours += Double(duration) / 60.0
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledCost += cost
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledRevenue += revenue
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledProfit += profit
+									
+								case 2:		// Second quarter
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q2BilledSessions += 1
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q2BilledHours += Double(duration) / 60.0
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q2BilledCost += cost
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q2BilledRevenue += revenue
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q2BilledProfit += profit
+									
+								case 3:		// Third quarter
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q3BilledSessions += 1
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q3BilledHours += Double(duration) / 60.0
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q3BilledCost += cost
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q3BilledRevenue += revenue
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q3BilledProfit += profit
+									
+								case 4:		// Fourth quarter
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q4BilledSessions += 1
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q4BilledHours += Double(duration) / 60.0
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q4BilledCost += cost
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q4BilledRevenue += revenue
+									tutorBillingMonth.tutorBillingRows[billedTutorNum].q4BilledProfit += profit
+								default:
+									break
+							}
 							
 							studentBillingMonth.studentBillingRows[billedStudentNum].monthBilledSessions += 1
 							studentBillingMonth.studentBillingRows[billedStudentNum].totalBilledSessions += 1
@@ -585,7 +626,7 @@ import GoogleSignIn
 			let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
 			let monthTutorCost = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledCost
 			let monthTutorRevenue = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
-			tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth()
+			tutorBillingMonth.tutorBillingRows[billedTutorNum].resetBilledTutorMonth(billingMonth: billingMonth)
 			referenceData.tutors.tutorsList[tutorNum].resetTutorBillingStats(sessions: monthTutorSessions, monthCost: monthTutorCost, monthRevenue: monthTutorRevenue)
 
 			alreadyBilledTutorNum += 1

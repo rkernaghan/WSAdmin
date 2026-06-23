@@ -845,6 +845,46 @@ func getPrevMonthYear() -> (String, String) {
 	    return(prevMonthName, billingYear)
 }
 
+// getCurrentQuarter - Returns an integer from 1-4 indicating the current quarter date
+//
+func getQuarterNum(monthName: String) -> Int {
+	var quarterNum: Int = 0
+	
+	switch monthName {
+		case "Jan":
+			quarterNum = 1
+		case "Feb":
+			quarterNum = 1
+		case "Mar":
+			quarterNum = 1
+		case "April":
+			quarterNum = 2
+		case "May":
+			quarterNum = 2
+		case "June":
+			quarterNum = 2
+		case "July":
+			quarterNum = 3
+		case "Aug":
+			quarterNum = 3
+		case "Sept":
+			quarterNum = 3
+		case "Oct":
+			quarterNum = 4
+		case "Nov":
+			quarterNum = 4
+		case "Dec":
+			quarterNum = 4
+		default:
+			print("Error: Invalid billing quarter in getQuarterNum for \(monthName)")
+			break
+		}
+	
+	return(quarterNum)
+}
+
+
+
 // getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
 //		if not attempt to refresh the Access Token
 //	Parameters:

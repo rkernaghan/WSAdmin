@@ -50,7 +50,7 @@ struct ValidationMonthSelectionView: View {
 							validationMessages.windowMessageList.removeAll()
 							showMessages = true
 	
-							await systemVM.ValidateMonthBillingData(referenceData: referenceData, monthName: selectedMonth, yearName: selectedYear,  validationMessages: validationMessages)
+	//						await systemVM.ValidateMonthBillingData(referenceData: referenceData, monthName: selectedMonth, yearName: selectedYear,  validationMessages: validationMessages)
 							
 						}
 					} label: {

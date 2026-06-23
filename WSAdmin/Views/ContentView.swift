@@ -12,6 +12,8 @@ import GoogleSignIn
 
 struct ContentView: View {
 
+	@State private var path = NavigationPath()
+	
 	let userAuthVM = UserAuthVM()
 	let refDataVM = RefDataVM()
 	let studentMgmtVM = StudentMgmtVM()
@@ -20,15 +22,22 @@ struct ContentView: View {
 	let locationMgmtVM = LocationMgmtVM()
 	let billingVM = BillingVM()
 	let financeSummaryVM = FinanceSummaryVM()
-    
+	
 	var body: some View {
-		NavigationStack {
+		NavigationStack(path: $path) {
 			VStack{
 				if (userAuthVM.isLoggedIn) {
-					DataMgmtView()
+					DataMgmtView(path: $path)
 				} else {
 					SignInView()
 				}
+				
+				Text("App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")")
+					.font(.footnote)
+					.foregroundColor(.secondary)
+				Text("Build Number: \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown")")
+					.font(.footnote)
+					.foregroundColor(.secondary)
 			}
 			.toolbar {
 				Text("Hi Stephen")

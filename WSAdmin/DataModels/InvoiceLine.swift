@@ -22,6 +22,7 @@ struct InvoiceLine: Identifiable {
 	var itemName: String			// Name of the tutoring service
 	var description: String			// Description of the Service (for Xero: session date
 	var quantity: String			// Number of sessions
+	var duration: Int			// Duration of session in minutwa
 	var rate: String			// Rate of the session
 	var amount: Double			// Invoice amount
 	var taxCode: String			// Tax code of the Invoice
@@ -32,7 +33,7 @@ struct InvoiceLine: Identifiable {
 	var cost: Double
 	let id = UUID()
 	
-	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, rate: String, amount: Double, taxCode: String, serviceDate: String, studentName: String, cost: Double, accountCode: String, brandingTheme: String) {
+	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, duration: Int, rate: String, amount: Double, taxCode: String, serviceDate: String, studentName: String, cost: Double, accountCode: String, brandingTheme: String) {
 		self.invoiceNum = invoiceNum
 		self.clientName = clientName
 		self.clientEmail = clientEmail
@@ -45,6 +46,7 @@ struct InvoiceLine: Identifiable {
 		self.itemName = itemName
 		self.description = description.replacingOccurrences(of: ",", with: "")
 		self.quantity = quantity
+		self.duration = duration
 		self.rate = rate
 		self.amount = amount
 		self.taxCode = taxCode

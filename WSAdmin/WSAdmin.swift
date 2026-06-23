@@ -229,27 +229,46 @@ struct PgmConstants {
 	static let studentValidatedTotalProfitCol = 19					// Total profit for the Student computed by billing stats validation
 	
 	static let tutorBillingCountRange = "!A2:A2"
-	static let tutorBillingRange = "!A4:S"
+	static let tutorBillingRange = "!A4:AK"
 	static let tutorBillingStartRow = 4
 	static let tutorBillingTutorCol = 0
 	static let tutorBillingMonthSessionCol = 1
-	static let tutorBillingMonthCostCol = 2
-	static let tutorBillingMonthRevenueCol = 3
-	static let tutorBillingMonthProfitCol = 4
-	static let tutorBillingTotalSessionCol = 5
-	static let tutorBillingTotalCostCol = 6
-	static let tutorBillingTotalRevenueCol = 7
-	static let tutorBillingTotalProfitCol = 8
-	static let tutorBillingStatusCol = 9
-	static let tutorValidatedMonthSessionCol = 11
-	static let tutorValidatedMonthCostCol = 12
-	static let tutorValidatedMonthRevenueCol = 13
-	static let tutorValidatedMonthProfitCol = 14
-	static let tutorValidatedTotalSessionCol = 15
-	static let tutorValidatedTotalCostCol = 16
-	static let tutorValidatedTotalRevenueCol = 17
-	static let tutorValidatedTotalProfitCol = 18
+	static let tutorBillingMonthHoursCol: Int = 2
+	static let tutorBillingMonthCostCol = 3
+	static let tutorBillingMonthRevenueCol = 4
+	static let tutorBillingMonthProfitCol = 5
 	
+	static let tutorBillingQ1SessionCol = 7
+	static let tutorBillingQ1HoursCol: Int = 8
+	static let tutorBillingQ1CostCol = 9
+	static let tutorBillingQ1RevenueCol = 10
+	static let tutorBillingQ1ProfitCol = 11
+	
+	static let tutorBillingQ2SessionCol = 13
+	static let tutorBillingQ2HoursCol: Int = 14
+	static let tutorBillingQ2CostCol = 15
+	static let tutorBillingQ2RevenueCol = 16
+	static let tutorBillingQ2ProfitCol = 17
+	
+	static let tutorBillingQ3SessionCol = 19
+	static let tutorBillingQ3HoursCol: Int = 20
+	static let tutorBillingQ3CostCol = 21
+	static let tutorBillingQ3RevenueCol = 22
+	static let tutorBillingQ3ProfitCol = 23
+	
+	static let tutorBillingQ4SessionCol = 25
+	static let tutorBillingQ4HoursCol: Int = 26
+	static let tutorBillingQ4CostCol = 27
+	static let tutorBillingQ4RevenueCol = 28
+	static let tutorBillingQ4ProfitCol = 29
+	
+	static let tutorBillingTotalSessionCol = 31
+	static let tutorBillingTotalHoursCol: Int = 32
+	static let tutorBillingTotalCostCol = 33
+	static let tutorBillingTotalRevenueCol = 34
+	static let tutorBillingTotalProfitCol = 35
+	static let tutorBillingStatusCol = 36
+
 	static let termsString: String = "14 days"
 	static let taxCodeString: String = "N"
 	static let csvSeperator: String = ","

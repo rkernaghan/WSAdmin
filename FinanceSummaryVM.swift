@@ -114,7 +114,7 @@ import Foundation
 									}
 									studentNum += 1
 								}
-								
+
 								yearSessionTotal += monthSessionTotal
 								yearCostTotal += monthCostTotal
 								yearRevenueTotal += monthRevenueTotal

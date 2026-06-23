@@ -12,6 +12,8 @@ struct BillingSelectionView: View {
 	
 	var referenceData: ReferenceData
 	@State var startingInvoiceNumber: Int
+	@Binding var path: NavigationPath
+	
 	@Environment(BillingVM.self) var billingVM: BillingVM
 	
 	@State private var selectedTutors = Set<Tutor.ID>()
@@ -119,7 +121,7 @@ struct BillingSelectionView: View {
 		.navigationTitle("Billing Selection View")
 		
 		.navigationDestination(isPresented: $showInvoice) {
-			BillingProgressView(billingMessages: billingMessages, referenceData: referenceData, invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors)
+			BillingProgressView(billingMessages: billingMessages, referenceData: referenceData, invoice: invoice, billingMonth: selectedMonth, billingYear: selectedYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, path: $path)
 	
 		}
 	}

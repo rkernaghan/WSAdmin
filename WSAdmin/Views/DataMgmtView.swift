@@ -32,6 +32,8 @@ class ReferenceData {
 
 struct DataMgmtView: View {
 
+	@Binding var path: NavigationPath
+	
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
@@ -46,7 +48,7 @@ struct DataMgmtView: View {
 	var body: some View {
 		
 		VStack {
-			SideView(referenceData: referenceData, statusMessage: $statusMessage)
+			SideView(referenceData: referenceData, statusMessage: $statusMessage, path: $path)
 				.frame(minWidth: 100, minHeight: 140)
 			
 				.onAppear(perform: {
@@ -95,6 +97,7 @@ struct DataMgmtView: View {
 struct SideView: View {
 	var referenceData: ReferenceData
 	@Binding var statusMessage: String
+	@Binding var path: NavigationPath
 	
 	@State private var showAlert: Bool = false
 	@State private var showFinanceSummary: Bool = false
@@ -146,7 +149,7 @@ struct SideView: View {
 			}
 
 			NavigationLink {
-				BillingSelectionView(referenceData: referenceData, startingInvoiceNumber: referenceData.dataCounts.highestInvoiceNumber + 1)
+				BillingSelectionView(referenceData: referenceData, startingInvoiceNumber: referenceData.dataCounts.highestInvoiceNumber + 1, path: $path)
 			} label: {
 				Label("Billing", systemImage: "person")
 			}
@@ -358,6 +361,6 @@ struct MainView: View {
 	}
 }
 
-#Preview {
-	DataMgmtView()
-}
+// #Preview {
+//	DataMgmtView(path: $path)
+// }

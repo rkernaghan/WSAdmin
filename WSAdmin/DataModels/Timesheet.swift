@@ -119,66 +119,65 @@ class Timesheet: Identifiable {
 								print("WARNING: Student: \(student) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)")
 								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Student: \(student) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)"))
 							} else {
-								// Check if service date is for month being billed
+								// Check if service date is for month being billed (Warning only - processing of the session continues)
 								let validateDateFlag = validateDateField(dateField: date, monthName: monthName)
 								if !validateDateFlag {
 									print("WARNING: Date: \(date) not within \(monthName) for Student \(student) in Timesheet row \(rowNum + 1)")
 									billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Date: \(date) not within \(monthName) for Student \(student) in Timesheet row \(rowNum + 1)"))
+								}
+								// Validate session duration not blank
+								let durationCell = sheetCells[rowNum][PgmConstants.timesheetDurationCol]
+								if durationCell == "" || durationCell == " " {
+									print("WARNING: Duration cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
+									billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 								} else {
-									// Validate session duration not blank
-									let durationCell = sheetCells[rowNum][PgmConstants.timesheetDurationCol]
-									if durationCell == "" || durationCell == " " {
-										print("WARNING: Duration cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
-										billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
+									// Validate duration field an integer > 0
+									duration = Int(durationCell) ?? 0
+									if duration == 0 {
+										print("WARNING: Duration cell = 0 for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
+										billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell = 0 for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 									} else {
-										// Validate duration field an integer > 0
-										duration = Int(durationCell) ?? 0
-										if duration == 0 {
-											print("WARNING: Duration cell = 0 for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
-											billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Duration cell = 0 for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
+										// Validate the Service field is not blank
+										let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
+										if service == "" || service == "-" || service == " " {
+											print("WARNING: Service cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
+											billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 										} else {
-											// Validate the Service field is not blank
-											let service = sheetCells[rowNum][PgmConstants.timesheetServiceCol]
-											if service == "" || service == "-" || service == " " {
-												print("WARNING: Service cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)")
-												billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
+											// Validate the session Service is assigned to the Tutor
+											let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: service)
+											if !tutorServiceFound {
+												print("WARNING: Service: \(service) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)")
+												billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service: \(service) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)"))
 											} else {
-												// Validate the session Service is assigned to the Tutor
-												let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: service)
-												if !tutorServiceFound {
-													print("WARNING: Service: \(service) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)")
-													billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Service: \(service) on Timesheet row \(rowNum + 1) not assigned to Tutor \(tutorName)"))
+												
+												let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
+												
+												// Validate the Client Name field is not empty
+												let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
+												if clientName == "" || clientName == " " {
+													print("WARNING: Client Name cell empty for \(date) with Student \(student) on Timesheet row \(rowNum + 1)")
+													billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Client Name cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 												} else {
 													
+													let cost = Double(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
 													
-													let notes = sheetCells[rowNum][PgmConstants.timesheetNotesCol]
+													let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
+													let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
 													
-													// Validate the Client Name field is not empty
-													let clientName = sheetCells[rowNum][PgmConstants.timesheetClientNameCol]
-													if clientName == "" || clientName == " " {
-														print("WARNING: Client Name cell empty for \(date) with Student \(student) on Timesheet row \(rowNum + 1)")
-														billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Client Name cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
-													} else {
-														
-														let cost = Double(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
-														
-														let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
-														let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]
-														
-														let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
-														self.addTimesheetRow(timesheetRow: newTimesheetRow)
-														
-														if showEachSession {
-															billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                      Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
-														}
-														
-														entryCounter += 1
+													let newTimesheetRow = TimesheetRow(studentName: student, serviceDate: date, duration: duration, timesheetServiceName: service, notes: notes, cost: cost, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, tutorName: tutorName)
+													self.addTimesheetRow(timesheetRow: newTimesheetRow)
+													
+													if showEachSession {
+														billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                      Student: \(student);  Date: \(date);  Duration: \(duration);  Service: \(service);  Cost: \(cost)"))
 													}
+													
+													entryCounter += 1
 												}
 											}
 										}
 									}
 								}
+								
 							}
 						}
 					}

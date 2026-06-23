@@ -15,10 +15,12 @@ struct BillingProgressView: View {
 	var billingYear: String
 	var billedTutorMonth: TutorBillingMonth
 	var alreadyBilledTutors: [String]
+	@Binding var path: NavigationPath
 
+	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM
 	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
-
+	
 	@State private var showInvoice: Bool = false
 	@State private var showAlert: Bool = false
 	
@@ -27,6 +29,8 @@ struct BillingProgressView: View {
 	var body: some View {
 						
 		VStack {
+			Text("Billing Month: \(billingMonth)")
+			
 			List(billingMessages.windowMessageList) {
 				Text($0.windowLineText)
 			}
@@ -43,7 +47,7 @@ struct BillingProgressView: View {
 		}
 		
 		.navigationDestination(isPresented: $showInvoice) {
-			InvoiceView(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
+			InvoiceView(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData, path: $path)
 		}
 			
 		
