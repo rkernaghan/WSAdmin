@@ -29,6 +29,11 @@ class BillArray {
 	//
 	@MainActor func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages, referenceData: ReferenceData) {
 		var invoiceServiceName = "Not Found"
+		var address1 = " "
+		var address2 = " "
+		var city = " "
+		var state = " "
+		var zipCode = " "
 		var timesheetRowNum = 0
 		while timesheetRowNum < timesheet.timesheetRows.count {
 			let timesheetClientName = timesheet.timesheetRows[timesheetRowNum].clientName
@@ -36,7 +41,22 @@ class BillArray {
 			// If this is the first session processed for a client that month, create a new BillClient in the BillArray
 			var (foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			if !foundFlag {
-				let newBillClient = BillClient(clientName: timesheetClientName, clientEmail: timesheet.timesheetRows[timesheetRowNum].clientEmail, clientPhone: timesheet.timesheetRows[timesheetRowNum].clientPhone)
+				let studentName = timesheet.timesheetRows[timesheetRowNum].studentName
+				let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+				if studentFound {
+					address1 = referenceData.students.studentsList[studentNum].studentContactAddress1
+					address2 = referenceData.students.studentsList[studentNum].studentContactAddress2
+					city = referenceData.students.studentsList[studentNum].studentContactCity
+					state = referenceData.students.studentsList[studentNum].studentContactState
+					zipCode = referenceData.students.studentsList[studentNum].studentContactZipCode
+				} else {
+					address1 = "Address not found"
+					address2 = "address not found"
+					city = " "
+					state = " "
+					zipCode = " "
+				}
+				let newBillClient = BillClient(clientName: timesheetClientName, clientEmail: timesheet.timesheetRows[timesheetRowNum].clientEmail, clientPhone: timesheet.timesheetRows[timesheetRowNum].clientPhone, clientAddress1: address1, clientAddress2: address2, clientCity: city, clientState: state, clientZipCode: zipCode)
 				self.addBillClient(newBillClient: newBillClient)
 				(foundFlag, billClientNum) = findBillClientByName(billClientName: timesheetClientName)
 			}
@@ -76,6 +96,12 @@ class BillArray {
 	@MainActor func generateInvoice( referenceData: ReferenceData) -> Invoice {
 		var clientName: String = ""
 		var clientEmail: String = ""
+		var address1 : String = ""
+		var address2 : String = ""
+		var city: String = ""
+		var state: String = ""
+		var zipCode: String = ""
+		var clientPhone: String = ""
 		var clientInvoiceDate: String = ""
 		var clientDueDate: String = ""
 		var clientTerms: String = ""
@@ -148,6 +174,11 @@ class BillArray {
 								
 								clientName = billClients[clientNum].clientName
 								clientEmail = billClients[clientNum].clientEmail
+								address1 = billClients[clientNum].clientAddress1
+								address2 = billClients[clientNum].clientAddress2
+								city = billClients[clientNum].clientCity
+								state = billClients[clientNum].clientState
+								zipCode = billClients[clientNum].clientZipCode
 								var description = serviceDate + " - " + invoiceServiceName
 								if (notes != "") {
 									description += " - " + notes
@@ -167,7 +198,7 @@ class BillArray {
 									clientInvoiceDate = invoiceDate
 //								}
 								// Add a line to the invoice with the tutoring session data
-								let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, duration: duration, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
+								let invoiceLine = InvoiceLine(invoiceNum: String(referenceData.dataCounts.highestInvoiceNumber + 1), clientName: clientName, clientEmail: clientEmail, addressLine1: address1, addressLine2: address2, city: city, State: state, zipCode: zipCode, invoiceDate: clientInvoiceDate, dueDate: clientDueDate, terms: clientTerms, locationName: studentLocation, tutorName: tutorName, serviceCode: serviceCode, itemName: invoiceServiceName, description: description, quantity: fixedQuantity, duration: duration, rate: String(rate), amount: price, taxCode: String(price.formatted(.number.precision(.fractionLength(2)))) + PgmConstants.taxCodeString, serviceDate: billClients[clientNum].billItems[billItemNum].serviceDate, studentName: studentName, cost: cost, accountCode: accountCode, brandingTheme: brandingTheme)
 							newInvoice.addInvoiceLine(invoiceLine: invoiceLine)
 							
 							}

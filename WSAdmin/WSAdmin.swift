@@ -275,7 +275,7 @@ struct PgmConstants {
 	static let crlf: String = "\r\n"
 	
 	static let csvQBInvoiceHeader: String = "InvoiceNo,Customer,CustomerEmail,*InvoiceDate,*DueDate,Term,Location,TutorName,Item(Product/Service),ItemDescrip,ItemQuantity,ItemRate,*ItemAmount,*ItemTaxCode,ServiceDate"
-	static let csvXeroInvoiceHeader: String = "*InvoiceNumber,*ContactName,EmailAddress,Reference,*InvoiceDate,*DueDate,InventoryItemCode,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,BrandingTheme"
+	static let csvXeroInvoiceHeader: String = "*InvoiceNumber,*ContactName,EmailAddress,POAddressLine1,POAddressLine2,POCity,PORegion,POPostalCode,Reference,*InvoiceDate,*DueDate,InventoryItemCode,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,BrandingTheme"
 	static let csvClientListHeader: String = "First Name,Last Name,EMAIL,Phone,ZIP"
 	
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"

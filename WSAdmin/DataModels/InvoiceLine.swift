@@ -13,6 +13,11 @@ struct InvoiceLine: Identifiable {
 	var invoiceNum: String			// Invoice number
 	var clientName: String			// Client name
 	var clientEmail: String			// Client email
+	var addressLine1: String		// Xero POAddressLine1
+	var addressLine2: String		// Xero POAddressLine2
+	var city: String			// Xero POCity
+	var state: String			// Xero PORegion
+	var zipCode: String			// Xero POPostalCode
 	var invoiceDate: String			// Date of the Invoice
 	var dueDate: String			// Due date of the invoice
 	var terms: String			// Payment terms (e.g. net 7 days)
@@ -33,10 +38,15 @@ struct InvoiceLine: Identifiable {
 	var cost: Double
 	let id = UUID()
 	
-	init(invoiceNum: String, clientName: String, clientEmail: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, duration: Int, rate: String, amount: Double, taxCode: String, serviceDate: String, studentName: String, cost: Double, accountCode: String, brandingTheme: String) {
+	init(invoiceNum: String, clientName: String, clientEmail: String, addressLine1: String, addressLine2: String, city: String, State: String, zipCode: String, invoiceDate: String, dueDate: String, terms: String, locationName: String, tutorName: String, serviceCode: String, itemName: String, description: String, quantity: String, duration: Int, rate: String, amount: Double, taxCode: String, serviceDate: String, studentName: String, cost: Double, accountCode: String, brandingTheme: String) {
 		self.invoiceNum = invoiceNum
 		self.clientName = clientName
 		self.clientEmail = clientEmail
+		self.addressLine1 = addressLine1
+		self.addressLine2 = addressLine2
+		self.city = city
+		self.state = State
+		self.zipCode = zipCode
 		self.invoiceDate = invoiceDate
 		self.dueDate = dueDate
 		self.terms = terms

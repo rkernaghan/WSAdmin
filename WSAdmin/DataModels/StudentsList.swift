@@ -36,6 +36,7 @@ import Foundation
 		}
 		return (false, 0)
 	}
+
 	
 	// This function creates a new Student object and adds it to the Students List object array.
 	@MainActor func addNewStudent(studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String,  contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String, referenceData: ReferenceData) {

@@ -399,6 +399,11 @@ import GoogleSignIn
 //		let invoiceNum = referenceData.dataCounts.highestInvoiceNumber + 1
 		let invoiceClient = invoiceLine.clientName
 		let invoiceEmail = invoiceLine.clientEmail
+		let addressLine1 = invoiceLine.addressLine1
+		let addressLine2 = invoiceLine.addressLine2
+		let city = invoiceLine.city
+		let state = invoiceLine.state
+		let zipCode = invoiceLine.zipCode
 		let invoiceDate = invoiceLine.invoiceDate
 		let invoiceDueDate = invoiceLine.dueDate
 		let invoiceReference = invoiceLine.studentName
@@ -437,7 +442,7 @@ import GoogleSignIn
 //		let invoiceCurrency = ""
 
 		
-		let csvLine = String(invoiceNum) + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceReference + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceItemCode + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator +  invoiceAmount + PgmConstants.csvSeperator + invoiceAccountCode + PgmConstants.csvSeperator + invoiceTaxType + PgmConstants.csvSeperator + invoiceBrandingTheme
+		let csvLine = String(invoiceNum) + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + addressLine1 + PgmConstants.csvSeperator + addressLine2  + PgmConstants.csvSeperator + city + PgmConstants.csvSeperator + state + PgmConstants.csvSeperator + zipCode + PgmConstants.csvSeperator + invoiceReference + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceItemCode + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator +  invoiceAmount + PgmConstants.csvSeperator + invoiceAccountCode + PgmConstants.csvSeperator + invoiceTaxType + PgmConstants.csvSeperator + invoiceBrandingTheme
 		
 		// Set the Last Billed Date for the Student to today's date
 		let studentName = invoiceLine.studentName
