@@ -93,7 +93,7 @@ class BillArray {
 	}
     
 	// 
-	@MainActor func generateInvoice( referenceData: ReferenceData) -> Invoice {
+	@MainActor func generateInvoice( referenceData: ReferenceData, billingMessages: WindowMessages) -> Invoice {
 		var clientName: String = ""
 		var clientEmail: String = ""
 		var address1 : String = ""
@@ -147,6 +147,7 @@ class BillArray {
 						let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
 						if !serviceFound {
 							print("Error: could not find Service: \(timesheetServiceName) to get Service Code")
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not find Service: \(timesheetServiceName) to get Service Code"))
 						} else {
 							let serviceCode = referenceData.services.servicesList[serviceNum].serviceCode
 							
@@ -169,6 +170,7 @@ class BillArray {
 							let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							if !foundFlag {
 								print("Error: Could not find Student \(studentName) in Students List")
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not find Student \(studentName) in Students List"))
 							} else {
 								let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 								

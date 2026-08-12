@@ -75,7 +75,8 @@ import Foundation
 		var studentSessions: Int = 0
 		
 		var tutorStudentCount: Int = 0
-		var assignedStudentCount = 0
+		var assignedStudentCount: Int = 0
+		var reassignedStudentCount: Int = 0
 		
 		// Check if any Students assigned to more than one Tutor; Unassigned Student assigned to a Tutor or Assigned Student assigned to no Tutor
 		
@@ -100,8 +101,12 @@ import Foundation
 				}
 				tutorNum += 1
 			}
-			if assignedCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"     Validation Warning: \(studentName) assigned to Tutors \(assignedTutors)"))
+			if assignedCount > 1 && referenceData.students.studentsList[studentNum].studentStatus != .StudentReassigned {
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"     Validation Warning: Assigned Student \(studentName) assigned to Tutors \(assignedTutors)"))
+			}
+			
+			if assignedCount == 1 && referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned {
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Reassigned Student \(studentName) assigned to only one Tutor \(assignedTutors)"))
 			}
 			
 			if assignedCount == 0 && referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
@@ -317,6 +322,7 @@ import Foundation
 		var totalStudents = 0
 		var activeStudents = 0
 		var deletedStudents = 0
+
 		
 		studentNum = 0
 		while studentNum < studentCount {
@@ -326,6 +332,9 @@ import Foundation
 				case .StudentAssigned:
 					activeStudents += 1
 					assignedStudentCount += 1
+				case .StudentReassigned:
+					activeStudents += 1
+					reassignedStudentCount += 1
 				case .StudentUnassigned, .StudentSuspended:
 					activeStudents += 1
 				case .StudentDeleted:
@@ -677,8 +686,8 @@ import Foundation
 			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match"))
 		}
 		
-		if tutorStudentCount != assignedStudentCount {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) -- could be due to re-assignment"))
+		if tutorStudentCount != assignedStudentCount + reassignedStudentCount {
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) plus reassigned Student count \(reassignedStudentCount)-- could be due to reassignment"))
 		}
 		
 		// Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template

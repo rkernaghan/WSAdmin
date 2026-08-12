@@ -23,9 +23,12 @@ struct StudentListView: View {
 	@State private var unassignTutor: Bool = false
 	@State private var editStudent: Bool = false
 	@State private var reassignStudent: Bool = false
+	@State private var unreassignStudent: Bool = false
+	
 	@State private var showDeleted: Bool = true
 	@State private var showUnassigned: Bool = true
 	@State private var showAssigned: Bool = true
+	@State private var showReassigned: Bool = true
 	@State private var showSuspended: Bool = true
 	
 	@State private var emptyArray = [Student]()
@@ -62,13 +65,21 @@ struct StudentListView: View {
 					return emptyArray
 				}
 			}
+			var reassignedArray: [Student] {
+				if showReassigned {
+					return referenceData.students.studentsList.filter { $0.studentStatus == .StudentReassigned }
+				} else {
+					return emptyArray
+				}
+			}
 			
-			let studentArray: [Student] = assignedArray + unassignedArray + suspendedArray + deletedArray
+			let studentArray: [Student] = assignedArray + reassignedArray + unassignedArray + suspendedArray + deletedArray
 			
 			VStack {
 				
 				HStack {
 					Toggle("Show Assigned", isOn: $showAssigned)
+					Toggle("Show Reassigned", isOn: $showReassigned)
 					Toggle("Show Unassigned", isOn: $showUnassigned)
 					Toggle("Show Suspended", isOn: $showSuspended)
 					Toggle("Show Deleted", isOn: $showDeleted)
@@ -98,7 +109,7 @@ struct StudentListView: View {
 					}
 					
 					Group {
-						TableColumn("Tutor Name", value: \Student.studentTutorName)
+						TableColumn("Tutor Name", value: \Student.studentCurrentTutorName)
 							.width(min: 80, ideal: 120, max: 180)
 						
 						TableColumn("Phone", value: \Student.studentContactPhone)
@@ -204,6 +215,18 @@ struct StudentListView: View {
 								}
 							} label: {
 								Label("ReAssign Student", systemImage: "square.and.arrow.up")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unreassignResult, unreassignMessage) = await studentMgmtVM.unreassignStudent(studentIndex: items, referenceData: referenceData)
+									if unreassignResult == false {
+										showAlert = true
+										buttonErrorMsg = unreassignMessage
+									}
+								}
+							} label: {
+								Label("Unreassign Reassigned Student", systemImage: "square.and.arrow.up")
 							}
 							
 							Button(role: .destructive) {

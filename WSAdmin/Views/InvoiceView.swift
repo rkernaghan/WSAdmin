@@ -44,10 +44,18 @@ struct InvoiceView: View {
 				
 				if alreadyBilledTutors.count > 0 {
 					Spacer()
-					Text("Warning: Tutors Already Billed This Month: \(alreadyBilledTutors)")
+					Text("Warning: Tutors Already Billed This Month: \(alreadyBilledTutors.joined(separator: ", "))")   // Syntax fixed by system generated code
+						.bold()
+//						.foregroundStyle(.red)
+				}
+				
+				if invoice.totalSessions != invoice.invoiceLines.count {
+					Spacer()
+					Text("** Error: Total Sessions: \(invoice.totalSessions) != Invoice Count: \(invoice.invoiceLines.count)")
 						.bold()
 						.foregroundStyle(.red)
 				}
+				
 				VStack {
 					Table(invoice.invoiceLines) {
 					    Group {
@@ -133,4 +141,3 @@ struct InvoiceView: View {
 // #Preview {
 //    TutorStudentsView()
 // }
-

@@ -25,8 +25,10 @@ import Foundation
 	var studentLastBilledDate: String		// Date of Student's last billed tutoring session
 	var studentEndDate: String			// Date that the Student was soft deleted
 	var studentStatus: StudentStatusOption		// Student Status (Unassigned, Assigned, Suspended, Deleted)
-	var studentTutorKey: String			// Unique key of assigned Tutor, blank if unassigned
-	var studentTutorName: String			// Name of assigned Tutor, blank if unassigned
+	var studentCurrentTutorKey: String			// Unique key of currently assigned Tutor, blank if unassigned
+	var studentCurrentTutorName: String			// Name of assigned currently Tutor, blank if unassigned
+	var studentPreviousTutorKey: String			// Unique key of previously assigned Tutor, blank if unassigned
+	var studentPreviousTutorName: String			// Name of previously assigned Tutor, blank if unassigned
 	var studentLocation: String			// City of Student
 	var studentSessions: Int			// Count of total sessions for this Student since Student started (or system initiated)
 	var studentTotalCost: Double			// Sum of total tutoring cost for this Student since Student started (or system initiated)
@@ -34,7 +36,7 @@ import Foundation
 	var studentTotalProfit: Double			// Sum of total tutoring profit for this Student since Student started (or system initiated)
 	let id = UUID()
     
-	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactAddress1: String, studentContactAddress2: String, studentContactCity: String, studentContactState: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: StudentStatusOption, studentTutorKey: String, studentTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
+	init(studentKey: String, studentName: String, studentContactFirstName: String, studentContactLastName: String, studentContactPhone: String, studentContactEmail: String, studentContactAddress1: String, studentContactAddress2: String, studentContactCity: String, studentContactState: String, studentContactZipCode: String, studentStartDate: String, studentAssignedUnassignedDate: String, studentLastBilledDate: String, studentEndDate: String, studentStatus: StudentStatusOption, studentCurrentTutorKey: String, studentCurrentTutorName: String, studentPreviousTutorKey: String, studentPreviousTutorName: String, studentLocation: String, studentSessions: Int, studentTotalCost: Double, studentTotalRevenue: Double, studentTotalProfit: Double) {
 		self.studentKey = studentKey
 		self.studentName = studentName
 		self.studentContactFirstName = studentContactFirstName
@@ -51,8 +53,10 @@ import Foundation
 		self.studentLastBilledDate = studentLastBilledDate
 		self.studentEndDate = studentEndDate
 		self.studentStatus = studentStatus
-		self.studentTutorKey = studentTutorKey
-		self.studentTutorName = studentTutorName
+		self.studentCurrentTutorKey = studentCurrentTutorKey
+		self.studentCurrentTutorName = studentCurrentTutorName
+		self.studentPreviousTutorKey = studentPreviousTutorKey
+		self.studentPreviousTutorName = studentPreviousTutorName
 		self.studentLocation = studentLocation
 		self.studentSessions = studentSessions
 		self.studentTotalCost = studentTotalCost
@@ -87,8 +91,8 @@ import Foundation
 	// This function updates a Student to assign a Tutor and set the Assigned/Unassigned Date
 	@MainActor func assignTutor(tutorNum: Int, referenceData: ReferenceData) {
 		self.studentStatus = .StudentAssigned
-		self.studentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
-		self.studentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+		self.studentCurrentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+		self.studentCurrentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
@@ -97,13 +101,21 @@ import Foundation
 	// This function updates a Student to unassigns a Tutor and set the Assigned/Unassigned Date
 	func unassignTutor() {
 		self.studentStatus = .StudentUnassigned
-		self.studentTutorKey = " "
-		self.studentTutorName = " "
+		self.studentPreviousTutorKey = self.studentCurrentTutorKey
+		self.studentPreviousTutorName = self.studentCurrentTutorName
+		self.studentCurrentTutorKey = " "
+		self.studentCurrentTutorName = " "
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
-    
+
+	// This function sets the previous Tutor for a Student
+	func setPreviousTutor(tutorKey: String, tutorName: String) {
+		self.studentPreviousTutorKey = tutorKey
+		self.studentPreviousTutorName = tutorName
+	}
+	
 	// This function updates a Student's billing totals to subtract the current month's Session, Cost, Revenue and Profit totals.  It is used when a Student is rebilled for a month to prevent doubling the months values in the totals
 	func resetStudentBillingStats(monthSessions: Int, monthCost: Double, monthRevenue: Double) {
 		self.studentSessions -= monthSessions

@@ -340,7 +340,7 @@ struct SideView: View {
 			TutorAvailabilityView(tutorAvailabilityArray: tutorAvailabilityArray)
 		}
 		.navigationDestination(isPresented: $showDataIntegritySummary) {
-			ValidateDataIntegrityView(validationMessages: validationMessages, referenceData: referenceData)
+			ValidateDataIntegrityView2(validationMessages: validationMessages, referenceData: referenceData)
 		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))
@@ -364,3 +364,4 @@ struct MainView: View {
 // #Preview {
 //	DataMgmtView(path: $path)
 // }
+

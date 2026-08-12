@@ -143,7 +143,7 @@ import Foundation
 	func saveDataCounts() async -> Bool {
 		var completionFlag: Bool = true
 		// Write the Data Counts to the Reference Data spreadsheet
-		let updateValues = unloadLocationRows()
+		let updateValues = unloadDataCountRows()
 		
 		let range = PgmConstants.dataCountRange
 		do {
@@ -161,7 +161,7 @@ import Foundation
 
 
 	
-	func unloadLocationRows() -> [[String]] {
+	func unloadDataCountRows() -> [[String]] {
 		
 		var updateValues = [[String]]()
 		

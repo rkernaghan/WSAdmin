@@ -564,38 +564,50 @@ import Foundation
 	
 		return(assignResult, assignMessage)
 	}
-
+	// The Reassign function allows a Student to be assigned to more than one Tutor to allow billing to be completed for the original Tutor.  This function assigns a Student to a Tutor in the
+	// Reference data without unassigning the Student from the original Tutor in the original Tutor's Tutor Details sheet.
 	func reassignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var reassignResult: Bool = true
 		var reassignMessage: String = ""
 		
 		for objectID in tutorIndex {
-			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
+			if let newTutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
-					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
-					let tutorName = referenceData.students.studentsList[studentNum].studentTutorName
-					
-					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
-					reassignResult = await referenceData.students.saveStudentData()
-					if reassignResult {
-						let dateFormatter = DateFormatter()
-						dateFormatter.dateFormat = "yyyy/MM/dd"
-						let assignedDate = dateFormatter.string(from: Date())
-						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
-						let unassignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-						if unassignResult {
-							reassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-							if !reassignResult {
-								reassignMessage = "Error: could not save Tutor data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+					let (originalTutorFoud, originalTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentCurrentTutorKey)
+					if newTutorNum != originalTutorNum {
+						// Get current Tutor name and key
+						let tutorKey = referenceData.students.studentsList[studentNum].studentCurrentTutorKey
+						let tutorName = referenceData.students.studentsList[studentNum].studentCurrentTutorName
+						// Set the current Tutor as the previous Tutor in the Reference data
+						referenceData.students.studentsList[studentNum].setPreviousTutor( tutorKey: tutorKey, tutorName: tutorName)
+						// Assign the Student to the new Tutor
+						referenceData.students.studentsList[studentNum].assignTutor(tutorNum: newTutorNum, referenceData: referenceData)
+						referenceData.students.studentsList[studentNum].studentStatus = .StudentReassigned
+						reassignResult = await referenceData.students.saveStudentData()
+						if reassignResult {
+							referenceData.students.studentsList[studentNum].studentStatus = .StudentReassigned
+							let dateFormatter = DateFormatter()
+							dateFormatter.dateFormat = "yyyy/MM/dd"
+							let assignedDate = dateFormatter.string(from: Date())
+							let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
+							let unassignResult = await referenceData.tutors.tutorsList[newTutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+							if unassignResult {
+								reassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+								if !reassignResult {
+									reassignMessage = "Error: could not save Tutor data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+								}
+							} else {
+								reassignResult = false
+								reassignMessage = "Error: could not add Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor Students list for Tutor \(tutorName)"
 							}
 						} else {
-							reassignMessage = "Error: could not add Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor Students list for Tutor \(tutorName)"
+							reassignMessage = "Error: could not save Student Data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
 						}
 					} else {
-						reassignMessage = "Error: could not save Student Data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+						reassignResult = false
+						reassignMessage = "Student \(studentName) can not be reassigned to same Tutor \n"
 					}
-						
 				} else {
 					reassignResult = false
 					reassignMessage = "Student \(studentName) can not be reassigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
@@ -606,7 +618,9 @@ import Foundation
 		return(reassignResult, reassignMessage)
 	}
     
-	// Unassign a Student by changing Student Status to Unassigned, removing Tutor from Student record, removing Student from Tutor's details sheet and decreasing Tutor's assigned Tutor count in Ref data and Tutor Details
+	// Unassign a Student by changing Student Status to Unassigned, removing Tutor from Student record, removing Student from Tutor's details sheet and decreasing Tutor's assigned Tutor count in Ref data and Tutor Details.
+	// If a Student was Reassigned to a different Tutor, meaning the Student has 2 Tutors assigned during the transition, the Student will be assigned to more than one Tutor and the Tutor to be unassigned from
+	// must be selected
 	func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var unassignResult: Bool = true
 		var unassignMessage: String = ""
@@ -616,9 +630,9 @@ import Foundation
 				let studentName = referenceData.students.studentsList[studentNum].studentName
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
-					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
-					let tutorName = referenceData.students.studentsList[studentNum].studentTutorName
-					
+					let tutorKey = referenceData.students.studentsList[studentNum].studentCurrentTutorKey
+					let tutorName = referenceData.students.studentsList[studentNum].studentCurrentTutorName
+
 					referenceData.students.studentsList[studentNum].unassignTutor()
 					unassignResult = await referenceData.students.saveStudentData()
 					if unassignResult {
@@ -635,6 +649,7 @@ import Foundation
 							unassignMessage = "Error: could not find Tutor \(tutorName) in Tutors list when unassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
 						}
 					} else {
+						unassignResult = false
 						unassignMessage = "Error: could not save Student Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
 					}
 				} else {
@@ -645,7 +660,47 @@ import Foundation
 		}
 		return(unassignResult, unassignMessage)
 	}
-    
+
+	// Removes the link of the Student to the original Tutor after a Student has been Reassigned to a new Tutor.
+	func unreassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
+		var unreassignResult: Bool = true
+		var unreassignMessage: String = ""
+		
+		for objectID in studentIndex {
+			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
+				let studentName = referenceData.students.studentsList[studentNum].studentName
+				
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned  {
+					// Get the Tutor key and name of the Tutor originally assigned to Student before the Reassignment
+					let tutorKey = referenceData.students.studentsList[studentNum].studentPreviousTutorKey
+					let tutorName = referenceData.students.studentsList[studentNum].studentPreviousTutorName
+					
+					let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
+					if foundFlag {
+						// Remove the Student from the Tutor Details file of the original Tutor
+						unreassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
+						if unreassignResult {
+							unreassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
+							// Change the Student Status to Assigned from Reassigned and save Student data
+							referenceData.students.studentsList[studentNum].studentStatus = .StudentAssigned
+							unreassignResult = await referenceData.students.saveStudentData()
+						} else  {
+							unreassignMessage = "Error: could not remove Tutor Student when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+						}
+					} else {
+						unreassignResult = false
+						unreassignMessage = "Error: could not find Tutor \(tutorName) in Tutors list when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+					}
+
+				} else {
+					unreassignResult = false
+					unreassignMessage = "Student \(studentName) can not be Unreassigned when status is not Reassigned\n"
+				}
+			}
+		}
+		return(unreassignResult, unreassignMessage)
+	}
+	
 	func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var unassignResult: Bool = true
 		var unassignMessage: String = " "

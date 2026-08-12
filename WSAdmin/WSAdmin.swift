@@ -49,9 +49,9 @@ struct PgmConstants {
 	static let prodRefFileName = "ReferenceData"
 	static let dataCountRange = "Master!B2:B15"
 	static let tutorRange = "Master!D2:Q"
-	static let studentRange = "Master!U3:AQ"
-	static let serviceRange = "Master!AU3:BH"
-	static let locationRange = "Master!BL2:BQ"
+	static let studentRange = "Master!U3:AS"
+	static let serviceRange = "Master!AW3:BJ"
+	static let locationRange = "Master!BN2:BS"
 	
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
@@ -113,13 +113,15 @@ struct PgmConstants {
 	static let studentLastBilledDatePosition = 13
 	static let studentEndDatePosition = 14
 	static let studentStatusPosition = 15
-	static let studentTutorKeyPosition = 16
-	static let studentTutorNamePosition = 17
-	static let studentLocationPosition = 18
-	static let studentSessionsPosition = 19
-	static let studentTotalCostPosition = 20
-	static let studentTotalRevenuePosition = 21
-	static let studentTotalProfitPosition = 22
+	static let studentCurrentTutorKeyPosition = 16
+	static let studentCurrentTutorNamePosition = 17
+	static let studentPreviousTutorKeyPosition = 18
+	static let studentPreviousTutorNamePosition = 19
+	static let studentLocationPosition = 20
+	static let studentSessionsPosition = 21
+	static let studentTotalCostPosition = 22
+	static let studentTotalRevenuePosition = 23
+	static let studentTotalProfitPosition = 24
 	
 	static let serviceStartingRowNumber = 3
 	static let serviceKeyPosition = 0
@@ -347,6 +349,7 @@ enum StudentStatusOption: String, CaseIterable, Identifiable {
 	case StudentAssigned = "Assigned"
 	case StudentSuspended = "Suspended"
 	case StudentDeleted = "Deleted"
+	case StudentReassigned = "Reassigned"
 	
 	var id: Self { self }
 	

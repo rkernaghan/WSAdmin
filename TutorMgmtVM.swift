@@ -187,9 +187,9 @@ import GoogleSignIn
 														var studentNum = 0
 														let studentCount = referenceData.students.studentsList.count
 														while studentNum < studentCount {
-															if referenceData.students.studentsList[studentNum].studentTutorName == originalTutorName {
+															if referenceData.students.studentsList[studentNum].studentCurrentTutorName == originalTutorName {
 																tutorFound = true
-																referenceData.students.studentsList[studentNum].studentTutorName = tutorName
+																referenceData.students.studentsList[studentNum].studentCurrentTutorName = tutorName
 															}
 															studentNum += 1
 														}
