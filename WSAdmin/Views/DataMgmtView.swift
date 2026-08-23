@@ -75,7 +75,7 @@ struct DataMgmtView: View {
 						let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
 						if !loadResult {
 							showAlert.toggle()
-							buttonErrorMsg = "Critical Error: Unable to load Reference Data - Restart program"
+							buttonErrorMsg = "ERROR: Unable to load Reference Data - Restart program"
 						} else {
 							let tutorCount = referenceData.tutors.tutorsList.count
 							let studentCount = referenceData.students.studentsList.count
@@ -155,7 +155,7 @@ struct SideView: View {
 			}
                 
 			NavigationLink {
-				TutorView( updateTutorFlag: false, tutorNum: 0, originalTutorName: "", referenceData: referenceData, tutorName: "", tutorEmail: "", tutorPhone: "", maxStudents: 0)
+				TutorView( updateTutorFlag: false, tutorNum: 0, originalTutorName: "", referenceData: referenceData, tutorName: "", tutorEmail: "", tutorPhone: "", maxStudents: 0, tutorType: .RegularTutor)
 			} label: {
 				Label("Add Tutor", systemImage: "person")
 			}
@@ -340,7 +340,7 @@ struct SideView: View {
 			TutorAvailabilityView(tutorAvailabilityArray: tutorAvailabilityArray)
 		}
 		.navigationDestination(isPresented: $showDataIntegritySummary) {
-			ValidateDataIntegrityView2(validationMessages: validationMessages, referenceData: referenceData)
+			ValidateDataIntegrityView(validationMessages: validationMessages, referenceData: referenceData)
 		}
 		.padding()
 		.clipShape(RoundedRectangle(cornerRadius: 10))

@@ -48,10 +48,10 @@ struct PgmConstants {
 	static let copyRefFileName = "ReferenceData - PROD COPY"
 	static let prodRefFileName = "ReferenceData"
 	static let dataCountRange = "Master!B2:B15"
-	static let tutorRange = "Master!D2:Q"
-	static let studentRange = "Master!U3:AS"
-	static let serviceRange = "Master!AW3:BJ"
-	static let locationRange = "Master!BN2:BS"
+	static let tutorRange = "Master!D2:R"
+	static let studentRange = "Master!V3:AT"
+	static let serviceRange = "Master!AX3:BK"
+	static let locationRange = "Master!BO2:BT"
 	
 	static let tutorCountsRange = "!A1:B5"
 	static let tutorStudentsRange = "!O3:T"
@@ -65,16 +65,17 @@ struct PgmConstants {
 	static let tutorNamePosition = 1
 	static let tutorEmailPosition = 2
 	static let tutorPhonePosition = 3
-	static let tutorStatusPosition = 4
-	static let tutorStartDatePosition = 5
-	static let tutorEndDatePosition = 6
-	static let tutorMaxStudentPosition = 7
-	static let tutorStudentCountPosition = 8
-	static let tutorServiceCountPosition = 9
-	static let tutorSessionCountPosition = 10
-	static let tutorTotalCostPosition = 11
-	static let tutorTotalRevenuePosition = 12
-	static let tutorTotalProfitPosition = 13
+	static let tutorTypePosition = 4
+	static let tutorStatusPosition = 5
+	static let tutorStartDatePosition = 6
+	static let tutorEndDatePosition = 7
+	static let tutorMaxStudentPosition = 8
+	static let tutorStudentCountPosition = 9
+	static let tutorServiceCountPosition = 10
+	static let tutorSessionCountPosition = 11
+	static let tutorTotalCostPosition = 12
+	static let tutorTotalRevenuePosition = 13
+	static let tutorTotalProfitPosition = 14
 	
 	static let tutorDataStudentsStartingRowNumber = 3
 	static let tutorDataStudentKeyPosition = 0
@@ -147,8 +148,8 @@ struct PgmConstants {
 	static let locationStudentCountPosition = 4
 	static let locationStatusPosition = 5
 	
-//	static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
-//	static let yearNames = ["2024","2025","2026","2027","2028","2029","2030","2031","2032","2032"]
+	//	static let monthNames = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+	//	static let yearNames = ["2024","2025","2026","2027","2028","2029","2030","2031","2032","2032"]
 	static let firstTimesheetRow = 5
 	static let servicePrompt = "Choose Service"
 	static let studentPrompt = "Choose Student"
@@ -202,7 +203,7 @@ struct PgmConstants {
 	static let timesheetSessionCountLocationCol: Int = 1
 	static let timesheetHeaderRowCount = 4
 	static let timesheetSessionRange = "!A5:I"
-//	static let timesheetDataRange = "!A1:I100"
+	//	static let timesheetDataRange = "!A1:I100"
 	static let timesheetTutorNameCell = "RefData!A2:A2"
 	static let timesheetAvailabilityDataRange = "Availability!A1:C10"
 	static let timesheetMaxBlankRowCount: Int = 12					// The maximum number of blank rows within the sessions of a Timesheet before its an error
@@ -270,7 +271,7 @@ struct PgmConstants {
 	static let tutorBillingTotalRevenueCol = 34
 	static let tutorBillingTotalProfitCol = 35
 	static let tutorBillingStatusCol = 36
-
+	
 	static let termsString: String = "14 days"
 	static let taxCodeString: String = "N"
 	static let csvSeperator: String = ","
@@ -287,7 +288,11 @@ struct PgmConstants {
 	
 	static let systemStartMonthIndex = 6
 	static let systemStartYearIndex = 0
+	static let maxReadAttempts: Int = 4		// Maximum times to try Google Sheet read API calls
+	static let maxWriteAttempts: Int = 4		// Maximum times to try Google Sheet write API calls
+	static let maxSheetAttempts: Int = 4		// Maximum times to try Google API calls other than for Sheet reads and writes
 }
+
 
 // Defines the type of a Service
 enum ServiceTypeOption: String, CaseIterable, Identifiable {
@@ -384,6 +389,14 @@ enum StudentBillingStatusOption: String, CaseIterable, Identifiable {
 //				return "Deleted"
 //		}
 //	}
+}
+
+// enum TutorTypeOption: String, CaseIterable, Identifiable, CustomStringConvertible {
+enum TutorTypeOption: String, CaseIterable, Identifiable {
+	case RegularTutor = "Regular"
+	case SpecialistTutor = "Specialist"
+	
+	var id: Self { self }
 }
 
 // enum TutorStatusOption: String, CaseIterable, Identifiable, CustomStringConvertible {
@@ -551,7 +564,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: String = "TEST"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

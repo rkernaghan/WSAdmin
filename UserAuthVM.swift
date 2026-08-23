@@ -12,6 +12,7 @@ import OSLog
 
 let driveScope:String = "https://www.googleapis.com/auth/drive"
 let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
+let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 
 @Observable class UserAuthVM {
     
@@ -131,7 +132,7 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	// "drive" scope required to create new Timesheet for new Tutor
 	//
 	func checkAuthScope() -> Bool {
-		let additionalScopes = [sheetScope, driveScope]
+		let additionalScopes = [sheetScope, driveScope, gmailScope]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
 			print("UserAuthVM-checkAuthScope: Not signed in")
 			return(false) ;  /* Not signed in. */
@@ -150,12 +151,13 @@ let sheetScope:String = "https://www.googleapis.com/auth/spreadsheets"
 	// Requests additional scopes necessary for the program from Google, which in turn prompts user to approve
 	//	https://www.googleapis.com/auth/spreadsheets scope is required to read and write spreadsheets
 	//	https://www.googleapis.com/auth/drive scope is required to get fileIDs, create new timesheets, rename spreadsheets/timesheets, etc.
+	//	https://www.googleapis.com/auth/gmail.send scope is required to send emails when Error log entry detected
 	//
 	func getAuthScope( ) async -> Bool {
 		var gotAuthScope: Bool = false
 		
 		print("UserAuthVM-getAuthScope: Starting")
-		let additionalScopes = [driveScope,sheetScope]
+		let additionalScopes = [driveScope,sheetScope, gmailScope]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
 			print("UserAuthVM-getAuthScope: Not signed in")
 			return(gotAuthScope) ;  /* Not signed in. */

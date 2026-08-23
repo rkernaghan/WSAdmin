@@ -83,10 +83,15 @@ struct TutorListView: View {
 						TableColumn("Tutor Name", value: \Tutor.tutorName)
 							.width(min: 70, ideal: 100, max: 180)
 						
+						TableColumn("Tutor\nType") { (data: Tutor) in
+							Text(String(describing: data.tutorType.rawValue))
+						}
+						.width(min: 50, ideal: 70, max: 90)
+						
 						TableColumn("Tutor\nStatus") { (data: Tutor) in
 							Text(String(describing: data.tutorStatus.rawValue))
 						}
-						.width(min: 50, ideal: 70, max: 180)
+						.width(min: 50, ideal: 70, max: 100)
 						
 						TableColumn("Student\nCount") {data in
 							Text(String(data.tutorStudentCount))
@@ -317,7 +322,7 @@ struct TutorListView: View {
 				TutorServicesView(tutorNum: $tutorNumber, referenceData: referenceData)
 			}
 			.navigationDestination(isPresented: $editTutor) {
-				TutorView( updateTutorFlag: true, tutorNum: tutorNumber, originalTutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, tutorEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, tutorPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents )
+				TutorView( updateTutorFlag: true, tutorNum: tutorNumber, originalTutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, referenceData: referenceData, tutorName: referenceData.tutors.tutorsList[tutorNumber].tutorName, tutorEmail: referenceData.tutors.tutorsList[tutorNumber].tutorEmail, tutorPhone: referenceData.tutors.tutorsList[tutorNumber].tutorPhone, maxStudents: referenceData.tutors.tutorsList[tutorNumber].tutorMaxStudents, tutorType: referenceData.tutors.tutorsList[tutorNumber].tutorType )
 			}
 		}
 	}

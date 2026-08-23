@@ -22,10 +22,16 @@ import Foundation
 		var addMessage: String = ""
 		var newServiceKey: String = ""
 		
+		addMessage = "INFO: Adding new Service - TimesheetName: \(timesheetName), InvoiceName: \(invoiceName), ServiceType: \(serviceType), BillingType: \(billingType), Cost1: \(cost1), Cost2: \(cost2), Cost3: \(cost3), Price1: \(price1), Price2: \(price2), Price3: \(price3)"
+		print(addMessage)
+		await AppLogger.shared.log(addMessage, newLine: "Y")
+		
 		referenceData.dataCounts.increaseTotalServiceCount()
 		addResult = await referenceData.dataCounts.saveDataCounts()
 		if !addResult {
-			addMessage = "Critical Error: Could not save Data Counts when adding new Service \(timesheetName)"
+			addMessage = "ERROR: Could not save Data Counts when adding new Service \(timesheetName)"
+			print(addMessage)
+			await AppLogger.shared.log(addMessage, level: .error)
 		} else {
 			if serviceType == .Base {
 				newServiceKey = PgmConstants.serviceBaseKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestServiceKey)
@@ -39,7 +45,9 @@ import Foundation
 			
 			addResult = await referenceData.services.saveServiceData()
 			if !addResult {
-				addMessage = "Critical Error: Could not save Services data when adding new Service \(timesheetName)"
+				addMessage = "ERROR: Could not save Services data when adding new Service \(timesheetName)"
+				print(addMessage)
+				await AppLogger.shared.log(addMessage, level: .error)
 			} else {
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
 			
@@ -51,7 +59,9 @@ import Foundation
 								let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 								addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 								if !addResult {
-									addMessage = "Critical Error: Could not save new Base Service \(timesheetName) in Tutor Details sheet for \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									addMessage = "ERROR: Could not save new Base Service \(timesheetName) in Tutor Details sheet for \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									print(addMessage)
+									await AppLogger.shared.log(addMessage, level: .error)
 								}
 								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 								referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
@@ -60,11 +70,13 @@ import Foundation
 						}
 						addResult = await referenceData.tutors.saveTutorData()
 						if !addResult {
-							addMessage = "Critical Error: Could not save Tutors data when adding new Base Service \(timesheetName)"
+							addMessage = "ERROR: Could not save Tutors data when adding new Base Service \(timesheetName)"
 						} else {
 							addResult = await referenceData.services.saveServiceData()
 							if !addResult {
-								addMessage = "Critical Error: Could not save Services data when adding new Base Service \(timesheetName)"
+								addMessage = "ERROR: Could not save Services data when adding new Base Service \(timesheetName)"
+								print(addMessage)
+								await AppLogger.shared.log(addMessage, level: .error)
 							}
 						}
 					}
@@ -81,13 +93,13 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag {
 			validationResult = false
-			validationMessage = "Error: Service \(timesheetName) Already Exists\n"
+			validationMessage = "WARNING: Service \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
 		if commaFlag {
 			validationResult = false
-			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma\n"
+			validationMessage = "Validation Error: Invoice Name: \(timesheetName) Contains a Comma\n"
 		}
 		
 		return(validationResult, validationMessage)
@@ -100,13 +112,13 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag && originalTimesheetName != timesheetName {
 			validationResult = false
-			validationMessage = "Error: Service \(timesheetName) Already Exists\n"
+			validationMessage = "Validation Error: Service \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
 		if commaFlag {
 			validationResult = false
-			validationMessage = "Error: Invoice Name: \(timesheetName) Contains a Comma\n"
+			validationMessage = "Validation Error: Invoice Name: \(timesheetName) Contains a Comma\n"
 		}
 		
 		return(validationResult, validationMessage)
@@ -116,6 +128,10 @@ import Foundation
 		var updateResult: Bool = true
 		var updateMessage: String = ""
 		
+		updateMessage = "INFO: Updating existing Service - New TimesheetName: \(timesheetName), Original TimesheetName: \(originalTimesheetName), InvoiceName: \(invoiceName), ServiceType: \(serviceType), BillingType: \(billingType), Cost1: \(cost1), Cost2: \(cost2), Cost3: \(cost3), Price1: \(price1), Price2: \(price2), Price3: \(price3)"
+		print(updateMessage)
+		await AppLogger.shared.log(updateMessage, newLine: "Y")
+
 		// Check if the TimesheetName has changed
 		if timesheetName != originalTimesheetName {
 			
@@ -126,7 +142,9 @@ import Foundation
         
 		updateResult = await referenceData.services.saveServiceData()
 		if !updateResult {
-			updateMessage = "Critical Error: Could not save Service data when updating Service \(originalTimesheetName)"
+			updateMessage = "ERROR: Could not save Service data when updating Service \(originalTimesheetName)"
+			print(updateMessage)
+			await AppLogger.shared.log(updateMessage, level: .error)
 		} else {
         
 			// Go through each Tutor and check if the updated Services is assigned to that Tutor and if so, update the Service Name
@@ -138,7 +156,9 @@ import Foundation
 						if serviceFound {
 							updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
-								updateMessage = "Critical Error: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								updateMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								print(updateMessage)
+								await AppLogger.shared.log(updateMessage, level: .error)
 							}
 						}
 					}
@@ -156,23 +176,31 @@ import Foundation
 		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+				deleteMessage = "INFO: Deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				print(deleteMessage)
+				await AppLogger.shared.log(deleteMessage, newLine: "Y")
+
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned {
-					print("deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markDeleted()
 					deleteResult = await referenceData.services.saveServiceData()
 					if !deleteResult {
-						deleteMessage = "Critical Error: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						deleteMessage = "ERROR: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						print(deleteMessage)
+						await AppLogger.shared.log(deleteMessage, level: .error)
 					} else {
 						referenceData.dataCounts.decreaseActiveServiceCount()
 						deleteResult = await referenceData.dataCounts.saveDataCounts()
 						if !deleteResult {
-							deleteMessage = "Critical Error: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							deleteMessage = "ERROR: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							print(deleteMessage)
+							await AppLogger.shared.log(deleteMessage, level: .error)
 						}
 					}
 				} else {
-					deleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
-					print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be deleted")
+					deleteMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
 					deleteResult = false
+					print(deleteMessage)
+					await AppLogger.shared.log(deleteMessage, level: .error)
 				}
 			}
 		}
@@ -185,23 +213,32 @@ import Foundation
 		
 		for objectID in indexes {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
+				unDeleteMessage = "Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				print(unDeleteMessage)
+				await AppLogger.shared.log(unDeleteMessage, newLine: "Y")
+
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceDeleted {
-					print("Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)")
 					referenceData.services.servicesList[serviceNum].markUnDeleted()
 					unDeleteResult = await referenceData.services.saveServiceData()
 					if !unDeleteResult {
-						unDeleteMessage = "Critical Error: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						unDeleteMessage = "ERROR: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						print(unDeleteMessage)
+						await AppLogger.shared.log(unDeleteMessage, level: .error)
 					} else {
 						referenceData.dataCounts.increaseActiveServiceCount()
 						unDeleteResult = await referenceData.dataCounts.saveDataCounts()
 						if !unDeleteResult {
-							unDeleteMessage = "Critical Error: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							unDeleteMessage = "ERROR: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							print(unDeleteMessage)
+							await AppLogger.shared.log(unDeleteMessage, level: .error)
 						}
 					}
 				} else {
-					unDeleteMessage = "Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted"
-					print("Error: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted")
+					unDeleteMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
 					unDeleteResult = false
+					print(unDeleteMessage)
+					await AppLogger.shared.log(unDeleteMessage, level: .error)
+
 				}
 			}
 		}

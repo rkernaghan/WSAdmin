@@ -109,6 +109,7 @@ class BillArray {
 		let brandingTheme = "Standard"
 		let accountCode = referenceData.dataCounts.accountCode
 		let fixedQuantity: String = "1.0"
+		var generateMessage: String
 		
 		let newInvoice = Invoice()
 		var timesheetServiceName: String = ""
@@ -117,6 +118,12 @@ class BillArray {
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let invoiceDate = dateFormatter.string(from: Date())
+		
+		generateMessage = "INFO: Generating invoice on \(invoiceDate)"
+		print(generateMessage)
+		Task {
+			await AppLogger.shared.log(generateMessage, newLine: "Y")
+		}
 		
 		// Calculate the due date of the invoice, which is 7 days from today's date
 		let calendar = Calendar.current
@@ -146,8 +153,11 @@ class BillArray {
 						// Get the ServiceCode for the Service using TimesheetServiceName
 						let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
 						if !serviceFound {
-							print("Error: could not find Service: \(timesheetServiceName) to get Service Code")
-							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not find Service: \(timesheetServiceName) to get Service Code"))
+							generateMessage = "ERROR: could not find Service: \(timesheetServiceName) to get Service Code"
+							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: generateMessage))
+							Task {
+								await AppLogger.shared.log(generateMessage, level: .error)
+							}
 						} else {
 							let serviceCode = referenceData.services.servicesList[serviceNum].serviceCode
 							
@@ -169,8 +179,12 @@ class BillArray {
 							
 							let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							if !foundFlag {
-								print("Error: Could not find Student \(studentName) in Students List")
-								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: Could not find Student \(studentName) in Students List"))
+								generateMessage = "ERROR: Could not find Student: \(studentName) in Students List"
+								Task {
+									await AppLogger.shared.log(generateMessage, level: .error)
+								}
+								print(generateMessage)
+								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: generateMessage))
 							} else {
 								let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 								

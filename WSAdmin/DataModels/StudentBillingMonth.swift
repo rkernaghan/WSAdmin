@@ -257,8 +257,8 @@ class StudentBillingMonth {
 			// Read in the previous month Student Billing sheet
 			completionFlag = await prevStudentBillingMonth.getStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID, loadValidatedData: false)
 			guard completionFlag else {
-				print("Critical Error: Could not load \(prevMonth) Student Billing Data)")
-				return(false, "Critical Error: Could not load \(prevMonth) Student Billing Data")
+				print("ERROR: Could not load \(prevMonth) Student Billing Data)")
+				return(false, "ERROR: Could not load \(prevMonth) Student Billing Data")
 			}
 			// Loop through each row in the previous month entries and copy to self (current month) instance if Student does not already exist in current Student BillingMonth sheet
 			let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
@@ -284,7 +284,7 @@ class StudentBillingMonth {
 			}
 				
 		} catch {
-			print("Critical Error: Could not load \(prevMonth) Student Billing Data")
+			print("ERROR: Could not load \(prevMonth) Student Billing Data")
 			completionFlag = false
 		}
 		

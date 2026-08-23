@@ -17,6 +17,7 @@ struct TutorView: View {
 	@State var tutorEmail: String
 	@State var tutorPhone: String
 	@State var maxStudents: Int
+	@State var tutorType: TutorTypeOption
 	
 	@State private var showAlert = false
 	@State private var dismissAlert = false
@@ -58,16 +59,28 @@ struct TutorView: View {
 					.textFieldStyle(.roundedBorder)
 			}
 			
+			HStack {
+				Text("Tutor Type")
+				Picker("", selection: $tutorType) {
+					Text("Regular").tag(TutorTypeOption.RegularTutor)
+					Text("Specialist").tag(TutorTypeOption.SpecialistTutor)
+				}
+				.pickerStyle(.radioGroup)
+				.horizontalRadioGroupLayout()
+				.labelsHidden()
+			}
+			
 			Button(action: {
 				Task {
 					let tutorName = tutorName.trimmingCharacters(in: .whitespaces)
 					let contactEmail = tutorEmail.trimmingCharacters(in: .whitespaces)
 					let contactPhone = tutorPhone.trimmingCharacters(in: .whitespaces)
+//					let tutorType: TutorTypeOption = .RegularTutor
 					// Update an existing Tutor
 					if updateTutorFlag {
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateUpdatedTutor(originalTutorName: originalTutorName, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							let (updateResult, updateMessage) = await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, originalTutorName: originalTutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
+							let (updateResult, updateMessage) = await tutorMgmtVM.updateTutor(tutorNum: tutorNum, referenceData: referenceData, tutorName: tutorName, originalTutorName: originalTutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
 							if !updateResult {
 								buttonErrorMsg = updateMessage
 								showAlert = true
@@ -83,7 +96,7 @@ struct TutorView: View {
 						isTutorUpdateInProcess = true
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							let (addResult, addMessage) = await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents)
+							let (addResult, addMessage) = await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
 							isTutorUpdateInProcess = false
 							if !addResult {
 								buttonErrorMsg = addMessage

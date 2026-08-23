@@ -64,7 +64,7 @@ import Foundation
 					completionFlag = false
 				}
 			} catch {
-				print("Critical Error: Could not read in Tutor data from ReferenceData spreadsheet")
+				print("ERROR: Could not read in Tutor data from ReferenceData spreadsheet")
 				completionFlag = false
 			}
 			
@@ -89,6 +89,7 @@ import Foundation
 			let newTutorName = sheetCells[rowNumber][PgmConstants.tutorNamePosition]
 			let newTutorEmail = sheetCells[rowNumber][PgmConstants.tutorEmailPosition]
 			let newTutorPhone = sheetCells[rowNumber][PgmConstants.tutorPhonePosition]
+			let newTutorType: TutorTypeOption = TutorTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.tutorTypePosition]) ?? .RegularTutor
 			let newTutorStatus: TutorStatusOption = TutorStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.tutorStatusPosition]) ?? .TutorAssigned
 			let newTutorStartDateString = sheetCells[rowNumber][PgmConstants.tutorStartDatePosition]
 			let newTutorEndDateString = sheetCells[rowNumber][PgmConstants.tutorEndDatePosition]
@@ -100,7 +101,7 @@ import Foundation
 			let newTutorRevenue = Double(sheetCells[rowNumber][PgmConstants.tutorTotalRevenuePosition]) ?? 0.0
 			let newTutorProfit = Double(sheetCells[rowNumber][PgmConstants.tutorTotalProfitPosition]) ?? 0.0
 			// Create a new Tutor object
-			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit, timesheetFileID: "")
+			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorType: newTutorType,tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit, timesheetFileID: "")
 			// Add the new Tutor object to the Tutors List object array
 			self.tutorsList.append(newTutor)
 			
@@ -133,7 +134,7 @@ import Foundation
 		do {
 			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 		} catch {
-			print ("Critical Error: Saving Tutor Data rows failed")
+			print ("ERROR: Saving Tutor Data rows failed")
 			result = false
 		}
 		
@@ -155,6 +156,7 @@ import Foundation
 			let tutorName = tutorsList[tutorNum].tutorName
 			let tutorPhone = tutorsList[tutorNum].tutorPhone
 			let tutorEmail = tutorsList[tutorNum].tutorEmail
+			let tutorType = String(describing: tutorsList[tutorNum].tutorType.rawValue)
 			let tutorStatus = String(describing: tutorsList[tutorNum].tutorStatus.rawValue)
 			let tutorStartDate = tutorsList[tutorNum].tutorStartDate
 			let tutorEndDate = tutorsList[tutorNum].tutorEndDate
@@ -166,11 +168,11 @@ import Foundation
 			let tutorTotalRevenue = String(tutorsList[tutorNum].tutorTotalRevenue.formatted(.number.precision(.fractionLength(2))))
 			let tutorTotalProfit = String(tutorsList[tutorNum].tutorTotalProfit.formatted(.number.precision(.fractionLength(2))))
 			// Add a new row to the 2D array containing the Tutor object attributes
-			updateValues.insert([tutorKey, tutorName, tutorEmail, tutorPhone, tutorStatus, tutorStartDate, tutorEndDate, tutorMaxStudents, tutorTotalStudents, tutorTotalServices, tutorTotalSessions, tutorTotalCost, tutorTotalRevenue, tutorTotalProfit], at: tutorNum)
+			updateValues.insert([tutorKey, tutorName, tutorEmail, tutorPhone, tutorType, tutorStatus, tutorStartDate, tutorEndDate, tutorMaxStudents, tutorTotalStudents, tutorTotalServices, tutorTotalSessions, tutorTotalCost, tutorTotalRevenue, tutorTotalProfit], at: tutorNum)
 			tutorNum += 1
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " "," ", " "], at: tutorNum)
+		updateValues.insert([" ", " ", " ", " "," ", " ", " ", " "," ", " ", " ", " "," ", " ", " "], at: tutorNum)
 		
 		return( updateValues)
 	}

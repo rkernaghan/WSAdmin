@@ -22,12 +22,15 @@ import GoogleSignIn
 		var alreadyBilledFlag: Bool = false
 		var alreadyBilledTutors = [String]()
 		referenceData.dataCounts.highestInvoiceNumber = startingInvoiceNumber - 1
+		var buildMessage: String
 		
 		let tutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
 		let billArray = BillArray(monthName: billingMonth)
-		print ("\n ** Starting Generate Invoice **")
+		buildMessage = "INFO: Starting Generate Invoice for \(billingYear) \(billingMonth)"
+		print(buildMessage)
+		await AppLogger.shared.log(buildMessage, newLine: "Y")
 		
 		// Go through each selected Tutor, read the Tutor's Timesheet and add the data to the billArray.
 		for objectID in tutorSet {
@@ -49,7 +52,9 @@ import GoogleSignIn
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if !resultFlag {
-				print("Error: BillingVM.generateInvoice - Could not get File ID for Tutor Billing file \(tutorBillingFileName)")
+				buildMessage = "ERROR: BillingVM.generateInvoice - Could not get File ID for Tutor Billing file: \(tutorBillingFileName)"
+				print(buildMessage)
+				await AppLogger.shared.log(buildMessage, level: .error)
 			} else {
 				let loadBilledTutorFlag = await tutorBillingMonth.getTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 				if loadBilledTutorFlag {				// If no Tutors billed this month, the flag will be false, which is not an error
@@ -63,9 +68,10 @@ import GoogleSignIn
 				invoice = billArray.generateInvoice(referenceData: referenceData, billingMessages: billingMessages)
 			}
 		} catch {
-			print("Error: in BillingVM.generateInvoice - Could not load Billed Tutor Month")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: could not load Billed Tutor Month"))
-			
+			buildMessage = "ERROR: in BillingVM.generateInvoice - Could not load Billed Tutor Month"
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: buildMessage))
+			print(buildMessage)
+			await AppLogger.shared.log(buildMessage, level: .error)
 		}
 		
 		// Return the invoice data, the Tutor Billing data for the month so it can be updated if user bills the invoice (creates CSV) and the list of any Tutors already billed
@@ -79,6 +85,7 @@ import GoogleSignIn
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
+		var buildMessage: String = " "
 		
 		
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
@@ -97,17 +104,21 @@ import GoogleSignIn
 				// Read in the Tutor's Timesheet for the year
 				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				if !timesheetResult {
-					print("Error: in BillingVM.getTimesheet - Could not load Timesheet for Tutor \(tutorName) with File ID \(timesheetFileID)")
-					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not load Timesheet for Tutor \(tutorName) with File ID \(timesheetFileID)"))
+					buildMessage = "ERROR: in BillingVM.getTimesheet - Could not load Timesheet for Tutor: \(tutorName) with File ID: \(timesheetFileID)"
+					print(buildMessage)
+					await AppLogger.shared.log(buildMessage, level: .error)
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: buildMessage))
 				}
 			} else {
-				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not get timesheet fileID for \(fileName); User may not have access to Timesheet"))
+				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not get timesheet fileID for fileName: \(fileName); User may not have access to Timesheet"))
 			}
 				
 				
 		} catch {
-			print("Error: could not get timesheet fileID for \(fileName)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet- Ccould not get timesheet fileID for \(fileName)"))
+			print("ERROR: could not get timesheet fileID for file: \(fileName)")
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet- Ccould not get timesheet fileID for file: \(fileName)"))
+			print(buildMessage)
+			await AppLogger.shared.log(buildMessage, level: .error)
 		}
 
 		return(timesheet)
@@ -118,7 +129,9 @@ import GoogleSignIn
 	// for that Tutor before updating the billing stats
 	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		
-		print(" Starting updating billing stats for \(billingMonth)")
+		var invoiceMessage: String
+		invoiceMessage = "INFO: Starting updating billing stats for Month: \(billingMonth); AlreadyBilled:\(alreadyBilledTutors), AlreadyBilled Count: \(alreadyBilledTutors.count)"
+		print(invoiceMessage)
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
@@ -132,8 +145,6 @@ import GoogleSignIn
 		let billingMonthTutorFileName = tutorBillingFileNamePrefix + billingYear
 		
 		let billingQuarter = getQuarterNum(monthName: billingMonth)
-
-	print("updateBillingStats: \(alreadyBilledTutors) \(alreadyBilledTutors.count)")
 	
 		do {
 			// Read in the current month Student Billing month, copy the previous month's Student and Tutor billing months to current month's files
@@ -141,7 +152,9 @@ import GoogleSignIn
 			if resultFlag {
 				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID, loadValidatedData: false)
 				guard  resultFlag else {
-					return(false, "Could not read in the Student Billing Month for \(billingMonth) with File Name \(billingMonthStudentFileName)")
+					invoiceMessage = "ERROR: Could not read in the Student Billing Month for Month: \(billingMonth) with File Name: \(billingMonthStudentFileName)"
+					await AppLogger.shared.log(invoiceMessage, level: .error)
+					return(false, invoiceMessage)
 				}
 				
 				var (resultFlag, resultMessage) = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
@@ -180,18 +193,27 @@ import GoogleSignIn
 							
 							let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 							guard tutorFound else {
-								return(false,"Error: BillingVM:updateBillingStats: Could not find tutor: \(tutorName) in Reference Data")
+								invoiceMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
+								print(invoiceMessage)
+								await AppLogger.shared.log(invoiceMessage, level: .error)
+								return(false,invoiceMessage)
 							}
 							
 							let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							guard studentFound  else {
-								return(false,"Error: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data")
+								invoiceMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
+								print(invoiceMessage)
+								await AppLogger.shared.log(invoiceMessage, level: .error)
+								return(false, invoiceMessage)
 							}
 							
 							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 							let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
 							guard locationFound else {
-								return(false,"Error: BillingVM:updateBillingStats: Could not find location \(studentLocation) for student: \(studentName) in Reference Data")
+								invoiceMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
+								print(invoiceMessage)
+								await AppLogger.shared.log(invoiceMessage, level: .error)
+								return(false, invoiceMessage)
 							}
 							
 							let duration = invoice.invoiceLines[invoiceLineNum].duration
@@ -290,10 +312,14 @@ import GoogleSignIn
 									}
 								}
 							} else {
-								print("Could not get File ID for Tutor Billing File \(billingMonthTutorFileName)")
+								invoiceMessage = "ERROR: Could not get File ID for Tutor Billing File: \(billingMonthTutorFileName)"
+								print(invoiceMessage)
+								await AppLogger.shared.log(invoiceMessage, level: .error)
 							}
 						} catch {
-							print("Error Saving Tutor Billing Data")
+							invoiceMessage = "ERROR: Saving Tutor Billing Data for BillingMonth: \(billingMonth)"
+							print(invoiceMessage)
+							await AppLogger.shared.log(invoiceMessage, level: .error)
 							resultFlag = false
 						}
 					}
@@ -301,7 +327,9 @@ import GoogleSignIn
 				}
 			}
 		} catch {
-			print("Could not get File ID for Student Billing File \(billingMonthStudentFileName)")
+			invoiceMessage = "Could not get File ID for Student Billing File: \(billingMonthStudentFileName)"
+			print(invoiceMessage)
+			await AppLogger.shared.log(invoiceMessage, level: .error)
 			resultFlag = false
 		}
 		
@@ -315,7 +343,6 @@ import GoogleSignIn
 		var generationMessage: String = ""
 		
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
 		
 		// First update the billing stats for Tutors, Students and Locations
 		(generationFlag, generationMessage) = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
@@ -325,76 +352,83 @@ import GoogleSignIn
 		if !generationFlag {
 			print(generationMessage)
 		} else {
+			
 			do {
-				// Create the file in the Documents directory
-				try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
+				let dateFormatter = DateFormatter()
+				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
+				let fileDate = dateFormatter.string(from: Date())
 				
-				do {
-					let dateFormatter = DateFormatter()
-					dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
-					let fileDate = dateFormatter.string(from: Date())
-					
-					let fileName = "CSV Export File for \(billingMonth) \(billingYear) generated on \(fileDate).csv"
-					let fileManager = FileManager.default
-					
-					// Get the path to the Documents directory
-					guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-						print("Could not find the Documents directory.")
-						return(false, "Count not find the Documents Directory")
-					}
-					
-					// Set the file path
-					let fileURL = documentsDirectory.appendingPathComponent(fileName)
-					
-					// Create the file if it doesn't exist
-					if !fileManager.fileExists(atPath: fileURL.path) {
-						fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
-					}
-					// Open the file for writing
-					let fileHandle = try FileHandle(forWritingTo: fileURL)
-					
-					//Create a csv header line in Xero format
-					let csvLine = PgmConstants.csvXeroInvoiceHeader
+				let fileName = "CSV Export File for \(billingMonth) \(billingYear) generated on \(fileDate).csv"
+				let fileManager = FileManager.default
+				
+				// Get the path to the Documents directory
+				guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+					generationMessage = "ERROR: Could not find the Documents directory generating CSV File"
+					print(generationMessage)
+					await AppLogger.shared.log(generationMessage, level: .error)
+					return(false, generationMessage)
+				}
+				print("CSV Documents directory: \(documentsDirectory.path)")
+				
+				// Build the path to our app's dedicated CSV subfolder inside Documents
+				let csvDirectory = documentsDirectory.appendingPathComponent("WSAdmin CSV Files", isDirectory: true)
+				
+				// Create the subfolder if it doesn't already exist
+				if !fileManager.fileExists(atPath: csvDirectory.path) {
+					try fileManager.createDirectory(at: csvDirectory, withIntermediateDirectories: true, attributes: nil)
+				}
+				
+				// Set the file path inside the CSV subfolder
+				let fileURL = csvDirectory.appendingPathComponent(fileName)
+				
+				// Create the file if it doesn't exist
+				if !fileManager.fileExists(atPath: fileURL.path) {
+					fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+				}
+				// Open the file for writing
+				let fileHandle = try FileHandle(forWritingTo: fileURL)
+				
+				//Create a CSV header line in Xero format
+				let csvLine = PgmConstants.csvXeroInvoiceHeader
+				if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
+					fileHandle.write(data)
+				}
+				
+				// Loop through the invoice and create a line in the CSV file from each Invoice line in format required by Xero package
+				var invoiceLineNum = 0
+				let invoiceLineCount = invoice.invoiceLines.count
+				
+				while invoiceLineNum < invoiceLineCount {
+					let csvLine = processXeroInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
 					if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
 						fileHandle.write(data)
 					}
-					
-					// Loop through the invoice and create a line in the CSV file from each Invoice line in format required by Xero package
-					var invoiceLineNum = 0
-					let invoiceLineCount = invoice.invoiceLines.count
-					
-					while invoiceLineNum < invoiceLineCount {
-						let csvLine = processXeroInvoiceLine(invoiceLine: invoice.invoiceLines[invoiceLineNum], referenceData: referenceData)
-						if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
-							fileHandle.write(data)
-						}
-						invoiceLineNum += 1
-//						referenceData.dataCounts.increaseHighestInvoiceNumber()
-					}
-					// Save the Students List as the Last Billing Dates will have been updated
-					await referenceData.students.saveStudentData()
-					await referenceData.dataCounts.saveDataCounts()
-					
-					// Close the CSV file when done
-					fileHandle.closeFile()
-					print("Lines written to CSV file successfully.")
-				} catch {
-					print("Error: Could not write to CSV file: \(error)")
-					generationFlag = false
-					generationMessage = "Error: Could not write to CSV file: \(error)"
+					invoiceLineNum += 1
+					// referenceData.dataCounts.increaseHighestInvoiceNumber()
 				}
+				// Save the Students List as the Last Billing Dates will have been updated
+				await referenceData.students.saveStudentData()
+				await referenceData.dataCounts.saveDataCounts()
+				
+				// Close the CSV file when done
+				fileHandle.closeFile()
+				print("Lines written to CSV file successfully.")
 			} catch {
-				print("Error creating directory: \(error)")
 				generationFlag = false
-				generationMessage = "Error: could not create directory for CSV File"
+				generationMessage = "Error: Could not write to CSV file: \(error)"
+				print(generationMessage)
+				await AppLogger.shared.log(generationMessage, level: .error)
 			}
 		}
 		
 		return(generationFlag, generationMessage)
 	}
+	
 	// Format a CSV file line in Xero format from an Invoice file line
 	//
 	@MainActor func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
+		var invoiceMessage: String
+		
 		let invoiceNum = invoiceLine.invoiceNum
 //		let invoiceNum = referenceData.dataCounts.highestInvoiceNumber + 1
 		let invoiceClient = invoiceLine.clientName
@@ -450,7 +484,11 @@ import GoogleSignIn
 		if studentFound {
 			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
 		} else {
-			print ("Error: Student not found when updating Student Last Billed Date")
+			invoiceMessage = "ERROR: Student not found when updating Student Last Billed Date"
+			Task {
+				await AppLogger.shared.log(invoiceMessage, level: .error)
+			}
+			print(invoiceMessage)
 		}
 		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		return(csvLine)
@@ -483,10 +521,10 @@ import GoogleSignIn
 		if studentFound {
 			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
 		} else {
-			print ("Error: Student not found when updating Student Last Billed Date")
+			print ("ERROR: Student not found when updating Student Last Billed Date")
 		}
 		
-		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
+		print ("Student: \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		
 		return(csvLine)
 	}
@@ -497,13 +535,21 @@ import GoogleSignIn
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
 		
-		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-		let userCSVURL = documentsURL.appendingPathComponent("CSVFiles")
+		let fileManager = FileManager.default
 		
+		guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+			generationMessage = "ERROR: Could not find the Documents directory generating Client List"
+			await AppLogger.shared.log(generationMessage, level: .error)
+			return(false, generationMessage)
+		}
+		
+		let csvDirectory = documentsDirectory.appendingPathComponent("WSAdmin CSV Files", isDirectory: true)
 		
 		do {
-			// Create the file in the Documents directory
-			try FileManager.default.createDirectory(at: userCSVURL, withIntermediateDirectories: true, attributes: nil)
+			// Create the "WSAdmin CSV Files" subfolder in Documents if it doesn't already exist
+			if !fileManager.fileExists(atPath: csvDirectory.path) {
+				try fileManager.createDirectory(at: csvDirectory, withIntermediateDirectories: true, attributes: nil)
+			}
 			
 			do {
 				let dateFormatter = DateFormatter()
@@ -511,16 +557,9 @@ import GoogleSignIn
 				let fileDate = dateFormatter.string(from: Date())
 				
 				let fileName = "CSV Client List Generated on \(fileDate).csv"
-				let fileManager = FileManager.default
 				
-				// Get the path to the Documents directory
-				guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-					print("Could not find the Documents directory.")
-					return(false, "Count not find the Documents Directory")
-				}
-				
-				// Set the file path
-				let fileURL = documentsDirectory.appendingPathComponent(fileName)
+				// Set the file path inside the CSV subfolder
+				let fileURL = csvDirectory.appendingPathComponent(fileName)
 				
 				// Create the file if it doesn't exist
 				if !fileManager.fileExists(atPath: fileURL.path) {
@@ -534,7 +573,7 @@ import GoogleSignIn
 					fileHandle.write(data)
 				}
 				
-				// Loop through the Students List in th ReferenceData and create a line in the CSV file for each client name
+				// Loop through the Students List in the ReferenceData and create a line in the CSV file for each client name
 				var studentNum =  0
 				let studentCount = referenceData.students.studentsList.count
 				while studentNum < studentCount {
@@ -549,14 +588,16 @@ import GoogleSignIn
 				fileHandle.closeFile()
 				print("Lines written to CSV file successfully.")
 			} catch {
-				print("Error: Could not write to CSV file: \(error)")
 				generationFlag = false
-				generationMessage = "Error: Could not write to CSV file: \(error)"
+				generationMessage = "ERROR: Could not write to CSV file: \(error)"
+				print(generationMessage)
+				await AppLogger.shared.log(generationMessage, level: .error)
 			}
 		} catch {
-			print("Error creating directory: \(error)")
 			generationFlag = false
-			generationMessage = "Error: could not create directory for CSV File"
+			generationMessage = "ERROR: Could not create directory for CSV File \(error)"
+			print(generationMessage)
+			await AppLogger.shared.log(generationMessage, level: .error)
 		}
 		
 		return(generationFlag, generationMessage)
@@ -566,6 +607,8 @@ import GoogleSignIn
 	
 	// Reset Tutor, Student and Location billing stats in the Reference Data, Tutor Billing and Student Billing spreadsheets (when Tutor is rebilled for a month) by removing session, cost, revenue and profit counts for the current billing month
 	@MainActor func resetBillingStats(alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, studentBillingMonth:StudentBillingMonth, referenceData: ReferenceData, billingMonth: String, billingYear: String) -> (Bool, String) {
+		
+		var statsMessage: String
 		
 		// Loop through each Tutor that was already billed
 		var alreadyBilledTutorNum = 0
@@ -578,8 +621,12 @@ import GoogleSignIn
 			let (billedStudentFound, alreadyBilledStudentNumbers) = studentBillingMonth.findBilledStudentsByTutorName(tutorName: tutorName)
 			
 			guard billedStudentFound else {
-				print("Error: Billed Student assigned to Tutor \(tutorName) not found in Student Billing Month \(billingMonth) \(billingYear)")
-				return(false, "Error: Billed Students assigned to Tutor \(tutorName) not found in Student Billing Month \(billingMonth) \(billingYear)")
+				statsMessage = "ERROR: Billed Student assigned to Tutor: \(tutorName) not found in Student Billing Month: \(billingMonth) \(billingYear)"
+				print(statsMessage)
+				Task {
+					await AppLogger.shared.log(statsMessage, level: .error)
+				}
+				return(false, statsMessage)
 			}
 			
 			// Loop through each Student assigned to the already billed Tutor
@@ -598,8 +645,11 @@ import GoogleSignIn
 				
 				let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 				guard studentFound else {
-					print ("Error: Student \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
-					return(false, "Error: Student \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
+					statsMessage = "ERROR: Student: \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)"
+					Task {
+						await AppLogger.shared.log(statsMessage, level: .error)
+					}
+					return(false, statsMessage)
 				}
 				// Reset the Reference Data for the Student
 				referenceData.students.studentsList[studentNum].resetStudentBillingStats(monthSessions: sessions, monthCost: cost, monthRevenue: revenue)
@@ -608,8 +658,12 @@ import GoogleSignIn
 				let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 				let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
 				guard locationFound  else {
-					print ("Error: Location \(studentLocation) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)")
-					return (false, "Error: Location \(studentLocation) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
+					statsMessage = "ERROR: Location: \(studentLocation) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)"
+					print(statsMessage)
+					Task {
+						await AppLogger.shared.log(statsMessage, level: .error)
+					}
+					return (false, statsMessage)
 				}
 				referenceData.locations.locationsList[locationNum].resetLocationBillingStats(monthRevenue: revenue)
 							
@@ -618,14 +672,22 @@ import GoogleSignIn
 			
 			let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 			guard billedTutorFound else {
-				print("Error: Tutor \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)")
-				return(false, "Error: Tutor \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)")
+				statsMessage = "ERROR: Tutor: \(tutorName) not found in Tutor Billing Month \(billingMonth) \(billingYear)"
+				print(statsMessage)
+				Task {
+					await AppLogger.shared.log(statsMessage, level: .error)
+				}
+				return(false, statsMessage)
 			}
 				
 			let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 			guard tutorFound else {
-				print("Error: Tutor \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
-				return(false, "Error: Tutor \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)")
+				statsMessage = "ERROR: Tutor: \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)"
+				print(statsMessage)
+				Task {
+					await AppLogger.shared.log(statsMessage, level: .error)
+				}
+				return(false, statsMessage)
 			}
 			// Reset the Billed Tutor month data for the Tutor and the ReferenceData Tutor data
 			let monthTutorSessions = tutorBillingMonth.tutorBillingRows[billedTutorNum].monthBilledSessions

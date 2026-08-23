@@ -13,6 +13,7 @@ import Foundation
 	var tutorName: String				// Tutor's name
 	var tutorEmail: String				// Tutor's email
 	var tutorPhone: String				// Tutor's phone number
+	var tutorType: TutorTypeOption			// Regular or Specialist
 	var tutorStatus: TutorStatusOption		// Assigned, Unassigned, Suspended or Deleted
 //	var tutorAvailability: String			// Tutor availability data from Tutor's Timesheet
 	var tutorStartDate: String			// Date the Tutor was created (entered into the system)
@@ -29,11 +30,12 @@ import Foundation
 	var timesheetFileID: String			// The Google Sheets fileID of the Tutor's Timesheet
 	let id = UUID()
 	
-	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorStatus: TutorStatusOption, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Double, tutorTotalRevenue: Double, tutorTotalProfit: Double, timesheetFileID:String) {
+	init(tutorKey: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorType: TutorTypeOption, tutorStatus: TutorStatusOption, tutorStartDate: String, tutorEndDate: String, tutorMaxStudents: Int, tutorStudentCount: Int, tutorServiceCount: Int, tutorTotalSessions: Int, tutorTotalCost: Double, tutorTotalRevenue: Double, tutorTotalProfit: Double, timesheetFileID:String) {
 		self.tutorKey = tutorKey
 		self.tutorName = tutorName
 		self.tutorEmail = tutorEmail
 		self.tutorPhone = tutorPhone
+		self.tutorType = tutorType
 		self.tutorStatus = tutorStatus
 //		self.tutorAvailability = " "
 		self.tutorStartDate = tutorStartDate
@@ -47,6 +49,7 @@ import Foundation
 		self.tutorTotalProfit = tutorTotalProfit
 		self.timesheetFileID = timesheetFileID				
 	}
+	
 	//
 	// --------------------------------------------------------------------------------------------
 	//
@@ -106,6 +109,7 @@ import Foundation
 		}
 		return(completionFlag)
 	}
+	
 	//
 	// --------------------------------------------------------------------------------------------
 	//

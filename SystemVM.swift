@@ -48,6 +48,10 @@ import Foundation
 		var billedTutorMonth = TutorBillingMonth(monthName: "")
 		var billedStudentMonth = StudentBillingMonth(monthName: "")
 		var billedMonthName: String = ""
+		var highestTutorKey: Int = 0
+		var highestServiceKey: Int = 0
+		var highestStudentKey: Int = 0
+		var highestLocationKey: Int = 0
 		
 		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\n     Validating System - Stand By for Adventure! "))
 		
@@ -84,6 +88,12 @@ import Foundation
 		let studentCount = referenceData.students.studentsList.count
 		while studentNum < studentCount {
 			let studentKey = referenceData.students.studentsList[studentNum].studentKey
+			let keyNumber = studentKey.dropFirst()
+			let studentNumber = Int(keyNumber)
+			if let studentNumber = Int(keyNumber) {
+				if studentNumber > highestStudentKey { highestStudentKey = studentNumber }
+			}
+			
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			var tutorNum:Int = 0
 			var assignedCount:Int = 0
@@ -116,13 +126,23 @@ import Foundation
 			studentNum += 1
 		}
 		
+		// Check to ensure no Student keys exceed the highest Student key counter in Reference Data data counts
+		if highestStudentKey > referenceData.dataCounts.highestStudentKey {
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Student key is \(highestStudentKey), which is higher than next available key \(referenceData.dataCounts.highestStudentKey)-- duplicate keys will result"))
+		}
+		
 		// Validate that each Service with a Status of Assigned is actually assigned to a Tutor and no Services with a Status of Unassigned is assigned to a Tutor
 		// Validate that the Use Count for each Service is equal to the number of Tutors the Service is assigned to
-		// Validate that each Base service is assigned to each Service
+		// Validate that each Base service is assigned to each Student
 		var serviceNum = 0
 		let serviceCount = referenceData.services.servicesList.count
 		while serviceNum < serviceCount {
 			let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+			let keyNumber = serviceKey.dropFirst()
+			let serviceNumber = Int(keyNumber)
+			if let serviceNumber = Int(keyNumber) {
+				if serviceNumber > highestServiceKey { highestServiceKey = serviceNumber }
+			}
 			let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 			let serviceType = referenceData.services.servicesList[serviceNum].serviceType
 			
@@ -131,13 +151,13 @@ import Foundation
 			var tutorServiceCount:Int = 0
 			let tutorCount = referenceData.tutors.tutorsList.count
 			while tutorNum < tutorCount {
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted   {
 		
 					let (serviceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
 					if serviceFound {
 						tutorName = tutorName + referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 						tutorServiceCount += 1
-					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
+					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted && referenceData.tutors.tutorsList[tutorNum].tutorType != .SpecialistTutor {
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Base Service \(serviceName) not assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
 						
 					}
@@ -156,6 +176,11 @@ import Foundation
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Service \(serviceName) assigned to Tutor \(tutorName)"))
 			}
 			serviceNum += 1
+		}
+		
+		// Check to ensure no Service keys exceed the highest Service key counter in Reference Data data counts
+		if highestServiceKey > referenceData.dataCounts.highestServiceKey {
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Service key is \(highestServiceKey), which is higher than next available key \(referenceData.dataCounts.highestServiceKey)-- duplicate keys will result"))
 		}
 		
 		// Validate that the Location count equals the number of (non-deleted) Students with that Location
@@ -187,6 +212,8 @@ import Foundation
 			
 			locationNum += 1
 		}
+		
+		
 		
 		// Validate that each Tutor has a Timesheet
 		
@@ -241,6 +268,12 @@ import Foundation
 			
 			// Check for duplicate Location keys
 			let locationKey = referenceData.locations.locationsList[locationNum].locationKey
+			let keyNumber = locationKey.dropFirst()
+			let locationNumber = Int(keyNumber)
+			if let locationNumber = Int(keyNumber) {
+				if locationNumber > highestLocationKey { highestLocationKey = locationNumber }
+			}
+			
 			let locationKeyCount = referenceData.locations.locationsList.filter { $0.locationKey == locationKey }.count
 			if locationKeyCount > 1 {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
@@ -254,6 +287,11 @@ import Foundation
 			locationNum += 1
 		}
 		
+		// Check to ensure no Location keys exceed the highest Location key counter in Reference Data data counts
+		if highestLocationKey > referenceData.dataCounts.highestLocationKey {
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Location key is \(highestLocationKey), which is higher than next available key \(referenceData.dataCounts.highestLocationKey)-- duplicate keys will result"))
+		}
+		
 		// Various Tutor data checks
 		var tutorNum = 0
 		let tutorCount = referenceData.tutors.tutorsList.count
@@ -263,6 +301,12 @@ import Foundation
 			
 			// Check for duplicate Tutor Keys in Reference Data
 			let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
+			let keyNumber = tutorKey.dropFirst()
+			let tutorNumber = Int(keyNumber)
+			if let tutorNumber = Int(keyNumber) {
+				if tutorNumber > highestTutorKey { highestTutorKey = tutorNumber }
+			}
+			
 			let tutorKeyCount = referenceData.tutors.tutorsList.filter { $0.tutorKey == tutorKey }.count
 			if tutorKeyCount > 1 {
 				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Tutor Key \(tutorKey)"))
@@ -316,14 +360,16 @@ import Foundation
 			tutorNum += 1
 		}
 		
-		
+		// Check to ensure no Tutor keys exceed the highest Tutor key counter in Reference Data data counts
+		if highestTutorKey > referenceData.dataCounts.highestTutorKey {
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Tutor key is \(highestTutorKey), which is higher than next available key \(referenceData.dataCounts.highestTutorKey)-- duplicate keys will result"))
+		}
 		
 		// Check that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
 		var totalStudents = 0
 		var activeStudents = 0
 		var deletedStudents = 0
 
-		
 		studentNum = 0
 		while studentNum < studentCount {
 			let studentName = referenceData.students.studentsList[studentNum].studentName
@@ -582,7 +628,16 @@ import Foundation
 		
 		// Validate that the sum of the Tutors total revenue equals Student total revenue equals Location total revenue equals Billed Student revenue count equals Billed Tutor revenue Count
 		if !CompareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: studentRevenue) || !CompareTotals(referenceDataTotal: studentRevenue, billedDataTotal: locationRevenue) || !CompareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: locationRevenue) || !CompareTotals(referenceDataTotal: locationRevenue, billedDataTotal: billedTutorTotalRevenue) || !CompareTotals(referenceDataTotal: billedTutorTotalRevenue, billedDataTotal: billedStudentTotalRevenue) {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor revenue \(tutorRevenue), Student revenue \(studentRevenue), Location revenue \(locationRevenue), Billed Tutor revenue \(billedTutorTotalRevenue) and Billed Student revenue \(billedStudentTotalRevenue) do not match"))
+			let formatter = NumberFormatter()
+			formatter.numberStyle = .currency
+			formatter.locale = Locale(identifier: "en_US")
+			
+			let tutorRevenueString: String = formatter.string(from: NSNumber(value: tutorRevenue)) ?? " "
+			let studentRevenueString: String = formatter.string(from: NSNumber(value: studentRevenue)) ?? " "
+			let locationRevenueString: String = formatter.string(from: NSNumber(value: locationRevenue)) ?? " "
+			let billedTutorTotalRevenueString: String = formatter.string(from: NSNumber(value: billedTutorTotalRevenue)) ?? " "
+			let billedStudentTotalRevenueString: String = formatter.string(from: NSNumber(value: billedStudentTotalRevenue)) ?? " "
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor revenue " + tutorRevenueString + ", Student revenue" + studentRevenueString + ", Location revenue " + locationRevenueString + ", Billed Tutor revenue " + billedTutorTotalRevenueString + " and Billed Student revenue " + billedStudentTotalRevenueString + " do not match"))
 			
 			// If total Student revenue in RefData does not equal total Student revenue in Billed Student list, find the difference
 			if studentRevenue != billedStudentTotalRevenue {

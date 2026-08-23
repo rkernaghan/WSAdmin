@@ -255,7 +255,7 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(studentIndex: items, referenceData: referenceData)
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
@@ -269,7 +269,7 @@ struct StudentListView: View {
 						
 						Button(role: .destructive) {
 							Task {
-								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(indexes: items, referenceData: referenceData)
+								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(studentIndex: items, referenceData: referenceData)
 								if deleteResult == false {
 									showAlert = true
 									buttonErrorMsg = deleteMessage

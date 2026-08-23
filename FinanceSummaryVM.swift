@@ -10,6 +10,8 @@ import Foundation
 	
 	func buildFinanceSummary() async -> [FinanceSummaryRow] {
 		
+		var financeMessage: String
+		
 		// Initialize the running totals to 0
 		var financeSummaryArray = [FinanceSummaryRow]()
 		
@@ -67,14 +69,18 @@ import Foundation
 						// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
 						let readResult = await tutorBillingMonth.getTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 						if !readResult {
-							print("Warning: Could not load Tutor Billing Data for \(monthName)")
+							financeMessage = "ERROR: Could not load Tutor Billing Data for Month: \(monthName)"
+							print(financeMessage)
+							await AppLogger.shared.log(financeMessage, level: .error)
 						} else {
 							
 							// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
 							let studentBillingMonth = StudentBillingMonth(monthName: monthName)
 							let readResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID, loadValidatedData: false)
 							if !readResult {
-								print(("Warning: Could not load Student Billing Data for \(monthName)"))
+								financeMessage = "ERROR: Could not load Student Billing Data for Month: \(monthName)"
+								print(financeMessage)
+								await AppLogger.shared.log(financeMessage, level: .error)
 							} else {
 								
 								// For each Tutor Billing Month in the year, count the total number of active Tutors and the total number who had at least one billing session
@@ -161,7 +167,9 @@ import Foundation
 					
 				}
 			} catch {
-				print("Error: could not get FileID of Billed Tutor file \(tutorBillingFileName)")
+				financeMessage = "ERROR: could not get FileID of Billed Tutor file: \(tutorBillingFileName)"
+				print(financeMessage)
+				await AppLogger.shared.log(financeMessage, level: .error)
 			}
 		}
 		return(financeSummaryArray)
