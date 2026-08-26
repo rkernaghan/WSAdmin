@@ -12,10 +12,10 @@ import Foundation
     
 	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
 		var completionFlag: Bool = true
-		var completionMessage: String = ""
+		var logMessage: String = ""
 		
-		completionMessage = "INFO: Adding Student: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
-		await AppLogger.shared.log(completionMessage, newLine: "Y")
+		logMessage = "INFO: Adding Student: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
+		await AppLogger.shared.log(logMessage, newLine: "Y")
 		
 		var result: Bool = true
 		var studentBillingFileID: String = ""
@@ -25,15 +25,15 @@ import Foundation
 		let saveStudentsResult = await referenceData.students.saveStudentData()
 		if !saveStudentsResult {
 			completionFlag = false
-			completionMessage = "ERROR: could not save Student Data to ReferenceData spreadsheet when adding new Student \(studentName)"
-			await AppLogger.shared.log(completionMessage)
+			logMessage = "ERROR: could not save Student Data to ReferenceData spreadsheet when adding new Student \(studentName)"
+			await AppLogger.shared.log(logMessage)
 		} else {
 			referenceData.dataCounts.increaseTotalStudentCount()
 			let saveCountsFlag = await referenceData.dataCounts.saveDataCounts()
 			if !saveCountsFlag {
 				completionFlag = false
-				completionMessage = "ERROR: could not save Data Counts to ReferenceData spreadsheet when adding new Student \(studentName)"
-				await AppLogger.shared.log(completionMessage)
+				logMessage = "ERROR: could not save Data Counts to ReferenceData spreadsheet when adding new Student \(studentName)"
+				await AppLogger.shared.log(logMessage)
 			} else {
 				
 				let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
@@ -41,8 +41,8 @@ import Foundation
 				let saveLocationsResult = await referenceData.locations.saveLocationData()
 				if !saveLocationsResult {
 					completionFlag = false
-					completionMessage = "ERROR: could not save Data Counts to ReferenceData spreadsheet when adding new Student \(studentName)"
-					await AppLogger.shared.log(completionMessage)
+					logMessage = "ERROR: could not save Data Counts to ReferenceData spreadsheet when adding new Student \(studentName)"
+					await AppLogger.shared.log(logMessage)
 				} else {
 					
 					let (prevMonthName, billingYear) = getPrevMonthYear()
@@ -55,56 +55,56 @@ import Foundation
 						(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 						if !result {
 							completionFlag = false
-							completionMessage = "ERROR: Could not get fileID for file: \(studentBillingFileName) when adding new Student\(studentName)"
-							await AppLogger.shared.log(completionMessage)
+							logMessage = "ERROR: Could not get fileID for file: \(studentBillingFileName) when adding new Student\(studentName)"
+							await AppLogger.shared.log(logMessage)
 						} else {
 							// Read in the Billed Students for the previous month
 							let getStudentBillingFlag = await studentBillingMonth.getStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID, loadValidatedData: false)
 							if !getStudentBillingFlag {
 								completionFlag = false
-								completionMessage = "ERROR: Could not load Student Billing Month: \(studentBillingFileName) \(prevMonthName) when adding new Student \(studentName)"
-								await AppLogger.shared.log(completionMessage)
+								logMessage = "ERROR: Could not load Student Billing Month: \(studentBillingFileName) \(prevMonthName) when adding new Student \(studentName)"
+								await AppLogger.shared.log(logMessage)
 							} else {
 								// Add the new Student to Billed Student list for the month
 								let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 								if billedStudentFound == false {
 									studentBillingMonth.addNewBilledStudent(studentName: studentName)
 								} else {
-									completionMessage = "ERROR: Student \(studentName) already in Billed Student Month for \(studentBillingFileName) \(prevMonthName)"
-									await AppLogger.shared.log(completionMessage, level: .error)
+									logMessage = "ERROR: Student \(studentName) already in Billed Student Month for \(studentBillingFileName) \(prevMonthName)"
+									await AppLogger.shared.log(logMessage, level: .error)
 								}
 								// Save the updated Billed Student list for the month
 								let saveStudentBillingFlag = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName, saveValidatedStudentData: false)
 								if !saveStudentBillingFlag {
 									completionFlag = false
-									completionMessage = "ERROR: Could not save Student Billing Month: \(studentBillingFileName) \(prevMonthName) when adding new Student \(studentName)"
-									await AppLogger.shared.log(completionMessage)
+									logMessage = "ERROR: Could not save Student Billing Month: \(studentBillingFileName) \(prevMonthName) when adding new Student \(studentName)"
+									await AppLogger.shared.log(logMessage)
 								} else {
-									completionMessage = "INFO: Student \(studentName) added to Billed Student Month for \(studentBillingFileName) \(prevMonthName)"
-									await AppLogger.shared.log(completionMessage)
+									logMessage = "INFO: Student \(studentName) added to Billed Student Month for \(studentBillingFileName) \(prevMonthName)"
+									await AppLogger.shared.log(logMessage)
 								}
 							}
 						}
 					} catch {
 						completionFlag = false
-						completionMessage = "ERROR: Could not get fileID for file: \(studentBillingFileName) when adding new Student \(studentName)"
-						print(completionMessage)
-						await AppLogger.shared.log(completionMessage)
+						logMessage = "ERROR: Could not get fileID for file: \(studentBillingFileName) when adding new Student \(studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage)
 					}
 					
 				}
 			}
 		}
-		return(completionFlag, completionMessage)
+		return(completionFlag, logMessage)
 	}
     
 	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
 
 		var completionFlag: Bool = true
-		var completionMessage: String = ""
+		var logMessage: String = ""
 		
-		completionMessage = "INFO: Updating Student: \(originalStudentName), New Name: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
-		await AppLogger.shared.log(completionMessage, newLine: "Y")
+		logMessage = "INFO: Updating Student: \(originalStudentName), New Name: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
+		await AppLogger.shared.log(logMessage, newLine: "Y")
 		
 		let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -132,9 +132,9 @@ import Foundation
 				if locationFound {
 					referenceData.locations.locationsList[locationNum].increaseStudentCount()
 				} else {
-					completionMessage = "ERROR: COuld not find Location \(referenceData.locations.locationsList[locationNum].locationName) to increase Location Count for Student \(studentName)"
-					print(completionMessage)
-					await AppLogger.shared.log(completionMessage)
+					logMessage = "ERROR: COuld not find Location \(referenceData.locations.locationsList[locationNum].locationName) to increase Location Count for Student \(studentName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage)
 				}
 				completionFlag = await referenceData.locations.saveLocationData()
 				
@@ -152,9 +152,9 @@ import Foundation
 							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
 							completionFlag = await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
 							if !completionFlag {
-								completionMessage = "ERROR: COuld not save Student \(studentName) in Tutor Student List for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-								print(completionMessage)
-								await AppLogger.shared.log(completionMessage)
+								logMessage = "ERROR: COuld not save Student \(studentName) in Tutor Student List for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage)
 							}
 						}
 						tutorNum += 1
@@ -165,11 +165,11 @@ import Foundation
 					let renamePrevResult = await self.renameStudentInBilledStudentMonth(originalStudentName: originalStudentName, newStudentName: studentName, monthName: prevMonthName, yearName: prevMonthYear)
 					if !renamePrevResult {
 						completionFlag = false
-						completionMessage = "ERROR: Error renaming Student \(studentName) in Billed Student Month \(prevMonthName)"
-						await AppLogger.shared.log(completionMessage, level: .error)
+						logMessage = "ERROR: Error renaming Student \(studentName) in Billed Student Month \(prevMonthName)"
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
-						completionMessage = "INFO: Student \(studentName) renamed in Billed Student Month \(prevMonthName)"
-						await AppLogger.shared.log(completionMessage)
+						logMessage = "INFO: Student \(studentName) renamed in Billed Student Month \(prevMonthName)"
+						await AppLogger.shared.log(logMessage)
 					}
 					
 					let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
@@ -177,19 +177,19 @@ import Foundation
 					// If Student not found in current Billed Student month, it may not be an error as the Student may not have been billed yet
 				}
 			} else {
-				completionMessage = "ERROR: Could not update Location count data when updating Student: \(studentName)"
-				await AppLogger.shared.log(completionMessage, level: .error)
+				logMessage = "ERROR: Could not update Location count data when updating Student: \(studentName)"
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} else {
-			completionMessage = "ERROR: Could not save Student data for Student: \(studentName)"
-			await AppLogger.shared.log(completionMessage, level: .error)
+			logMessage = "ERROR: Could not save Student data for Student: \(studentName)"
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
-		return(completionFlag, completionMessage)
+		return(completionFlag, logMessage)
 	}
     
 	func renameStudentInBilledStudentMonth(originalStudentName: String, newStudentName: String, monthName: String, yearName: String) async -> Bool {
 		var completionResult: Bool = true
-		var completionMessage: String
+		var logMessage: String
 		
 		var result: Bool = false
 		var studentBillingFileID: String = ""
@@ -214,17 +214,17 @@ import Foundation
 						// Save the updated Billed Student list for the month
 						completionResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName, saveValidatedStudentData: false)
 					} else {
-						completionMessage = "WARNING: Billed Student \(originalStudentName) not found in Billed Student sheet for \(monthName) \(yearName)"
-						print(completionMessage)
-						await AppLogger.shared.log(completionMessage, level: .warning)
+						logMessage = "WARNING: Billed Student \(originalStudentName) not found in Billed Student sheet for \(monthName) \(yearName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
 						completionResult = false
 					}
 				}
 			}
 		} catch {
-			completionMessage = "ERROR: Could not get FileID for file: \(studentBillingFileName)"
-			print(completionMessage)
-			await AppLogger.shared.log(completionMessage, level: .error)
+			logMessage = "ERROR: Could not get FileID for file: \(studentBillingFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionResult = false
 		}
 		return(completionResult)
@@ -432,15 +432,15 @@ import Foundation
 	func deleteStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		
 		var deleteResult: Bool = true
-		var deleteMessage: String = " "
+		var logMessage: String = " "
 		var result: Bool = true
 		var studentBillingFileID: String = ""
 		
 		for objectID in studentIndex {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				deleteMessage = "INFO: Deleting Student: \(referenceData.students.studentsList[index].studentName)"
-				await AppLogger.shared.log(deleteMessage, newLine: "Y")
-				print(deleteMessage)
+				logMessage = "INFO: Deleting Student: \(referenceData.students.studentsList[index].studentName)"
+				await AppLogger.shared.log(logMessage, newLine: "Y")
+				print(logMessage)
 				// Check that the Student is not assigned to a Tutor and is not already deleted
 				if referenceData.students.studentsList[index].studentStatus != .StudentAssigned && referenceData.students.studentsList[index].studentStatus != .StudentDeleted {
 					// Change the Student's Status to Deleted and save the updated Student List data
@@ -448,9 +448,9 @@ import Foundation
 					referenceData.students.studentsList[studentNum].markDeleted()
 					deleteResult = await referenceData.students.saveStudentData()
 					if !deleteResult {
-						deleteMessage = "ERROR: Could not save Student Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
-						print(deleteMessage)
-						await AppLogger.shared.log(deleteMessage, level: .error)
+						logMessage = "ERROR: Could not save Student Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
 						// Decrease the system count of Active Students and the count of students at this student's Location
 						referenceData.dataCounts.decreaseActiveStudentCount()
@@ -458,18 +458,18 @@ import Foundation
 						let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
 						if !locationFound {
 							deleteResult = false
-							deleteMessage = "Error: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
-							print(deleteMessage)
-							await AppLogger.shared.log(deleteMessage, level: .error)
+							logMessage = "Error: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
 							referenceData.locations.locationsList[locationNum].decreaseStudentCount()
 							// Save the updated Location List data
 							let saveResult = await referenceData.locations.saveLocationData()
 							if !saveResult {
 								deleteResult = false
-								deleteMessage = "ERROR: Could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
-								print(deleteMessage)
-								await AppLogger.shared.log(deleteMessage, level: .error)
+								logMessage = "ERROR: Could not save Locations Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							} else {
 								// Mark Student deleted in the Billed Student list for previous month
 								let (prevMonthName, billingYear) = getPrevMonthYear()
@@ -482,16 +482,16 @@ import Foundation
 									(result, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
 									if !result {
 										deleteResult = false
-										deleteMessage = "ERROR: Could not get File ID for Student Billing FileName: \(studentBillingFileName)"
-										print(deleteMessage)
-										await AppLogger.shared.log(deleteMessage, level: .error)
+										logMessage = "ERROR: Could not get File ID for Student Billing FileName: \(studentBillingFileName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .error)
 									} else {
 										// Read in the Billed Students for the previous month
 										deleteResult = await studentBillingMonth.getStudentBillingMonth(monthName: prevMonthName, studentBillingFileID: studentBillingFileID, loadValidatedData: false)
 										if !deleteResult {
-											deleteMessage = "Error: could not load Student Billing Month for \(prevMonthName) when deleting Student"
-											print(deleteMessage)
-											await AppLogger.shared.log(deleteMessage, level: .error)
+											logMessage = "Error: could not load Student Billing Month for \(prevMonthName) when deleting Student"
+											print(logMessage)
+											await AppLogger.shared.log(logMessage, level: .error)
 											
 										} else {
 											// Remove the Student from the Billed Student list for the month
@@ -499,17 +499,17 @@ import Foundation
 											let (billedStudentFound, billedStudentNum) = studentBillingMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 											if billedStudentFound == false {
 												deleteResult = false
-												deleteMessage = "ERROR: Could not find Student \(studentName) in the Billed Student List for month \(prevMonthName)"
-												print(deleteMessage)
-												await AppLogger.shared.log(deleteMessage, level: .error)
+												logMessage = "ERROR: Could not find Student \(studentName) in the Billed Student List for month \(prevMonthName)"
+												print(logMessage)
+												await AppLogger.shared.log(logMessage, level: .error)
 											}
 											studentBillingMonth.deleteBilledStudent(billedStudentNum: billedStudentNum)
 											// Save the updated Billed Student list for the month
 											deleteResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: prevMonthName, saveValidatedStudentData: false)
 											if !deleteResult {
-												deleteMessage = "ERROR: Could not save Student Billing Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
-												print(deleteMessage)
-												await AppLogger.shared.log(deleteMessage, level: .error)
+												logMessage = "ERROR: Could not save Student Billing Data when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
+												print(logMessage)
+												await AppLogger.shared.log(logMessage, level: .error)
 											}
 										}
 									}
@@ -521,9 +521,9 @@ import Foundation
 					}
 					
 				} else {
-					deleteMessage = "ERROR: Student \(referenceData.students.studentsList[index].studentName) csnnot be Deleted when status is \(referenceData.students.studentsList[index].studentStatus)"
-					print(deleteMessage)
-					await AppLogger.shared.log(deleteMessage, level: .error)
+					logMessage = "ERROR: Student \(referenceData.students.studentsList[index].studentName) csnnot be Deleted when status is \(referenceData.students.studentsList[index].studentStatus)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					deleteResult = false
 				}
 			}
@@ -531,27 +531,27 @@ import Foundation
 		if deleteResult {
 			deleteResult = await referenceData.dataCounts.saveDataCounts()
 			if !deleteResult {
-				deleteMessage = "ERROR: could not save Data Counts when deleting Student"
-				print(deleteMessage)
-				await AppLogger.shared.log(deleteMessage, level: .error)
+				logMessage = "ERROR: could not save Data Counts when deleting Student"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		}
 		
-		return(deleteResult, deleteMessage)
+		return(deleteResult, logMessage)
 	}
 	
 	// This function changes a Student's Status from "Deleted" to "Active"
-	func undeleteStudent(indexes: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	func undeleteStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unDeleteResult: Bool = true
-		var unDeleteMessage: String = " "
+		var logMessage: String = " "
 		var studentName: String = "unknown "
 		
-		for objectID in indexes {
+		for objectID in studentIndex {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				studentName = referenceData.students.studentsList[index].studentName
-				unDeleteMessage = "INFO: Undeleting Student: \(studentName)"
-				print(unDeleteMessage)
-				await AppLogger.shared.log(unDeleteMessage, newLine: "Y")
+				logMessage = "INFO: Undeleting Student: \(studentName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[index].studentStatus == .StudentDeleted {
 					let studentNum = index
@@ -564,45 +564,45 @@ import Foundation
 						referenceData.locations.locationsList[locationNum].increaseStudentCount()
 						unDeleteResult = await referenceData.locations.saveLocationData()
 						if !unDeleteResult {
-							unDeleteMessage = "ERROR: could not save Location data when Undeleting Student"
-							print(unDeleteMessage)
-							await AppLogger.shared.log(unDeleteMessage, level: .error)
+							logMessage = "ERROR: could not save Location data when Undeleting Student"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
-						unDeleteMessage = "Error: could not save Student data when Undeleting Student \(referenceData.students.studentsList[index].studentName)"
-						print(unDeleteMessage)
-						await AppLogger.shared.log(unDeleteMessage, level: .error)
+						logMessage = "ERROR: could not save Student data when Undeleting Student \(referenceData.students.studentsList[index].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 					
 				} else {
-					unDeleteMessage = "WARNING: Student \(referenceData.students.studentsList[index].studentName) cannot be Undeleted when Status is \(referenceData.students.studentsList[index].studentStatus)\n"
-					print(unDeleteMessage)
+					logMessage = "WARNING: Student \(referenceData.students.studentsList[index].studentName) cannot be Undeleted when Status is \(referenceData.students.studentsList[index].studentStatus)\n"
+					print(logMessage)
 					unDeleteResult = false
 				}
 			}
 		}
 		unDeleteResult = await referenceData.dataCounts.saveDataCounts()
 		if !unDeleteResult {
-			unDeleteMessage = "ERROR: Could not save Data Counts when Undeleting Student \(studentName)"
-			print(unDeleteMessage)
-			await AppLogger.shared.log(unDeleteMessage, level: .error)
+			logMessage = "ERROR: Could not save Data Counts when Undeleting Student \(studentName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
-		return(unDeleteResult, unDeleteMessage)
+		return(unDeleteResult, logMessage)
 	}
     
 	// This function assigns a Student to a Tutor
 	func assignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var assignResult: Bool = true
-		var assignMessage: String = ""
+		var logMessage: String = ""
 		var studentName: String = "unknown"
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				studentName = referenceData.students.studentsList[studentNum].studentName
-				assignMessage = "INFO: Assigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-				print(assignMessage)
-				await AppLogger.shared.log(assignMessage, newLine: "Y")
+				logMessage = "INFO: Assigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				// Check that the Student Status is "Unassigned"
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
@@ -611,9 +611,9 @@ import Foundation
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
 					assignResult = await referenceData.students.saveStudentData()
 					if !assignResult {
-						assignMessage = "ERROR: could not save Student Data when assigning Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) to Student: \(referenceData.students.studentsList[studentNum].studentName)"
-						print(assignMessage)
-						await AppLogger.shared.log(assignMessage, level: .error)
+						logMessage = "ERROR: could not save Student Data when assigning Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) to Student: \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
 						// 
 						let dateFormatter = DateFormatter()
@@ -623,43 +623,43 @@ import Foundation
 						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
 						assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
 						if !assignResult {
-							assignMessage = "ERROR: could not save Tutor Details data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) when assigning Student \(referenceData.students.studentsList[studentNum].studentName)"
-							print(assignMessage)
-							await AppLogger.shared.log(assignMessage, level: .error)
+							logMessage = "ERROR: could not save Tutor Details data for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) when assigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
 							assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
 							if !assignResult {
-								assignMessage = "ERROR: Could not save Tutor Data when assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-								print(assignMessage)
-								await AppLogger.shared.log(assignMessage, level: .error)
+								logMessage = "ERROR: Could not save Tutor Data when assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						}
 					}
 				} else {
 					assignResult = false
-					assignMessage = "WARNING: Student \(studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
-					print(assignMessage)
-					await AppLogger.shared.log(assignMessage, level: .warning)
+					logMessage = "WARNING: Student \(studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
 	
-		return(assignResult, assignMessage)
+		return(assignResult, logMessage)
 	}
 	
 	// The Reassign function allows a Student to be assigned to more than one Tutor to allow billing to be completed for the original Tutor.  This function assigns a Student to a Tutor in the
 	// Reference data without unassigning the Student from the original Tutor in the original Tutor's Tutor Details sheet.
 	func reassignStudent(studentNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var reassignResult: Bool = true
-		var reassignMessage: String = ""
+		var logMessage: String = ""
 		var studentName: String = "unknown"
 		
 		for objectID in tutorIndex {
 			if let newTutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				studentName = referenceData.students.studentsList[studentNum].studentName
-				reassignMessage = "INFO: Reassigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[newTutorNum].tutorName)"
-				print(reassignMessage)
-				await AppLogger.shared.log(reassignMessage, newLine: "Y")
+				logMessage = "INFO: Reassigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[newTutorNum].tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
 					let (originalTutorFoud, originalTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentCurrentTutorKey)
@@ -683,37 +683,37 @@ import Foundation
 							if unassignResult {
 								reassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
 								if !reassignResult {
-									reassignMessage = "ERROR: could not save Tutor data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-									print(reassignMessage)
-									await AppLogger.shared.log(reassignMessage, level: .error)
+									logMessage = "ERROR: could not save Tutor data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
 								}
 							} else {
 								reassignResult = false
-								reassignMessage = "ERROR: could not add Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor Students list for Tutor \(tutorName)"
-								print(reassignMessage)
-								await AppLogger.shared.log(reassignMessage, level: .error)
+								logMessage = "ERROR: could not add Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor Students list for Tutor \(tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						} else {
-							reassignMessage = "ERROR: could not save Student Data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-							print(reassignMessage)
-							await AppLogger.shared.log(reassignMessage, level: .error)
+							logMessage = "ERROR: could not save Student Data when reassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
 						reassignResult = false
-						reassignMessage = "WARNING: Student \(studentName) can not be reassigned to same Tutor \n"
-						print(reassignMessage)
-						await AppLogger.shared.log(reassignMessage, level: .warning)
+						logMessage = "WARNING: Student \(studentName) can not be reassigned to same Tutor \n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
 					}
 				} else {
 					reassignResult = false
-					reassignMessage = "WARNING: Student \(studentName) can not be reassigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
-					print(reassignMessage)
-					await AppLogger.shared.log(reassignMessage, level: .warning)
+					logMessage = "WARNING: Student \(studentName) can not be reassigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
 		
-		return(reassignResult, reassignMessage)
+		return(reassignResult, logMessage)
 	}
     
 	// Unassign a Student by changing Student Status to Unassigned, removing Tutor from Student record, removing Student from Tutor's details sheet and decreasing Tutor's assigned Tutor count in Ref data and Tutor Details.
@@ -721,15 +721,15 @@ import Foundation
 	// must be selected
 	func unassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var unassignResult: Bool = true
-		var unassignMessage: String = ""
+		var logMessage: String = ""
 		var studentName: String = "unknown"
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				studentName = referenceData.students.studentsList[studentNum].studentName
-				unassignMessage = "INFO: Unassigning Student: \(studentName)"
-				print(unassignMessage)
-				await AppLogger.shared.log(unassignMessage, newLine: "Y")
+				logMessage = "INFO: Unassigning Student: \(studentName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
 					let tutorKey = referenceData.students.studentsList[studentNum].studentCurrentTutorKey
@@ -744,49 +744,49 @@ import Foundation
 							if unassignResult {
 								unassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
 								if !unassignResult {
-									unassignMessage = "Error: could not save Tutor Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-									print(unassignMessage)
-									await AppLogger.shared.log(unassignMessage, level: .error)
+									logMessage = "Error: could not save Tutor Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
 								}
 							} else  {
-								unassignMessage = "ERROR: could not remove Tutor Student when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-								print(unassignMessage)
-								await AppLogger.shared.log(unassignMessage, level: .error)
+								logMessage = "ERROR: could not remove Tutor Student when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						} else {
 							unassignResult = false
-							unassignMessage = "ERROR: could not find Tutor \(tutorName) in Tutors list when unassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
-							print(unassignMessage)
-							await AppLogger.shared.log(unassignMessage, level: .error)
+							logMessage = "ERROR: could not find Tutor \(tutorName) in Tutors list when unassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
 						unassignResult = false
-						unassignMessage = "ERROR: could not save Student Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-						print(unassignMessage)
-						await AppLogger.shared.log(unassignMessage, level: .error)
+						logMessage = "ERROR: could not save Student Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} else {
 					unassignResult = false
-					unassignMessage = "WARNING: Student \(studentName) can not be Unassigned when status is not Assigned\n"
-					print(unassignMessage)
-					await AppLogger.shared.log(unassignMessage, level: .warning)
+					logMessage = "WARNING: Student \(studentName) can not be Unassigned when status is not Assigned\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
-		return(unassignResult, unassignMessage)
+		return(unassignResult, logMessage)
 	}
 
 	// Removes the link of the Student to the original Tutor after a Student has been Reassigned to a new Tutor.
 	func unreassignStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String){
 		var unreassignResult: Bool = true
-		var unreassignMessage: String = ""
+		var logMessage: String = ""
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				let studentName = referenceData.students.studentsList[studentNum].studentName
-				unreassignMessage = "INFO: Unreassigning Student: \(studentName)"
-				print(unreassignMessage)
-				await AppLogger.shared.log(unreassignMessage, newLine: "Y")
+				logMessage = "INFO: Unreassigning Student: \(studentName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned  {
 					// Get the Tutor key and name of the Tutor originally assigned to Student before the Reassignment
@@ -803,32 +803,32 @@ import Foundation
 							referenceData.students.studentsList[studentNum].studentStatus = .StudentAssigned
 							unreassignResult = await referenceData.students.saveStudentData()
 						} else  {
-							unreassignMessage = "ERROR: could not remove Tutor Student when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-							print(unreassignMessage)
-							await AppLogger.shared.log(unreassignMessage, level: .error)
+							logMessage = "ERROR: could not remove Tutor Student when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
 						unreassignResult = false
-						unreassignMessage = "ERROR: could not find Tutor \(tutorName) in Tutors list when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
-						print(unreassignMessage)
-						await AppLogger.shared.log(unreassignMessage, level: .error)
+						logMessage = "ERROR: could not find Tutor \(tutorName) in Tutors list when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 
 				} else {
 					unreassignResult = false
-					unreassignMessage = "WARNING: Student \(studentName) can not be Unreassigned when status is not Reassigned\n"
-					print(unreassignMessage)
-					await AppLogger.shared.log(unreassignMessage, level: .error)
+					logMessage = "WARNING: Student \(studentName) can not be Unreassigned when status is not Reassigned\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			}
 		}
-		return(unreassignResult, unreassignMessage)
+		return(unreassignResult, logMessage)
 	}
 	
 	
 	func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var unassignResult: Bool = true
-		var unassignMessage: String = " "
+		var logMessage: String = " "
 		
 		for objectID in tutorStudentIndex {
 			if let tutorStudentNum = referenceData.tutors.tutorsList[tutorNum].tutorStudents.firstIndex(where: {$0.id == objectID} ) {
@@ -836,9 +836,9 @@ import Foundation
 				let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
 				let studentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
 				
-				unassignMessage = "INFO: Unassigning Tutor Student: \(studentName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-				print(unassignMessage)
-				await AppLogger.shared.log(unassignMessage, newLine: "Y")
+				logMessage = "INFO: Unassigning Tutor Student: \(studentName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 				
@@ -849,87 +849,91 @@ import Foundation
 					unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
 					if unassignResult {
 						unassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-						if unassignResult {
-							unassignMessage = "ERROR: Could not save Tutor data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-							print(unassignMessage)
-							await AppLogger.shared.log(unassignMessage, level: .error)
+						if !unassignResult {
+							logMessage = "ERROR: Could not save Tutor data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+						} else {
+							logMessage = "INFO: \(studentName) unassigned from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName); Tutor data saved."
+							print(logMessage)
+							await AppLogger.shared.log(logMessage)
 						}
 					} else {
-						unassignMessage = "ERROR: Could not remove Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Tutor Details sheet"
-						print(unassignMessage)
-						await AppLogger.shared.log(unassignMessage, level: .error)
+						logMessage = "ERROR: Could not remove Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Tutor Details sheet"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} else {
-					unassignMessage = "ERROR: Could not save Student data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					print(unassignMessage)
-					await AppLogger.shared.log(unassignMessage, level: .error)
+					logMessage = "ERROR: Could not save Student data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			}
 			
 		}
-		return(unassignResult, unassignMessage)
+		return(unassignResult, logMessage)
 	}
 	
 	
 	func suspendStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var suspendResult: Bool = true
-		var suspendMessage: String = ""
+		var logMessage: String = ""
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				
-				suspendMessage = "INFO: Suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
-				print(suspendMessage)
-				await AppLogger.shared.log(suspendMessage, newLine: "Y")
+				logMessage = "INFO: Suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 					referenceData.students.studentsList[studentNum].suspendStudent()
 					suspendResult = await referenceData.students.saveStudentData()
 					if !suspendResult {
-						suspendMessage = "ERROR: could not save Student data when suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
-						print(suspendMessage)
-						await AppLogger.shared.log(suspendMessage, level: .error)
+						logMessage = "ERROR: could not save Student data when suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} else {
 					suspendResult = false
-					suspendMessage += "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) can not be Suspended when Status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
-					print(suspendMessage)
-					await AppLogger.shared.log(suspendMessage, level: .warning)
+					logMessage += "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) can not be Suspended when Status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
-		return(suspendResult, suspendMessage)
+		return(suspendResult, logMessage)
 	}
 	
 	func unsuspendStudent(studentIndex: Set<Student.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unsuspendResult: Bool = true
-		var unsuspendMessage: String = ""
+		var logMessage: String = ""
 		
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				
-				unsuspendMessage = "INFO: Unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
-				print(unsuspendMessage)
-				await AppLogger.shared.log(unsuspendMessage, newLine: "Y")
+				logMessage = "INFO: Unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentSuspended {
 					referenceData.students.studentsList[studentNum].unsuspendStudent()
 					unsuspendResult = await referenceData.students.saveStudentData()
 					if !unsuspendResult {
-						unsuspendMessage = "ERROR: could not save Student data when unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
-						print(unsuspendMessage)
-						await AppLogger.shared.log(unsuspendMessage, level: .error)
+						logMessage = "ERROR: could not save Student data when unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 						
 					}
 				} else {
 					unsuspendResult = false
-					unsuspendMessage += "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) not Suspended as Status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
-					print(unsuspendMessage)
-					await AppLogger.shared.log(unsuspendMessage, level: .warning)
+					logMessage += "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) not Suspended as Status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 					
 				}
 			}
 		}
-		return(unsuspendResult, unsuspendMessage)
+		return(unsuspendResult, logMessage)
 	}
 }

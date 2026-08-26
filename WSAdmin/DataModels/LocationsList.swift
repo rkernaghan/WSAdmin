@@ -49,6 +49,7 @@ import GoogleSignIn
 	// This function reads the Location data from the Reference Data spreadsheet and builds the Locations List object array
 	func fetchLocationData(locationCount: Int) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -65,7 +66,9 @@ import GoogleSignIn
 					completionFlag = false
 				}
 			} catch {
-				print("ERROR: could not read Locations data")
+				logMessage = "ERROR: could not read Locations data"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 			
@@ -104,6 +107,8 @@ import GoogleSignIn
 	// This function saves the Location objects in the Locations List object array back to the Reference Data spreadsheet
 	func saveLocationData() async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
+		
 		// Build a 2D array of Location data for writing to the Reference Data spreadsheet
 		let updateValues = unloadLocationRows()
 		let count = updateValues.count
@@ -113,11 +118,15 @@ import GoogleSignIn
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
 				completionFlag = false
-				print("Error: saving Location data rows failed")
+				logMessage = "ERROR: Saving Location data rows failed"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print ("Error: Saving Location Data rows failed")
 			completionFlag = false
+			logMessage = "ERROR: Saving Location data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(completionFlag)

@@ -57,6 +57,7 @@ import Foundation
 	// the Students List object array
 	func fetchStudentData(studentCount: Int) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -73,10 +74,15 @@ import Foundation
 					self.studentsList.sort { $0.studentName < $1.studentName }
 				} else {
 					completionFlag = false
+					logMessage = "ERROR: could not read Student Data from ReferenceData spreadsheet"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				completionFlag = false
-				print("Error: could not read Student Data from ReferenceData spreadsheet")
+				logMessage = "ERROR: could not read Student Data from ReferenceData spreadsheet"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		}
 		return(completionFlag)
@@ -85,6 +91,8 @@ import Foundation
 	// This function saves the Students List object data back to the Reference Data spreadsheet.
 	func saveStudentData() async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
+		
 		// Put the Students List object array into a temporary 2D array (one row per Student)
 		let updateValues = unloadStudentRows()
 		let count = updateValues.count
@@ -93,10 +101,15 @@ import Foundation
 			// Write the 2D array of Student data to the Reference Data spreadsheet
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
+				logMessage = "Error: Saving Student Data rows failed"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 		} catch {
-			print ("Error: Saving Student Data rows failed")
+			logMessage = "Error: Saving Student Data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		

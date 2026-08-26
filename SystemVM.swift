@@ -1313,12 +1313,13 @@ import Foundation
 	//	4) The Billed Student spreadsheet for the current year
 	//
 	func backupSystem() async -> Bool {
-		var completionFlag: Bool = true
-		var copyBilledTutorResult: [String: Any]?
-		var copyBilledStudentResult: [String: Any]?
+		var logMessage: String
 		
-		var tutorBillingFileName: String = ""
-		var studentBillingFileName: String = ""
+		var completionFlag: Bool = true
+		var copyFileResult: Bool
+		var copyFileID: String?
+		
+		var fileName: String
 		var copyFileName: String = ""
 		
 		let dateFormatter = DateFormatter()
@@ -1328,7 +1329,9 @@ import Foundation
 		let currentYear = dateFormatter.string(from: Date())
 		
 		print(" ")
-		print("** Backing up system ** ")
+		logMessage = "INFO: ** Backing up system ** "
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .info)
 		
 		do {
 			// Copy the Reference Data spreadsheet
@@ -1340,9 +1343,17 @@ import Foundation
 				copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
 			}
 			
-			let copyRefDataResult = try await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
-			print("Reference Data spreadsheet copied to file: \(copyFileName)")
-			
+			(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
+			if copyFileResult {
+				logMessage = "INFO: Reference Data spreadsheet backed up to file: \(copyFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .info)
+			} else {
+				completionFlag = false
+				logMessage = "ERROR: Reference Data not backed up"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
 			
 			// Copy the Tutor Details spreadsheet
 			if runMode == "PROD" {
@@ -1352,39 +1363,68 @@ import Foundation
 			} else {
 				copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
 			}
-			let copyDetailsDataResult = try await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: copyFileName)
-			print("Tutor Details spreadsheet copied to file: \(copyFileName)")
-			
-			// Copy the Tutor Billing spreadsheet
-			tutorBillingFileName = tutorBillingFileNamePrefix + currentYear
-			let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			if tutorFileFound {
-				copyBilledTutorResult = try await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: tutorBillingFileName + " Backup " + backupDate)
-				print("Billed Tutor spreadsheet copied to file: \(tutorBillingFileName + " Backup " + backupDate)")
+			(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: copyFileName)
+			if copyFileResult {
+				logMessage = "INFO: Tutor Details spreadsheet copied to file: \(copyFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .info)
 			} else {
 				completionFlag = false
+				logMessage = "ERROR: Tutor Details Data spreadsheet not backed up"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
+			
+			// Copy the Tutor Billing spreadsheet
+			fileName = tutorBillingFileNamePrefix + currentYear
+			let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: fileName)
+			if tutorFileFound {
+				(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: fileName + " Backup " + backupDate)
+				if copyFileResult {
+					logMessage = "INFO: Billed Tutor spreadsheet copied to file: \(fileName + " Backup " + backupDate)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+				} else {
+					completionFlag = false
+					logMessage = "ERROR: Tutor Billing spreadsheet \(fileName) not backed up"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
+			} else {
+				completionFlag = false
+				logMessage = "INFO: Billed Tutor spreadsheet copied to file: \(fileName + " Backup " + backupDate)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 			// Copy the Student Billing spreadsheet
-			studentBillingFileName = studentBillingFileNamePrefix + currentYear
-			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
+			fileName = studentBillingFileNamePrefix + currentYear
+			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: fileName)
 			if studentFileFound {
-				copyBilledStudentResult = try await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: studentBillingFileName + " Backup " + backupDate)
-				print("Billed Student spreadsheet copied to file: \(studentBillingFileName + " Backup " + backupDate)")
+				(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: fileName + " Backup " + backupDate)
+				if copyFileResult {
+					logMessage = "INFO: Billed Student spreadsheet copied to file: \(fileName + " Backup " + backupDate)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+				}
 			} else {
 				completionFlag = false
+				logMessage = "ERROR: STudent Billing spreadsheet \(fileName) not backed up"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
-			if copyRefDataResult == nil || copyDetailsDataResult == nil || copyBilledTutorResult == nil || copyBilledStudentResult == nil {
-				completionFlag = false
+			if completionFlag {
+				logMessage = "INFO: ** Backup Complete **"
+				print(logMessage + "\n")
+				await AppLogger.shared.log(logMessage, level: .info, newLine: "Y")
 			}
 		} catch {
-			print("ERROR: Could not backup application files")
+			logMessage = "ERROR: Could not get fileId for file: (\(fileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
-		
-		print("** Backup Complete **")
-		print(" ")
 		
 		return(completionFlag)
 	}
@@ -1394,7 +1434,8 @@ import Foundation
 	//
 	@MainActor func generateNewYearFiles(referenceData: ReferenceData) async -> (Bool, String) {
 		var generateResult: Bool = true
-		var generateMessage: String = ""
+		var copyFileID: String?
+		var logMessage: String = ""
 		
 		var nextYear: String = ""
 		var newTimesheetFileID: String = ""
@@ -1402,7 +1443,6 @@ import Foundation
 		
 		if let yearInt = Calendar.current.dateComponents([.year], from: Date()).year {
 			nextYear = String(yearInt + 1)
-//			nextYear = "2026"
 			
 			// Create the next year's Production Tutor Billing spreadsheet
 			
@@ -1411,77 +1451,130 @@ import Foundation
 			let tutorBillingTemplateFileName = PgmConstants.billedTutorTemplateFileName
 			
 			do {
+				// Ensure file doesn't already exist
 				let (fileFound, fileID) = try await getFileID(fileName: newTutorBillingProdFileName)
 				if !fileFound {
-					let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
-					if fileFound {
-						do {
-							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingProdFileName) {
+					do {
+						// Ensure template file exists and get its FileID
+						let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
+						if fileFound {
+							
+							// Copy template to create new Year's file from template
+							(generateResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingProdFileName)
+							if generateResult {
 								
-								if let fileID = copiedFileData["id"] as? String {
-									newTimesheetFileID = fileID
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-									print("Created Tutor Billing Prod file: \(newTutorBillingProdFileName)")
+								if let copyFileID = copyFileID {
+									// Assign Google Drive permissions to access the new file
+									newTimesheetFileID = copyFileID
+									do {
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+										logMessage = "INFO: Created Tutor Billing Prod file: \(newTutorBillingProdFileName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .info)
+									} catch {
+										logMessage = "ERROR: Could not add Google Drive permissions to \(newTutorBillingProdFileName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .info)
+									}
 								} else {
-									print("No valid string found for the key 'name'")
+									logMessage = "ERROR: Nil FileID from copyGoogleDriveFile when copying template \(tutorBillingTemplateFileName) to create: \(newTutorBillingProdFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+									
 								}
+							} else {
+								logMessage = "ERROR: Could not ccopy template \(tutorBillingTemplateFileName) to create: \(newTutorBillingProdFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
-						} catch {
+							
+						} else {
 							generateResult = false
-							generateMessage += "Error: Could create Tutor Billing Prod file: \(newTutorBillingProdFileName)\n"
+							logMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
-					} else {
+					} catch {
 						generateResult = false
-						generateMessage += "Error: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+						logMessage += "ERROR: could get FileID for tutorTemplate file: \(tutorBillingTemplateFileName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
+					
 				} else {
 					generateResult = false
-					generateMessage += "Error: \(newTutorBillingProdFileName) already exists\n"
+					logMessage += "ERROR: \(newTutorBillingProdFileName) already exists\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				generateResult = false
-				generateMessage += "Error: could not create \(newTutorBillingProdFileName)\n"
+				logMessage += "ERROR: could get FileID generating New Year File: \(newTutorBillingProdFileName)\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 			// Create the next year's Test Tutor Billing spreadsheet
 			do {
+				// Ensure next year's file doesn't exist already
 				let (fileFound, fileID) = try await getFileID(fileName: newTutorBillingTestFileName)
 				if !fileFound {
+					//Ensure there is a template file and get its FileID
 					let (fileFound, tutorBillingTemplateFileID) = try await getFileID(fileName: tutorBillingTemplateFileName)
 					if fileFound {
-						do {
-							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingTestFileName) {
-								
-								if let fileID = copiedFileData["id"] as? String {
-									newTimesheetFileID = fileID
+						
+						// Copy template file to create new year's file from template
+						(generateResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorBillingTemplateFileID, newFileName: newTutorBillingTestFileName)
+						if generateResult {
+							
+							// Assign Google Drive permissions to the new file
+							if let copyFileID = copyFileID {
+								newTimesheetFileID = copyFileID
+								do {
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-									print( "Created Tutor Billing Test file: \(newTutorBillingTestFileName)")
-								} else {
-									print("No valid string found for the key 'name'")
+									logMessage =  "INFO: Created Tutor Billing Test file: \(newTutorBillingTestFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								} catch {
+									logMessage = "ERROR: Could not add Google Drive permissions to \(newTutorBillingTestFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
 								}
+							} else {
+								logMessage = "ERROR: Nil FileID from copyGoogleDriveFile when copying template \(tutorBillingTemplateFileName) to create: \(newTutorBillingTestFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
-						} catch {
-							generateResult = false
-							generateMessage += "Error: Could create Tutor Billing Test file: \(newTutorBillingTestFileName)\n"
+						} else {
+							logMessage = "ERROR: Could not copy template file \(tutorBillingTemplateFileID) to create new Tutor Billing Test File \(newTutorBillingTestFileName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
+						
 					} else {
 						generateResult = false
-						generateMessage += "Error: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+						logMessage += "ERROR: Could not get File ID for Tutor Template File: \(tutorBillingTemplateFileName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} else {
 					generateResult = false
-					generateMessage += "Error: \(newTutorBillingTestFileName) already exists\n"
+					logMessage += "ERROR: \(newTutorBillingTestFileName) already exists\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 				
 			} catch {
 				generateResult = false
-				generateMessage += "Error: could not create \(newTutorBillingTestFileName) \n"
+				logMessage += "ERROR: could not get fileID generating file: \(newTutorBillingTestFileName) \n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 			// Create the next year's Production Student Billing spreadsheets
@@ -1491,39 +1584,60 @@ import Foundation
 			let studentBillingTemplateFileName = PgmConstants.billedStudentTemplateFileName
 			
 			do {
+				// Ensure the file doesn't already exist
 				let (fileFound, fileID) = try await getFileID(fileName: newStudentBillingProdFileName)
 				if !fileFound {
+					// Ensure the template file exists and get it's FileID
 					let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
 					if fileFound {
-						do {
-							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingProdFileName) {
-								
-								if let fileID = copiedFileData["id"] as? String {
-									newTimesheetFileID = fileID
+						
+						// Copy template to create new Year's file from template
+						(generateResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingProdFileName)
+						if generateResult {
+							// Assign Google Drive access permissions to the new file
+							if let copyFileID = copyFileID {
+								newTimesheetFileID = copyFileID
+								do {
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-									print("Created Billed Student Prod file: \(newStudentBillingProdFileName)\n")
-								} else {
-									print("No valid string found for the key 'name'")
+									logMessage = "INFO: Created Billed Student Prod file: \(newStudentBillingProdFileName)\n"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								} catch {
+									logMessage = "ERROR: Could not add Google Drive permissions to \(newStudentBillingProdFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
 								}
+							} else {
+								logMessage = "ERROR: Nil FileID from copyGoogleDriveFile when copying template \(studentBillingTemplateFileName) to create: \(newStudentBillingProdFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
-						} catch {
-							generateResult = false
-							generateMessage += "Error:  Could not create Billed Student Prod file: \(newStudentBillingProdFileName)\n"
+						} else {
+							logMessage = "ERROR: Could not copy template file \(studentBillingTemplateFileID) to create new Student Billing Prod File \(newStudentBillingProdFileName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
+						
 					} else {
 						generateResult = false
-						generateMessage += "Error: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+						logMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} else {
 					generateResult = false
-					generateMessage += "Error: \(newStudentBillingProdFileName) already exists \n"
+					logMessage += "ERROR: \(newStudentBillingProdFileName) already exists \n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				generateResult = false
-				generateMessage += "Error: could not create \(newStudentBillingProdFileName)\n"
+				logMessage += "ERROR: could not get FileID generating \(newStudentBillingProdFileName)\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 			// Create the next year's Test Student Billing spreadsheets
@@ -1532,36 +1646,56 @@ import Foundation
 				if !fileFound {
 					let (fileFound, studentBillingTemplateFileID) = try await getFileID(fileName: studentBillingTemplateFileName)
 					if fileFound {
-						do {
-							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingTestFileName) {
-								
-								if let fileID = copiedFileData["id"] as? String {
-									newTimesheetFileID = fileID
+						
+						(generateResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: studentBillingTemplateFileID, newFileName: newStudentBillingTestFileName)
+						if generateResult {
+							
+							if let copyFileID = copyFileID {
+								newTimesheetFileID = copyFileID
+								do {
+									
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
 									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-									print("Created Billed Student Test file: \(newStudentBillingTestFileName)\n")
-								} else {
-									print("No valid string found for the key 'name'")
+									logMessage = "INFO: Created Billed Student Test file: \(newStudentBillingTestFileName)\n"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								} catch {
+									logMessage = "ERROR: Could not add Google Drive permissions to \(newStudentBillingTestFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
 								}
+								
+							} else {
+								logMessage = "ERROR: Nil FileID from copyGoogleDriveFile when copying template \(studentBillingTemplateFileName) to create: \(newStudentBillingTestFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
-						} catch {
-							generateResult = false
-							generateMessage += "ERROR:  Could not create Billed Student Test file: \(newStudentBillingTestFileName)\n"
+						} else {
+							logMessage = "ERROR: Could not copy template file \(studentBillingTemplateFileID) to create new Student Billing Test File \(newStudentBillingProdFileName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
+						
 					} else {
 						generateResult = false
-						generateMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+						logMessage += "ERROR: Could not get File ID for Student Template File: \(studentBillingTemplateFileName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 					
 				} else {
 					generateResult = false
-					generateMessage += "ERROR: \(newStudentBillingTestFileName) already exists\n"
+					logMessage += "ERROR: \(newStudentBillingTestFileName) already exists\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				generateResult = false
-				generateMessage += "ERROR: could not create \(newStudentBillingTestFileName)\n"
+				logMessage += "ERROR: could not get FileID creating: \(newStudentBillingTestFileName)\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 			//  Create a Timesheet for each Tutor for the year
@@ -1573,49 +1707,68 @@ import Foundation
 					let tutorEmail = referenceData.tutors.tutorsList[tutorNum].tutorEmail
 					let newTutorTimesheetName = "Timesheet " + nextYear + " " + tutorName
 					do {
+						// Ensure Timesheet doesn't exist already
 						let (fileFound, fileID) = try await getFileID(fileName: newTutorTimesheetName)
 						if !fileFound {
-							if let copiedFileData = try await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTutorTimesheetName) {
+							// Copy the template to create the new Timesheet for the Tutor
+							(generateResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTutorTimesheetName)
+							if generateResult {
 								
-								if let fileID = copiedFileData["id"] as? String {
-									newTimesheetFileID = fileID
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-									print("Created Timesheet: \(newTutorTimesheetName)")
+								if let copyFileID = copyFileID {
+									newTimesheetFileID = copyFileID
+									do {
+										// Assign Google Drive permissions to the new Tutor Timesheet
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+										logMessage = "INFO: Created Timesheet: \(newTutorTimesheetName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .info)
+									} catch {
+										logMessage = "ERROR: Could not add Google Drive permissions to Timesheet: \(newTutorTimesheetName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .info)
+									}
 									// Write the Tutor name into the RefData tab of the new Tutor Timesheet
 									let range = PgmConstants.timesheetTutorNameCell
 									do {
 										try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]])
 									} catch {
-										print("ERROR: can not write Tutor Name into new Tutor Timesheet")
+										logMessage = "ERROR: can not write Tutor Name into new Tutor Timesheet"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .error)
 									}
 								} else {
-									print("No valid string found for the key 'name'")
+									logMessage = "ERROR: can not get ID of new Timesheet: \(newTutorTimesheetName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
 								}
 							}
 						} else {
 							generateResult = false
-							generateMessage += "ERROR: Timesheet: \(newTutorTimesheetName) already exists\n"
+							logMessage += "ERROR: Timesheet: \(newTutorTimesheetName) already exists\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 						
 					} catch {
 						generateResult = false
-						generateMessage += "ERROR:  Could not create Timesheet for Tutor: \(tutorName)"
-						print("ERROR:  Could not create Timesheet for Tutor: \(tutorName)")
+						logMessage += "ERROR:  Could not create Timesheet for Tutor: \(tutorName) getting Timesheet FileID"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				}
 				tutorNum += 1
 			}
 		}
-		return(generateResult, generateMessage)
+		return(generateResult, logMessage)
 	}
 	
 	@MainActor func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
 		var updateResult: Bool = true
-		var updateMessage: String = ""
+		var logMessage: String = ""
 		
 		let (currentMonth, currentMonthYear) = getCurrentMonthYear()
 		
@@ -1631,21 +1784,25 @@ import Foundation
 					let updateValues = [[timesheetFileID]]
 					do {
 						let updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
-						print("   Information: Updating Timesheet File ID for \(tutorName) in Tutor Details spreadsheet")
+						print("INFO: Updating Timesheet File ID for \(tutorName) in Tutor Details spreadsheet")
 					} catch {
 						updateResult = false
-						updateMessage = "Error updating timesheet file ID for \(tutorName)"
+						logMessage = "ERROR: Updating timesheet file ID for \(tutorName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					}
 				} catch {
 					updateResult = false
-					updateMessage = "Error getting file ID for \(timesheetFileName)"
+					logMessage = "ERROR: Getting file ID for \(timesheetFileName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			}
 			
 			tutorNum += 1
 		}
 		
-		return(updateResult, updateMessage)
+		return(updateResult, logMessage)
 	}
 	
 	
@@ -1659,6 +1816,7 @@ import Foundation
 		var fileIdResult: Bool = true
 		var tutorBillingFileID = ""
 		let tutorBillingMonth = TutorBillingMonth(monthName: monthName)
+		var logMessage: String
 		
 		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
 		do {
@@ -1667,13 +1825,19 @@ import Foundation
 			if fileIdResult {
 				let readResult = await tutorBillingMonth.getTutorBillingMonth(monthName: monthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: loadValidatedData)
 				if !readResult {
-					print("      Warning: Could not load Tutor Billing Data for \(monthName)")
+					logMessage = "ERROR: Could not load Tutor Billing Data for \(monthName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} else {
-				print("Error: could not get FileID for file: \(tutorBillingFileName)")
+				logMessage = "ERROR: could not get FileID for file: \(tutorBillingFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print("Error: Could not get FileID for file: \(tutorBillingFileName)")
+			logMessage = "ERROR: Could not get FileID for file: \(tutorBillingFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(tutorBillingMonth)
@@ -1688,6 +1852,7 @@ import Foundation
 		var fileIdResult: Bool = true
 		var studentBillingFileID = ""
 		let studentBillingMonth = StudentBillingMonth(monthName: monthName)
+		var logMessage: String
 		
 		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
 		do {
@@ -1696,13 +1861,19 @@ import Foundation
 			if fileIdResult {
 				let readResult = await studentBillingMonth.getStudentBillingMonth(monthName: monthName, studentBillingFileID: studentBillingFileID, loadValidatedData: loadValidatedData)
 				if !readResult {
-					print("     Warning: Could not load Student Billing Data for \(monthName)")
+					logMessage = "ERROR: Could not load Student Billing Data for \(monthName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} else {
-				print("Error: could not get FileID for file: \(studentBillingFileName)")
+				logMessage = "ERROR: could not get FileID for file: \(studentBillingFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print("Error: Could not get FileID for file: \(studentBillingFileName)")
+			logMessage = "ERROR: Could not get FileID for file: \(studentBillingFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(studentBillingMonth)
@@ -1718,6 +1889,7 @@ import Foundation
 		var fileIdResult: Bool = true
 		var tutorBillingFileID = ""
 		var saveResult: Bool = true
+		var logMessage: String
 		
 		
 		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
@@ -1727,13 +1899,19 @@ import Foundation
 			if fileIdResult {
 				saveResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: saveValidatedData)
 				if !saveResult {
-					print("     Warning: Could not save Tutor Billing Data for \(monthName)")
+					logMessage = "ERROR: Could not save Tutor Billing Data for \(monthName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} else {
-				print("Error: could not get FileID for file: \(tutorBillingFileName)")
+				logMessage = "ERROR: could not get FileID for file: \(tutorBillingFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print("Error: Could not get FileID for file: \(tutorBillingFileName)")
+			logMessage = "ERROR: Could not get FileID for file: \(tutorBillingFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(saveResult)
@@ -1748,6 +1926,7 @@ import Foundation
 		var fileIdResult: Bool = true
 		var studentBillingFileID = ""
 		var saveResult: Bool = true
+		var logMessage: String
 		
 		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
 		do {
@@ -1756,18 +1935,22 @@ import Foundation
 			if fileIdResult {
 				saveResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName, saveValidatedStudentData: saveValidatedData)
 				if !saveResult {
-					print("     Warning: Could not save Student Billing Data for \(monthName)")
+					logMessage = "ERROR: Could not save Student Billing Data for \(monthName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} else {
-				print("Error: could not get FileID for file: \(studentBillingFileName)")
+				logMessage = "ERROR: could not get FileID for file: \(studentBillingFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print("Error: Could not get FileID for file: \(studentBillingFileName)")
+			logMessage = "ERROR: Could not get FileID for file: \(studentBillingFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(saveResult)
 	}
-	
-	
 	
 }

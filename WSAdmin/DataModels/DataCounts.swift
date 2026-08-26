@@ -94,6 +94,7 @@ import Foundation
 		var completionFlag: Bool = true
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
+		var logMessage: String
 		
 		// Read in the Data Counts from the Reference Data spreadsheet
 		
@@ -105,7 +106,9 @@ import Foundation
 				if sheetCells.count > 0 {
 					loadDataCountRows(sheetCells: sheetCells)
 				} else {
-					print("Error: could not read Data Counts")
+					logMessage = "ERROR: Could not read Data Counts from Reference spreadsheet in fetchDataCounts"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					completionFlag = false
 				}
 			} else {
@@ -114,7 +117,9 @@ import Foundation
 			
 		} catch {
 			completionFlag = false
-			print("Error: Could not read Data Counts from ReferenceData spreadsheet")
+			logMessage = "ERROR: Could not read Data Counts from Reference spreadsheet in fetchDataCounts"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(completionFlag)
@@ -142,6 +147,8 @@ import Foundation
 	
 	func saveDataCounts() async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
+		
 		// Write the Data Counts to the Reference Data spreadsheet
 		let updateValues = unloadDataCountRows()
 		
@@ -150,9 +157,14 @@ import Foundation
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
 				completionFlag = false
+				logMessage = "ERROR: Saving Data Count rows failed in saveDataCounts"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print ("Error: Saving Data Count rows failed")
+			logMessage = "ERROR: Saving Data Count rows failed in saveDataCounts"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		

@@ -47,6 +47,7 @@ import Foundation
 	// This function reads the Services data from the Reference Data spreadsheet to populate the Services List object array
 	func fetchServiceData(serviceCount: Int) async -> Bool {
 		var completionFlag = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -61,10 +62,15 @@ import Foundation
 					loadServiceRows(serviceCount: serviceCount, sheetCells: sheetCells)
 				} else {
 					completionFlag = false
+					logMessage = "Error: could not read Services Data from Reference Data spreadsheet"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				completionFlag = false
-				print("Error: could not read Services Data from Reference Data spreadsheet")
+				logMessage = "Error: could not read Services Data from Reference Data spreadsheet"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 		}
@@ -107,6 +113,7 @@ import Foundation
 	// This function saves the Services objects into the Reference Data spreadsheet
 	func saveServiceData() async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Create a 2D array of Services List object attributes
 		let updateValues = unloadServiceRows()
@@ -117,10 +124,14 @@ import Foundation
 			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 			if !result {
 				completionFlag = false
-				print("Error: Saving Services data rows failed")
+				logMessage = "ERROR: Saving Services data rows failed"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print ("Error: Saving Services Data rows failed")
+			logMessage = "ERROR: Saving Services data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		

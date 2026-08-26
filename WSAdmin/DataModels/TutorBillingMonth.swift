@@ -46,6 +46,7 @@ class TutorBillingMonth {
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
 		var tutorCountData: SheetData?
+		var logMessage: String
 		
 		// Get the count of Tutors in the Billed Tutor spreadsheet
 		do {
@@ -62,9 +63,17 @@ class TutorBillingMonth {
 							
 							// Build the Billed Tutors list for the month from the data read in
 							loadTutorBillingRows(tutorBillingCount: tutorBillingCount, sheetCells: sheetCells)
+						} else {
+							logMessage = "ERROR: Failed to read the Billed Tutors from the Billed Tutors spreadsheet for month \(monthName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							completionFlag = false
 						}
 						
 					} catch {
+						logMessage = "ERROR: Failed to read the Billed Tutors from the Billed Tutors spreadsheet for month \(monthName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 						completionFlag = false
 					}
 					
@@ -73,10 +82,16 @@ class TutorBillingMonth {
 //					completionFlag = false
 //				}
 			} else {
+				logMessage = "ERROR: Failed to read the Billed Tutors counts from the Billed Tutors spreadsheet for month \(monthName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 			
 		} catch {
+			logMessage = "ERROR: Failed to read the Billed Tutors counts from the Billed Tutors spreadsheet for month \(monthName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		
@@ -88,6 +103,7 @@ class TutorBillingMonth {
 	
 	func saveTutorBillingData(tutorBillingFileID: String, billingMonth: String, saveValidatedTutorData: Bool) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Write the Tutor Billing rows to the Billed Tutor spreadsheet
 		let updateValues = unloadTutorBillingRows()
@@ -105,15 +121,22 @@ class TutorBillingMonth {
 					let range = billingMonth + PgmConstants.tutorBillingCountRange
 					result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: [[ String(billedTutorCount) ]])
 					if !result {
+						logMessage = "ERROR: Writing Billed Tutor Data count range: \(range) failed"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 						completionFlag = false
 					}
 				} catch {
-					print ("Error: Saving Billed Tutor count failed")
+					logMessage = "ERROR: Writing Billed Tutor Data count range: \(range) failed"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					completionFlag = false
 				}
 			}
 		} catch {
-			print ("Error: Saving Billed tutor rows failed")
+			logMessage = "ERROR: Writing Billed Tutor Data rows failed, range: \(range) failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		

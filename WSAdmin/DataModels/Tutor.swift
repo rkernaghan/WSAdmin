@@ -124,6 +124,7 @@ import Foundation
 		var timesheetFileID: String = ""
 		var studentCount: Int
 		var serviceCount: Int
+		var logMessage: String
 		
 		// Read in the Tutor Data counts from the Tutor Details spreadsheet
 		
@@ -136,12 +137,18 @@ import Foundation
 				studentCount = Int( sheetCells[0][0] ) ?? 0
 				serviceCount = Int( sheetCells[1][0] ) ?? 0
 			} else {
+				logMessage = "WARNING: could not read Tutor Data Counts for Tutor \(tutorName), will try again"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .warning)
 				studentCount = 0
 				serviceCount = 0
 			}
 			
 		} catch {
-			print("Error: could not read Tutor Data Counts for Tutor \(tutorName), will try again")
+			logMessage = "WARNING: could not read Tutor Data Counts for Tutor \(tutorName), will try again"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .warning)
+			
 			do {
 				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
 				
@@ -153,10 +160,15 @@ import Foundation
 				} else {
 					studentCount = 0
 					serviceCount = 0
+					logMessage = "ERROR: could not Tutor Data Counts for Tutor \(tutorName) on second attempt"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 				
 			} catch {
-				print("Error: could not Tutor Data Counts for Tutor \(tutorName) on second attempt")
+				logMessage = "ERROR: could not Tutor Data Counts for Tutor \(tutorName) on second attempt"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				studentCount = 0
 				serviceCount = 0
 			}
@@ -169,6 +181,7 @@ import Foundation
 	func saveTutorDataCounts() async -> Bool {
 		var completionFlag: Bool = true
 		var updateValues = [[String]]()
+		var logMessage: String
 		
 		let range = tutorName + PgmConstants.tutorDataCountsRange
 		tutorStudentCount = tutorStudents.count
@@ -179,7 +192,9 @@ import Foundation
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
-			print ("Error: Saving Tutor Data Counts failed")
+			logMessage = "ERROR: Saving Tutor Data Counts failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		return(completionFlag)
@@ -260,6 +275,7 @@ import Foundation
 	//
 	func fetchTutorStudentData(tutorName: String, tutorStudentCount: Int) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -274,10 +290,15 @@ import Foundation
 					sheetCells = sheetData.values
 					loadTutorStudentRows(tutorStudentCount: tutorStudentCount, sheetCells: sheetCells)
 				} else {
+					logMessage = "ERROR: could not read Tutor Student sheet cells for \(tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					completionFlag = false
 				}
 			} catch {
-				print("ERROR: could not read Tutor Student sheet cells for \(tutorName)")
+				logMessage = "ERROR: could not read Tutor Student sheet cells for \(tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 		}
@@ -313,6 +334,7 @@ import Foundation
 	// This function saves the Tutor's assigned Student data into the Tutor Details sheet for the Tutor and returns a success/fail flag
 	func saveTutorStudentData(tutorName: String) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Write the Tutor Student rows to the Tutor Details spreadsheet
 		let updateValues = unloadTutorStudentRows()
@@ -321,7 +343,9 @@ import Foundation
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
-			print ("Error: Saving Tutor Services data rows failed")
+			logMessage = "ERROR: Saving Tutor Services data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		
@@ -441,6 +465,7 @@ import Foundation
 	// This function reads the Tutor's Services from the Tutor's Tutor Details sheet into a 2 dimensinoal array for processing
 	func fetchTutorServiceData(tutorName: String, tutorServiceCount: Int) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -455,10 +480,15 @@ import Foundation
 					sheetCells = sheetData.values
 					loadTutorServiceRows(tutorServiceCount: tutorServiceCount, sheetCells: sheetCells)
 				} else {
+					logMessage = "ERROR: could not read Tutor Services sheet cells for \(tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					completionFlag = false
 				}
 			} catch {
-				print("ERROR: could not read Tutor Services sheet cells for \(tutorName)")
+				logMessage = "ERROR: could not read Tutor Services sheet cells for \(tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 		}
@@ -500,6 +530,7 @@ import Foundation
 	// This function writes the Tutor's assigned Services data to the Tutor's Tutor Details sheet
 	func saveTutorServiceData(tutorName: String) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Get a 2D array of the Tutor Services data from the Tutor Services objects
 		let updateValues = unloadTutorServiceRows()
@@ -509,7 +540,9 @@ import Foundation
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
 		} catch {
-			print ("Error: Saving Tutor Services data rows failed")
+			logMessage = "Error: Saving Tutor Services data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		

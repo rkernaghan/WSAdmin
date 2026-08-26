@@ -89,7 +89,7 @@ struct LocationListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(indexes: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(locationIndex: items, referenceData: referenceData)
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
@@ -101,7 +101,7 @@ struct LocationListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(indexes: items, referenceData: referenceData)
+									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(locationIndex: items, referenceData: referenceData)
 									if unDeleteResult == false {
 										showAlert = true
 										buttonErrorMsg = unDeleteMessage

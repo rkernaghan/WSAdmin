@@ -12,7 +12,7 @@ import GoogleSignIn
 
 @Observable class BillingVM  {
 	
-        // This function will generate an online invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
+        // This function will generate an invoice for the selected tutors to be billed so it can be displayed to the user (to determine whether to generate the CSV file and update billing stats).
 	
 	@MainActor func buildInvoice(tutorSet: Set<Tutor.ID>, billingYear: String, billingMonth: String, referenceData: ReferenceData, billingMessages: WindowMessages, showBillingDiagnostics: Bool, showEachSession: Bool, startingInvoiceNumber: Int) async -> (Invoice, TutorBillingMonth, [String]) {
 		var invoice = Invoice()
@@ -22,15 +22,15 @@ import GoogleSignIn
 		var alreadyBilledFlag: Bool = false
 		var alreadyBilledTutors = [String]()
 		referenceData.dataCounts.highestInvoiceNumber = startingInvoiceNumber - 1
-		var buildMessage: String
+		var logMessage: String
 		
 		let tutorBillingMonth = TutorBillingMonth(monthName: billingMonth)
 		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
 		let billArray = BillArray(monthName: billingMonth)
-		buildMessage = "INFO: Starting Generate Invoice for \(billingYear) \(billingMonth)"
-		print(buildMessage)
-		await AppLogger.shared.log(buildMessage, newLine: "Y")
+		logMessage = "INFO: Starting Generate Invoice for \(billingYear) \(billingMonth)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, newLine: "Y")
 		
 		// Go through each selected Tutor, read the Tutor's Timesheet and add the data to the billArray.
 		for objectID in tutorSet {
@@ -52,9 +52,9 @@ import GoogleSignIn
 		do {
 			(resultFlag, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 			if !resultFlag {
-				buildMessage = "ERROR: BillingVM.generateInvoice - Could not get File ID for Tutor Billing file: \(tutorBillingFileName)"
-				print(buildMessage)
-				await AppLogger.shared.log(buildMessage, level: .error)
+				logMessage = "ERROR: BillingVM.generateInvoice - Could not get File ID for Tutor Billing file: \(tutorBillingFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			} else {
 				let loadBilledTutorFlag = await tutorBillingMonth.getTutorBillingMonth(monthName: billingMonth, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 				if loadBilledTutorFlag {				// If no Tutors billed this month, the flag will be false, which is not an error
@@ -68,10 +68,10 @@ import GoogleSignIn
 				invoice = billArray.generateInvoice(referenceData: referenceData, billingMessages: billingMessages)
 			}
 		} catch {
-			buildMessage = "ERROR: in BillingVM.generateInvoice - Could not load Billed Tutor Month"
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: buildMessage))
-			print(buildMessage)
-			await AppLogger.shared.log(buildMessage, level: .error)
+			logMessage = "ERROR: in BillingVM.generateInvoice - Could not load Billed Tutor Month"
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Return the invoice data, the Tutor Billing data for the month so it can be updated if user bills the invoice (creates CSV) and the list of any Tutors already billed
@@ -85,7 +85,7 @@ import GoogleSignIn
 		let timesheet = Timesheet()
 		var timesheetFileID: String = " "
 		var result: Bool = true
-		var buildMessage: String = " "
+		var logMessage: String = " "
 		
 		
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
@@ -104,10 +104,10 @@ import GoogleSignIn
 				// Read in the Tutor's Timesheet for the year
 				let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: timesheetMonth, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 				if !timesheetResult {
-					buildMessage = "ERROR: in BillingVM.getTimesheet - Could not load Timesheet for Tutor: \(tutorName) with File ID: \(timesheetFileID)"
-					print(buildMessage)
-					await AppLogger.shared.log(buildMessage, level: .error)
-					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: buildMessage))
+					logMessage = "ERROR: in BillingVM.getTimesheet - Could not load Timesheet for Tutor: \(tutorName) with File ID: \(timesheetFileID)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 			} else {
 				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet - Could not get timesheet fileID for fileName: \(fileName); User may not have access to Timesheet"))
@@ -117,8 +117,8 @@ import GoogleSignIn
 		} catch {
 			print("ERROR: could not get timesheet fileID for file: \(fileName)")
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet- Ccould not get timesheet fileID for file: \(fileName)"))
-			print(buildMessage)
-			await AppLogger.shared.log(buildMessage, level: .error)
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 
 		return(timesheet)
@@ -129,9 +129,9 @@ import GoogleSignIn
 	// for that Tutor before updating the billing stats
 	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		
-		var invoiceMessage: String
-		invoiceMessage = "INFO: Starting updating billing stats for Month: \(billingMonth); AlreadyBilled:\(alreadyBilledTutors), AlreadyBilled Count: \(alreadyBilledTutors.count)"
-		print(invoiceMessage)
+		var logMessage: String
+		logMessage = "INFO: Starting updating billing stats for Month: \(billingMonth); AlreadyBilled:\(alreadyBilledTutors), AlreadyBilled Count: \(alreadyBilledTutors.count)"
+		print(logMessage)
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
@@ -152,9 +152,9 @@ import GoogleSignIn
 			if resultFlag {
 				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID, loadValidatedData: false)
 				guard  resultFlag else {
-					invoiceMessage = "ERROR: Could not read in the Student Billing Month for Month: \(billingMonth) with File Name: \(billingMonthStudentFileName)"
-					await AppLogger.shared.log(invoiceMessage, level: .error)
-					return(false, invoiceMessage)
+					logMessage = "ERROR: Could not read in the Student Billing Month for Month: \(billingMonth) with File Name: \(billingMonthStudentFileName)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					return(false, logMessage)
 				}
 				
 				var (resultFlag, resultMessage) = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
@@ -193,27 +193,27 @@ import GoogleSignIn
 							
 							let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 							guard tutorFound else {
-								invoiceMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
-								print(invoiceMessage)
-								await AppLogger.shared.log(invoiceMessage, level: .error)
-								return(false,invoiceMessage)
+								logMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+								return(false,logMessage)
 							}
 							
 							let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							guard studentFound  else {
-								invoiceMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
-								print(invoiceMessage)
-								await AppLogger.shared.log(invoiceMessage, level: .error)
-								return(false, invoiceMessage)
+								logMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+								return(false, logMessage)
 							}
 							
 							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 							let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
 							guard locationFound else {
-								invoiceMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
-								print(invoiceMessage)
-								await AppLogger.shared.log(invoiceMessage, level: .error)
-								return(false, invoiceMessage)
+								logMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+								return(false, logMessage)
 							}
 							
 							let duration = invoice.invoiceLines[invoiceLineNum].duration
@@ -312,14 +312,14 @@ import GoogleSignIn
 									}
 								}
 							} else {
-								invoiceMessage = "ERROR: Could not get File ID for Tutor Billing File: \(billingMonthTutorFileName)"
-								print(invoiceMessage)
-								await AppLogger.shared.log(invoiceMessage, level: .error)
+								logMessage = "ERROR: Could not get File ID for Tutor Billing File: \(billingMonthTutorFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						} catch {
-							invoiceMessage = "ERROR: Saving Tutor Billing Data for BillingMonth: \(billingMonth)"
-							print(invoiceMessage)
-							await AppLogger.shared.log(invoiceMessage, level: .error)
+							logMessage = "ERROR: Saving Tutor Billing Data for BillingMonth: \(billingMonth)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 							resultFlag = false
 						}
 					}
@@ -327,9 +327,9 @@ import GoogleSignIn
 				}
 			}
 		} catch {
-			invoiceMessage = "Could not get File ID for Student Billing File: \(billingMonthStudentFileName)"
-			print(invoiceMessage)
-			await AppLogger.shared.log(invoiceMessage, level: .error)
+			logMessage = "Could not get File ID for Student Billing File: \(billingMonthStudentFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			resultFlag = false
 		}
 		
@@ -427,7 +427,7 @@ import GoogleSignIn
 	// Format a CSV file line in Xero format from an Invoice file line
 	//
 	@MainActor func processXeroInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
-		var invoiceMessage: String
+		var logMessage: String
 		
 		let invoiceNum = invoiceLine.invoiceNum
 //		let invoiceNum = referenceData.dataCounts.highestInvoiceNumber + 1
@@ -484,11 +484,11 @@ import GoogleSignIn
 		if studentFound {
 			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
 		} else {
-			invoiceMessage = "ERROR: Student not found when updating Student Last Billed Date"
+			logMessage = "ERROR: Student not found when updating Student Last Billed Date"
 			Task {
-				await AppLogger.shared.log(invoiceMessage, level: .error)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
-			print(invoiceMessage)
+			print(logMessage)
 		}
 		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		return(csvLine)

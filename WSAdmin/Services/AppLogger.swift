@@ -18,11 +18,12 @@ actor AppLogger {
 	private let fileURL: URL
 	private let logFileName: String
 	private var driveFileID: String?
+	private var driveFolderID: String? // cached ID of the "WSAdmin Log Files" Drive folder
 	private var autoSyncTask: Task<Void, Never>?
 	private var hasUnsyncedChanges: Bool = false
 	
 	// MARK: - Error alerting config
-	private let alertRecipientEmail = "rskernaghan@gmail.com"
+	private let alertRecipientEmails = ["rskernaghan@gmail.com", "second-address@example.com"] // TODO: replace with your real second address
 	private var lastAlertSentAt: Date?
 	private let minimumAlertInterval: TimeInterval = 300 // 5 minutes — throttles alert bursts
 	
@@ -146,9 +147,13 @@ extension AppLogger {
 			// Already created this session's Drive file — just overwrite it.
 			succeeded = await updateDriveFile(fileID: existingFileID, data: logData, accessToken: accessToken)
 		} else {
-			// First sync of this session — the filename is timestamp-unique,
-			// so there's no existing Drive file to find; create it fresh.
-			succeeded = await createDriveFile(data: logData, accessToken: accessToken)
+			// First sync of this session — look up the "WSAdmin Log Files"
+			// Drive folder (cached after the first lookup) so the file lands
+			// there instead of Drive's root.
+			if driveFolderID == nil {
+				driveFolderID = await findOrCreateDriveFolderID(named: "WSAdmin Log Files", accessToken: accessToken)
+			}
+			succeeded = await createDriveFile(data: logData, accessToken: accessToken, folderID: driveFolderID)
 		}
 		
 		// Only clear the flag on a confirmed successful upload — if it failed
@@ -156,6 +161,103 @@ extension AppLogger {
 		// 60-second cycle retries rather than silently dropping the change.
 		if succeeded {
 			hasUnsyncedChanges = false
+		}
+	}
+	
+	/// Looks up the ID of an existing Google Drive folder by name (top-level,
+	/// not trashed). If no such folder exists yet, creates it and returns the
+	/// new folder's ID.
+	private func findOrCreateDriveFolderID(named folderName: String, accessToken: String) async -> String? {
+		let escapedName = folderName.replacingOccurrences(of: "'", with: "\\'")
+		let query = "mimeType='application/vnd.google-apps.folder' and name='\(escapedName)' and trashed=false"
+		guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+		      let url = URL(string: "https://www.googleapis.com/drive/v3/files?q=\(encodedQuery)&fields=files(id,name)") else {
+			return nil
+		}
+		
+		var request = URLRequest(url: url)
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		
+		var data: Data
+		var response: URLResponse
+		var attempt = 0
+		let maxAttempts = 2 // initial try + 1 retry
+		
+		while true {
+			attempt += 1
+			guard let result = try? await URLSession.shared.data(for: request) else { return nil }
+			(data, response) = result
+			
+			if let httpResponse = response as? HTTPURLResponse {
+				if httpResponse.statusCode == 504, attempt < maxAttempts {
+					print("AppLogger.findOrCreateDriveFolderID - HTTP 504, retrying in 1 second (attempt \(attempt))")
+					try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+					continue
+				}
+				
+				if httpResponse.statusCode != 200 {
+					print("AppLogger.findOrCreateDriveFolderID - HTTP Result Error Code: \(httpResponse.statusCode)")
+					return nil
+				}
+			}
+			
+			break
+		}
+		
+		if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+		   let files = json["files"] as? [[String: Any]],
+		   let firstFolder = files.first,
+		   let folderID = firstFolder["id"] as? String {
+			return folderID
+		}
+		
+		// No existing folder found — create it.
+		print("AppLogger.findOrCreateDriveFolderID - no folder named '\(folderName)' found; creating it")
+		return await createDriveFolder(named: folderName, accessToken: accessToken)
+	}
+	
+	/// Creates a new top-level folder on Google Drive and returns its ID, or
+	/// nil if creation failed.
+	private func createDriveFolder(named folderName: String, accessToken: String) async -> String? {
+		guard let url = URL(string: "https://www.googleapis.com/drive/v3/files") else { return nil }
+		
+		let metadata: [String: Any] = [
+			"name": folderName,
+			"mimeType": "application/vnd.google-apps.folder"
+		]
+		guard let bodyData = try? JSONSerialization.data(withJSONObject: metadata) else { return nil }
+		
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		request.httpBody = bodyData
+		
+		var attempt = 0
+		let maxAttempts = 2 // initial try + 1 retry
+		
+		while true {
+			attempt += 1
+			guard let (data, response) = try? await URLSession.shared.data(for: request),
+			      let httpResponse = response as? HTTPURLResponse else {
+				print("AppLogger.createDriveFolder - request failed")
+				return nil
+			}
+			
+			if httpResponse.statusCode == 504, attempt < maxAttempts {
+				print("AppLogger.createDriveFolder - HTTP 504, retrying in 1 second (attempt \(attempt))")
+				try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+				continue
+			}
+			
+			if httpResponse.statusCode == 200,
+			   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+			   let folderID = json["id"] as? String {
+				return folderID
+			} else {
+				print("AppLogger.createDriveFolder - failed to create folder '\(folderName)', status \(httpResponse.statusCode)")
+				return nil
+			}
 		}
 	}
 	
@@ -275,7 +377,7 @@ extension AppLogger {
 			return
 		}
 		
-		guard let rawMessage = buildRawEmail(to: alertRecipientEmail, subject: "WSAdmin Error Alert", body: message) else {
+		guard let rawMessage = buildRawEmail(to: alertRecipientEmails, subject: "WSAdmin Error Alert", body: message) else {
 			print("AppLogger.sendErrorAlert - failed to build email payload")
 			return
 		}
@@ -295,7 +397,7 @@ extension AppLogger {
 		
 		while true {
 			attempt += 1
-			guard let (_, response) = try? await URLSession.shared.data(for: request),
+			guard let (responseData, response) = try? await URLSession.shared.data(for: request),
 			      let httpResponse = response as? HTTPURLResponse else {
 				print("AppLogger.sendErrorAlert - request failed")
 				return
@@ -310,7 +412,9 @@ extension AppLogger {
 			if httpResponse.statusCode == 200 {
 				lastAlertSentAt = Date()
 			} else {
+				let bodyString = String(data: responseData, encoding: .utf8) ?? "<no body>"
 				print("AppLogger.sendErrorAlert - failed to send alert, status \(httpResponse.statusCode)")
+				print("AppLogger.sendErrorAlert - response body: \(bodyString)")
 			}
 			
 			break
@@ -319,8 +423,11 @@ extension AppLogger {
 	
 	/// Builds a base64url-encoded RFC 2822 message, the format the Gmail API's
 	/// messages.send endpoint requires in its "raw" field.
-	private func buildRawEmail(to: String, subject: String, body: String) -> String? {
-		let emailString = "To: \(to)\r\nSubject: \(subject)\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n\(body)"
+	private func buildRawEmail(to: [String], subject: String, body: String) -> String? {
+		// RFC 2822 allows multiple recipients in the "To" header as a
+		// comma-separated list.
+		let toHeader = to.joined(separator: ", ")
+		let emailString = "To: \(toHeader)\r\nSubject: \(subject)\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n\(body)"
 		
 		guard let data = emailString.data(using: .utf8) else { return nil }
 		

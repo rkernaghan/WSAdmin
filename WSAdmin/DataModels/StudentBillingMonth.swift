@@ -162,6 +162,7 @@ class StudentBillingMonth {
 	//
 	func getStudentBillingMonth(monthName: String, studentBillingFileID: String, loadValidatedData: Bool) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var studentBillingCount: Int = 0
 		var sheetCells = [[String]]()
@@ -184,18 +185,30 @@ class StudentBillingMonth {
 							// Build the Billed Students list for the month from the data read in
 							loadStudentBillingRows(studentBillingCount: studentBillingCount, sheetCells: sheetCells, loadValidationDataFlag: loadValidatedData)
 						} else {
+							logMessage = "ERROR: could not read Billed Student Month for month: \(monthName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 							completionFlag = false
 						}
 						
 					} catch {
+						logMessage = "ERROR: could not read Billed Student Month for month: \(monthName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 						completionFlag = false
 					}
 				}
 			} else {
 				completionFlag = false
+				logMessage = "ERROR: could not read Billed Student Month counts for month: \(monthName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
 			completionFlag = false
+			logMessage = "ERROR: could not read Billed Student Month counts for month: \(monthName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		return(completionFlag)
 	}
@@ -205,6 +218,7 @@ class StudentBillingMonth {
 	//
 	func saveStudentBillingMonth(studentBillingFileID: String, billingMonth: String, saveValidatedStudentData: Bool) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Write the Student Billing rows to the Billed Student spreadsheet
 		let updateValues = unloadStudentBillingRows(saveValidatedStudentData: saveValidatedStudentData)
@@ -219,15 +233,22 @@ class StudentBillingMonth {
 				do {
 					result = try await writeSheetCells(fileID: studentBillingFileID, range: billingMonth + PgmConstants.studentBillingCountRange, values: [[ String(billedStudentCount) ]])
 					if !result {
+						logMessage = "ERROR: Saving Billed Student rows count failed for billing month \(billingMonth)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 						completionFlag = false
 					}
 				} catch {
-					print ("Error: Saving Billed Student count failed")
+					logMessage = "ERROR: Saving Billed Student rows count failed for billing month \(billingMonth)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					completionFlag = false
 				}
 			}
 		} catch {
-			print ("Error: Saving Billed Student rows failed")
+			logMessage = "ERROR: Saving Billed Student rows failed for billing month \(billingMonth) with range \(range)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		
@@ -239,7 +260,8 @@ class StudentBillingMonth {
 	// hasn't been billing before.
 	@MainActor func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		var completionFlag: Bool = true
-		var completionMessage: String = ""
+		var logMessage: String = ""
+		
 		// Determine the file name of the previous month Student Billiing spreadsheet (could be a previous year)
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		var prevStudentNum: Int = 0
@@ -251,14 +273,18 @@ class StudentBillingMonth {
 			// Get the File ID of the previous month Student Billing Month spreadsheet
 			let (resultFlag, prevMonthStudentFileID) = try await getFileID(fileName: prevMonthStudentFileName)
 			guard resultFlag else {
-				print(" Error: could not get FileID for previous month Student Billing file \(prevMonthStudentFileName)")
-				return(false, " Error: could not get FileID for previous month Student Billing file \(prevMonthStudentFileName)")
+				logMessage = " Error: could not get FileID for previous month Student Billing file \(prevMonthStudentFileName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+				return(false, logMessage)
 			}
 			// Read in the previous month Student Billing sheet
 			completionFlag = await prevStudentBillingMonth.getStudentBillingMonth(monthName: prevMonth, studentBillingFileID: prevMonthStudentFileID, loadValidatedData: false)
 			guard completionFlag else {
-				print("ERROR: Could not load \(prevMonth) Student Billing Data)")
-				return(false, "ERROR: Could not load \(prevMonth) Student Billing Data")
+				logMessage = "ERROR: Could not load \(prevMonth) Student Billing Data)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+				return(false, logMessage)
 			}
 			// Loop through each row in the previous month entries and copy to self (current month) instance if Student does not already exist in current Student BillingMonth sheet
 			let prevStudentCount = prevStudentBillingMonth.studentBillingRows.count
@@ -284,11 +310,13 @@ class StudentBillingMonth {
 			}
 				
 		} catch {
-			print("ERROR: Could not load \(prevMonth) Student Billing Data")
+			logMessage = "ERROR: Could not load \(prevMonth) Student Billing Data"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			completionFlag = false
 		}
 		
-		return(completionFlag, completionMessage)
+		return(completionFlag, logMessage)
 	}
 	
 }

@@ -48,6 +48,7 @@ import Foundation
 	// Students or Services.
 	func fetchTutorData(tutorCount: Int) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		var sheetCells = [[String]]()
 		var sheetData: SheetData?
@@ -62,9 +63,14 @@ import Foundation
 					completionFlag = await loadTutorRows(tutorCount: tutorCount, sheetCells: sheetCells)
 				} else {
 					completionFlag = false
+					logMessage = "ERROR: Could not read in Tutor data from ReferenceData spreadsheet"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
-				print("ERROR: Could not read in Tutor data from ReferenceData spreadsheet")
+				logMessage = "ERROR: Could not read in Tutor data from ReferenceData spreadsheet"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 				completionFlag = false
 			}
 			
@@ -126,6 +132,8 @@ import Foundation
 	//
 	func saveTutorData() async -> Bool {
 		var result: Bool = true
+		var logMessage: String
+		
 		// Create a 2D array of Tutor data from the Tutors List object array
 		let updateValues = unloadTutorRows()
 		// Write the 2D array back to the Reference Data spreadsheet
@@ -134,7 +142,9 @@ import Foundation
 		do {
 			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
 		} catch {
-			print ("ERROR: Saving Tutor Data rows failed")
+			logMessage = "ERROR: Saving Tutor Data rows failed"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 			result = false
 		}
 		

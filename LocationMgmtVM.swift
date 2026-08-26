@@ -12,11 +12,11 @@ import Foundation
     
 	func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double) async -> (Bool, String) {
 		var saveResult: Bool = true
-		var addMessage: String
+		var logMessage: String
 		
-		addMessage = "INFO: Adding new Location: \(locationName)"
-		print(addMessage)
-		await AppLogger.shared.log(addMessage, newLine: "Y")
+		logMessage = "INFO: Adding new Location: \(locationName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, newLine: "Y")
 		
 		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey + 1)
 		
@@ -25,36 +25,36 @@ import Foundation
 		
 		saveResult = await referenceData.locations.saveLocationData()
 		if !saveResult {
-			addMessage = "ERROR: Could not save Location Data when adding new Location: \(locationName)"
-			print(addMessage)
-			await AppLogger.shared.log(addMessage, level: .error)
+			logMessage = "ERROR: Could not save Location Data when adding new Location: \(locationName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		} else {
 			referenceData.dataCounts.increaseTotalLocationCount()
 			referenceData.dataCounts.increaseActiveLocationCount()
 			saveResult = await referenceData.dataCounts.saveDataCounts()
 			if !saveResult {
-				addMessage = "ERROR: Could not save Data Counts when adding new Location: \(locationName)"
-				print(addMessage)
-				await AppLogger.shared.log(addMessage, level: .error)
+				logMessage = "ERROR: Could not save Data Counts when adding new Location: \(locationName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		}
-		return(saveResult, addMessage)
+		return(saveResult, logMessage)
 	}
 	
 	func updateLocation(locationNum: Int, referenceData: ReferenceData, newLocationName: String, originalLocationName: String) async -> (Bool, String) {
 		var updateResult: Bool = true
-		var updateMessage: String = ""
+		var logMessage: String = ""
 		
-		updateMessage = "INFO: Updating existing Location: \(originalLocationName) to new Location Name: \(newLocationName)"
-		print(updateMessage)
-		await AppLogger.shared.log(updateMessage, newLine: "Y")
+		logMessage = "INFO: Updating existing Location: \(originalLocationName) to new Location Name: \(newLocationName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, newLine: "Y")
 		
 		referenceData.locations.locationsList[locationNum].setLocationName(locationName: newLocationName)
 		updateResult = await referenceData.locations.saveLocationData()
 		if !updateResult {
-			updateMessage = "ERROR: Could not save Location Data when updating Location: \(newLocationName)"
-			print(updateMessage)
-			await AppLogger.shared.log(updateMessage, level: .error)
+			logMessage = "ERROR: Could not save Location Data when updating Location: \(newLocationName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		} else {
 			// Update the Location Name for any Students at that Location
 			var studentNum = 0
@@ -67,12 +67,12 @@ import Foundation
 			}
 			updateResult = await referenceData.students.saveStudentData()
 			if !updateResult {
-				updateMessage = "ERROR: Could not update Location name in Student Data"
-				print(updateMessage)
-				await AppLogger.shared.log(updateMessage, level: .error)
+				logMessage = "ERROR: Could not update Location name in Student Data"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		}
-		return(updateResult, updateMessage)
+		return(updateResult, logMessage)
 	}
 	
 	func validateNewLocation(referenceData: ReferenceData, locationName: String) -> (Bool, String) {
@@ -120,15 +120,15 @@ import Foundation
 	}
     
 
-	func deleteLocation(indexes: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	func deleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var deleteResult: Bool = true
-		var deleteMessage: String = " "
+		var logMessage: String = " "
 
-		for objectID in indexes {
+		for objectID in locationIndex {
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-				deleteMessage = "INFO: Deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
-				print(deleteMessage)
-				await AppLogger.shared.log(deleteMessage, newLine: "Y")
+				logMessage = "INFO: Deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, newLine: "Y")
 				
 				if referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
 					referenceData.locations.locationsList[locationNum].markDeleted()
@@ -136,57 +136,56 @@ import Foundation
 				
 					deleteResult = await referenceData.locations.saveLocationData()
 					if !deleteResult {
-						deleteMessage = "ERROR: Could not save Location data deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
-						print(deleteMessage)
-						await AppLogger.shared.log(deleteMessage, level: .error)
+						logMessage = "ERROR: Could not save Location data deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
 						deleteResult = await referenceData.dataCounts.saveDataCounts()
 						if !deleteResult {
-							deleteMessage = "ERROR: Could not save Data Counts deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
-							print(deleteMessage)
-							await AppLogger.shared.log(deleteMessage, level: .error)
+							logMessage = "ERROR: Could not save Data Counts deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					}
 				} else {
-					deleteMessage = "WARNING: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned"
-					print(deleteMessage)
+					logMessage = "WARNING: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned"
+					print(logMessage)
 					deleteResult = false
 				}
 			}
 		}
         
-		return(deleteResult, deleteMessage)
+		return(deleteResult, logMessage)
 	}
     
-	func undeleteLocation(indexes: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	func undeleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var unDeleteResult: Bool = true
-		var unDeleteMessage: String = " "
+		var logMessage: String = " "
 		
-		for objectID in indexes {
+		for objectID in locationIndex {
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.locations.locationsList[locationNum].locationStatus == .LocationDeleted {
-					print("undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)")
+					print("Undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)")
 					referenceData.locations.locationsList[locationNum].markUndeleted()
 					referenceData.dataCounts.increaseActiveLocationCount()
 					unDeleteResult = await referenceData.locations.saveLocationData()
 					if !unDeleteResult {
-						unDeleteMessage = "ERROR: Could not save Location data when undeleting Location"
+						logMessage = "ERROR: Could not save Location data when undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
 					} else {
 						unDeleteResult = await referenceData.dataCounts.saveDataCounts()
 						if !unDeleteResult {
-							unDeleteMessage = "ERROR: Could not save Data Counts data when undeleting Location"
+							logMessage = "ERROR: Could not save Data Counts data when undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
 						}
 					}
 				} else {
-					unDeleteMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted"
+					logMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted"
 					print("rror: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted")
 					unDeleteResult = false
 				}
 			}
 		}
 
-		
-		return(unDeleteResult, unDeleteMessage)
+		return(unDeleteResult, logMessage)
 	}
     
 }

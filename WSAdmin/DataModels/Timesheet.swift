@@ -31,6 +31,7 @@ class Timesheet: Identifiable {
 //
 	@MainActor func loadTimesheetData(tutorName: String, month: String, timesheetID: String, billingMessages: WindowMessages, referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> Bool {
 		var completionFlag: Bool = true
+		var logMessage: String
 		
 		// Read in the header rows from the Timesheet to get the number of sessions in the Timesheet from Cell Bs
 		var headerData: SheetData?
@@ -39,8 +40,10 @@ class Timesheet: Identifiable {
 			headerData = try await readSheetCells(fileID: timesheetID, range: range)
 		}
 		catch {
-			print("ERROR: in Timesheet.loadTimesheetData - Could not read header rows for \(tutorName) Timesheet with File ID \(timesheetID)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: in Timesheet.loadTimesheetData - could not read header rows for \(tutorName) Timesheet File ID \(timesheetID)"))
+			logMessage = "ERROR: in Timesheet.loadTimesheetData - Could not read header rows for \(tutorName) Timesheet with File ID \(timesheetID)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			completionFlag = false
 		}
 		
@@ -56,10 +59,15 @@ class Timesheet: Identifiable {
 				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, sessionCount: sessionCount, billingMessages: billingMessages, monthName: month, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
 			} else {
 				completionFlag = false
+				logMessage = "ERROR: in Timesheet.loadTimesheetData - Could not read SheetCells for \(tutorName) Timesheet with File ID \(timesheetID)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			print("ERROR: in Timesheet.loadTimesheetData - Could not read SheetCells for \(tutorName) Timesheet with File ID \(timesheetID)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "ERROR: in Timesheet.loadTimesheetData - could not read SheetCells for \(tutorName) Timesheet File ID \(timesheetID)"))
+			logMessage = "ERROR: in Timesheet.loadTimesheetData - Could not read SheetCells for \(tutorName) Timesheet with File ID \(timesheetID)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			completionFlag = false
 		}
 		return(completionFlag)
