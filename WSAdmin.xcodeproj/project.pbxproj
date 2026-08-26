@@ -24,6 +24,7 @@
 		024421392DB996B40057E961 /* ValidationMonthSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024421382DB996A10057E961 /* ValidationMonthSelectionView.swift */; };
 		0244213B2DB998D20057E961 /* ValidateMonthProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0244213A2DB998C80057E961 /* ValidateMonthProgressView.swift */; };
 		025232A92CEAB44E0071A995 /* TutorServiceListSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */; };
+		0275E104303E8CF30052A04E /* AppFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0275E103303E8CDD0052A04E /* AppFolders.swift */; };
 		028589BF302A7DC40093E8D6 /* ValidateDataIntegrityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028589BE302A7DC40093E8D6 /* ValidateDataIntegrityView.swift */; };
 		02863C842CB48508002FE12B /* ServiceCostByTutorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */; };
 		02863C862CB4878B002FE12B /* TutorServiceCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02863C852CB4877A002FE12B /* TutorServiceCost.swift */; };
@@ -114,6 +115,7 @@
 		0244213A2DB998C80057E961 /* ValidateMonthProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateMonthProgressView.swift; sourceTree = "<group>"; };
 		025232A82CEAB4340071A995 /* TutorServiceListSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceListSelectionView.swift; sourceTree = "<group>"; };
 		02620E042D2846F3001E09F3 /* WSAdminRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WSAdminRelease.entitlements; sourceTree = "<group>"; };
+		0275E103303E8CDD0052A04E /* AppFolders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFolders.swift; sourceTree = "<group>"; };
 		028589BE302A7DC40093E8D6 /* ValidateDataIntegrityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateDataIntegrityView.swift; sourceTree = "<group>"; };
 		02863C832CB484FB002FE12B /* ServiceCostByTutorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceCostByTutorView.swift; sourceTree = "<group>"; };
 		02863C852CB4877A002FE12B /* TutorServiceCost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorServiceCost.swift; sourceTree = "<group>"; };
@@ -203,6 +205,7 @@
 		02A028742CE4325A0081E569 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				0275E103303E8CDD0052A04E /* AppFolders.swift */,
 				021071D33037A3670043AC82 /* AppLogger.swift */,
 				02A4775A2CBCC335001AA1AA /* Utilities.swift */,
 			);
@@ -542,6 +545,7 @@
 				02A4775B2CBCC34D001AA1AA /* Utilities.swift in Sources */,
 				02F6D0E32C8BE321007AB4D4 /* TutorStudent.swift in Sources */,
 				02863C882CB48856002FE12B /* TutorServiceCostList.swift in Sources */,
+				0275E104303E8CF30052A04E /* AppFolders.swift in Sources */,
 				02E76DFC2CBDD16A002AC504 /* BillingVM.swift in Sources */,
 				02AC9BC02C889F9A007391A7 /* Student.swift in Sources */,
 				02F8646F2CD0129A00A4E140 /* SystemVM.swift in Sources */,
@@ -597,6 +601,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -661,6 +666,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -698,7 +704,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WSAdmin/Preview Content\"";
 				DEVELOPMENT_TEAM = F56U572VFS;
-				ENABLE_APP_SANDBOX = NO;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
@@ -747,7 +753,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WSAdmin/Preview Content\"";
 				DEVELOPMENT_TEAM = F56U572VFS;
-				ENABLE_APP_SANDBOX = NO;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;

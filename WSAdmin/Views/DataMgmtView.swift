@@ -180,6 +180,14 @@ struct SideView: View {
 			
 			Spacer()
 			
+			Button("Show CSV Files in Finder") {
+				AppFolders.revealCSVFilesFolder()
+			}
+			
+			Button("Show Log Files in Finder") {
+				AppFolders.revealLogFilesFolder()
+			}
+			
 			Button("Tutor Availability Summary") {
 				Task {
 					statusMessage = " "

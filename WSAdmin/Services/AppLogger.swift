@@ -38,8 +38,7 @@ actor AppLogger {
 		
 		logFileName = "WSAdmin-app-\(sessionTimestamp).log"
 		
-		let appSupportDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-		let appDir = appSupportDir.appendingPathComponent("WSAdmin Log Files", isDirectory: true)
+		let appDir = AppFolders.logFilesDirectory
 		
 		print("Log Documents directory: \(appDir.path)")
 		

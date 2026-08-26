@@ -536,14 +536,7 @@ import GoogleSignIn
 		var generationMessage: String = ""
 		
 		let fileManager = FileManager.default
-		
-		guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-			generationMessage = "ERROR: Could not find the Documents directory generating Client List"
-			await AppLogger.shared.log(generationMessage, level: .error)
-			return(false, generationMessage)
-		}
-		
-		let csvDirectory = documentsDirectory.appendingPathComponent("WSAdmin CSV Files", isDirectory: true)
+		let csvDirectory = AppFolders.csvFilesDirectory
 		
 		do {
 			// Create the "WSAdmin CSV Files" subfolder in Documents if it doesn't already exist
@@ -588,16 +581,14 @@ import GoogleSignIn
 				fileHandle.closeFile()
 				print("Lines written to CSV file successfully.")
 			} catch {
+				print("Error: Could not write to CSV file: \(error)")
 				generationFlag = false
-				generationMessage = "ERROR: Could not write to CSV file: \(error)"
-				print(generationMessage)
-				await AppLogger.shared.log(generationMessage, level: .error)
+				generationMessage = "Error: Could not write to CSV file: \(error)"
 			}
 		} catch {
+			print("Error creating directory: \(error)")
 			generationFlag = false
-			generationMessage = "ERROR: Could not create directory for CSV File \(error)"
-			print(generationMessage)
-			await AppLogger.shared.log(generationMessage, level: .error)
+			generationMessage = "Error: could not create directory for CSV File"
 		}
 		
 		return(generationFlag, generationMessage)
