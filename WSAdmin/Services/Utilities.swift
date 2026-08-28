@@ -113,6 +113,8 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			// URL for Google Sheets API
 			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)"
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: Bad URL in readSheetCells URL: \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -156,6 +158,9 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			
 			// Check if the response is successful
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				logMessage = "ERROR: readSheetCells httpResponse status code: \(statusCode)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badServerResponse)
 			}
 			
@@ -188,6 +193,8 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 		if let accessToken = accessToken {
 			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: Invalid URL for Google Sheets API \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -327,6 +334,8 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool
 		let accessToken = oauth2Token.accessToken
 		if let accessToken = accessToken {
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: invalid URLString in renameGoogleDrive URL: \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -517,6 +526,8 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions?sendNotificationEmail=\(sendNotificationEmail)"
 			
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: invalid URLString in addPermissionToFile URL: \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -608,6 +619,8 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 		if let accessToken = accessToken {
 			
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: invalid URLString in getSheetIDByName URL: \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -688,6 +701,8 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
     
 	guard let url = URL(string: urlString) else {
+		logMessage = "ERROR: invalid URLString in createNewSheetInSpreadsheet URL: \(urlString)"
+		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
 	}
 	
@@ -789,6 +804,8 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
 			
 			guard let url = URL(string: urlString) else {
+				logMessage = "ERROR: invalid URLString in renameGSheetInSpreadsheet URL: \(urlString)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw URLError(.badURL)
 			}
 			
@@ -885,6 +902,8 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
 	
 	guard let url = URL(string: urlString) else {
+		logMessage = "ERROR: invalid URLString in deleteSheet URL: \(urlString)"
+		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
 	}
 	let tokenFound = await getAccessToken()
@@ -985,6 +1004,8 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 	
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)"
 	guard let url = URL(string: urlString) else {
+		logMessage = "ERROR: invalid URLString in getSheetCount URL: \(urlString)"
+		await AppLogger.shared.log(logMessage, level: .error)
 		throw NSError(domain: "Invalid URL", code: -1, userInfo: nil)
 	}
 	let tokenFound = await getAccessToken()
@@ -1155,6 +1176,8 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+				logMessage = "ERROR: invalid HTTP response in refreshToken \(statusCode)"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
 			}
 			
@@ -1163,6 +1186,8 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 			      let newAccessToken = json["access_token"] as? String,
 			      let expiresIn = json["expires_in"] as? Double
 			else {
+				logMessage = "ERROR: Invalid JSON structure in response to Access Token refresh"
+				await AppLogger.shared.log(logMessage, level: .error)
 				throw NSError(domain: "Invalid JSON structure", code: -1, userInfo: nil)
 			}
 			let newExpirationDate = Date().addingTimeInterval(expiresIn)
