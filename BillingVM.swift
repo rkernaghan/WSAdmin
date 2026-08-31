@@ -30,7 +30,7 @@ import GoogleSignIn
 		let billArray = BillArray(monthName: billingMonth)
 		logMessage = "INFO: Starting Generate Invoice for \(billingYear) \(billingMonth)"
 		print(logMessage)
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		// Go through each selected Tutor, read the Tutor's Timesheet and add the data to the billArray.
 		for objectID in tutorSet {

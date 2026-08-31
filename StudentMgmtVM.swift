@@ -15,7 +15,7 @@ import Foundation
 		var logMessage: String = ""
 		
 		logMessage = "INFO: Adding Student: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		var result: Bool = true
 		var studentBillingFileID: String = ""
@@ -104,7 +104,7 @@ import Foundation
 		var logMessage: String = ""
 		
 		logMessage = "INFO: Updating Student: \(originalStudentName), New Name: \(studentName), ContactFirstName: \(contactFirstName), ContactLastName: \(contactLastName), ContactEmail: \(contactEmail), ContactPhone: \(contactPhone), ContactAddress1: \(contactAddress1), ContactAddress2: \(contactAddress2), ContactCity: \(contactCity), ContactState: \(contactState), contactZipCode: \(contactZipCode), Location: \(location)"
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
@@ -439,7 +439,7 @@ import Foundation
 		for objectID in studentIndex {
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "INFO: Deleting Student: \(referenceData.students.studentsList[index].studentName)"
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				print(logMessage)
 				// Check that the Student is not assigned to a Tutor and is not already deleted
 				if referenceData.students.studentsList[index].studentStatus != .StudentAssigned && referenceData.students.studentsList[index].studentStatus != .StudentDeleted {
@@ -551,7 +551,7 @@ import Foundation
 				studentName = referenceData.students.studentsList[index].studentName
 				logMessage = "INFO: Undeleting Student: \(studentName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[index].studentStatus == .StudentDeleted {
 					let studentNum = index
@@ -602,7 +602,7 @@ import Foundation
 				studentName = referenceData.students.studentsList[studentNum].studentName
 				logMessage = "INFO: Assigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				// Check that the Student Status is "Unassigned"
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
@@ -659,7 +659,7 @@ import Foundation
 				studentName = referenceData.students.studentsList[studentNum].studentName
 				logMessage = "INFO: Reassigning Student: \(studentName) to Tutor: \(referenceData.tutors.tutorsList[newTutorNum].tutorName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
 					let (originalTutorFoud, originalTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentCurrentTutorKey)
@@ -729,7 +729,7 @@ import Foundation
 				studentName = referenceData.students.studentsList[studentNum].studentName
 				logMessage = "INFO: Unassigning Student: \(studentName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
 					let tutorKey = referenceData.students.studentsList[studentNum].studentCurrentTutorKey
@@ -786,7 +786,7 @@ import Foundation
 				let studentName = referenceData.students.studentsList[studentNum].studentName
 				logMessage = "INFO: Unreassigning Student: \(studentName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned  {
 					// Get the Tutor key and name of the Tutor originally assigned to Student before the Reassignment
@@ -838,7 +838,7 @@ import Foundation
 				
 				logMessage = "INFO: Unassigning Tutor Student: \(studentName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
 				
@@ -884,7 +884,7 @@ import Foundation
 				
 				logMessage = "INFO: Suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 					referenceData.students.studentsList[studentNum].suspendStudent()
@@ -914,7 +914,7 @@ import Foundation
 				
 				logMessage = "INFO: Unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentSuspended {
 					referenceData.students.studentsList[studentNum].unsuspendStudent()

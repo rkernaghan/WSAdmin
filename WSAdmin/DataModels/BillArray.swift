@@ -122,7 +122,7 @@ class BillArray {
 		generateMessage = "INFO: Generating invoice on \(invoiceDate)"
 		print(generateMessage)
 		Task {
-			await AppLogger.shared.log(generateMessage, newLine: "Y")
+			await AppLogger.shared.log(generateMessage, newLine: true)
 		}
 		
 		// Calculate the due date of the invoice, which is 7 days from today's date

@@ -24,7 +24,7 @@ import Foundation
 		
 		logMessage = "INFO: Adding new Service - TimesheetName: \(timesheetName), InvoiceName: \(invoiceName), ServiceType: \(serviceType), BillingType: \(billingType), Cost1: \(cost1), Cost2: \(cost2), Cost3: \(cost3), Price1: \(price1), Price2: \(price2), Price3: \(price3)"
 		print(logMessage)
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		referenceData.dataCounts.increaseTotalServiceCount()
 		addResult = await referenceData.dataCounts.saveDataCounts()
@@ -130,7 +130,7 @@ import Foundation
 		
 		logMessage = "INFO: Updating existing Service - New TimesheetName: \(timesheetName), Original TimesheetName: \(originalTimesheetName), InvoiceName: \(invoiceName), ServiceType: \(serviceType), BillingType: \(billingType), Cost1: \(cost1), Cost2: \(cost2), Cost3: \(cost3), Price1: \(price1), Price2: \(price2), Price3: \(price3)"
 		print(logMessage)
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 
 		// Check if the TimesheetName has changed
 		if timesheetName != originalTimesheetName {
@@ -178,7 +178,7 @@ import Foundation
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "INFO: Deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned {
 					referenceData.services.servicesList[serviceNum].markDeleted()
@@ -215,7 +215,7 @@ import Foundation
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceDeleted {
 					referenceData.services.servicesList[serviceNum].markUnDeleted()

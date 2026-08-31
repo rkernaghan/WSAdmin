@@ -52,8 +52,11 @@ import Foundation
 		var highestServiceKey: Int = 0
 		var highestStudentKey: Int = 0
 		var highestLocationKey: Int = 0
+		var logMessage: String
 		
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "\n     Validating System - Stand By for Adventure! "))
+		logMessage = "INFO:     Validating System - Stand By for Adventure! "
+		await AppLogger.shared.log(logMessage, newLine: true)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		
 		//Load the most current Student Billing and Tutor Billing spreadsheets.  Could be current month or previous month depending on whether current month billed yet.
 		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
@@ -106,21 +109,29 @@ import Foundation
 					assignedTutors += referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 					
 					if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Student \(studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
+						logMessage = "INFO: *** Validation Error - Unassigned Student \(studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 				}
 				tutorNum += 1
 			}
 			if assignedCount > 1 && referenceData.students.studentsList[studentNum].studentStatus != .StudentReassigned {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"     Validation Warning: Assigned Student \(studentName) assigned to Tutors \(assignedTutors)"))
+				logMessage = "INFO:     Validation Warning: Assigned Student \(studentName) assigned to Tutors \(assignedTutors)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			if assignedCount == 1 && referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Reassigned Student \(studentName) assigned to only one Tutor \(assignedTutors)"))
+				logMessage = "INFO: *** Validation Error - Reassigned Student \(studentName) assigned to only one Tutor \(assignedTutors)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			if assignedCount == 0 && referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Assigned Student \(studentName) assigned to no Tutor"))
+				logMessage = "INFO: *** Validation Error - Assigned Student \(studentName) assigned to no Tutor"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			studentNum += 1
@@ -128,7 +139,9 @@ import Foundation
 		
 		// Check to ensure no Student keys exceed the highest Student key counter in Reference Data data counts
 		if highestStudentKey > referenceData.dataCounts.highestStudentKey {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Student key is \(highestStudentKey), which is higher than next available key \(referenceData.dataCounts.highestStudentKey)-- duplicate keys will result"))
+			logMessage = "INFO: *** Validation Error - Maximum assigned Student key is \(highestStudentKey), which is higher than next available key \(referenceData.dataCounts.highestStudentKey)-- duplicate keys will result"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Validate that each Service with a Status of Assigned is actually assigned to a Tutor and no Services with a Status of Unassigned is assigned to a Tutor
@@ -158,7 +171,9 @@ import Foundation
 						tutorName = tutorName + referenceData.tutors.tutorsList[tutorNum].tutorName + "; "
 						tutorServiceCount += 1
 					} else if serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted && referenceData.tutors.tutorsList[tutorNum].tutorType != .SpecialistTutor {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Base Service \(serviceName) not assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"))
+						logMessage = "INFO: *** Validation Error - Base Service \(serviceName) not assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						
 					}
 				}
@@ -166,21 +181,29 @@ import Foundation
 			}
 			
 			if referenceData.services.servicesList[serviceNum].serviceCount != tutorServiceCount {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Service \(serviceName) Use Count \(referenceData.services.servicesList[serviceNum].serviceCount) does not match assigned Tutor Count \(tutorServiceCount)"))
+				logMessage = "INFO: *** Validation Error - Service \(serviceName) Use Count \(referenceData.services.servicesList[serviceNum].serviceCount) does not match assigned Tutor Count \(tutorServiceCount)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceAssigned && tutorServiceCount == 0 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Assigned Service \(serviceName) assigned to no Tutor"))
+				logMessage = "INFO: *** Validation Error - Assigned Service \(serviceName) assigned to no Tutor"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned && tutorServiceCount > 0 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Service \(serviceName) assigned to Tutor \(tutorName)"))
+				logMessage = "INFO: *** Validation Error - Unassigned Service \(serviceName) assigned to Tutor \(tutorName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			serviceNum += 1
 		}
 		
 		// Check to ensure no Service keys exceed the highest Service key counter in Reference Data data counts
 		if highestServiceKey > referenceData.dataCounts.highestServiceKey {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Service key is \(highestServiceKey), which is higher than next available key \(referenceData.dataCounts.highestServiceKey)-- duplicate keys will result"))
+			logMessage = "INFO: *** Validation Error - Maximum assigned Service key is \(highestServiceKey), which is higher than next available key \(referenceData.dataCounts.highestServiceKey)-- duplicate keys will result"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Validate that the Location count equals the number of (non-deleted) Students with that Location
@@ -190,11 +213,15 @@ import Foundation
 		let locationCount = referenceData.locations.locationsList.count
 		while locationNum < locationCount {
 			if referenceData.locations.locationsList[locationNum].locationStatus == .LocationDeleted && referenceData.locations.locationsList[locationNum].locationStudentCount > 0 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Unassigned Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"))
+				logMessage = "INFO: *** Validation Error - Unassigned Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			if referenceData.locations.locationsList[locationNum].locationStatus == .LocationActive && referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Active Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"))
+				logMessage = "INFO: *** Validation Error - Active Location \(referenceData.locations.locationsList[locationNum].locationName) has a Student Count of \(referenceData.locations.locationsList[locationNum].locationStudentCount)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			studentNum = 0
@@ -207,7 +234,9 @@ import Foundation
 			}
 			
 			if referenceData.locations.locationsList[locationNum].locationStudentCount != studentLocationCount {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Location \(referenceData.locations.locationsList[locationNum].locationName) assigned Student Count \(referenceData.locations.locationsList[locationNum].locationStudentCount) does not match actual Student Count \(studentLocationCount)"))
+				logMessage = "INFO: *** Validation Error - Location \(referenceData.locations.locationsList[locationNum].locationName) assigned Student Count \(referenceData.locations.locationsList[locationNum].locationStudentCount) does not match actual Student Count \(studentLocationCount)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			locationNum += 1
@@ -227,14 +256,18 @@ import Foundation
 			let studentKey = referenceData.students.studentsList[studentNum].studentKey
 			let studentKeyCount = referenceData.students.studentsList.filter { $0.studentKey == studentKey }.count
 			if studentKeyCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Student Key \(studentKey) for \(referenceData.students.studentsList[studentNum].studentName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Student Key \(studentKey) for \(referenceData.students.studentsList[studentNum].studentName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			// Check for duplicate Student names
 			let studentName = referenceData.students.studentsList[studentNum].studentName
 			let studentNameCount = referenceData.students.studentsList.filter { $0.studentName == studentName }.count
 			if studentNameCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Student Name \(studentName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Student Name \(studentName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			studentNum += 1
@@ -249,14 +282,18 @@ import Foundation
 			let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
 			let serviceKeyCount = referenceData.services.servicesList.filter { $0.serviceKey == serviceKey }.count
 			if serviceKeyCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Service Key \(serviceKey) for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Service Key \(serviceKey) for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			// Check for duplicate Service names
 			let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 			let serviceNameCount = referenceData.services.servicesList.filter { $0.serviceTimesheetName == serviceName }.count
 			if serviceNameCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Service Name \(serviceName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Service Name \(serviceName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			serviceNum += 1
 		}
@@ -276,20 +313,26 @@ import Foundation
 			
 			let locationKeyCount = referenceData.locations.locationsList.filter { $0.locationKey == locationKey }.count
 			if locationKeyCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Location Key \(locationKey) for Location \(referenceData.locations.locationsList[locationNum].locationName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			// Check for duplicate Location names
 			let locationName = referenceData.locations.locationsList[locationNum].locationName
 			let locationNameCount = referenceData.locations.locationsList.filter { $0.locationName == locationName }.count
 			if locationNameCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Location Name \(locationName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Location Name \(locationName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			locationNum += 1
 		}
 		
 		// Check to ensure no Location keys exceed the highest Location key counter in Reference Data data counts
 		if highestLocationKey > referenceData.dataCounts.highestLocationKey {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Location key is \(highestLocationKey), which is higher than next available key \(referenceData.dataCounts.highestLocationKey)-- duplicate keys will result"))
+			logMessage = "INFO: ** Validation Error - Maximum assigned Location key is \(highestLocationKey), which is higher than next available key \(referenceData.dataCounts.highestLocationKey)-- duplicate keys will result"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Various Tutor data checks
@@ -309,13 +352,17 @@ import Foundation
 			
 			let tutorKeyCount = referenceData.tutors.tutorsList.filter { $0.tutorKey == tutorKey }.count
 			if tutorKeyCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Tutor Key \(tutorKey)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Tutor Key \(tutorKey)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			// Check for duplicate Tutor Names in Reference Data
 			let tutorNameCount = referenceData.tutors.tutorsList.filter { $0.tutorName == tutorName }.count
 			if tutorNameCount > 1 {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Duplicate Tutor Name \(tutorName)"))
+				logMessage = "INFO: *** Validation Error: Duplicate Tutor Name \(tutorName)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			// Check that the Student Keys in the Reference Data matches the Student Keys in the Tutor Details file for each Tutor
@@ -329,10 +376,14 @@ import Foundation
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					
 					if studentName != tutorStudentName {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)"))
+						logMessage = "INFO: *** Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 				} else {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: \(tutorStudentKey) not found in Reference Data"))
+					logMessage = "INFO: *** Validation Error: \(tutorStudentKey) not found in Reference Data"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				tutorStudentNum += 1
 			}
@@ -349,10 +400,14 @@ import Foundation
 					let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 					
 					if serviceName != tutorServiceName {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)"))
+						logMessage = "INFO: *** Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 				} else {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: \(tutorServiceKey) not found in Reference Data"))
+					logMessage = "INFO: *** Validation Error: \(tutorServiceKey) not found in Reference Data"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				tutorServiceNum += 1
 			}
@@ -362,7 +417,9 @@ import Foundation
 		
 		// Check to ensure no Tutor keys exceed the highest Tutor key counter in Reference Data data counts
 		if highestTutorKey > referenceData.dataCounts.highestTutorKey {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - Maximum assigned Tutor key is \(highestTutorKey), which is higher than next available key \(referenceData.dataCounts.highestTutorKey)-- duplicate keys will result"))
+			logMessage = "INFO: *** Validation Error - Maximum assigned Tutor key is \(highestTutorKey), which is higher than next available key \(referenceData.dataCounts.highestTutorKey)-- duplicate keys will result"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Check that the number of Students in the Reference Data list (Total/Active/Deleted) matches the counts in the Reference Data
@@ -386,7 +443,9 @@ import Foundation
 				case .StudentDeleted:
 					deletedStudents += 1
 				default:
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Invalid Status for Student \(studentName)"))
+					logMessage = "INFO: *** Validation Error: Invalid Status for Student \(studentName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 			}
 			totalStudents += 1
 			studentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
@@ -397,24 +456,34 @@ import Foundation
 			if referenceData.students.studentsList[studentNum].studentStatus != .StudentDeleted {
 				let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 				if !studentFoundFlag {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)"))
+					logMessage = "INFO: *** Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 				}
 				
 				// Validate the Location Name for the Student
 				let (findResult, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
 				if !findResult {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List"))
+					logMessage = "INFO: *** Validation Error: Location \(referenceData.students.studentsList[studentNum].studentLocation) for Student \(studentName) not found in Locations List"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 			}
 			studentNum += 1
 		}
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)"))
+		logMessage = "INFO:           Total Students \(totalStudents), Active Students \(activeStudents), Deleted Students \(deletedStudents)"
+		await AppLogger.shared.log(logMessage)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		
 		if totalStudents != referenceData.dataCounts.totalStudents {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Total Students \(referenceData.dataCounts.totalStudents) does not match actual count in Reference Data Students list of \(totalStudents)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Total Students \(referenceData.dataCounts.totalStudents) does not match actual count in Reference Data Students list of \(totalStudents)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 		}
 		if activeStudents != referenceData.dataCounts.activeStudents {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Active Students \(referenceData.dataCounts.activeStudents) does not match actual count in Reference Data Students list of \(activeStudents)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Active Students \(referenceData.dataCounts.activeStudents) does not match actual count in Reference Data Students list of \(activeStudents)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		//		if deletedStudents != referenceData.dataCounts.totalStudents - referenceData.dataCounts.activeStudents  {
 		//			print("Validation Error: Reference Data Count for Deleted Students \(referenceData.dataCounts.deletedStudents) does not match actual count in Reference Data Students list of \(deletedStudents)")
@@ -434,18 +503,27 @@ import Foundation
 				case .ServiceDeleted, .ServiceSuspended:
 					deletedServices += 1
 				default:
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error - Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"))
+					logMessage = "INFO: *** Validation Error - Invalid Status for Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			totalServices += 1
 			
 			serviceNum += 1
 		}
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"          Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)"))
+		logMessage = "INFO:           Total Services \(totalServices), Active Services \(activeServices), Deleted Services \(deletedServices)"
+		await AppLogger.shared.log(logMessage)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
+		
 		if totalServices != referenceData.dataCounts.totalServices {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Total Services \(referenceData.dataCounts.totalServices) does not match actual count in Reference Data Services list of \(totalServices)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Total Services \(referenceData.dataCounts.totalServices) does not match actual count in Reference Data Services list of \(totalServices)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		if activeServices != referenceData.dataCounts.activeServices {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Active Services \(referenceData.dataCounts.activeServices) does not match actual count in Reference Data Services list of \(activeServices)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Active Services \(referenceData.dataCounts.activeServices) does not match actual count in Reference Data Services list of \(activeServices)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		//		if deletedServices != referenceData.dataCounts.totalServices - referenceData.dataCounts.activeServices  {
 		//			print("Validation Error: Reference Data Count for Deleted Services \(referenceData.dataCounts.deletedServices) does not match actual count in Reference Data Services list of \(deletedServices)")
@@ -465,7 +543,9 @@ import Foundation
 				case .LocationDeleted:
 					deletedLocations += 1
 				default:
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)"))
+					logMessage = "INFO: *** Validation Error: Invalid Location Status for Location \(referenceData.locations.locationsList[locationNum].locationName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			locationStudents += referenceData.locations.locationsList[locationNum].locationStudentCount
 			totalLocations += 1
@@ -473,17 +553,25 @@ import Foundation
 			
 			locationNum += 1
 		}
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)"))
+		logMessage = "INFO:           Total Locations \(totalLocations), Active Locations \(activeLocations), Deleted Locations \(deletedLocations)"
+		await AppLogger.shared.log(logMessage)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		
 		
 		if locationStudents != activeStudents {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)"))
+			logMessage = "INFO: *** Validation Error: Count of Location Students \(locationStudents) does not match actual count of Students in Reference Data Locations list of \(activeStudents)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		if totalLocations != referenceData.dataCounts.totalLocations {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Total Locations \(referenceData.dataCounts.totalLocations) does not match actual count in Reference Data Locations list of \(totalLocations)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Total Locations \(referenceData.dataCounts.totalLocations) does not match actual count in Reference Data Locations list of \(totalLocations)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		if activeLocations != referenceData.dataCounts.activeLocations {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Reference Data Count for Active Locations \(referenceData.dataCounts.activeLocations) does not match actual count in Reference Data Locations list of \(activeLocations)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Active Locations \(referenceData.dataCounts.activeLocations) does not match actual count in Reference Data Locations list of \(activeLocations)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		//		if deletedLocations != referenceData.dataCounts.totalLocations - referenceData.dataCounts.activeLocations  {
 		//			print("Validation Error: Reference Data Count for Deleted Locations \(referenceData.dataCounts.deletedLocations) does not match actual count in Reference Data Locations list of \(deletedLocations)")
@@ -506,43 +594,60 @@ import Foundation
 				case .TutorUnassigned, .TutorSuspended:
 					activeTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned"))
+						logMessage = "INFO: *** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is not Assigned"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 				case .TutorDeleted:
 					deletedTutors += 1
 					if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount != 0 {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is Deleted"))
+						logMessage = "INFO: *** Validation Error: Student Count for \(tutorName) not equal to zero and Tutor Status is Deleted"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 				default:
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Invalid Tutor Status for Tutor \(tutorName)"))
+					logMessage = "INFO: *** Validation Error: Invalid Tutor Status for Tutor \(tutorName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			
 			if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
 				// Validate that there is one Tutor Details sheet for each active (non-deleted) Tutor
 				do {
-					sheetNum = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName )
+					sheetNum = try await getSheetIdByName(spreadsheetID: tutorDetailsFileID, sheetName: tutorName )
 				} catch {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"))
+					logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
+				
 				if sheetNum == nil {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"))
+					logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				// Check if Tutor found in Billed Tutor List for previous month
 				let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 				if !tutorFoundFlag {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)"))
+					logMessage = "INFO: *** Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
 				let (studentCount, serviceCount, timesheetFileID) = await referenceData.tutors.tutorsList[tutorNum].fetchTutorDataCounts(tutorName: tutorName)
 				if studentCount != referenceData.tutors.tutorsList[tutorNum].tutorStudentCount {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)"))
+					logMessage = "INFO: *** Validation Error: Reference Data Student count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) but Tutor Details count is \(studentCount)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				if serviceCount != referenceData.tutors.tutorsList[tutorNum].tutorServiceCount {
-					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)"))
+					logMessage = "INFO: *** Validation Error: Reference Data Service count for Tutor \(tutorName) is \(referenceData.tutors.tutorsList[tutorNum].tutorServiceCount) but Tutor Details count is \(serviceCount)"
+					await AppLogger.shared.log(logMessage)
+					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 			}
@@ -554,23 +659,32 @@ import Foundation
 			
 			tutorNum += 1
 		}
-		
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)"))
+		logMessage = "INFO:           Total Tutors \(totalTutors), Active Tutors \(activeTutors), Deleted Tutors \(deletedTutors)"
+		await AppLogger.shared.log(logMessage)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		
 		do {
-			let tutorDetailsSheetCount = try await getSheetCount(spreadsheetId: tutorDetailsFileID)
+			let tutorDetailsSheetCount = try await getSheetCount(spreadsheetID: tutorDetailsFileID)
 			if (tutorDetailsSheetCount - 1) != activeTutors {	// Subtract 1 from sheet count for shared RefData sheet
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error - count of active tutors: \(activeTutors) does not equal number of Tutor Details sheets: \(tutorDetailsSheetCount)"))
+				logMessage = "INFO: *** Validation Error - count of active tutors: \(activeTutors) does not equal number of Tutor Details sheets: \(tutorDetailsSheetCount)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 		} catch {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: could get get count of TutorDetails sheets"))
+			logMessage = "INFO: *** Validation Error: could get get count of TutorDetails sheets"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		if totalTutors != referenceData.dataCounts.totalTutors {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Total Tutors \(referenceData.dataCounts.totalTutors) does not match actual count in Reference Data Tutors list of \(totalTutors)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		if activeTutors != referenceData.dataCounts.activeTutors {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Count for Active Tutors \(referenceData.dataCounts.activeTutors) does not match actual count in Reference Data Tutors list of \(activeTutors)"))
+			logMessage = "INFO: *** Validation Error: Reference Data Count for Active Tutors \(referenceData.dataCounts.activeTutors) does not match actual count in Reference Data Tutors list of \(activeTutors)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		//		if deletedTutors != referenceData.dataCounts.totalTutors - referenceData.dataCounts.activeTutors  {
 		//			print("Validation Error: Reference Data Count for Deleted Tutors \(referenceData.dataCounts.deletedTutors) does not match actual count in Reference Data Tutors list of \(deletedTutors)")
@@ -595,7 +709,9 @@ import Foundation
 			
 			// Check if Revenue - Cost == Profit for Student Billing row
 			if ( abs(computedProfit - billedStudentProfit) ) > 1.00  {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student Profit \(billedStudentProfit) for for Student: \(billedStudentMonth.studentBillingRows[billedStudentNum].studentName)  does not match Revenue - Cost \(computedProfit)"))
+				logMessage = "INFO: *** Validation Error: Billed Student Profit \(billedStudentProfit) for for Student: \(billedStudentMonth.studentBillingRows[billedStudentNum].studentName)  does not match Revenue - Cost \(computedProfit)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				
 			}
 			billedStudentNum += 1
@@ -620,7 +736,9 @@ import Foundation
 			
 			// Check if Revenue - Cost == Profit for Tutor Billing row
 			if ( abs(computedProfit - billedStudentProfit) ) > 1.0  {
-				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor Profit \(billedStudentProfit)  does not match Revenue - Cost \(computedProfit)"))
+				logMessage = "INFO: *** Validation Error: Billed Tutor Profit \(billedStudentProfit)  does not match Revenue - Cost \(computedProfit)"
+				await AppLogger.shared.log(logMessage)
+				validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			}
 			
 			billedTutorNum += 1
@@ -637,7 +755,9 @@ import Foundation
 			let locationRevenueString: String = formatter.string(from: NSNumber(value: locationRevenue)) ?? " "
 			let billedTutorTotalRevenueString: String = formatter.string(from: NSNumber(value: billedTutorTotalRevenue)) ?? " "
 			let billedStudentTotalRevenueString: String = formatter.string(from: NSNumber(value: billedStudentTotalRevenue)) ?? " "
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor revenue " + tutorRevenueString + ", Student revenue" + studentRevenueString + ", Location revenue " + locationRevenueString + ", Billed Tutor revenue " + billedTutorTotalRevenueString + " and Billed Student revenue " + billedStudentTotalRevenueString + " do not match"))
+			logMessage = "INFO: *** Validation Error: Tutor revenue " + tutorRevenueString + ", Student revenue" + studentRevenueString + ", Location revenue " + locationRevenueString + ", Billed Tutor revenue " + billedTutorTotalRevenueString + " and Billed Student revenue " + billedStudentTotalRevenueString + " do not match"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			
 			// If total Student revenue in RefData does not equal total Student revenue in Billed Student list, find the difference
 			if studentRevenue != billedStudentTotalRevenue {
@@ -648,12 +768,16 @@ import Foundation
 					let refStudentRevenue = referenceData.students.studentsList[studentNum].studentTotalRevenue
 					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences"))
+						logMessage = "INFO: *** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					} else {
 						let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue
 
 						if !CompareTotals(referenceDataTotal: refStudentRevenue, billedDataTotal: billedStudentRevenue) {
-							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) "))
+							logMessage = "INFO: *** Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) "
+							await AppLogger.shared.log(logMessage)
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					}
 					studentNum += 1
@@ -669,11 +793,15 @@ import Foundation
 					let refTutorRevenue = referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
 					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences"))
+						logMessage = "INFO: *** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					} else {
 						let billedTutorRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue
 						if !CompareTotals(referenceDataTotal: refTutorRevenue, billedDataTotal: billedTutorRevenue) {
-							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) "))
+							logMessage = "INFO: *** Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) "
+							await AppLogger.shared.log(logMessage)
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					}
 					tutorNum += 1
@@ -683,7 +811,9 @@ import Foundation
 		
 		// Validate that the Tutors total cost, Student total cost, billed Student total cost and billed Tutor Total Cost all match
 		if !CompareTotals(referenceDataTotal: tutorCost, billedDataTotal: studentCost) || !CompareTotals(referenceDataTotal: studentCost, billedDataTotal: billedTutorTotalCost) || !CompareTotals(referenceDataTotal: billedTutorTotalCost, billedDataTotal: billedStudentTotalCost) {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match"))
+			logMessage = "INFO: *** Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			
 			// If total Student cost in RefData does not equal total Student cost in Billed Student list, find the difference
 			if studentCost != billedStudentTotalCost {
@@ -694,17 +824,23 @@ import Foundation
 					let refStudentCost = referenceData.students.studentsList[studentNum].studentTotalCost
 					let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences"))
+						logMessage = "INFO: *** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 					} else {
 						let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost
 
 						if !CompareTotals(referenceDataTotal: refStudentCost, billedDataTotal: billedStudentCost) {
-							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) "))
+							logMessage = "INFO: *** Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) "
+							await AppLogger.shared.log(logMessage)
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					}
 					
 					if (abs(referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost - referenceData.students.studentsList[studentNum].studentTotalProfit) > 1.0) {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Student profit \(referenceData.students.studentsList[studentNum].studentTotalProfit) does not match Revenue - Cost \(referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost) for Student \(studentName)  "))
+						logMessage = "INFO: *** Validation Error: Reference Data Student profit \(referenceData.students.studentsList[studentNum].studentTotalProfit) does not match Revenue - Cost \(referenceData.students.studentsList[studentNum].studentTotalRevenue - referenceData.students.studentsList[studentNum].studentTotalCost) for Student \(studentName)  "
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 					studentNum += 1
 				}
@@ -719,16 +855,22 @@ import Foundation
 					let refTutorCost = referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
 					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences"))
+						logMessage = "INFO: *** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					} else {
 						let billedTutorCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost
 
 						if !CompareTotals(referenceDataTotal: refTutorCost, billedDataTotal: billedTutorCost) {
-							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "))
+							logMessage = "INFO: *** Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "
+							await AppLogger.shared.log(logMessage)
+							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					}
 					if (abs (referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost - referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) > 1.0) {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Reference Data Tutor profit \(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) does not match Revenue - Cost \(referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost) for tutor \(tutorName)  "))
+						logMessage = "INFO: *** Validation Error: Reference Data Tutor profit \(referenceData.tutors.tutorsList[tutorNum].tutorTotalProfit) does not match Revenue - Cost \(referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue - referenceData.tutors.tutorsList[tutorNum].tutorTotalCost) for tutor \(tutorName)  "
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 					
 					tutorNum += 1
@@ -738,11 +880,15 @@ import Foundation
 		
 		// Validate that the Tutor session count, Student session count, Billed Tutor session count and the Billed Student session count all match
 		if tutorSessions != studentSessions || studentSessions != billedStudentSessionCount || billedStudentSessionCount != billedTutorSessionCount {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match"))
+			logMessage = "INFO: *** Validation Error: Tutor session count \(tutorSessions), Student session count \(studentSessions), Billed Tutor session count \(billedTutorSessionCount) and Billed Student Session count \(billedStudentSessionCount) do not match"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		if tutorStudentCount != assignedStudentCount + reassignedStudentCount {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "*** Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) plus reassigned Student count \(reassignedStudentCount)-- could be due to reassignment"))
+			logMessage = "INFO: *** Validation Error: Tutor Student count \(tutorStudentCount) does not match assigned Student count \(assignedStudentCount) plus reassigned Student count \(reassignedStudentCount)-- could be due to reassignment"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Validate master reference spreadsheet file key matches the import file keys in each timesheet and timesheet template
@@ -750,13 +896,17 @@ import Foundation
 		// Validate that the total number of Tutors in the previous month Billed Tutor List is equal to the number of active Tutors
 		
 		if billedTutorMonth.tutorBillingRows.count != totalTutors {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)"))
+			logMessage = "INFO: *** Validation Error: Total Tutor count \(totalTutors) does not match number of Tutors in \(billedMonthName) Billed Tutor list \(billedTutorMonth.tutorBillingRows.count)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		}
 		
 		// Validate that the total number of Students in the previous month Billed Student List is equal to the number of active Students
 		
 		if billedStudentMonth.studentBillingRows.count != totalStudents {
-			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:"*** Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)"))
+			logMessage = "INFO: *** Validation Error: Total Student count \(totalStudents) does not match number of Students in \(billedMonthName) Billed Student list \(billedStudentMonth.studentBillingRows.count)"
+			await AppLogger.shared.log(logMessage)
+			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			// If more Students in Billed Student list, find missing Student
 			if totalStudents < billedStudentMonth.studentBillingRows.count {
 				var studentNum = 0
@@ -765,14 +915,18 @@ import Foundation
 					let studentName = billedStudentMonth.studentBillingRows[studentNum].studentName
 					let (studentFoundFlag, billedStudentNum) = referenceData.students.findStudentByName(studentName: studentName)
 					if !studentFoundFlag {
-						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Student \(studentName) is in Billed Student list but not Reference Data Students"))
+						logMessage = "INFO: Student \(studentName) is in Billed Student list but not Reference Data Students"
+						await AppLogger.shared.log(logMessage)
+						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 					
 					studentNum += 1
 				}
 			}
 		}
-		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "      Validation Complete \n"))
+		logMessage = "INFO:       Validation Complete \n"
+		await AppLogger.shared.log(logMessage)
+		validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 		
 	}
 	
@@ -801,6 +955,7 @@ import Foundation
 		var compareTutorBilling = [TutorBillingMonth]()				// The new monthly computed Tutor Billing data directly from the timesheets
 		var compareStudentBilling = [StudentBillingMonth]()			// The new monthly computed Student Billing data directly from the timesheets
 		var openingMonthNum: Int = 0
+		var logMessage: String
 		
 		let billingMessages = WindowMessages()
 		
@@ -838,13 +993,15 @@ import Foundation
 							let timesheet = Timesheet()
 							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: false, showEachSession: false)
 							if !timesheetResult {
-								print("Error: Could not load Timesheet for Tutor \(tutorName)")
+								print("ERROR: Could not load Timesheet for Tutor \(tutorName)")
 							} else {
 								billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages, referenceData: referenceData)
 							}
 						}
 					} catch {
-						print("Error: could not get timesheet fileID for \(fileName)")
+						logMessage = "ERROR:  could not get timesheet fileID for \(fileName) reading Tutor Timesheets"
+						await AppLogger.shared.log(logMessage)
+						print(logMessage)
 					}
 				} else {
 					print("*Not processing Timesheet for deleted Tutor \(tutorName)")
@@ -1333,50 +1490,51 @@ import Foundation
 		print(logMessage)
 		await AppLogger.shared.log(logMessage, level: .info)
 		
+
+		// Copy the Reference Data spreadsheet
+		if runMode == "PROD" {
+			copyFileName = PgmConstants.referenceDataProdFileName + " Backup " + backupDate
+		} else if runMode == "COPY" {
+			copyFileName = PgmConstants.referenceDataCopyFileName + " Backup " + backupDate
+		} else {
+			copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
+		}
+		
+		(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
+		if copyFileResult {
+			logMessage = "INFO: Reference Data spreadsheet backed up to file: \(copyFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .info)
+		} else {
+			completionFlag = false
+			logMessage = "ERROR: Reference Data not backed up"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
+		
+		// Copy the Tutor Details spreadsheet
+		if runMode == "PROD" {
+			copyFileName = PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate
+		} else if runMode == "COPY" {
+			copyFileName = PgmConstants.tutorDetailsCopyFileName + " Backup " + backupDate
+		} else {
+			copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
+		}
+		(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: copyFileName)
+		if copyFileResult {
+			logMessage = "INFO: Tutor Details spreadsheet copied to file: \(copyFileName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .info)
+		} else {
+			completionFlag = false
+			logMessage = "ERROR: Tutor Details Data spreadsheet not backed up"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
+		
+		// Copy the Tutor Billing spreadsheet
+		fileName = tutorBillingFileNamePrefix + currentYear
 		do {
-			// Copy the Reference Data spreadsheet
-			if runMode == "PROD" {
-				copyFileName = PgmConstants.referenceDataProdFileName + " Backup " + backupDate
-			} else if runMode == "COPY" {
-				copyFileName = PgmConstants.referenceDataCopyFileName + " Backup " + backupDate
-			} else {
-				copyFileName = PgmConstants.referenceDataTestFileName + " Backup " + backupDate
-			}
-			
-			(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: referenceDataFileID, newFileName: copyFileName)
-			if copyFileResult {
-				logMessage = "INFO: Reference Data spreadsheet backed up to file: \(copyFileName)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				completionFlag = false
-				logMessage = "ERROR: Reference Data not backed up"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-			
-			// Copy the Tutor Details spreadsheet
-			if runMode == "PROD" {
-				copyFileName = PgmConstants.tutorDetailsProdFileName + " Backup " + backupDate
-			} else if runMode == "COPY" {
-				copyFileName = PgmConstants.tutorDetailsCopyFileName + " Backup " + backupDate
-			} else {
-				copyFileName = PgmConstants.tutorDetailsTestFileName + " Backup " + backupDate
-			}
-			(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorDetailsFileID, newFileName: copyFileName)
-			if copyFileResult {
-				logMessage = "INFO: Tutor Details spreadsheet copied to file: \(copyFileName)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				completionFlag = false
-				logMessage = "ERROR: Tutor Details Data spreadsheet not backed up"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-			
-			// Copy the Tutor Billing spreadsheet
-			fileName = tutorBillingFileNamePrefix + currentYear
 			let (tutorFileFound, tutorBillingFileID) = try await getFileID(fileName: fileName)
 			if tutorFileFound {
 				(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: tutorBillingFileID, newFileName: fileName + " Backup " + backupDate)
@@ -1396,9 +1554,14 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			}
-			
-			// Copy the Student Billing spreadsheet
-			fileName = studentBillingFileNamePrefix + currentYear
+		} catch {
+			logMessage = "ERROR: Error backing up Billed Tutor spreadsheet: \(error.localizedDescription)"
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
+		
+		// Copy the Student Billing spreadsheet
+		fileName = studentBillingFileNamePrefix + currentYear
+		do {
 			let (studentFileFound, studentBillingFileID) = try await getFileID(fileName: fileName)
 			if studentFileFound {
 				(copyFileResult,copyFileID) = await copyGoogleDriveFile(sourceFileId: studentBillingFileID, newFileName: fileName + " Backup " + backupDate)
@@ -1417,13 +1580,11 @@ import Foundation
 			if completionFlag {
 				logMessage = "INFO: ** Backup Complete **"
 				print(logMessage + "\n")
-				await AppLogger.shared.log(logMessage, level: .info, newLine: "Y")
+				await AppLogger.shared.log(logMessage, level: .info, newLine: true)
 			}
 		} catch {
-			logMessage = "ERROR: Could not get fileId for file: (\(fileName)"
-			print(logMessage)
+			logMessage = "ERROR: Error backing up Billed Student spreadsheet: \(error.localizedDescription)"
 			await AppLogger.shared.log(logMessage, level: .error)
-			completionFlag = false
 		}
 		
 		return(completionFlag)
@@ -1467,10 +1628,10 @@ import Foundation
 									// Assign Google Drive permissions to access the new file
 									newTimesheetFileID = copyFileID
 									do {
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
 										logMessage = "INFO: Created Tutor Billing Prod file: \(newTutorBillingProdFileName)"
 										print(logMessage)
 										await AppLogger.shared.log(logMessage, level: .info)
@@ -1534,10 +1695,10 @@ import Foundation
 							if let copyFileID = copyFileID {
 								newTimesheetFileID = copyFileID
 								do {
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
 									logMessage =  "INFO: Created Tutor Billing Test file: \(newTutorBillingTestFileName)"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .info)
@@ -1598,10 +1759,10 @@ import Foundation
 							if let copyFileID = copyFileID {
 								newTimesheetFileID = copyFileID
 								do {
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
 									logMessage = "INFO: Created Billed Student Prod file: \(newStudentBillingProdFileName)\n"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .info)
@@ -1654,10 +1815,10 @@ import Foundation
 								newTimesheetFileID = copyFileID
 								do {
 									
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-									try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+									try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
 									logMessage = "INFO: Created Billed Student Test file: \(newStudentBillingTestFileName)\n"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .info)
@@ -1718,11 +1879,11 @@ import Foundation
 									newTimesheetFileID = copyFileID
 									do {
 										// Assign Google Drive permissions to the new Tutor Timesheet
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-										try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+										try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
 										logMessage = "INFO: Created Timesheet: \(newTutorTimesheetName)"
 										print(logMessage)
 										await AppLogger.shared.log(logMessage, level: .info)

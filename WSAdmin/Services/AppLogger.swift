@@ -73,7 +73,7 @@ actor AppLogger {
 	
 	// MARK: - Local file logging
 	
-	func log(_ message: String, level: LogLevel = .info, file: String = #file, function: String = #function, line: Int = #line, newLine: String = "N") {
+	func log(_ message: String, level: LogLevel = .info, file: String = #file, function: String = #function, line: Int = #line, newLine: Bool = false) {
 		// Local time, no UTC offset suffix — e.g. "2026-08-22T17:34:33"
 		let logTimeFormatter = DateFormatter()
 		logTimeFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -83,7 +83,7 @@ actor AppLogger {
 		var logLine: String
 		
 		//		let logLine = "[\(timestamp)] [\(level.rawValue)] [\(fileName):\(line) \(function)] \(message)\n"
-		if newLine == "Y" {
+		if newLine {
 			logLine = "\n[\(timestamp)] [\(level.rawValue)] [\(fileName):\(line)] \(message)\n"
 		} else {
 			logLine = "[\(timestamp)] [\(level.rawValue)] [\(fileName):\(line)] \(message)\n"

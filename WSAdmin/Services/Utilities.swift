@@ -46,7 +46,13 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: getFileID - URLSession request failed for File: \(fileName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -80,8 +86,8 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 			// Parse the JSON response
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
 			   let files = json["files"] as? [[String: Any]], !files.isEmpty,
-			   let fileId = files.first?["id"] as? String {
-				return (true, fileId)
+			   let fileID = files.first?["id"] as? String {
+				return (true, fileID)
 			} else {
 				return (false, "")
 			}
@@ -134,7 +140,13 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: getFileID - URLSession request failed for FileID: \(fileID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -165,7 +177,12 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			}
 			
 			// Decode the JSON data into the SheetData structure
-			sheetData = try JSONDecoder().decode(SheetData.self, from: data)
+			do {
+				sheetData = try JSONDecoder().decode(SheetData.self, from: data)
+			} catch {
+				logMessage = "ERROR: readSheetCells - Decoding error: \(error.localizedDescription)"
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
 		}
 		
 	}
@@ -224,7 +241,13 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: getFileID - URLSession request failed for FileID: \(fileID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -324,9 +347,9 @@ func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
 //	Returns:
 //		a boolean indicating whether the rename was successful
 //
-func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool {
+func renameGoogleDriveFile(fileID: String, newName: String) async throws -> Bool {
 	var renameResult: Bool = true
-	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)"
+	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileID)"
 	var logMessage: String
 	    
 	let tokenFound = await getAccessToken()
@@ -359,7 +382,13 @@ func renameGoogleDriveFile(fileId: String, newName: String) async throws -> Bool
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: renameGoogleDriveFile - URLSession request failed for FileID: \(fileID), NewName: \(newName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -515,7 +544,7 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async -> (Bo
 //		returns a response JSON
 //	Throws:
 //
-func addPermissionToFile(fileId: String, role: String, type: String, emailAddress: String? = nil, sendNotificationEmail: Bool) async throws -> [String: Any]? {
+func addPermissionToFile(fileID: String, role: String, type: String, emailAddress: String? = nil, sendNotificationEmail: Bool) async throws -> [String: Any]? {
 	var logMessage: String
 	
 	let tokenFound = await getAccessToken()
@@ -523,7 +552,7 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 		let accessToken = oauth2Token.accessToken
 		if let accessToken = accessToken {
 			
-			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileId)/permissions?sendNotificationEmail=\(sendNotificationEmail)"
+			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileID)/permissions?sendNotificationEmail=\(sendNotificationEmail)"
 			
 			guard let url = URL(string: urlString) else {
 				logMessage = "ERROR: invalid URLString in addPermissionToFile URL: \(urlString)"
@@ -556,12 +585,18 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: addPermissionToFile - URLSession request failed for File ID: \(fileID), email: \(String(describing: emailAddress)), request URL: \(request),  error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
 						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-						logMessage = "WARNING: Utilities.addPermissionToFile - HTTP 503 could not add permission: for user \(String(describing: emailAddress)) on fileId \(fileId), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						logMessage = "WARNING: Utilities.addPermissionToFile - HTTP 503 could not add permission: for user \(String(describing: emailAddress)) on fileID \(fileID), retrying in \(delaySeconds) seconds (attempt \(attempt))"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
@@ -569,7 +604,7 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 					}
 					
 					if httpResponse.statusCode != 200 {
-						logMessage = "ERROR: Utilities.addPermissionToFile - HTTP Result Error Code: \(httpResponse.statusCode) for could not add permission: for user \(String(describing: emailAddress)) on fileId \(fileId)"
+						logMessage = "ERROR: Utilities.addPermissionToFile - HTTP Result Error Code: \(httpResponse.statusCode) for could not add permission: for user \(String(describing: emailAddress)) on fileID \(fileID)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
@@ -581,7 +616,7 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-				logMessage = "ERROR: Could not add permission: \(statusCode) for user \(String(describing: emailAddress)) on fileId \(fileId)"
+				logMessage = "ERROR: Could not add permission: \(statusCode) for user \(String(describing: emailAddress)) on fileID \(fileID)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				throw NSError(domain: logMessage, code: statusCode, userInfo: nil)
@@ -608,10 +643,10 @@ func addPermissionToFile(fileId: String, role: String, type: String, emailAddres
 //		returns the fileID of the Google Drive spreadsheet sheet
 //	Throws:
 //
-func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> Int? {
+func getSheetIdByName(spreadsheetID: String, sheetName: String) async throws -> Int? {
 	var logMessage: String
 	    
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)?fields=sheets.properties"
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID)?fields=sheets.properties"
 	
 	let tokenFound = await getAccessToken()
 	if tokenFound {
@@ -637,7 +672,13 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: getSheetIDByName - URLSession request failed for sheetName: \(sheetName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -695,10 +736,10 @@ func getSheetIdByName(spreadsheetId: String, sheetName: String) async throws -> 
 //		returns the fileID of the new Google Drive spreadsheet sheet
 //	Throws:
 //
-func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) async throws -> [String: Any]? {
+func createNewSheetInSpreadsheet(spreadsheetID: String, sheetTitle: String) async throws -> [String: Any]? {
 	var logMessage: String
 	
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID):batchUpdate"
     
 	guard let url = URL(string: urlString) else {
 		logMessage = "ERROR: invalid URLString in createNewSheetInSpreadsheet URL: \(urlString)"
@@ -738,7 +779,13 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: createNewSheetInSpreadsheet - URLSession request failed for SheetTitle: \(sheetTitle), SpreadsheetID: \(spreadsheetID), srequest url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -792,7 +839,7 @@ func createNewSheetInSpreadsheet(spreadsheetId: String, sheetTitle: String) asyn
 //		returns a success/fail boolean
 //	Throws:
 //
-func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName: String) async throws -> Bool {
+func renameSheetInSpreadsheet(spreadsheetID: String, sheetId: Int, newSheetName: String) async throws -> Bool {
 	var renameResult: Bool = true
 	var logMessage: String
 	    
@@ -801,7 +848,7 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 		let accessToken = oauth2Token.accessToken
 		if let accessToken = accessToken {
 			
-			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID):batchUpdate"
 			
 			guard let url = URL(string: urlString) else {
 				logMessage = "ERROR: invalid URLString in renameGSheetInSpreadsheet URL: \(urlString)"
@@ -840,7 +887,13 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: renameSheetInSpreadsheet - URLSession request failed for NewSheetName: \(newSheetName), sSpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
@@ -897,9 +950,9 @@ func renameSheetInSpreadsheet(spreadsheetId: String, sheetId: Int, newSheetName:
 //		returns a response JSON
 //	Throws:
 //
-func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: Any]? {
+func deleteSheet(spreadsheetID: String, sheetID: Int) async throws -> [String: Any]? {
 	var logMessage: String
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId):batchUpdate"
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID):batchUpdate"
 	
 	guard let url = URL(string: urlString) else {
 		logMessage = "ERROR: invalid URLString in deleteSheet URL: \(urlString)"
@@ -920,7 +973,7 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 				"requests": [
 					[
 						"deleteSheet": [
-							"sheetId": sheetId
+							"sheetId": sheetID
 						]
 					]
 				]
@@ -935,12 +988,18 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: deleteSheet - URLSession request failed for SpreadsheetID: \(spreadsheetID), SheetID: \(sheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
 						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-						logMessage = "WARNING: Utilities.deleteSheet - HTTP 503 for SpreadSheet ID \(spreadsheetId), Sheet Num \(sheetId) retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						logMessage = "WARNING: Utilities.deleteSheet - HTTP 503 for SpreadSheet ID \(spreadsheetID), Sheet Num \(sheetID) retrying in \(delaySeconds) seconds (attempt \(attempt))"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
@@ -948,7 +1007,7 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 					}
 					
 					if httpResponse.statusCode != 200 {
-						logMessage = "ERROR: Utilities.deleteSheet - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetId), Sheet Num \(sheetId)"
+						logMessage = "ERROR: Utilities.deleteSheet - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetID), Sheet Num \(sheetID)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
@@ -960,7 +1019,7 @@ func deleteSheet(spreadsheetId: String, sheetId: Int) async throws -> [String: A
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
 				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-				logMessage = "ERROR: Utilities.deleteSheet - HTTP Result Error Code: \(statusCode) for SpreadSheet ID \(spreadsheetId), Sheet Num \(sheetId)"
+				logMessage = "ERROR: Utilities.deleteSheet - HTTP Result Error Code: \(statusCode) for SpreadSheet ID \(spreadsheetID), Sheet Num \(sheetID)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
@@ -998,11 +1057,11 @@ struct GoogleSheetsResponse: Codable {
 //		returns an integer count of sheets
 //	Throws: 
 //
-func getSheetCount(spreadsheetId: String) async throws -> Int {
+func getSheetCount(spreadsheetID: String) async throws -> Int {
 	var logMessage: String
 	var sheetCount: Int = 0
 	
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)"
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID)"
 	guard let url = URL(string: urlString) else {
 		logMessage = "ERROR: invalid URLString in getSheetCount URL: \(urlString)"
 		await AppLogger.shared.log(logMessage, level: .error)
@@ -1026,12 +1085,18 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 			
 			while true {
 				attempt += 1
-				(data, response) = try await URLSession.shared.data(for: request)
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					logMessage = "ERROR: getSheetCount - URLSession request failed for SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					throw error
+				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
 					if httpResponse.statusCode == 503, attempt < maxAttempts {
 						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-						logMessage = "WARNING: Utilities.getSheetCount - HTTP 503 for SpreadSheet ID \(spreadsheetId) retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						logMessage = "WARNING: Utilities.getSheetCount - HTTP 503 for SpreadSheet ID \(spreadsheetID) retrying in \(delaySeconds) seconds (attempt \(attempt))"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
@@ -1039,7 +1104,7 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 					}
 					
 					if httpResponse.statusCode != 200 {
-						logMessage = "Utilities.getSheetCount - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetId)"
+						logMessage = "Utilities.getSheetCount - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetID)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
@@ -1050,7 +1115,7 @@ func getSheetCount(spreadsheetId: String) async throws -> Int {
 			
 			// Check for HTTP errors
 			if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-				logMessage = "ERROR: Utilities.getSheetCount - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetId)"
+				logMessage = "ERROR: Utilities.getSheetCount - HTTP Result Error Code: \(httpResponse.statusCode) for SpreadSheet ID \(spreadsheetID)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				throw NSError(domain: logMessage, code: httpResponse.statusCode, userInfo: nil)
@@ -1147,6 +1212,8 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 	var newAccessToken: String?
 	var newTokenExpiryDate: Date?
 	var logMessage: String
+	var data: Data
+	var response: URLResponse
 	
 	var bodyParameters = [String: String]()
 	let url = URL(string: "https://oauth2.googleapis.com/token")!
@@ -1171,7 +1238,13 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 			request.httpBody = bodyParameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&").data(using: .utf8)
 			
 			// Perform the network request asynchronously
-			let (data, response) = try await URLSession.shared.data(for: request)
+			do {
+				(data, response) = try await URLSession.shared.data(for: request)
+			} catch {
+				logMessage = "ERROR: refreshAccessToken - URLSession request failed with request url: \(request), error: \(error.localizedDescription)"
+				await AppLogger.shared.log(logMessage, level: .error)
+				throw error
+			}
 			
 			// Check for HTTP response status
 			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {

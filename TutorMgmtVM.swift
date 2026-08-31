@@ -20,7 +20,7 @@ import GoogleSignIn
 	    var newTimesheetFileID: String = ""
 		
 		logMessage = "INFO: Adding Tutor Name: \(tutorName), contactEmail: \(tutorEmail), contactPhone: \(tutorPhone), maxStudents: \(maxStudents), tutorType: \(String(describing: tutorType))"
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 	   
 		referenceData.dataCounts.increaseTotalTutorCount()
 	    addResult = await referenceData.dataCounts.saveDataCounts()
@@ -144,7 +144,7 @@ import GoogleSignIn
 		var tutorSheetID: Int = 0
 		
 		logMessage = "INFO: Updating Tutor Name: \(tutorName), Original Name: \(originalTutorName), contactEmail: \(contactEmail), contactPhone: \(contactPhone), maxStudents: \(maxStudents), tutorType: \(String(describing: tutorType))"
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		// Check if Tutor name has changed with this update
 		if originalTutorName != tutorName {
@@ -169,7 +169,7 @@ import GoogleSignIn
 				// Change the sheet name of the Tutor Details sheet and the name in the tutor's sheet
 				// First get the sheet ID in the spreadsheet
 				do {
-					if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: originalTutorName) {
+					if let sheetID = try await getSheetIdByName(spreadsheetID: tutorDetailsFileID, sheetName: originalTutorName) {
 						tutorSheetID = sheetID
 						
 						// Then rename the Tutor's sheet in the Tutor Details spreadsheet and change the Tutor name in the Timesheet
@@ -182,7 +182,7 @@ import GoogleSignIn
 								await AppLogger.shared.log(logMessage, level: .error)
 							} else {
 								do {
-									updateResult = try await renameSheetInSpreadsheet(spreadsheetId: tutorDetailsFileID, sheetId: tutorSheetID, newSheetName: tutorName)
+									updateResult = try await renameSheetInSpreadsheet(spreadsheetID: tutorDetailsFileID, sheetId: tutorSheetID, newSheetName: tutorName)
 									if !updateResult {
 										logMessage = "ERROR: Could not rename Tutor sheet in Tutor Details spreadsheet"
 										print(logMessage)
@@ -209,7 +209,7 @@ import GoogleSignIn
 													print(logMessage)
 													await AppLogger.shared.log(logMessage, level: .error)
 												} else {
-													updateResult = try await renameGoogleDriveFile(fileId: tutorTimesheetFileID, newName: newTutorTimesheetName)
+													updateResult = try await renameGoogleDriveFile(fileID: tutorTimesheetFileID, newName: newTutorTimesheetName)
 													if !updateResult {
 														logMessage = "ERROR: Could not rename Tutor Timesheet for Tutor \(tutorName)"
 														print(logMessage)
@@ -475,7 +475,7 @@ import GoogleSignIn
 				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
 					deleteMessage = "INFO: Deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 					print(deleteMessage)
-					await AppLogger.shared.log(deleteMessage, level: .error, newLine: "Y")
+					await AppLogger.shared.log(deleteMessage, level: .error, newLine: true)
 					
 					referenceData.tutors.tutorsList[tutorNum].markDeleted()
 					deleteResult = await referenceData.tutors.saveTutorData()
@@ -547,9 +547,9 @@ import GoogleSignIn
 												
 												// Delete the Tutor Details sheet for the Tutor
 												do {
-													if let sheetID = try await getSheetIdByName(spreadsheetId: tutorDetailsFileID, sheetName: tutorName) {
+													if let sheetID = try await getSheetIdByName(spreadsheetID: tutorDetailsFileID, sheetName: tutorName) {
 														tutorSheetID = sheetID
-														let deleteFileData = try await deleteSheet(spreadsheetId: tutorDetailsFileID, sheetId: tutorSheetID)
+														let deleteFileData = try await deleteSheet(spreadsheetID: tutorDetailsFileID, sheetID: tutorSheetID)
 														if deleteFileData == nil {
 															deleteMessage = "ERROR: Could not delete Tutor Details sheet for \(tutorName)"
 															print(deleteMessage)
@@ -922,11 +922,11 @@ import GoogleSignIn
 				newTimesheetFileID = copyFileID
 				
 				do {
-					var copyFileData = try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
+					var copyFileData = try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
 					if let copyFileData = copyFileData {
-						try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-						try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-						try await addPermissionToFile(fileId: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
+						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
+						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
 						
 						let range = PgmConstants.timesheetTutorNameCell
 						do {
@@ -941,7 +941,7 @@ import GoogleSignIn
 						copyFileResult = false
 					}
 					// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
-					copyFileData = try await addPermissionToFile(fileId: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
+					copyFileData = try await addPermissionToFile(fileID: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
 					if let copyFileData = copyFileData {
 						logMessage = "INFO: Granted Tutor \(tutorName) read access to Tutor Details File Name"
 						print(logMessage)
@@ -980,7 +980,7 @@ import GoogleSignIn
 		var updateValues = [[String]]()
 		
 		do {
-			let newSheetData = try await createNewSheetInSpreadsheet(spreadsheetId: tutorDetailsFileID, sheetTitle: tutorName)
+			let newSheetData = try await createNewSheetInSpreadsheet(spreadsheetID: tutorDetailsFileID, sheetTitle: tutorName)
 			if let newSheetData = newSheetData {
 				var range = tutorName + PgmConstants.tutorHeader1Range
 				updateValues = PgmConstants.tutorHeader1Array

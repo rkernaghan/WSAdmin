@@ -16,7 +16,7 @@ import Foundation
 		
 		logMessage = "INFO: Adding new Location: \(locationName)"
 		print(logMessage)
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		let newLocationKey = PgmConstants.locationKeyPrefix + String(format: "%02d", referenceData.dataCounts.highestLocationKey + 1)
 		
@@ -47,7 +47,7 @@ import Foundation
 		
 		logMessage = "INFO: Updating existing Location: \(originalLocationName) to new Location Name: \(newLocationName)"
 		print(logMessage)
-		await AppLogger.shared.log(logMessage, newLine: "Y")
+		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		referenceData.locations.locationsList[locationNum].setLocationName(locationName: newLocationName)
 		updateResult = await referenceData.locations.saveLocationData()
@@ -128,7 +128,7 @@ import Foundation
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "INFO: Deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
 				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: "Y")
+				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				if referenceData.locations.locationsList[locationNum].locationStudentCount == 0 {
 					referenceData.locations.locationsList[locationNum].markDeleted()
