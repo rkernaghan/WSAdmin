@@ -175,7 +175,7 @@ import GoogleSignIn
 						// Then rename the Tutor's sheet in the Tutor Details spreadsheet and change the Tutor name in the Timesheet
 						let range = originalTutorName + PgmConstants.tutorDataTutorNameCell
 						do {
-							updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: [[tutorName]])
+							updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: [[tutorName]], logNote: "Tutor name in renamed Tutor Details sheet")
 							if !updateResult {
 								logMessage = "ERROR: Could not save new Tutor name in Tutor Details sheet for \(tutorName)"
 								print(logMessage)
@@ -203,7 +203,7 @@ import GoogleSignIn
 											let (fileIDResult, tutorTimesheetFileID) = try await getFileID(fileName: currentTimesheetName)
 											if fileIDResult {
 												let range = PgmConstants.timesheetTutorNameCell
-												updateResult = try await writeSheetCells(fileID: tutorTimesheetFileID, range:range, values: [[tutorName]])
+												updateResult = try await writeSheetCells(fileID: tutorTimesheetFileID, range:range, values: [[tutorName]], logNote: "Tutor name in Timesheet")
 												if !updateResult {
 													logMessage = "ERROR: Could not save update Tutor name in Tutor Timesheet for \(tutorName)"
 													print(logMessage)
@@ -930,7 +930,7 @@ import GoogleSignIn
 						
 						let range = PgmConstants.timesheetTutorNameCell
 						do {
-							copyFileResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]])
+							copyFileResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]], logNote: "Timesheet Tutor Name")
 						} catch {
 							print("ERROR: can not write Tutor Name into new Tutor Timesheet")
 							await AppLogger.shared.log("ERROR: can not write Tutor Name into new Tutor Timesheet", level: .error)
@@ -985,17 +985,17 @@ import GoogleSignIn
 				var range = tutorName + PgmConstants.tutorHeader1Range
 				updateValues = PgmConstants.tutorHeader1Array
 				do {
-					createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues)
+					createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues, logNote: "Tutor Details header 1")
 					if createResult {
 						range = tutorName + PgmConstants.tutorHeader2Range
 						updateValues = PgmConstants.tutorHeader2Array
 						do {
-							createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues)
+							createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues, logNote: "Tutor Details header 2")
 							if createResult {
 								range = tutorName + PgmConstants.tutorHeader3Range
 								updateValues = [[tutorKey, tutorName], ["Timesheet FileID", newTimesheetFileID]]
 								do {
-									createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues)
+									createResult = try await writeSheetCells(fileID: tutorDetailsFileID, range:range, values: updateValues, logNote: "Tutor Details Timesheet FileID")
 								} catch {
 									createMsg = "ERROR: Failed to save Tutor Details Header 3 data for tutor \(tutorName):\(error.localizedDescription)"
 									print(createMsg)

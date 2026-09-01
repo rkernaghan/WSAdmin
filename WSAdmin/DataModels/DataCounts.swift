@@ -99,7 +99,7 @@ import Foundation
 		// Read in the Data Counts from the Reference Data spreadsheet
 		
 		do {
-			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange )
+			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange, logNote: "Data Counts from Ref data" )
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
 				// Build the Billed Tutors list for the month from the data read in
@@ -154,7 +154,7 @@ import Foundation
 		
 		let range = PgmConstants.dataCountRange
 		do {
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues, logNote: "Ref Data Counts")
 			if !result {
 				completionFlag = false
 				logMessage = "ERROR: Saving Data Count rows failed in saveDataCounts"

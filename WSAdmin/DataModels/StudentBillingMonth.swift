@@ -172,14 +172,14 @@ class StudentBillingMonth {
 		
 		do {
 			// Get the count of Students in the Billed Student spreadsheet
-			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange)
+			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange, logNote: "Student Billing Count")
 			if let studentCountData = studentCountData {
 				studentBillingCount = Int(studentCountData.values[0][0]) ?? 0
 				// Read in the Billed Students from the Billed Student spreadsheet based on count
 				if studentBillingCount > 0 {
 					do {
 						let cellRange = monthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1)
-						sheetData = try await readSheetCells(fileID: studentBillingFileID, range: cellRange )
+						sheetData = try await readSheetCells(fileID: studentBillingFileID, range: cellRange, logNote: "Student Billing Rows")
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							// Build the Billed Students list for the month from the data read in
@@ -224,14 +224,14 @@ class StudentBillingMonth {
 		let updateValues = unloadStudentBillingRows(saveValidatedStudentData: saveValidatedStudentData)
 		let range = billingMonth + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + updateValues.count - 1)
 		do {
-			var result = try await writeSheetCells(fileID: studentBillingFileID, range: range, values: updateValues)
+			var result = try await writeSheetCells(fileID: studentBillingFileID, range: range, values: updateValues, logNote: "Student Billing Rows")
 			if !result {
 				completionFlag = false
 			} else {
 				// Write the count of Student Billing rows to the Billed Student spreadsheet
 				let billedStudentCount = updateValues.count - 1              // subtract 1 for blank line at end
 				do {
-					result = try await writeSheetCells(fileID: studentBillingFileID, range: billingMonth + PgmConstants.studentBillingCountRange, values: [[ String(billedStudentCount) ]])
+					result = try await writeSheetCells(fileID: studentBillingFileID, range: billingMonth + PgmConstants.studentBillingCountRange, values: [[ String(billedStudentCount) ]], logNote: "Student Billing Count")
 					if !result {
 						logMessage = "ERROR: Saving Billed Student rows count failed for billing month \(billingMonth)"
 						print(logMessage)

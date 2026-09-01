@@ -50,14 +50,14 @@ class TutorBillingMonth {
 		
 		// Get the count of Tutors in the Billed Tutor spreadsheet
 		do {
-			tutorCountData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange)
+			tutorCountData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange, logNote: "Tutor Billing Count")
 			if let tutorCountData = tutorCountData {
 				tutorBillingCount = Int(tutorCountData.values[0][0]) ?? 0
 				// Read in the Billed Tutors from the Billed Tutor spreadsheet
 				if tutorBillingCount > 0 {			// Could be zero if loading a Billed Tutor month not yet billed
 					do {
 						let cellRange = monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1)
-						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: cellRange)
+						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: cellRange, logNote: "Tutor Billing Rows")
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							
@@ -111,7 +111,7 @@ class TutorBillingMonth {
 		let range = billingMonth + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + updateValues.count - 1)
 		
 		do {
-			var result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: updateValues)
+			var result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: updateValues, logNote: "Tutor Billing Rows")
 			if !result {
 				completionFlag = false
 			} else {
@@ -119,7 +119,7 @@ class TutorBillingMonth {
 				let billedTutorCount = updateValues.count - 1              // subtract 1 for blank line at end
 				do {
 					let range = billingMonth + PgmConstants.tutorBillingCountRange
-					result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: [[ String(billedTutorCount) ]])
+					result = try await writeSheetCells(fileID: tutorBillingFileID, range: range, values: [[ String(billedTutorCount) ]], logNote: "Tutor Billing Count")
 					if !result {
 						logMessage = "ERROR: Writing Billed Tutor Data count range: \(range) failed"
 						print(logMessage)

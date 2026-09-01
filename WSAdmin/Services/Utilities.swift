@@ -49,9 +49,18 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: getFileID - URLSession request failed for File: \(fileName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: getFileID - URLSession request failed for File: \(fileName), error: \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: getFileID - URLSession request failed for File: \(fileName), error: \(error.localizedDescription), attempt: \(attempt), request url: \(request), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -107,7 +116,7 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 //		sheetData: an optional SheetData struct containing the retrieved cells in sheetdata.values
 //	Throws:
 //
-func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
+func readSheetCells(fileID: String, range: String, logNote: String) async throws -> SheetData? {
 //	var values = [[String]]()
 	var sheetData: SheetData?
 	var logMessage: String
@@ -135,7 +144,7 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 			var attempt = 0
 			let maxAttempts = PgmConstants.maxReadAttempts // number of times to retry
 			
-			logMessage = "INFO: readSheetCells - Range: \(range), FileID \(fileID)"
+			logMessage = "INFO: readSheetCells \(logNote) - Range: \(range), FileID \(fileID)"
 			await AppLogger.shared.log(logMessage)
 			
 			while true {
@@ -143,9 +152,18 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: getFileID - URLSession request failed for FileID: \(fileID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: Utilities.readSheetCells - URLSession request failed for File ID \(fileID): \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: readSheetCells - URLSession request failed on attempt: \(attempt) with error: \(error.localizedDescription), for File ID:  \(fileID), range: \(range), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -159,7 +177,7 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 					}
 					
 					if httpResponse.statusCode != 200 {
-						logMessage = "ERROR: Utilities.readSheetCells - HTTP Result Error Code: \(httpResponse.statusCode) for File ID \(fileID)"
+						logMessage = "ERROR: Utilities.readSheetCells - HTTP Result Error Code: \(httpResponse.statusCode) for File ID: \(fileID), attempt: \(attempt), range: \(range), request: \(request), accessToken: \(accessToken)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
@@ -200,7 +218,7 @@ func readSheetCells(fileID: String, range: String) async throws -> SheetData? {
 //		a boolean indicating whether the write operation was successful
 //	Throws:
 //
-func writeSheetCells(fileID: String, range: String, values: [[String]]) async throws -> Bool {
+func writeSheetCells(fileID: String, range: String, values: [[String]], logNote: String) async throws -> Bool {
 	var completionFlag: Bool = true
 	var logMessage:String
 
@@ -236,7 +254,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 			var attempt = 0
 			let maxAttempts = PgmConstants.maxWriteAttempts // number of attempts
 			
-			logMessage = "INFO: writeSheetCells - Range: \(range), FileID \(fileID)"
+			logMessage = "INFO: writeSheetCells - \(logNote), Range: \(range), FileID \(fileID)"
 			await AppLogger.shared.log(logMessage)
 			
 			while true {
@@ -244,9 +262,18 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: getFileID - URLSession request failed for FileID: \(fileID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: Utilities.readSheetCells - URLSession request failed for File ID \(fileID): \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: Utilities.readSheetCells - URLSession request failed with error: \(error.localizedDescription), attempt: \(attempt), range: \(range), for File ID: \(fileID)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -261,7 +288,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]]) async th
 					}
 					
 					if httpResponse.statusCode != 200 {
-						logMessage = "ERROR: Utilties.writeSheetCells - HTTP Result Error Code: \(httpResponse.statusCode)"
+						logMessage = "ERROR: Utilties.writeSheetCells - HTTP Result Error Code: \(httpResponse.statusCode), attempt: \(attempt), range: \(range), File ID: \(fileID), request: \(request), , accessToken: \(accessToken)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage)
 						completionFlag = false
@@ -385,9 +412,18 @@ func renameGoogleDriveFile(fileID: String, newName: String) async throws -> Bool
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: renameGoogleDriveFile - URLSession request failed for FileID: \(fileID), NewName: \(newName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: renameGoogleDriveFile - URLSession request failed for NewName: \(newName), FileID: \(fileID): \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: renameGoogleDriveFile - URLSession request failed with NewName: \(newName), for FileID: \(fileID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -588,9 +624,18 @@ func addPermissionToFile(fileID: String, role: String, type: String, emailAddres
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: addPermissionToFile - URLSession request failed for File ID: \(fileID), email: \(String(describing: emailAddress)), request URL: \(request),  error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: addPermissionToFile - URLSession request failed for File ID \(fileID): \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: addPermissionToFile - URLSession request failed for File ID: \(fileID), email: \(String(describing: emailAddress)), request URL: \(request),  error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -675,9 +720,18 @@ func getSheetIdByName(spreadsheetID: String, sheetName: String) async throws -> 
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: getSheetIDByName - URLSession request failed for sheetName: \(sheetName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: getSheetIDByName - URLSession request failed for sheetName: \(sheetName), \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: getSheetIDByName - URLSession request failed for sheetName: \(sheetName), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -782,9 +836,18 @@ func createNewSheetInSpreadsheet(spreadsheetID: String, sheetTitle: String) asyn
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: createNewSheetInSpreadsheet - URLSession request failed for SheetTitle: \(sheetTitle), SpreadsheetID: \(spreadsheetID), srequest url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: reateNewSheetInSpreadsheet - URLSession request failed for SheetTitle: \(sheetTitle), SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: createNewSheetInSpreadsheet - URLSession request failed for SheetTitle: \(sheetTitle), SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -890,9 +953,18 @@ func renameSheetInSpreadsheet(spreadsheetID: String, sheetId: Int, newSheetName:
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: renameSheetInSpreadsheet - URLSession request failed for NewSheetName: \(newSheetName), sSpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: enameSheetInSpreadsheet - URLSession request failed for NewSheetName: \(newSheetName), sSpreadsheetID: \(spreadsheetID), \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: renameSheetInSpreadsheet - URLSession request failed for NewSheetName: \(newSheetName), SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -991,9 +1063,18 @@ func deleteSheet(spreadsheetID: String, sheetID: Int) async throws -> [String: A
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: deleteSheet - URLSession request failed for SpreadsheetID: \(spreadsheetID), SheetID: \(sheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: deleteSheet - URLSession request failed for SpreadsheetID: \(spreadsheetID), SheetID: \(sheetID), \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: deleteSheet - URLSession request failed for SpreadsheetID: \(spreadsheetID), SheetID: \(sheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -1088,9 +1169,18 @@ func getSheetCount(spreadsheetID: String) async throws -> Int {
 				do {
 					(data, response) = try await URLSession.shared.data(for: request)
 				} catch {
-					logMessage = "ERROR: getSheetCount - URLSession request failed for SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					throw error
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: getSheetCount - URLSession request failed for SpreadsheetID: \(spreadsheetID), \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: getSheetCount - URLSession request failed for SpreadsheetID: \(spreadsheetID), request url: \(request), error: \(error.localizedDescription), accessToken: \(accessToken)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
 				}
 				
 				if let httpResponse = response as? HTTPURLResponse {
@@ -1238,20 +1328,47 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 			request.httpBody = bodyParameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&").data(using: .utf8)
 			
 			// Perform the network request asynchronously
-			do {
-				(data, response) = try await URLSession.shared.data(for: request)
-			} catch {
-				logMessage = "ERROR: refreshAccessToken - URLSession request failed with request url: \(request), error: \(error.localizedDescription)"
-				await AppLogger.shared.log(logMessage, level: .error)
-				throw error
-			}
+			var attempt = 0
+			let maxAttempts = PgmConstants.maxSheetAttempts // number of times to retry
 			
-			// Check for HTTP response status
-			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-				logMessage = "ERROR: invalid HTTP response in refreshToken \(statusCode)"
-				await AppLogger.shared.log(logMessage, level: .error)
-				throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			while true {
+				attempt += 1
+				do {
+					(data, response) = try await URLSession.shared.data(for: request)
+				} catch {
+					if attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: refreshAccessToken - URLSession request failed with request url: \(request) \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .warning)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					} else {
+						logMessage = "ERROR: refreshAccessToken - URLSession request failed with request url: \(request), error: \(error.localizedDescription)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw error
+					}
+				}
+				// Check for HTTP response status
+				if let httpResponse = response as? HTTPURLResponse {
+					if httpResponse.statusCode == 503, attempt < maxAttempts {
+						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
+						logMessage = "WARNING: refreshAccessToken - HTTP 503 failed with request url: \(request), retrying in \(delaySeconds) seconds (attempt \(attempt))"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
+						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+						continue
+					}
+					
+					
+					guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+						let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+						logMessage = "ERROR: invalid HTTP response in refreshToken \(statusCode)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+					}
+				}
+				break
 			}
 			
 			// Parse the response JSON to retrieve the new access token
@@ -1441,7 +1558,7 @@ func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutor
 	let range = PgmConstants.timesheetAvailabilityDataRange
 	// read in the cells containing the Tutor's Availability data from the Timesheet Availability sheet
 	do {
-		sheetData = try await readSheetCells(fileID: timesheetFileID, range: range)
+		sheetData = try await readSheetCells(fileID: timesheetFileID, range: range, logNote: "Reading Timesheet Availability for \(tutorName)")
 		// Load the sheet cells into this Timesheet
 		if let sheetData = sheetData {
 			if sheetData.values.count > 0 {

@@ -56,7 +56,7 @@ import Foundation
 		if tutorCount > 0 {
 			do {
 				// Read the Tutor data from the Reference Data spreadsheet into a 2D array of data (one row per Tutor)
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + tutorCount - 1) )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + tutorCount - 1), logNote: "Tutor rows from Ref data" )
 				// Build the Tutors List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -140,7 +140,7 @@ import Foundation
 //		let count = updateValues.count
 		let range = PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + updateValues.count - 1)
 		do {
-			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues, logNote: "Tutor Rows to Ref Data")
 		} catch {
 			logMessage = "ERROR: Saving Tutor Data rows failed"
 			print(logMessage)

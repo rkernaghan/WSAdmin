@@ -65,7 +65,7 @@ import Foundation
 		if studentCount > 0 {
 			do {
 				// Read in the Student data from the Reference Data spreadsheet to a temporary 2D array
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1) )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1), logNote: "Student Rows from Ref data" )
 				// Build the Students List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -99,7 +99,7 @@ import Foundation
 		let range = PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + count - 1)
 		do {
 			// Write the 2D array of Student data to the Reference Data spreadsheet
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues, logNote: "Student Rows to Ref Data")
 			if !result {
 				logMessage = "Error: Saving Student Data rows failed"
 				print(logMessage)

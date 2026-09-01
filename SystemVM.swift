@@ -1895,7 +1895,7 @@ import Foundation
 									// Write the Tutor name into the RefData tab of the new Tutor Timesheet
 									let range = PgmConstants.timesheetTutorNameCell
 									do {
-										try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]])
+										try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]], logNote: "Tutor Name in new Timesheet")
 									} catch {
 										logMessage = "ERROR: can not write Tutor Name into new Tutor Timesheet"
 										print(logMessage)
@@ -1944,7 +1944,7 @@ import Foundation
 					let range = tutorName + PgmConstants.tutorDataTimesheetFileIDRange
 					let updateValues = [[timesheetFileID]]
 					do {
-						let updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+						let updateResult = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Timesheet FileID")
 						print("INFO: Updating Timesheet File ID for \(tutorName) in Tutor Details spreadsheet")
 					} catch {
 						updateResult = false

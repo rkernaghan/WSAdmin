@@ -37,7 +37,7 @@ class Timesheet: Identifiable {
 		var headerData: SheetData?
 		var range = month + PgmConstants.timesheetHeaderRange
 		do {
-			headerData = try await readSheetCells(fileID: timesheetID, range: range)
+			headerData = try await readSheetCells(fileID: timesheetID, range: range, logNote: "Timesheet header \(tutorName)")
 		}
 		catch {
 			logMessage = "ERROR: in Timesheet.loadTimesheetData - Could not read header rows for \(tutorName) Timesheet with File ID \(timesheetID)"
@@ -53,7 +53,7 @@ class Timesheet: Identifiable {
 		// read in the cells from one month's Timesheet
 		do {
 			var sheetData: SheetData?
-			sheetData = try await readSheetCells(fileID: timesheetID, range: range)
+			sheetData = try await readSheetCells(fileID: timesheetID, range: range, logNote: "Timesheet rows \(tutorName)")
 			// Load the sheet cells into this Timesheet
 			if let sheetData = sheetData {
 				loadTimesheetRows(tutorName: tutorName, sheetCells: sheetData.values, sessionCount: sessionCount, billingMessages: billingMessages, monthName: month, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)

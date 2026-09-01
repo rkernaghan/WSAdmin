@@ -130,7 +130,7 @@ import Foundation
 		
 		do {
 			range = tutorName + PgmConstants.tutorDataCountsRange
-			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor Details Student/Service counts \(tutorName)")
 			
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
@@ -150,7 +150,7 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .warning)
 			
 			do {
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor Details Student/Service counts Second Attempt\(tutorName)")
 				
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -190,7 +190,7 @@ import Foundation
 		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
 		
 		do {
-			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Details STudent/Service Counts")
 		} catch {
 			logMessage = "ERROR: Saving Tutor Data Counts failed"
 			print(logMessage)
@@ -284,7 +284,7 @@ import Foundation
 		if tutorStudentCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range )
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Student rows")
 				// Build the Tutor Students list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -341,7 +341,7 @@ import Foundation
 		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + updateValues.count - 1)
 		do {
-			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Student Rows to Tutor Details")
 		} catch {
 			logMessage = "ERROR: Saving Tutor Services data rows failed"
 			print(logMessage)
@@ -474,7 +474,7 @@ import Foundation
 		if tutorServiceCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range)
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Service rows")
 				// Build the Tutor Services list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -538,7 +538,7 @@ import Foundation
 		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
 		do {
-			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues)
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Service Rows to Tutor Details")
 		} catch {
 			logMessage = "Error: Saving Tutor Services data rows failed"
 			print(logMessage)

@@ -57,7 +57,7 @@ import GoogleSignIn
 		// Read the Location data into a 2D array from the Reference Data spreadsheet
 		if locationCount > 0 {
 			do {
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + locationCount - 1) )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + locationCount - 1), logNote: "Location rows from Ref data" )
 				// Build the Locations List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -115,7 +115,7 @@ import GoogleSignIn
 		let range = PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + updateValues.count - 1)
 		do {
 			// Write the 2D array of Location data to the Reference Data spreadsheet
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues, logNote: "Location Rows to Ref Data")
 			if !result {
 				completionFlag = false
 				logMessage = "ERROR: Saving Location data rows failed"

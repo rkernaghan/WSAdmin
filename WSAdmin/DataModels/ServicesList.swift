@@ -55,7 +55,7 @@ import Foundation
 		// Read the Services data into a 2D array from the Reference Data spreadsheet
 		if serviceCount > 0 {
 			do {
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + serviceCount - 1) )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + serviceCount - 1), logNote: "Service rows from Ref data" )
 				// Build the Services List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -121,7 +121,7 @@ import Foundation
 		let range = PgmConstants.serviceRange + String(PgmConstants.serviceStartingRowNumber + updateValues.count - 1)
 		do {
 			// Write the 2D array of Services attributes to the Reference Data spreadsheet
-			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues)
+			let result = try await writeSheetCells(fileID: referenceDataFileID, range: range, values: updateValues, logNote: "Service Rows to Ref Data")
 			if !result {
 				completionFlag = false
 				logMessage = "ERROR: Saving Services data rows failed"
