@@ -13,8 +13,15 @@ import GoogleSignIn
 @MainActor
 @Observable class TutorMgmtVM  {
     
-    
-	func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async -> (Bool, String) {
+	// Adds a new Tutor to the system.  Consists of the following steps:
+	// - increase Total Tutor count and save counts
+	// - create the new Tutor object and save Tutors list
+	// - create a Timesheet for the new Tutor
+	// - create a new sheet for the Tutor in Tutor Details spreadsheet
+	// - add the Tutor to the Tutor Billing Summary for the current month
+	// - add the Base Services to the Tutor (except for specialists)
+	//
+	func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async throws -> (Bool, String) {
 	    var addResult: Bool = true
 	    var logMessage: String = ""
 	    var newTimesheetFileID: String = ""
@@ -36,8 +43,9 @@ import GoogleSignIn
 		    
 		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorType: tutorType, tutorStatus: .TutorUnassigned, tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
 		    referenceData.tutors.addTutor(newTutor: newTutor)
+		    
 		    // Create a new Timesheet for the Tutor
-		    (addResult, newTimesheetFileID) = await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
+		    (addResult, newTimesheetFileID) = try await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
 		    if !addResult {
 			    logMessage = "ERROR: Could not create Timesheet for Tutor \(tutorName)"
 			    await AppLogger.shared.log(logMessage, level: .error)
@@ -61,33 +69,37 @@ import GoogleSignIn
 					    await AppLogger.shared.log(logMessage, level: .error)
 				    } else {
 					    
-					    // Assign all active Base Services to new Tutor
-					   
+					    // Assign all active Base Services to new "Regular" Tutors (not Specialists)
 					    var serviceNum = 0
-					    let serviceCount = referenceData.services.servicesList.count
-					    while serviceNum < serviceCount && addResult {
-						    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
-							    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-							    addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-							    if !addResult {
-								    logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
-								    await AppLogger.shared.log(logMessage, level: .error)
+					    if tutorType != .SpecialistTutor {
+						    
+						    let serviceCount = referenceData.services.servicesList.count
+						    while serviceNum < serviceCount && addResult {
+							    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
+								    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+								    addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+								    if !addResult {
+									    logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
+									    await AppLogger.shared.log(logMessage, level: .error)
+								    }
+								    referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 							    }
-							    referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+							    serviceNum += 1
 						    }
-						    serviceNum += 1
+						    
 					    }
 					    addResult = await referenceData.tutors.saveTutorData()
 					    if !addResult {
-						    logMessage = "ERROR: Could not save Tutor data adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
+						    logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName)"
 						    await AppLogger.shared.log(logMessage, level: .error)
 					    } else {
 						    addResult = await referenceData.services.saveServiceData()
 						    if !addResult {
-							    logMessage = "ERROR: Could not save Services data adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
+							    logMessage = "ERROR: Could not save Services data for Tutor \(tutorName)"
 							    await AppLogger.shared.log(logMessage, level: .error)
 						    }
 					    }
+					    
 				    }
 			    }
 		    }
@@ -554,6 +566,8 @@ import GoogleSignIn
 															deleteMessage = "ERROR: Could not delete Tutor Details sheet for \(tutorName)"
 															print(deleteMessage)
 															await AppLogger.shared.log(deleteMessage, level: .error)
+														} else {
+															await AppLogger.shared.log("INFO: Tutor: \(tutorName) is deleted", level: .info)
 														}
 													} else {
 														deleteResult = false
@@ -603,43 +617,63 @@ import GoogleSignIn
 	func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var assignResult: Bool = true
 		var logMessage: String = ""
-		
+
+		// Must have the Tutor's existing Students/Services loaded before any
+		// addNewTutorStudent call below, otherwise it would save an in-memory
+		// tutorStudents array missing everyone loaded from the sheet, wiping
+		// out the Tutor's other assigned Students. tutorNum is fixed for the
+		// whole loop, so this only needs to happen once, up front.
+		guard await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) else {
+			logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Students"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return (false, logMessage)
+		}
+
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "INFO: Assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				await AppLogger.shared.log(logMessage)
 				print(logMessage)
-                
-				referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
 				
-				assignResult = await referenceData.students.saveStudentData()
-				if assignResult {
-					let dateFormatter = DateFormatter()
-					dateFormatter.dateFormat = "yyyy/MM/dd"
-					let assignedDate = dateFormatter.string(from: Date())
-					let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
-
-					let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
-					assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+				// Check that the Student Status is "Unassigned"
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
+					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
+					
+					assignResult = await referenceData.students.saveStudentData()
 					if assignResult {
-						assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-						if !assignResult {
-							logMessage = "ERROR: could not save Tutor data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-							await AppLogger.shared.log(logMessage,level: .error)
-							print(logMessage)
+						let dateFormatter = DateFormatter()
+						dateFormatter.dateFormat = "yyyy/MM/dd"
+						let assignedDate = dateFormatter.string(from: Date())
+						let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
+						
+						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
+						assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+						if assignResult {
+							assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+							if !assignResult {
+								logMessage = "ERROR: could not save Tutor data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								await AppLogger.shared.log(logMessage,level: .error)
+								print(logMessage)
+							} else {
+								await AppLogger.shared.log("INFO: Student \(referenceData.students.studentsList[studentNum].studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+								print(logMessage)
+							}
 						} else {
-							await AppLogger.shared.log("INFO: Student \(referenceData.students.studentsList[studentNum].studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+							logMessage = "ERROR: could not save Tutor Details assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							await AppLogger.shared.log(logMessage,level: .error)
 							print(logMessage)
 						}
 					} else {
-						logMessage = "ERROR: could not save Tutor Details assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						logMessage = "ERROR: could not save Student data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 						await AppLogger.shared.log(logMessage,level: .error)
 						print(logMessage)
 					}
 				} else {
-					logMessage = "ERROR: could not save Student data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					await AppLogger.shared.log(logMessage,level: .error)
+					assignResult = false
+					logMessage = "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
 					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
@@ -650,6 +684,18 @@ import GoogleSignIn
 	func assignService(serviceIndex: Set<Service.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var assignResult: Bool = true
 		var logMessage: String = ""
+		
+		// Must have the Tutor's existing Students/Services loaded before assigning Service
+		// processing below, otherwise it would save an in-memory
+		// tutorService array missing everyone loaded from the sheet, wiping
+		// out the Tutor's other assigned Services. tutorNum is fixed for the
+		// whole loop, so this only needs to happen once, up front.
+		guard await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) else {
+			logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return (false, logMessage)
+		}
 		
 		for objectID in serviceIndex {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
@@ -670,7 +716,7 @@ import GoogleSignIn
 							if !assignResult {
 								logMessage = "ERROR: Could not save Services data assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 							} else {
-								await AppLogger.shared.log("Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+								await AppLogger.shared.log("INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 								print(logMessage)
 							}
 						} else {
@@ -706,7 +752,19 @@ import GoogleSignIn
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				print(referenceData.tutors.tutorsList[tutorNum].tutorName)
 				await AppLogger.shared.log("INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
-				
+
+				// Must load before findTutorServiceByKey below, not just before
+				// addNewTutorService: an unloaded tutorServices array would make
+				// the "already assigned" check below report a false negative,
+				// and addNewTutorService would then save an in-memory
+				// tutorServices array missing everyone loaded from the sheet.
+				guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
+					assignResult = false
+					logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
+
 				let (tutorServiceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
 				if !tutorServiceFound {
 					
@@ -898,8 +956,8 @@ import GoogleSignIn
 		return(unsuspendResult, logMessage)
 	}
     
-   
-	func copyNewTimesheet(tutorName: String, tutorEmail: String) async -> (Bool, String) {
+   // Creates a new Timesheet for a Tutor by copying the template Timesheet
+	func copyNewTimesheet(tutorName: String, tutorEmail: String) async throws -> (Bool, String) {
 		var copyFileResult: Bool
 		var copyFileID: String?
 		var logMessage: String
@@ -914,56 +972,91 @@ import GoogleSignIn
 		formatter.setLocalizedDateFormatFromTemplate("YYYY")
 		let currentYear = formatter.string(from: Date.now)
 		let newTimesheetName  = "Timesheet " + currentYear + " " + tutorName
-
-		(copyFileResult, copyFileID) = await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTimesheetName)
-		if copyFileResult {
-
-			if let copyFileID = copyFileID {
-				newTimesheetFileID = copyFileID
+		do {
+			(copyFileResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTimesheetName)
+			if copyFileResult {
 				
-				do {
-					var copyFileData = try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: true)
-					if let copyFileData = copyFileData {
-						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-						try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
+				if let copyFileID = copyFileID {
+					// The new Timesheet needs the FileID of the Tutor Details file in the refData sheet
+					let updateValues = [[tutorDetailsFileID]]
+					let range = PgmConstants.timesheetDetailsFileIDCell
+					do {
+						copyFileResult = try await writeSheetCells(fileID: copyFileID, range: range, values: updateValues, logNote: "Tutor Details FileID in Timesheet RefData")
+						print("INFO: Updating Tutor Details File ID in new Timesheet for \(tutorName)")
+						if !copyFileResult {
+							logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+						} else {
+							logMessage = "INFO: Added Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
+						}
+					} catch {
+						copyFileResult = false
+						logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
+					}
+			
+					newTimesheetFileID = copyFileID
+					
+					do {
+						var sendNotificationFlag: Bool
+						if runMode == .test {
+							sendNotificationFlag = false
+						} else {
+							sendNotificationFlag = true
+						}
 						
-						let range = PgmConstants.timesheetTutorNameCell
-						do {
-							copyFileResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]], logNote: "Timesheet Tutor Name")
-						} catch {
-							print("ERROR: can not write Tutor Name into new Tutor Timesheet")
-							await AppLogger.shared.log("ERROR: can not write Tutor Name into new Tutor Timesheet", level: .error)
+						var copyFileData = try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: sendNotificationFlag)
+						if let copyFileData = copyFileData {
+							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: sendNotificationFlag)
+							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: sendNotificationFlag)
+							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: sendNotificationFlag)
+							
+							let range = PgmConstants.timesheetTutorNameCell
+							do {
+								copyFileResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]], logNote: "Timesheet Tutor Name")
+							} catch {
+								print("ERROR: can not write Tutor Name into new Tutor Timesheet")
+								await AppLogger.shared.log("ERROR: can not write Tutor Name into new Tutor Timesheet", level: .error)
+								copyFileResult = false
+							}
+						} else {
+							await AppLogger.shared.log("ERROR: Can not grant Tutor \(tutorName) write access to Timesheet", level: .error)
 							copyFileResult = false
 						}
-					} else {
-						await AppLogger.shared.log("ERROR: Can not grant Tutor \(tutorName) write access to Timesheet", level: .error)
-						copyFileResult = false
-					}
-					// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
-					copyFileData = try await addPermissionToFile(fileID: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
-					if let copyFileData = copyFileData {
-						logMessage = "INFO: Granted Tutor \(tutorName) read access to Tutor Details File Name"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage)
-					} else {
-						logMessage = "ERROR: Can not grant Tutor \(tutorName) read access to Tutor Details spreadsheet"
+						// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
+						copyFileData = try await addPermissionToFile(fileID: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
+						if let copyFileData = copyFileData {
+							logMessage = "INFO: Granted Tutor \(tutorName) read access to Tutor Details File Name"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage)
+						} else {
+							logMessage = "ERROR: Can not grant Tutor \(tutorName) read access to Tutor Details spreadsheet"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							copyFileResult = false
+						}
+					} catch {
+						logMessage = "Could not add access permission to new Timesheet for Tutor: \(tutorName)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 						copyFileResult = false
 					}
-				} catch {
-					logMessage = "Could not add access permission to new Timesheet for Tutor: \(tutorName)"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
+					
+				} else {
 					copyFileResult = false
+					logMessage = "ERROR: No valid string found for the key 'name'"
+					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} else {
-				copyFileResult = false
-				logMessage = "ERROR: No valid string found for the key 'name'"
+				logMessage = "ERROR:  Could not copy Timesheet for Tutor: \(tutorName)"
 				await AppLogger.shared.log(logMessage, level: .error)
+				copyFileResult = false
 			}
-		} else {
+		} catch {
 			logMessage = "ERROR:  Could not copy Timesheet for Tutor: \(tutorName)"
 			await AppLogger.shared.log(logMessage, level: .error)
 			copyFileResult = false

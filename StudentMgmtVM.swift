@@ -614,8 +614,17 @@ import Foundation
 						logMessage = "ERROR: could not save Student Data when assigning Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) to Student: \(referenceData.students.studentsList[studentNum].studentName)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
+					} else if await !referenceData.ensureTutorDetailsLoaded(tutorID: objectID) {
+						// Must have the Tutor's existing Students/Services loaded before
+						// appending, otherwise addNewTutorStudent below would save an
+						// in-memory tutorStudents array missing everyone loaded from
+						// the sheet, wiping out the Tutor's other assigned Students.
+						assignResult = false
+						logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
-						// 
+						//
 						let dateFormatter = DateFormatter()
 						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())
@@ -740,18 +749,30 @@ import Foundation
 					if unassignResult {
 						let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
 						if foundFlag {
-							unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
-							if unassignResult {
-								unassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
-								if !unassignResult {
-									logMessage = "Error: could not save Tutor Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+							// Must load before removeTutorStudent below: an unloaded
+							// tutorStudents array would make it a silent no-op (it
+							// only removes/saves when the student is found in the
+							// array), leaving the Tutor's sheet still showing the
+							// Student as assigned even though this reports success.
+							if await !referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+								unassignResult = false
+								logMessage = "ERROR: could not load Tutor Details for Tutor \(tutorName) when unassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							} else {
+								unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
+								if unassignResult {
+									unassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
+									if !unassignResult {
+										logMessage = "Error: could not save Tutor Data when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .error)
+									}
+								} else  {
+									logMessage = "ERROR: could not remove Tutor Student when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								}
-							} else  {
-								logMessage = "ERROR: could not remove Tutor Student when unassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
-								print(logMessage)
-								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						} else {
 							unassignResult = false
@@ -795,17 +816,29 @@ import Foundation
 					
 					let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
 					if foundFlag {
-						// Remove the Student from the Tutor Details file of the original Tutor
-						unreassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
-						if unreassignResult {
-							unreassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
-							// Change the Student Status to Assigned from Reassigned and save Student data
-							referenceData.students.studentsList[studentNum].studentStatus = .StudentAssigned
-							unreassignResult = await referenceData.students.saveStudentData()
-						} else  {
-							logMessage = "ERROR: could not remove Tutor Student when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+						// Must load before removeTutorStudent below: an unloaded
+						// tutorStudents array would make it a silent no-op (it
+						// only removes/saves when the student is found in the
+						// array), leaving the Tutor's sheet still showing the
+						// Student as assigned even though this reports success.
+						if await !referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+							unreassignResult = false
+							logMessage = "ERROR: could not load Tutor Details for Tutor \(tutorName) when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
+						} else {
+							// Remove the Student from the Tutor Details file of the original Tutor
+							unreassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey)
+							if unreassignResult {
+								unreassignResult = await referenceData.tutors.saveTutorData()                    // decreased Student count
+								// Change the Student Status to Assigned from Reassigned and save Student data
+								referenceData.students.studentsList[studentNum].studentStatus = .StudentAssigned
+								unreassignResult = await referenceData.students.saveStudentData()
+							} else  {
+								logMessage = "ERROR: could not remove Tutor Student when Unreassigning Student \(referenceData.students.studentsList[studentNum].studentName) from Tutor \(tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							}
 						}
 					} else {
 						unreassignResult = false

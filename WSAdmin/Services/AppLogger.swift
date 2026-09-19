@@ -23,7 +23,8 @@ actor AppLogger {
 	private var hasUnsyncedChanges: Bool = false
 	
 	// MARK: - Error alerting config
-	private let alertRecipientEmails = ["rskernaghan@gmail.com", "second-address@example.com"] // TODO: replace with your real second address
+	private let prodAlertRecipientEmails = ["rskernaghan@gmail.com", "info@writeSeattle.com"]
+	private let testAlertRecipientEmails = ["rskernaghan@gmail.com"]
 	private var lastAlertSentAt: Date?
 	private let minimumAlertInterval: TimeInterval = 300 // 5 minutes — throttles alert bursts
 	
@@ -36,7 +37,11 @@ actor AppLogger {
 		formatter.timeZone = TimeZone.current
 		let sessionTimestamp = formatter.string(from: Date())
 		
-		logFileName = "WSAdmin-app-\(sessionTimestamp).log"
+		if runMode == .test {
+			logFileName = "WSAdmin-Test-\(NSFullUserName()) at \(sessionTimestamp).log"
+		} else {
+			logFileName = "WSAdmin-Prod-\(NSFullUserName()) at \(sessionTimestamp).log"
+		}
 		
 		let appDir = AppFolders.logFilesDirectory
 		
@@ -53,6 +58,10 @@ actor AppLogger {
 		// This is a brand-new, uniquely-timestamped filename every launch,
 		// so it will never already exist — always create it fresh.
 		FileManager.default.createFile(atPath: fileURL.path, contents: nil)
+		Task {
+			await log("INFO: Local user: \(NSFullUserName()) (\(NSUserName()))")
+			await log("INFO: AppLogger initialized for WSAdmin Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown") Build Number: \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown")")
+		}
 		
 		// Kick off a self-scheduling background sync loop — no external trigger needed.
 		// This runs for the lifetime of the app, since AppLogger is a singleton.
@@ -366,6 +375,8 @@ extension AppLogger {
 	/// "https://www.googleapis.com/auth/gmail.send" scope — add it alongside
 	/// whatever scopes are already requested for Sheets/Drive.
 	private func sendErrorAlert(message: String) async {
+		var alertRecipientEmails: [String] = []
+		
 		if let lastAlertSentAt, Date().timeIntervalSince(lastAlertSentAt) < minimumAlertInterval {
 			return // suppress — an alert already went out too recently
 		}
@@ -374,6 +385,11 @@ extension AppLogger {
 		guard tokenFound, let accessToken = oauth2Token.accessToken else {
 			print("AppLogger.sendErrorAlert - couldn't send, no access token")
 			return
+		}
+		if runMode == .prod {
+			alertRecipientEmails = prodAlertRecipientEmails
+		} else {
+			alertRecipientEmails = testAlertRecipientEmails
 		}
 		
 		guard let rawMessage = buildRawEmail(to: alertRecipientEmails, subject: "WSAdmin Error Alert", body: message) else {

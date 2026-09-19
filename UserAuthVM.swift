@@ -173,9 +173,17 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 
 	
 	func signOut() {
-		print("UserAuthVM-signOut - Starting")
+		let logMessage = "INFO: User signed out"
+		print(logMessage)
+		Task {
+			await AppLogger.shared.log(logMessage, level: .info)
+		}
 		GIDSignIn.sharedInstance.signOut()
 		isLoggedIn = false
+		accessOAuthToken = ""
+		refreshOAuthToken = ""
+		clientOAuthID = ""
+		
 	}
 }
 

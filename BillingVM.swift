@@ -28,7 +28,7 @@ import GoogleSignIn
 		
 		let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
 		let billArray = BillArray(monthName: billingMonth)
-		logMessage = "INFO: Starting Generate Invoice for \(billingYear) \(billingMonth)"
+		logMessage = "INFO: Starting Build Invoice for \(billingYear) \(billingMonth)"
 		print(logMessage)
 		await AppLogger.shared.log(logMessage, newLine: true)
 		
@@ -38,10 +38,24 @@ import GoogleSignIn
 				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 				print("Read Timesheet for Tutor: \(tutorName)")
 				billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "          Information: Processing Timesheet for Tutor: \(tutorName)"))
+
+				// Must load before billArray.generateInvoice runs below: it reads
+				// tutorServices via findTutorServiceByName (a synchronous, non-async
+				// call) to price each session, and an unloaded tutorServices array
+				// would make it silently drop every session for this Tutor from the
+				// invoice instead of failing loudly.
+				guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
+					logMessage = "ERROR: could not load Tutor Details for Tutor \(tutorName) - excluded from invoice"
+					print(logMessage)
+					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
+
 				tutorList.append(tutorName)
-				
+
 				let timesheet = await getTimesheet(tutorName: tutorName, timesheetYear: billingYear, timesheetMonth: billingMonth, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: showBillingDiagnostics, showEachSession: showEachSession)
-				
+
 				billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages, referenceData: referenceData)
 			}
 		}
@@ -91,6 +105,8 @@ import GoogleSignIn
 		let fileName = "Timesheet " + timesheetYear + " " + tutorName
 		if showBillingDiagnostics {
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "                 Timesheet Name is: \(fileName)"))
+			logMessage = "INFO: Reading Timesheet for Tutor: \(tutorName) for timesheet month \(timesheetMonth)"
+			await AppLogger.shared.log(logMessage, level: .info)
 		}
 		
 		do {
@@ -115,8 +131,9 @@ import GoogleSignIn
 				
 				
 		} catch {
-			print("ERROR: could not get timesheet fileID for file: \(fileName)")
-			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "Error: in BillingVM.getTimesheet- Ccould not get timesheet fileID for file: \(fileName)"))
+			logMessage = "Error: in BillingVM.getTimesheet- Could not get timesheet fileID for file: \(fileName)"
+			print(logMessage)
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
@@ -341,6 +358,10 @@ import GoogleSignIn
 	@MainActor func generateCSVFile(invoice: Invoice, billingMonth: String, billingYear: String, tutorBillingMonth: TutorBillingMonth, alreadyBilledTutors: [String], referenceData: ReferenceData) async -> (Bool, String) {
 		var generationFlag: Bool = true
 		var generationMessage: String = ""
+		var logMessage: String
+		
+		logMessage = "INFO: generating CSV File for \(billingMonth) \(billingYear)"
+		await AppLogger.shared.log(logMessage)
 		
 		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 		
@@ -385,6 +406,10 @@ import GoogleSignIn
 				if !fileManager.fileExists(atPath: fileURL.path) {
 					fileManager.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
 				}
+				
+				logMessage = "INFO: generating CSV File \(fileName) for \(billingMonth) \(billingYear)"
+				await AppLogger.shared.log(logMessage)
+				
 				// Open the file for writing
 				let fileHandle = try FileHandle(forWritingTo: fileURL)
 				
@@ -407,12 +432,15 @@ import GoogleSignIn
 					// referenceData.dataCounts.increaseHighestInvoiceNumber()
 				}
 				// Save the Students List as the Last Billing Dates will have been updated
-				await referenceData.students.saveStudentData()
-				await referenceData.dataCounts.saveDataCounts()
+				let studentCompletionFlag = await referenceData.students.saveStudentData()
+				let dataCountCompletionFlag = await referenceData.dataCounts.saveDataCounts()
 				
 				// Close the CSV file when done
 				fileHandle.closeFile()
 				print("Lines written to CSV file successfully.")
+				
+				logMessage = "INFO: CSV File \(fileName) for \(billingMonth) \(billingYear) generation complete"
+				await AppLogger.shared.log(logMessage)
 			} catch {
 				generationFlag = false
 				generationMessage = "Error: Could not write to CSV file: \(error)"
@@ -490,7 +518,6 @@ import GoogleSignIn
 			}
 			print(logMessage)
 		}
-		print ("Student \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
 		return(csvLine)
 	}
 	

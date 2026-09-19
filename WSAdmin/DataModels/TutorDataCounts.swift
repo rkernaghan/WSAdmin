@@ -12,9 +12,5 @@ class TutorDataCounts {
 	var timesheetFileID: String = ""
 	var tutorStudentCount: Int = 0
 	var tutorServiceCount: Int = 0
-	
-//	func saveTutorDataCounts() {
-//
-//	}
-    
+	  
 }

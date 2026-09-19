@@ -41,6 +41,10 @@ struct DataMgmtView: View {
 
 	var fileIDs = FileData()
 	var dataCounts = DataCounts()
+	@State private var detailsFlag: Bool = false
+	@State private var refDataFlag: Bool = false
+	@State private var templateFlag: Bool = false
+	
 	@State var referenceData = ReferenceData()
 	@State private var showAlert: Bool = false
 	@State private var statusMessage: String = ""
@@ -53,35 +57,43 @@ struct DataMgmtView: View {
 			
 				.onAppear(perform: {
 					Task {
-						if runMode == "PROD" {
-							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsProdFileName)
-							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataProdFileName)
-							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
-							studentBillingFileNamePrefix = PgmConstants.studentBillingProdFileNamePrefix
-							tutorBillingFileNamePrefix = PgmConstants.tutorBillingProdFileNamePrefix
-						} else if runMode == "COPY" {
-							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsCopyFileName)
-							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataCopyFileName)
-							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateProdFileName)
-							studentBillingFileNamePrefix = PgmConstants.studentBillingCopyFileNamePrefix
-							tutorBillingFileNamePrefix = PgmConstants.tutorBillingCopyFileNamePrefix
-						} else if runMode == "TEST"{
-							(_, tutorDetailsFileID) = try await getFileID(fileName: PgmConstants.tutorDetailsTestFileName)
-							(_, referenceDataFileID) = try await getFileID(fileName: PgmConstants.referenceDataTestFileName)
-							(_, timesheetTemplateFileID) = try await getFileID(fileName: PgmConstants.timesheetTemplateTestFileName)
-							studentBillingFileNamePrefix = PgmConstants.studentBillingTestFileNamePrefix
-							tutorBillingFileNamePrefix = PgmConstants.tutorBillingTestFileNamePrefix
-						}
-						let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
-						if !loadResult {
-							showAlert.toggle()
-							buttonErrorMsg = "ERROR: Unable to load Reference Data - Restart program"
+						(detailsFlag, tutorDetailsFileID) = try await getFileID(fileName: runMode.tutorDetailsFileName)
+						if detailsFlag {
+							
+							(refDataFlag, referenceDataFileID) = try await getFileID(fileName: runMode.referenceDataFileName)
+							if refDataFlag {
+								(templateFlag, timesheetTemplateFileID) = try await getFileID(fileName: runMode.timesheetTemplateFileName)
+								if templateFlag {
+									studentBillingFileNamePrefix = runMode.studentBillingFileNamePrefix
+									tutorBillingFileNamePrefix = runMode.tutorBillingFileNamePrefix
+									
+									let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
+									if !loadResult {
+										showAlert.toggle()
+										buttonErrorMsg = "ERROR: Unable to load Reference Data - Restart program"
+										await AppLogger.shared.log(buttonErrorMsg, level: .error)
+									} else {
+										let tutorCount = referenceData.tutors.tutorsList.count
+										let studentCount = referenceData.students.studentsList.count
+										let serviceCount = referenceData.services.servicesList.count
+										let locationCount = referenceData.locations.locationsList.count
+										statusMessage = "Reference Data Loaded: \(tutorCount) Tutors, \(studentCount) Students, \(serviceCount) Services, \(locationCount) Locations"
+										await AppLogger.shared.log(statusMessage, level: .info)
+									}
+								} else {
+									buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.timesheetTemplateFileName) - Restart program"
+									await AppLogger.shared.log(buttonErrorMsg, level: .error)
+									showAlert.toggle()
+								}
+							} else {
+								buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.referenceDataFileName) - Restart program"
+								await AppLogger.shared.log(buttonErrorMsg, level: .error)
+								showAlert.toggle()
+							}
 						} else {
-							let tutorCount = referenceData.tutors.tutorsList.count
-							let studentCount = referenceData.students.studentsList.count
-							let serviceCount = referenceData.services.servicesList.count
-							let locationCount = referenceData.locations.locationsList.count
-							statusMessage = "Reference Data Loaded: \(tutorCount) Tutors, \(studentCount) Students, \(serviceCount) Services, \(locationCount) Locations"
+							buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.tutorDetailsFileName) - Restart program"
+							await AppLogger.shared.log(buttonErrorMsg, level: .error)
+							showAlert.toggle()
 						}
 					}
 				})
@@ -115,6 +127,7 @@ struct SideView: View {
 	
 	@State private var isFinanceSummaryProcessing = false				// To disable Finance Summary button when already processing
 	@State private var isSystemValidating = false					// To disable System Data Validation button when processing
+	@State private var isSystemResetting = false					// To disable Reset Test Files Files button when processing
 	@State private var isSystemBackingUp = false					// To disable Backup System button when processing
 	@State private var creatingNewYearsFiles = false				// To disable Create New Years Files button when processing
 	
@@ -211,6 +224,27 @@ struct SideView: View {
 			Button(action: {
 				Task {
 					statusMessage = " "
+					isSystemResetting = true
+					let (generationFlag, generationMessage)  = await systemVM.resetTestFiles()
+					isSystemResetting = false
+					if generationFlag {
+						statusMessage = "Test File Initialization Successful"
+					} else {
+						statusMessage = generationMessage
+					}
+				}
+			} ) {
+				if isSystemResetting {
+					ProgressView()
+				} else {
+					Text("Reset & Initialize Test Files")
+				}
+			}
+			.disabled(isSystemBackingUp)
+			
+			Button(action: {
+				Task {
+					statusMessage = " "
 					isFinanceSummaryProcessing = true
 					financeSummaryArray = await financeSummaryVM.buildFinanceSummary()
 					isFinanceSummaryProcessing = false
@@ -279,7 +313,7 @@ struct SideView: View {
 				Task {
 					statusMessage = " "
 					creatingNewYearsFiles = true
-					let (generateResult, generateMessage) = await systemVM.generateNewYearFiles(referenceData: referenceData)
+					let (generateResult, generateMessage) = try await systemVM.generateNewYearFiles(referenceData: referenceData)
 					creatingNewYearsFiles = false
 					
 					if !generateResult {

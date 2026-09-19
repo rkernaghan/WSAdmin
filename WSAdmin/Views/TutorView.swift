@@ -96,7 +96,7 @@ struct TutorView: View {
 						isTutorUpdateInProcess = true
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							let (addResult, addMessage) = await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
+							let (addResult, addMessage) = try await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
 							isTutorUpdateInProcess = false
 							if !addResult {
 								buttonErrorMsg = addMessage

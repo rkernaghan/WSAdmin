@@ -21,7 +21,11 @@ import Foundation
 		var completionResult: Bool = true
 		
 		// Read in the counts of Tutors, Students, Locations and Services from the Reference Data file in order to know how many rows of each to read in
-		// If the read succeeds, read in the Tutors, Students, Locations and Services 
+		// If the read succeeds, read in the Tutors, Students, Locations and Services
+		
+		let logMessage = "INFO: Starting load of reference data"
+		await AppLogger.shared.log(logMessage, level: .info, newLine: true)
+		
 		let fetchCountsFlag = await referenceData.dataCounts.fetchDataCounts( referenceData: referenceData )
 		if !fetchCountsFlag {
 			completionResult = false

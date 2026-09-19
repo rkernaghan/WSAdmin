@@ -173,6 +173,17 @@ struct PgmConstants {
 	static let tutorBillingTestFileNamePrefix: String = "Tutor Billing Summary - TEST "
 	static let tutorBillingCopyFileNamePrefix: String = "Tutor Billing Summary - PROD COPY "
 	static let tutorBillingProdFileNamePrefix: String = "Tutor Billing Summary "
+	static let initializationTestRefDataFileName: String = "ReferenceData - TEST (Initialization Version to Copy)"
+	static let initializationTestDetailsFileName: String = "Tutor Details Data - TEST (Initialization Version to Copy)"
+	static let initializationTestTutorBillingFile1Name: String = "Tutor Billing Summary - TEST 2025 (Initialization Version to Copy)"
+	static let initializationTestTutorBillingFile2Name: String = "Tutor Billing Summary - TEST 2026 (Initialization Version to Copy)"
+	static let initializationTestStudentBillingFile1Name: String = "Student Billing Summary - TEST 2025 (Initialization Version to Copy)"
+	static let initializationTestStudentBillingFile2Name: String = "Student Billing Summary - TEST 2026 (Initialization Version to Copy)"
+	static let tutorBillingTestFileName1: String = "Tutor Billing Summary - TEST 2025"
+	static let tutorBillingTestFileName2: String = "Tutor Billing Summary - TEST 2026"
+	static let studentBillingTestFileName1: String = "Student Billing Summary - TEST 2025"
+	static let studentBillingTestFileName2: String = "Student Billing Summary - TEST 2026"
+	
 	static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
 	static let timesheetTemplateProdFileName: String = "Template Timesheet"
 	static let billedTutorTemplateFileName: String = "Template Tutor Billing Summary year"
@@ -205,6 +216,7 @@ struct PgmConstants {
 	static let timesheetSessionRange = "!A5:I"
 	//	static let timesheetDataRange = "!A1:I100"
 	static let timesheetTutorNameCell = "RefData!A2:A2"
+	static let timesheetDetailsFileIDCell = "RefData!H1:H1"
 	static let timesheetAvailabilityDataRange = "Availability!A1:C10"
 	static let timesheetMaxBlankRowCount: Int = 12					// The maximum number of blank rows within the sessions of a Timesheet before its an error
 	
@@ -531,6 +543,66 @@ enum MonthSelector: String, CaseIterable, Identifiable, CustomStringConvertible 
 	}
 }
 
+enum RunMode {
+	case prod, copy, test
+	
+	/// The Reference Data spreadsheet name for this run mode.
+	var referenceDataFileName: String {
+		switch self {
+			case .prod:
+				return PgmConstants.referenceDataProdFileName
+			case .copy:
+				return PgmConstants.referenceDataCopyFileName
+			case .test:
+				return PgmConstants.referenceDataTestFileName
+		}
+	}
+	
+	/// The Tutor Details spreadsheet name for this run mode.
+	var tutorDetailsFileName: String {
+		switch self {
+			case .prod:
+				return PgmConstants.tutorDetailsProdFileName
+			case .copy:
+				return PgmConstants.tutorDetailsCopyFileName
+			case .test:
+				return PgmConstants.tutorDetailsTestFileName
+		}
+	}
+		
+	var studentBillingFileNamePrefix: String {
+		switch self {
+			case .prod:
+				return PgmConstants.studentBillingProdFileNamePrefix
+			case .copy:
+				return PgmConstants.studentBillingCopyFileNamePrefix
+			case .test:
+				return PgmConstants.studentBillingTestFileNamePrefix
+			}
+		}
+		
+	var tutorBillingFileNamePrefix: String {
+		switch self {
+			case .prod:
+				return PgmConstants.tutorBillingProdFileNamePrefix
+			case .copy:
+				return PgmConstants.tutorBillingCopyFileNamePrefix
+			case .test:
+				return PgmConstants.tutorBillingTestFileNamePrefix
+			}
+		}
+	var timesheetTemplateFileName: String {
+		switch self {
+			case .prod:
+				return PgmConstants.timesheetTemplateProdFileName
+			case .copy:
+				return PgmConstants.timesheetTemplateProdFileName
+			case .test:
+				return PgmConstants.timesheetTemplateTestFileName
+		}
+	}
+	}
+
 
 struct SheetData: Decodable {
 	let range: String
@@ -564,7 +636,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: String = "PROD"			// "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: RunMode = .prod			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

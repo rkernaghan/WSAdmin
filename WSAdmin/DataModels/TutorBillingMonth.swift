@@ -107,7 +107,7 @@ class TutorBillingMonth {
 		
 		// Write the Tutor Billing rows to the Billed Tutor spreadsheet
 		let updateValues = unloadTutorBillingRows()
-		let count = updateValues.count
+//		let count = updateValues.count
 		let range = billingMonth + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + updateValues.count - 1)
 		
 		do {

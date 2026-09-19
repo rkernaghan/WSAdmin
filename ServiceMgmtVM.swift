@@ -16,7 +16,11 @@ import Foundation
 	var price1Double: Double = 0.0
 	var price2Double: Double = 0.0
 	var price3Double: Double = 0.0
-    
+	
+	// Adds a New Service to the system
+	// - Increase the Service count and save counts
+	// - create the new Service object and save Services
+	// - add the new Service to the "Regular" Tutors (not the Specialists
 	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
 		var addResult: Bool = true
 		var logMessage: String = ""
@@ -55,11 +59,23 @@ import Foundation
 					if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
 						var tutorNum = 0
 						while tutorNum < referenceData.tutors.tutorsList.count && addResult {
-							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
+							if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted && referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorSuspended &&  referenceData.tutors.tutorsList[tutorNum].tutorType != .SpecialistTutor {
+								
+								let tutorDetailsLoaded = await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id)
+								if !tutorDetailsLoaded {
+									logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) when adding new Service \(timesheetName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								}
+								
 								let newTutorService = TutorService(serviceKey: newServiceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 								addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 								if !addResult {
-									logMessage = "ERROR: Could not save new Base Service \(timesheetName) in Tutor Details sheet for \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									logMessage = "ERROR: Could not save new Base Service: \(timesheetName) in Tutor Details sheet for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								} else {
+									logMessage = "INFO: New Base Service: \(timesheetName) added to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								}
@@ -152,15 +168,35 @@ import Foundation
 				var tutorNum = 0
 				while tutorNum < referenceData.tutors.tutorsList.count && updateResult {
 					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
+						if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
+							let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+							let completionFlag = await referenceData.tutors.tutorsList[tutorNum].loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
+							if !completionFlag {
+								logMessage = "ERROR: Could not load Tutor Details for Suspended Tutor \(tutorName) to update Service \(originalTimesheetName) for Tutor"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							} else {
+								print("Loaded Tutor Details for Suspended Tutor \(tutorName)")
+							}
+						}
+							
 						let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
 						if serviceFound {
 							updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
-								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
+							} else {
+								logMessage = "INFO: Tutor Service: \(timesheetName) updated for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .info)
 							}
 						}
+					} else {
+						// Tutor Status is Deleted (not sure what this does or why??)
+						let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+						let completionFlag = await referenceData.tutors.tutorsList[tutorNum].loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
 					}
 					tutorNum += 1
 				}
@@ -194,10 +230,14 @@ import Foundation
 							logMessage = "ERROR: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
+						} else {
+							logMessage = "INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) is deleted"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
 						}
 					}
 				} else {
-					logMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) can not be deleted"
+					logMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) can not be deleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
 					deleteResult = false
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .error)
@@ -243,7 +283,7 @@ import Foundation
 			}
 		}
 		
-		return(unDeleteResult, logMessage)
+	return(unDeleteResult, logMessage)
 	}
     
 }

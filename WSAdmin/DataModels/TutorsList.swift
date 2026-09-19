@@ -111,9 +111,12 @@ import Foundation
 			// Add the new Tutor object to the Tutors List object array
 			self.tutorsList.append(newTutor)
 			
-			// If the Tutor Status is not "Deleted", load in the Tutors Services and Students data
-			if newTutorStatus != .TutorDeleted {
-				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorName: newTutorName, tutorDataFileID: tutorDetailsFileID)
+			// If the Tutor Status is not "Deleted" or "Suspended", load in the Tutors Services and Students data
+			if newTutorStatus != .TutorDeleted &&  newTutorStatus != .TutorSuspended {
+//				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDetailsFileID)
+//				if completionFlag {
+//					self.tutorsList[tutorIndex].tutorDetailsLoaded = true
+//				}
 			}
 			print("Loaded Tutor \(newTutorName)")
 			
