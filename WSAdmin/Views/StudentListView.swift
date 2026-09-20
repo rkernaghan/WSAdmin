@@ -112,6 +112,9 @@ struct StudentListView: View {
 						TableColumn("Tutor Name", value: \Student.studentCurrentTutorName)
 							.width(min: 80, ideal: 120, max: 180)
 						
+						TableColumn("Previous\nTutor Name", value: \Student.studentPreviousTutorName)
+							.width(min: 80, ideal: 120, max: 180)
+						
 						TableColumn("Phone", value: \Student.studentContactPhone)
 							.width(min: 90, ideal: 100, max: 110)
 					}
@@ -120,11 +123,6 @@ struct StudentListView: View {
 						TableColumn("EMail", value: \Student.studentContactEmail)
 							.width(min: 60, ideal: 100, max: 200)
 						
-	//					TableColumn("Zip Code", value: \Student.studentContactZipCode)
-	//						.width(min: 40, ideal: 50, max: 90)
-					}
-					
-					Group {
 						TableColumn("Start Date", value: \Student.studentStartDate)
 							.width(min: 60, ideal: 75, max: 90)
 						

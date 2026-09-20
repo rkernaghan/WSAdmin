@@ -923,8 +923,8 @@ import GoogleSignIn
 					}
 				} else {
 					suspendResult = false
-					logMessage += "ERROR: Cannot Suspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus) \n"
-					await AppLogger.shared.log(logMessage,level: .error)
+					logMessage += "WARNING: Cannot Suspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus) \n"
+					await AppLogger.shared.log(logMessage,level: .warning)
 				}
 			}
 		}

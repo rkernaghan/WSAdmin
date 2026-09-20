@@ -77,7 +77,7 @@ import Foundation
 								} else {
 									logMessage = "INFO: New Base Service: \(timesheetName) added to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 									print(logMessage)
-									await AppLogger.shared.log(logMessage, level: .error)
+									await AppLogger.shared.log(logMessage, level: .info)
 								}
 								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 								referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
@@ -237,10 +237,10 @@ import Foundation
 						}
 					}
 				} else {
-					logMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) can not be deleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
+					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) can not be deleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
 					deleteResult = false
 					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
+					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
@@ -274,10 +274,10 @@ import Foundation
 						}
 					}
 				} else {
-					logMessage = "ERROR: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
+					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
 					unDeleteResult = false
 					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
+					await AppLogger.shared.log(logMessage, level: .warning)
 
 				}
 			}
