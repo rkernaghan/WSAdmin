@@ -183,6 +183,10 @@ struct PgmConstants {
 	static let tutorBillingTestFileName2: String = "Tutor Billing Summary - TEST 2026"
 	static let studentBillingTestFileName1: String = "Student Billing Summary - TEST 2025"
 	static let studentBillingTestFileName2: String = "Student Billing Summary - TEST 2026"
+	static let testTimesheetFolderName: String = "WSAdmin Test Timesheets"
+	static let productionTimesheetFolderName: String = "WSAdmin Production Timesheets"
+	static let testFileFolderName: String = "WSAdmin Regression Testing"
+	static let productionFileFolderName: String = "WSAdmin Production Files"
 	
 	static let timesheetTemplateTestFileName: String = "Template Timesheet - TEST"
 	static let timesheetTemplateProdFileName: String = "Template Timesheet"
@@ -289,14 +293,12 @@ struct PgmConstants {
 	static let csvSeperator: String = ","
 	static let crlf: String = "\r\n"
 	
-	static let csvQBInvoiceHeader: String = "InvoiceNo,Customer,CustomerEmail,*InvoiceDate,*DueDate,Term,Location,TutorName,Item(Product/Service),ItemDescrip,ItemQuantity,ItemRate,*ItemAmount,*ItemTaxCode,ServiceDate"
 	static let csvXeroInvoiceHeader: String = "*InvoiceNumber,*ContactName,EmailAddress,POAddressLine1,POAddressLine2,POCity,PORegion,POPostalCode,Reference,*InvoiceDate,*DueDate,InventoryItemCode,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,BrandingTheme"
 	static let csvClientListHeader: String = "First Name,Last Name,EMAIL,Phone,ZIP"
 	
 	static let stephenEmail: String = "stephen.kernaghan@gmail.com"
 	static let writeSeattleEmail: String = "info@writeseattle.com"
 	static let russellEmail: String = "rskernaghan@gmail.com"
-	static let serviceAccountEmail: String = "service-account1@writeseattle2.iam.gserviceaccount.com"
 	
 	static let systemStartMonthIndex = 6
 	static let systemStartYearIndex = 0
@@ -601,6 +603,28 @@ enum RunMode {
 				return PgmConstants.timesheetTemplateTestFileName
 		}
 	}
+	var fileFolderLocation: String {
+		switch self {
+			case .prod:
+				return PgmConstants.productionFileFolderName
+			case .copy:
+				return PgmConstants.testFileFolderName
+			case .test:
+				return PgmConstants.testFileFolderName
+		}
+	}
+
+	var timesheetFolderLocation: String {
+		switch self {
+			case .prod:
+				return PgmConstants.productionTimesheetFolderName
+			case .copy:
+				return PgmConstants.testTimesheetFolderName
+			case .test:
+				return PgmConstants.testTimesheetFolderName
+		}
+	}
+
 	}
 
 

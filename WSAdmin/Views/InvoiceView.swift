@@ -108,7 +108,7 @@ struct InvoiceView: View {
 								let (csvGenerationResult, csvGenerationMessage) = await billingVM.generateCSVFile(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, tutorBillingMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData)
 								isCSVProcessing = false
 								if csvGenerationResult {
-//									dismiss()
+									dismiss()
 									path = NavigationPath()
 								} else {
 									buttonErrorMsg = csvGenerationMessage

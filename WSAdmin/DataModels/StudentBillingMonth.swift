@@ -214,7 +214,7 @@ class StudentBillingMonth {
 	}
 	
 	// Saves a Student Billing Month by unloading the array to a 2 dimensional array of strings and writing those strings to a sheet (month) in the Student Billing spreadsheet
-	// If the saveValidatedStudentData flag is True, write the Validated Data cells for the Students
+	// If the saveValidatedStudentData flag is True, write the additional Validated Data cells for each Student row
 	//
 	func saveStudentBillingMonth(studentBillingFileID: String, billingMonth: String, saveValidatedStudentData: Bool) async -> Bool {
 		var completionFlag: Bool = true

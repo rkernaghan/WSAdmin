@@ -22,89 +22,104 @@ import GoogleSignIn
 	// - add the Base Services to the Tutor (except for specialists)
 	//
 	func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async throws -> (Bool, String) {
-	    var addResult: Bool = true
-	    var logMessage: String = ""
-	    var newTimesheetFileID: String = ""
+		var addResult: Bool = true
+		var logMessage: String = ""
+		var newTimesheetFileID: String?
 		
 		logMessage = "INFO: Adding Tutor Name: \(tutorName), contactEmail: \(tutorEmail), contactPhone: \(tutorPhone), maxStudents: \(maxStudents), tutorType: \(String(describing: tutorType))"
 		await AppLogger.shared.log(logMessage, newLine: true)
-	   
+		
 		referenceData.dataCounts.increaseTotalTutorCount()
-	    addResult = await referenceData.dataCounts.saveDataCounts()
-	    if !addResult {
-		    logMessage = "ERROR: could not save Data Counts when adding new Tutor \(tutorName)"
-		    await AppLogger.shared.log(logMessage, level: .error)
-	    } else {
-		    let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
-		    let dateFormatter = DateFormatter()
-		    dateFormatter.dateFormat = "yyyy/MM/dd"
-		    let startDate = dateFormatter.string(from: Date())
-		    //       let maxStudentsInt = Int(maxStudents) ?? 0
-		    
-		    let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorType: tutorType, tutorStatus: .TutorUnassigned, tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
-		    referenceData.tutors.addTutor(newTutor: newTutor)
-		    
-		    // Create a new Timesheet for the Tutor
-		    (addResult, newTimesheetFileID) = try await copyNewTimesheet(tutorName: tutorName, tutorEmail: tutorEmail)
-		    if !addResult {
-			    logMessage = "ERROR: Could not create Timesheet for Tutor \(tutorName)"
-			    await AppLogger.shared.log(logMessage, level: .error)
-		    } else {
-			    // add the TimesheetFileID to the new Tutor object
-			    let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-			    referenceData.tutors.tutorsList[tutorNum].timesheetFileID = newTimesheetFileID
-			    
-			    // Create a new Tutor Details sheet for the new Tutor
-			    addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey, newTimesheetFileID: newTimesheetFileID)
-			    if !addResult {
-				    logMessage = "ERROR: could not create Tutor Details sheet for new Tutor \(tutorName)"
-				    await AppLogger.shared.log(logMessage, level: .error)
-			    } else {
-			    
-				    // Add the new Tutor to the Billed Tutor list for the previous month so there is data to copy to current month when updating billing stats
-				    let (prevMonthName, prevMonthYear) = getPrevMonthYear()
-				    addResult = await self.addTutorToBilledTutorMonth(tutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
-				    if !addResult {
-					    logMessage = "ERROR: Could not add Tutor \(tutorName) to Billed Tutor spreadsheet for \(prevMonthName)"
-					    await AppLogger.shared.log(logMessage, level: .error)
-				    } else {
-					    
-					    // Assign all active Base Services to new "Regular" Tutors (not Specialists)
-					    var serviceNum = 0
-					    if tutorType != .SpecialistTutor {
-						    
-						    let serviceCount = referenceData.services.servicesList.count
-						    while serviceNum < serviceCount && addResult {
-							    if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
-								    let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-								    addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-								    if !addResult {
-									    logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
-									    await AppLogger.shared.log(logMessage, level: .error)
-								    }
-								    referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-							    }
-							    serviceNum += 1
-						    }
-						    
-					    }
-					    addResult = await referenceData.tutors.saveTutorData()
-					    if !addResult {
-						    logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName)"
-						    await AppLogger.shared.log(logMessage, level: .error)
-					    } else {
-						    addResult = await referenceData.services.saveServiceData()
-						    if !addResult {
-							    logMessage = "ERROR: Could not save Services data for Tutor \(tutorName)"
-							    await AppLogger.shared.log(logMessage, level: .error)
-						    }
-					    }
-					    
-				    }
-			    }
-		    }
-	    }
-	    return(addResult, logMessage)
+		addResult = await referenceData.dataCounts.saveDataCounts()
+		if !addResult {
+			logMessage = "ERROR: could not save Data Counts when adding new Tutor \(tutorName)"
+			await AppLogger.shared.log(logMessage, level: .error)
+		} else {
+			let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
+			let dateFormatter = DateFormatter()
+			dateFormatter.dateFormat = "yyyy/MM/dd"
+			let startDate = dateFormatter.string(from: Date())
+			//       let maxStudentsInt = Int(maxStudents) ?? 0
+			
+			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorType: tutorType, tutorStatus: .TutorUnassigned, tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
+			referenceData.tutors.addTutor(newTutor: newTutor)
+			let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+			if !tutorFound {
+				logMessage = "ERROR: could not find Tutor: \(tutorName) in Tutorslist after create Tutor"
+				await AppLogger.shared.log(logMessage, level: .error)
+			} else {
+				
+				// Create a new Timesheet for the Tutor
+				do {
+					let formatter = DateFormatter()
+					formatter.setLocalizedDateFormatFromTemplate("YYYY")
+					let currentYear = formatter.string(from: Date.now)
+					let systemVM = SystemVM()
+					(addResult, newTimesheetFileID, logMessage) = try await systemVM.createTimesheetFile(templateFileName: runMode.timesheetTemplateFileName, timesheetYear: currentYear, tutorName: tutorName, tutorEmail: tutorEmail, referenceData: referenceData)
+					
+					guard addResult, let newTimesheetFileID else {
+						// Failure already logged inside the helper above.
+						return(false, "")
+					}
+					
+					// Create a new Tutor Details sheet for the new Tutor
+					addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey, newTimesheetFileID: newTimesheetFileID)
+					if !addResult {
+						logMessage = "ERROR: could not create Tutor Details sheet for new Tutor \(tutorName)"
+						await AppLogger.shared.log(logMessage, level: .error)
+					} else {
+						
+						// Add the new Tutor to the Billed Tutor list for the previous month so there is data to copy to current month when updating billing stats
+						let (prevMonthName, prevMonthYear) = getPrevMonthYear()
+						addResult = await self.addTutorToBilledTutorMonth(tutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
+						if !addResult {
+							logMessage = "ERROR: Could not add Tutor \(tutorName) to Billed Tutor spreadsheet for \(prevMonthName)"
+							await AppLogger.shared.log(logMessage, level: .error)
+						} else {
+							
+							// Assign all active Base Services to new "Regular" Tutors (not Specialists)
+							var serviceNum = 0
+							if tutorType != .SpecialistTutor {
+								
+								let serviceCount = referenceData.services.servicesList.count
+								while serviceNum < serviceCount && addResult {
+									if referenceData.services.servicesList[serviceNum].serviceType == .Base && referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
+										let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+										addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+										if !addResult {
+											logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
+											await AppLogger.shared.log(logMessage, level: .error)
+										}
+										referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+									}
+									serviceNum += 1
+								}
+								
+							}
+							addResult = await referenceData.tutors.saveTutorData()
+							if !addResult {
+								logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName)"
+								await AppLogger.shared.log(logMessage, level: .error)
+							} else {
+								addResult = await referenceData.services.saveServiceData()
+								if !addResult {
+									logMessage = "ERROR: Could not save Services data for Tutor \(tutorName)"
+									await AppLogger.shared.log(logMessage, level: .error)
+								}
+							}
+							
+						}
+					}
+					
+				} catch {
+					logMessage = "ERROR: Could not create new Timesheet for Tutor: \(tutorName)"
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
+			}
+
+			
+		}
+		return(addResult, logMessage)
     }
   
     func addTutorToBilledTutorMonth(tutorName: String, monthName: String, yearName: String) async -> Bool {
@@ -477,7 +492,7 @@ import GoogleSignIn
     
 	func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
 		var deleteResult = true
-		var deleteMessage = " "
+		var logMessage = " "
 		var tutorBillingFileID: String = ""
 		var result: Bool = true
 		var tutorSheetID: Int
@@ -485,18 +500,26 @@ import GoogleSignIn
 		for objectID in indexes {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
-					deleteMessage = "INFO: Deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					print(deleteMessage)
-					await AppLogger.shared.log(deleteMessage, level: .error, newLine: true)
+					logMessage = "INFO: Deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info, newLine: true)
 					
 					referenceData.tutors.tutorsList[tutorNum].markDeleted()
 					deleteResult = await referenceData.tutors.saveTutorData()
 					if !deleteResult {
-						deleteMessage = "ERROR: Could not save Tutor data deleting Tutor"
-						print(deleteMessage)
-						await AppLogger.shared.log(deleteMessage, level: .error)
+						logMessage = "ERROR: Could not save Tutor data deleting Tutor"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
 						//Unassign all the Services assigned to the Tutor
+						
+						// Ensure the Tutor Services are loaded for the Tutor
+						guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
+							deleteResult = false
+							logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before unassigning Services"
+							await AppLogger.shared.log(logMessage, level: .error)
+							continue
+						}
 						
 						var tutorServiceNum = 0
 						let tutorServiceCount = referenceData.tutors.tutorsList[tutorNum].tutorServiceCount
@@ -512,9 +535,9 @@ import GoogleSignIn
 						
 						deleteResult = await referenceData.services.saveServiceData()
 						if !deleteResult {
-							deleteMessage = "ERROR: Could not save Services Data when deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-							print(deleteMessage)
-							await AppLogger.shared.log(deleteMessage, level: .error)
+							logMessage = "ERROR: Could not save Services Data when deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
 							referenceData.dataCounts.decreaseActiveTutorCount()
 							// Remove Tutor from Billed Tutor list for the previous month
@@ -528,33 +551,33 @@ import GoogleSignIn
 								(result, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
 								if !result {
 									deleteResult = false
-									deleteMessage = "ERROR: Could not get File ID for Tutor Billing File \(tutorBillingFileName)"
-									print(deleteMessage)
-									await AppLogger.shared.log(deleteMessage, level: .error)
+									logMessage = "ERROR: Could not get File ID for Tutor Billing File \(tutorBillingFileName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
 								} else {
 									// Read in the Billed Tutors for the previous month
 									deleteResult = await tutorBillingMonth.getTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
 									if !deleteResult {
-										deleteMessage = "ERROR: Could not load Tutor Billing data for \(prevMonthName)"
-										print(deleteMessage)
-										await AppLogger.shared.log(deleteMessage, level: .error)
+										logMessage = "ERROR: Could not load Tutor Billing data for \(prevMonthName)"
+										print(logMessage)
+										await AppLogger.shared.log(logMessage, level: .error)
 									} else {
 										// Mark Tutor as deleted in the to Billed Tutor list for the month
 										let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 										let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 										if billedTutorFound == false {
 											deleteResult = false
-											deleteMessage = "ERROR: Could not find Tutor \(tutorName) in Billed Tutor list for month \(prevMonthName)"
-											print(deleteMessage)
-											await AppLogger.shared.log(deleteMessage, level: .error)
+											logMessage = "ERROR: Could not find Tutor \(tutorName) in Billed Tutor list for month \(prevMonthName)"
+											print(logMessage)
+											await AppLogger.shared.log(logMessage, level: .error)
 										} else {
 											// Save the updated Billed Tutor list for the month
 											tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
 											deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName, saveValidatedTutorData: false)
 											if !deleteResult {
-												deleteMessage = "ERROR: Could not save Tutor Billing data for \(prevMonthName)"
-												print(deleteMessage)
-												await AppLogger.shared.log(deleteMessage, level: .error)
+												logMessage = "ERROR: Could not save Tutor Billing data for \(prevMonthName)"
+												print(logMessage)
+												await AppLogger.shared.log(logMessage, level: .error)
 											} else {
 												
 												// Delete the Tutor Details sheet for the Tutor
@@ -563,23 +586,23 @@ import GoogleSignIn
 														tutorSheetID = sheetID
 														let deleteFileData = try await deleteSheet(spreadsheetID: tutorDetailsFileID, sheetID: tutorSheetID)
 														if deleteFileData == nil {
-															deleteMessage = "ERROR: Could not delete Tutor Details sheet for \(tutorName)"
-															print(deleteMessage)
-															await AppLogger.shared.log(deleteMessage, level: .error)
+															logMessage = "ERROR: Could not delete Tutor Details sheet for \(tutorName)"
+															print(logMessage)
+															await AppLogger.shared.log(logMessage, level: .error)
 														} else {
 															await AppLogger.shared.log("INFO: Tutor: \(tutorName) is deleted", level: .info)
 														}
 													} else {
 														deleteResult = false
-														deleteMessage = "ERROR: Could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet"
-														print(deleteMessage)
-														await AppLogger.shared.log(deleteMessage, level: .error)
+														logMessage = "ERROR: Could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet"
+														print(logMessage)
+														await AppLogger.shared.log(logMessage, level: .error)
 													}
 												} catch {
 													deleteResult = false
-													deleteMessage = "ERROR: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
-													print(deleteMessage)
-													await AppLogger.shared.log(deleteMessage, level: .error)
+													logMessage = "ERROR: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
+													print(logMessage)
+													await AppLogger.shared.log(logMessage, level: .error)
 												}
 											}
 										}
@@ -587,16 +610,16 @@ import GoogleSignIn
 								}
 							} catch {
 								deleteResult = false
-								deleteMessage = "ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)"
-								print(deleteMessage)
-								await AppLogger.shared.log(deleteMessage, level: .error)
+								logMessage = "ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						}
 					}
 				} else {
-					deleteMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					print(deleteMessage)
-					await AppLogger.shared.log(deleteMessage, level: .error)
+					logMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 					deleteResult = false
 				}
 			}
@@ -604,13 +627,13 @@ import GoogleSignIn
 		if deleteResult {
 			deleteResult = await referenceData.dataCounts.saveDataCounts()
 			if !deleteResult {
-				deleteMessage = "ERROR: Could not save Data Counts deleting Tutor "
-				print(deleteMessage)
-				await AppLogger.shared.log(deleteMessage, level: .error)
+				logMessage = "ERROR: Could not save Data Counts deleting Tutor "
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		}
 		
-		return(deleteResult, deleteMessage)
+		return(deleteResult, logMessage)
 	}
         
     
@@ -956,116 +979,10 @@ import GoogleSignIn
 		return(unsuspendResult, logMessage)
 	}
     
-   // Creates a new Timesheet for a Tutor by copying the template Timesheet
-	func copyNewTimesheet(tutorName: String, tutorEmail: String) async throws -> (Bool, String) {
-		var copyFileResult: Bool
-		var copyFileID: String?
-		var logMessage: String
-
-		var newTimesheetFileID: String = ""
-		var copiedFileData = [String : Any]()
-        
-		logMessage = "INFO: Copying New Timesheet for \(tutorName)"
-		await AppLogger.shared.log(logMessage)
-      
-		let formatter = DateFormatter()
-		formatter.setLocalizedDateFormatFromTemplate("YYYY")
-		let currentYear = formatter.string(from: Date.now)
-		let newTimesheetName  = "Timesheet " + currentYear + " " + tutorName
-		do {
-			(copyFileResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: timesheetTemplateFileID, newFileName: newTimesheetName)
-			if copyFileResult {
-				
-				if let copyFileID = copyFileID {
-					// The new Timesheet needs the FileID of the Tutor Details file in the refData sheet
-					let updateValues = [[tutorDetailsFileID]]
-					let range = PgmConstants.timesheetDetailsFileIDCell
-					do {
-						copyFileResult = try await writeSheetCells(fileID: copyFileID, range: range, values: updateValues, logNote: "Tutor Details FileID in Timesheet RefData")
-						print("INFO: Updating Tutor Details File ID in new Timesheet for \(tutorName)")
-						if !copyFileResult {
-							logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
-							print(logMessage)
-							await AppLogger.shared.log(logMessage, level: .error)
-						} else {
-							logMessage = "INFO: Added Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
-							print(logMessage)
-							await AppLogger.shared.log(logMessage, level: .info)
-						}
-					} catch {
-						copyFileResult = false
-						logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .error)
-					}
-			
-					newTimesheetFileID = copyFileID
-					
-					do {
-						var sendNotificationFlag: Bool
-						if runMode == .test {
-							sendNotificationFlag = false
-						} else {
-							sendNotificationFlag = true
-						}
-						
-						var copyFileData = try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: tutorEmail, sendNotificationEmail: sendNotificationFlag)
-						if let copyFileData = copyFileData {
-							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: sendNotificationFlag)
-							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: sendNotificationFlag)
-							try await addPermissionToFile(fileID: newTimesheetFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: sendNotificationFlag)
-							
-							let range = PgmConstants.timesheetTutorNameCell
-							do {
-								copyFileResult = try await writeSheetCells(fileID: newTimesheetFileID, range:range, values: [[tutorName]], logNote: "Timesheet Tutor Name")
-							} catch {
-								print("ERROR: can not write Tutor Name into new Tutor Timesheet")
-								await AppLogger.shared.log("ERROR: can not write Tutor Name into new Tutor Timesheet", level: .error)
-								copyFileResult = false
-							}
-						} else {
-							await AppLogger.shared.log("ERROR: Can not grant Tutor \(tutorName) write access to Timesheet", level: .error)
-							copyFileResult = false
-						}
-						// Grant new Tutor ability to access the Tutor Details spreadsheet so that their Timesheet can pull the Students and Services assigned to them
-						copyFileData = try await addPermissionToFile(fileID: tutorDetailsFileID, role: "reader", type: "user", emailAddress: tutorEmail, sendNotificationEmail: false)
-						if let copyFileData = copyFileData {
-							logMessage = "INFO: Granted Tutor \(tutorName) read access to Tutor Details File Name"
-							print(logMessage)
-							await AppLogger.shared.log(logMessage)
-						} else {
-							logMessage = "ERROR: Can not grant Tutor \(tutorName) read access to Tutor Details spreadsheet"
-							print(logMessage)
-							await AppLogger.shared.log(logMessage, level: .error)
-							copyFileResult = false
-						}
-					} catch {
-						logMessage = "Could not add access permission to new Timesheet for Tutor: \(tutorName)"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .error)
-						copyFileResult = false
-					}
-					
-				} else {
-					copyFileResult = false
-					logMessage = "ERROR: No valid string found for the key 'name'"
-					await AppLogger.shared.log(logMessage, level: .error)
-				}
-			} else {
-				logMessage = "ERROR:  Could not copy Timesheet for Tutor: \(tutorName)"
-				await AppLogger.shared.log(logMessage, level: .error)
-				copyFileResult = false
-			}
-		} catch {
-			logMessage = "ERROR:  Could not copy Timesheet for Tutor: \(tutorName)"
-			await AppLogger.shared.log(logMessage, level: .error)
-			copyFileResult = false
-		}
-
-		return(copyFileResult, newTimesheetFileID)
-	}
+   
          
-	
+	// This function adds a sheet for a new Tutor in the Tutor Details spreadsheet containing 2 sets of header cells and
+	// the new Tutor's Timesheet fileID.
 	func createNewDetailsSheet(tutorName: String, tutorKey: String, newTimesheetFileID: String) async -> Bool {
 		var createResult: Bool = true
 		var createMsg: String
@@ -1095,6 +1012,11 @@ import GoogleSignIn
 									await AppLogger.shared.log(createMsg, level: .error)
 									createResult = false
 								}
+							} else {
+								createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor \(tutorName)"
+								print(createMsg)
+								await AppLogger.shared.log(createMsg, level: .error)
+								createResult = false
 							}
 						} catch {
 							createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor \(tutorName):\(error.localizedDescription)"
@@ -1102,6 +1024,11 @@ import GoogleSignIn
 							await AppLogger.shared.log(createMsg, level: .error)
 							createResult = false
 						}
+					} else {
+						createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor \(tutorName)"
+						print(createMsg)
+						await AppLogger.shared.log(createMsg, level: .error)
+						createResult = false
 					}
 				} catch {
 					createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor \(tutorName):\(error.localizedDescription)"
@@ -1146,28 +1073,37 @@ import GoogleSignIn
 		}
 	}
     
-	func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) -> TutorServiceCostList {
+	// This function build a list of the costs for each Tutor for a specific Service.  (All costs should be the same unless
+	// the Tutor's costs's for that service were manually changed.)
+	func buildServiceCostArray(serviceNum: Int, referenceData: ReferenceData) async -> TutorServiceCostList {
+		var logMessage: String
 		let tutorServiceCostList = TutorServiceCostList()
-		
 		let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
-		var tutorNum = 0
-		while tutorNum < referenceData.tutors.tutorsList.count {
-			let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: serviceKey)
-			if serviceFound {
-				let tutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
-				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-				let cost1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost1
-				let cost2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost2
-				let cost3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].cost3
-				let price1 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price1
-				let price2 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price2
-				let price3 = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].price3
+		
+		for tutor in referenceData.tutors.tutorsList {
+			if tutor.tutorStatus != .TutorDeleted {
+				if await !referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) {
+					logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) - validation results for this Tutor will be unreliable"
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
 				
-				let newTutorServiceCost = TutorServiceCost(tutorKey: tutorKey, tutorName: tutorName, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-				tutorServiceCostList.addTutorServiceCost(newTutorServiceCost: newTutorServiceCost, referenceData: referenceData)
+				let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: serviceKey)
+				if serviceFound {
+					let tutorKey = tutor.tutorKey
+					let tutorName = tutor.tutorName
+					let cost1 = tutor.tutorServices[tutorServiceNum].cost1
+					let cost2 = tutor.tutorServices[tutorServiceNum].cost2
+					let cost3 = tutor.tutorServices[tutorServiceNum].cost3
+					let price1 = tutor.tutorServices[tutorServiceNum].price1
+					let price2 = tutor.tutorServices[tutorServiceNum].price2
+					let price3 = tutor.tutorServices[tutorServiceNum].price3
+					
+					let newTutorServiceCost = TutorServiceCost(tutorKey: tutorKey, tutorName: tutorName, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+					tutorServiceCostList.addTutorServiceCost(newTutorServiceCost: newTutorServiceCost, referenceData: referenceData)
+				}
 			}
-			tutorNum += 1
 		}
+		
 		return(tutorServiceCostList)
 	}
 	

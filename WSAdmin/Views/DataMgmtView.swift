@@ -126,6 +126,7 @@ struct SideView: View {
 	@Environment(BillingVM.self) var billingVM: BillingVM
 	
 	@State private var isFinanceSummaryProcessing = false				// To disable Finance Summary button when already processing
+	@State private var isAvailabilitySummaryProcessing = false			// To disable Tutor Availability Summary button when already processing
 	@State private var isSystemValidating = false					// To disable System Data Validation button when processing
 	@State private var isSystemResetting = false					// To disable Reset Test Files Files button when processing
 	@State private var isSystemBackingUp = false					// To disable Backup System button when processing
@@ -201,15 +202,28 @@ struct SideView: View {
 				AppFolders.revealLogFilesFolder()
 			}
 			
-			Button("Tutor Availability Summary") {
+			
+			Button(action: {
 				Task {
 					statusMessage = " "
+					isAvailabilitySummaryProcessing = true
 					tutorAvailabilityArray = await tutorMgmtVM.buildTutorAvailabilityArray(referenceData: referenceData)
+					isAvailabilitySummaryProcessing = false
+					
 					showTutorAvailabilitySummary = true
 				}
+			}) {
+				if isAvailabilitySummaryProcessing {
+					ProgressView()
+				} else {
+					Text("Tutor Availability Summary")
+				}
 			}
+			.disabled(isAvailabilitySummaryProcessing)
 			
-			Button("Generate Client List for QuickBooks") {
+			
+			
+			Button("Generate Client List CSV File") {
 				Task {
 					statusMessage = " "
 					let (generationFlag, generationMessage)  = await billingVM.generateClientList(referenceData: referenceData)
@@ -324,7 +338,7 @@ struct SideView: View {
 					}
 				}
 			} ) {
-				if isSystemBackingUp {
+				if creatingNewYearsFiles {
 					ProgressView()
 				} else {
 					Text("Create New Years Files")

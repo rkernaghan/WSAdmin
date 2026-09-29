@@ -221,7 +221,9 @@ struct ServiceListView: View {
 									if let idx = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
 										serviceNumber = idx
 										listServiceCosts.toggle()
-										serviceCostList = tutorMgmtVM.buildServiceCostArray(serviceNum: serviceNumber, referenceData: referenceData)
+										Task {
+											serviceCostList = await tutorMgmtVM.buildServiceCostArray(serviceNum: serviceNumber, referenceData: referenceData)
+										}
 									}
 								}
 							} label: {

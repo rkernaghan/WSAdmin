@@ -468,7 +468,7 @@ import GoogleSignIn
 		let zipCode = invoiceLine.zipCode
 		let invoiceDate = invoiceLine.invoiceDate
 		let invoiceDueDate = invoiceLine.dueDate
-		let invoiceReference = invoiceLine.studentName
+		let invoiceReference = invoiceLine.studentName + " - " + invoiceLine.tutorName
 //		let invoiceTerm = invoiceLine.terms
 //		let invoiceLocation = invoiceLine.locationName
 //		let invoiceTutor = invoiceLine.tutorName
@@ -521,40 +521,6 @@ import GoogleSignIn
 		return(csvLine)
 	}
 	
-	// Format a CSV file line In Quickbooks format from an Invoice file line
-	// This module is no longer used with the switch to Xero for accounting
-	//
-	@MainActor func processQBInvoiceLine(invoiceLine: InvoiceLine, referenceData: ReferenceData) -> String {
-		let invoiceNum = invoiceLine.invoiceNum
-		let invoiceClient = invoiceLine.clientName
-		let invoiceEmail = invoiceLine.clientEmail
-		let invoiceDate = invoiceLine.invoiceDate
-		let invoiceDueDate = invoiceLine.dueDate
-		let invoiceTerm = invoiceLine.terms
-		let invoiceLocation = invoiceLine.locationName
-		let invoiceTutor = invoiceLine.tutorName
-		let invoiceItem = invoiceLine.itemName
-		let invoiceDescription = invoiceLine.description
-		let invoiceQuantity = invoiceLine.quantity
-		let invoiceRate = invoiceLine.rate
-		let invoiceAmount = String(invoiceLine.amount.formatted(.number.precision(.fractionLength(2))))
-		let invoiceTaxCode = invoiceLine.taxCode
-		let invoiceServiceDate = invoiceLine.serviceDate
-		let csvLine = invoiceNum + PgmConstants.csvSeperator + invoiceClient + PgmConstants.csvSeperator + invoiceEmail + PgmConstants.csvSeperator + invoiceDate + PgmConstants.csvSeperator + invoiceDueDate + PgmConstants.csvSeperator + invoiceTerm + PgmConstants.csvSeperator +  invoiceLocation + PgmConstants.csvSeperator + invoiceTutor + PgmConstants.csvSeperator + invoiceItem + PgmConstants.csvSeperator + invoiceDescription + PgmConstants.csvSeperator + invoiceQuantity + PgmConstants.csvSeperator + invoiceRate + PgmConstants.csvSeperator + invoiceAmount + PgmConstants.csvSeperator + invoiceTaxCode + PgmConstants.csvSeperator + invoiceServiceDate
-		
-		// Set the Last Billed Date for the Student to today's date
-		let studentName = invoiceLine.studentName
-		let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-		if studentFound {
-			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
-		} else {
-			print ("ERROR: Student not found when updating Student Last Billed Date")
-		}
-		
-		print ("Student: \(studentName) Last Billed Date \(invoiceServiceDate) - \(referenceData.students.studentsList[studentNum].studentLastBilledDate)")
-		
-		return(csvLine)
-	}
 	
 	// Generate a CSV file of client data (student name, contact name, email, phone, zip code)
 	//

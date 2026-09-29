@@ -33,7 +33,7 @@ class Timesheet: Identifiable {
 		var completionFlag: Bool = true
 		var logMessage: String
 		
-		// Read in the header rows from the Timesheet to get the number of sessions in the Timesheet from Cell Bs
+		// Read in the header rows from the Timesheet to get the number of sessions in the Timesheet from Cell B3
 		var headerData: SheetData?
 		var range = month + PgmConstants.timesheetHeaderRange
 		do {
@@ -45,9 +45,19 @@ class Timesheet: Identifiable {
 			await AppLogger.shared.log(logMessage, level: .error)
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 			completionFlag = false
+			return(completionFlag)
+		}
+		// Ensure header rows contain enough data to hold a Session Count
+		guard let rows = headerData?.values, rows.count > 2, rows[2].count > 1 else {
+			completionFlag = false
+			logMessage = "ERROR: in Timesheet.loadTimesheetData - Header rows do not contain Session Count for \(tutorName) Timesheet with File ID \(timesheetID)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
+			return(completionFlag)
 		}
 		
-		let sessionCount = Int(headerData?.values[PgmConstants.timesheetSessionCountLocationRow][PgmConstants.timesheetSessionCountLocationCol] ?? "100") ?? 100
+		let sessionCount = Int(rows[PgmConstants.timesheetSessionCountLocationRow][PgmConstants.timesheetSessionCountLocationCol]) ?? 100
 		
 		range = month + PgmConstants.timesheetSessionRange + String(PgmConstants.timesheetHeaderRowCount + sessionCount + PgmConstants.timesheetMaxBlankRowCount )
 		// read in the cells from one month's Timesheet
@@ -100,8 +110,10 @@ class Timesheet: Identifiable {
 				var rowNum: Int = 0
 				
 				// Loop through each row in Timesheet; stop when all sessions processed or 12th extra Timesheet row without a valid session encountered
-				let rowCounter = sessionCount + PgmConstants.timesheetMaxBlankRowCount                                               							// 12 blank rows allowed
-				while entryCounter < sessionCount && rowNum < rowCounter {
+				let rowCounter = sessionCount + PgmConstants.timesheetMaxBlankRowCount                                               		// 12 blank rows allowed
+				let lastRow = min(rowCounter, sheetCells.count)											// Don't go past last cell read in
+				print(lastRow)
+				while entryCounter < sessionCount && rowNum < lastRow {
 					// Check if the session has at least 9 cells (not missing fields)
 					let cellCount = sheetCells[rowNum].count
 					if cellCount < 9 {						// Check if all required Timesheet cells populated for this row, else ignore the row and warn

@@ -28,12 +28,41 @@ struct StudentView: View {
 	@State var location: String
 	
 	@State private var showAlert: Bool = false
-	
+	@State private var showNewLocationField: Bool = false
+	@State private var newLocationName: String = ""
+	@State private var isSavingLocation: Bool = false
+
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(StudentMgmtVM.self) var studentMgmtVM: StudentMgmtVM
 	@Environment(TutorMgmtVM.self) var tutorMgmtVM: TutorMgmtVM
+	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
 	@Environment(\.dismiss) var dismiss
-	
+
+	// Validates and adds the Location typed into the New Location field, then selects it in the Location picker
+	private func saveNewLocation() {
+		let locationName = newLocationName.trimmingCharacters(in: .whitespaces)
+		let (locationValidationResult, validationMessage) = locationMgmtVM.validateNewLocation(referenceData: referenceData, locationName: locationName)
+		if !locationValidationResult {
+			buttonErrorMsg = validationMessage
+			showAlert = true
+			return
+		}
+
+		isSavingLocation = true
+		Task {
+			let (addResult, addMessage) = await locationMgmtVM.addNewLocation(referenceData: referenceData, locationName: locationName, locationMonthRevenue: 0.0, locationTotalRevenue: 0.0)
+			isSavingLocation = false
+			if addResult {
+				location = locationName
+				newLocationName = ""
+				showNewLocationField = false
+			} else {
+				buttonErrorMsg = addMessage
+				showAlert = true
+			}
+		}
+	}
+
 	var body: some View {
 		
 		VStack(alignment: .leading) {
@@ -112,8 +141,34 @@ struct StudentView: View {
 				}
 				.frame(width: 200)
 				.clipped()
+
+				Button("Add New Location") {
+					newLocationName = ""
+					showNewLocationField = true
+				}
+				.disabled(showNewLocationField)
 			}
-			
+
+			// Entry field for a Location that isn't in the picker list yet
+			if showNewLocationField {
+				HStack {
+					Text("New Location")
+					TextField("New Location Name", text: $newLocationName)
+						.frame(width: 200)
+						.textFieldStyle(.roundedBorder)
+						.onSubmit { saveNewLocation() }
+
+					Button("Save Location") { saveNewLocation() }
+						.disabled(newLocationName.trimmingCharacters(in: .whitespaces).isEmpty || isSavingLocation)
+
+					Button("Cancel") {
+						newLocationName = ""
+						showNewLocationField = false
+					}
+					.disabled(isSavingLocation)
+				}
+			}
+
 			
 			Button(action: {
 				let studentName = studentName.trimmingCharacters(in: .whitespaces)

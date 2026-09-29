@@ -28,12 +28,13 @@ class BillArray {
 	// The BillArray contains one BillClient for each month's Clients and each tutoring session for that Client is represented by a BillItem under that BillClient
 	//
 	@MainActor func processTimesheet(timesheet: Timesheet, billingMessages: WindowMessages, referenceData: ReferenceData) {
-		var invoiceServiceName = "Not Found"
-		var address1 = " "
-		var address2 = " "
-		var city = " "
-		var state = " "
-		var zipCode = " "
+		var invoiceServiceName:String = "Not Found"
+		var address1:String = " "
+		var address2:String = " "
+		var city:String = " "
+		var state:String = " "
+		var zipCode:String = " "
+		var notes: String = ""
 		var timesheetRowNum = 0
 		while timesheetRowNum < timesheet.timesheetRows.count {
 			let timesheetClientName = timesheet.timesheetRows[timesheetRowNum].clientName
@@ -70,7 +71,10 @@ class BillArray {
 				invoiceServiceName = referenceData.services.servicesList[serviceNum].serviceInvoiceName
 			}
 			
-			let notes = timesheet.timesheetRows[timesheetRowNum].notes
+			if timesheet.timesheetRows[timesheetRowNum].notes != "-" {
+				notes = timesheet.timesheetRows[timesheetRowNum].notes
+			}
+				
 			let tutorName = timesheet.timesheetRows[timesheetRowNum].tutorName
 			let cost = timesheet.timesheetRows[timesheetRowNum].cost
 			//Create new BillItem instance and add it to the BillClients array

@@ -327,11 +327,12 @@ func renameGoogleDriveFile(fileID: String, newName: String) async throws -> Bool
 //	Parameters:
 //		sourceFileID: Google Drive FileID of the Google Drive file being copied
 //		newFileName: name of the Google Drive file to create and copy into
+//		parentFolderID: optional Google Drive FileID of the folder to create the new file in (if nil, Drive places it in the same folder as the source file)
 //	Returns:
 //		Success/Fail flag for copy operation
 //		Optional FileID if copy successful
 //
-func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws -> (Bool, String?) {
+func copyGoogleDriveFile(sourceFileId: String, newFileName: String, parentFolderID: String? = nil) async throws -> (Bool, String?) {
 	var logMessage: String
 	
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"
@@ -353,10 +354,13 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 			request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 			
-			// Request body with the new file name
-			let body: [String: Any] = [
+			// Request body with the new file name (and destination folder, if one was specified)
+			var body: [String: Any] = [
 				"name": newFileName
 			]
+			if let parentFolderID {
+				body["parents"] = [parentFolderID]
+			}
 			request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
 			
 			// Perform the network request asynchronously
@@ -384,6 +388,144 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String) async throws
 		}
 	}
 	return (false, nil)
+}
+
+// getFolderID - gets the Google FileID of a folder on Google Drive
+//	Parameters:
+//		folderName: name of the Google Drive folder to find
+//		parentFolderID: optional Google Drive FileID of the folder to search in (used to find a subfolder); if nil, searches all of Drive
+//	Returns:
+//		a boolean flag as to whether the folder was found
+//		a string containing the folder's Google FileID (empty if not found)
+//
+func getFolderID(folderName: String, parentFolderID: String? = nil) async throws -> (Bool, String) {
+	var logMessage: String
+
+	let tokenFound = await getAccessToken()
+	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+		logMessage = "ERROR: Utilities.getFolderID - no Access Token looking up folder \(folderName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .error)
+		return (false, "")
+	}
+
+	let escapedName = folderName.replacingOccurrences(of: "'", with: "\\'")
+	var query = "mimeType='application/vnd.google-apps.folder' and name='\(escapedName)' and trashed=false"
+	if let parentFolderID {
+		query += " and '\(parentFolderID)' in parents"
+	}
+
+	var components = URLComponents(string: "https://www.googleapis.com/drive/v3/files")
+	components?.queryItems = [
+		URLQueryItem(name: "q", value: query),
+		URLQueryItem(name: "fields", value: "files(id,name)")
+	]
+	guard let url = components?.url else {
+		logMessage = "ERROR: Utilities.getFolderID - invalid URL looking up folder \(folderName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .error)
+		return (false, "")
+	}
+
+	var request = URLRequest(url: url)
+	request.httpMethod = "GET"
+	request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+	let (data, _) = try await performRequestWithRetry(
+		request: request,
+		maxAttempts: PgmConstants.maxSheetAttempts,
+		context: "Utilities.getFolderID - for Folder \(folderName)"
+	)
+
+	guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+	      let folders = json["files"] as? [[String: Any]],
+	      let firstFolder = folders.first,
+	      let folderID = firstFolder["id"] as? String else {
+		return (false, "")
+	}
+
+	if folders.count > 1 {
+		logMessage = "WARNING: Utilities.getFolderID - \(folders.count) folders named \(folderName) found, using the first one"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .warning)
+	}
+	return (true, folderID)
+}
+
+// createFolder - creates a new folder on Google Drive
+//	Parameters:
+//		folderName: name of the Google Drive folder to create
+//		parentFolderID: optional Google Drive FileID of the folder to create it in (used to create a subfolder); if nil, creates it in the top level of My Drive
+//	Returns:
+//		a boolean flag as to whether the folder was created
+//		a string containing the new folder's Google FileID (empty if not created)
+//
+func createFolder(folderName: String, parentFolderID: String? = nil) async throws -> (Bool, String) {
+	var logMessage: String
+
+	let tokenFound = await getAccessToken()
+	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+		logMessage = "ERROR: Utilities.createFolder - no Access Token creating folder \(folderName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .error)
+		return (false, "")
+	}
+
+	guard let url = URL(string: "https://www.googleapis.com/drive/v3/files") else {
+		logMessage = "ERROR: Utilities.createFolder - invalid URL creating folder \(folderName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .error)
+		return (false, "")
+	}
+
+	var body: [String: Any] = [
+		"name": folderName,
+		"mimeType": "application/vnd.google-apps.folder"
+	]
+	if let parentFolderID {
+		body["parents"] = [parentFolderID]
+	}
+
+	var request = URLRequest(url: url)
+	request.httpMethod = "POST"
+	request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+	request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+	request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+	let (data, _) = try await performRequestWithRetry(
+		request: request,
+		maxAttempts: PgmConstants.maxSheetAttempts,
+		context: "Utilities.createFolder - for Folder \(folderName)"
+	)
+
+	guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+	      let folderID = json["id"] as? String else {
+		logMessage = "ERROR: Utilities.createFolder - create succeeded but response had no folder id for Folder \(folderName)"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .error)
+		return (false, "")
+	}
+
+	logMessage = "INFO: Created Google Drive folder: \(folderName)"
+	print(logMessage)
+	await AppLogger.shared.log(logMessage, level: .info)
+	return (true, folderID)
+}
+
+// getOrCreateFolderID - gets the Google FileID of a folder on Google Drive, creating the folder if it doesn't exist
+//	Parameters:
+//		folderName: name of the Google Drive folder to find or create
+//		parentFolderID: optional Google Drive FileID of the folder to search/create in (used for a subfolder)
+//	Returns:
+//		a boolean flag as to whether the folder was found or created
+//		a string containing the folder's Google FileID (empty if neither)
+//
+func getOrCreateFolderID(folderName: String, parentFolderID: String? = nil) async throws -> (Bool, String) {
+	let (folderFound, folderID) = try await getFolderID(folderName: folderName, parentFolderID: parentFolderID)
+	if folderFound {
+		return (true, folderID)
+	}
+	return try await createFolder(folderName: folderName, parentFolderID: parentFolderID)
 }
 
 // addPermissionToFile - Function to add a permission to a Google Drive file

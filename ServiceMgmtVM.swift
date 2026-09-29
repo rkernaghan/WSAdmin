@@ -224,6 +224,10 @@ import Foundation
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
+						logMessage = "INFO: Saved Service data deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .info)
+						
 						referenceData.dataCounts.decreaseActiveServiceCount()
 						deleteResult = await referenceData.dataCounts.saveDataCounts()
 						if !deleteResult {

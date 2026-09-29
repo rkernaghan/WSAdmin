@@ -137,13 +137,19 @@ extension AppLogger {
 	/// and overwriting it on subsequent syncs. Skips the network call entirely if
 	/// nothing has been logged since the last successful sync.
 	func syncToGoogleDrive() async {
+		var logMessage: String
+		
 		guard hasUnsyncedChanges else {
 			return // nothing new since last sync — don't waste an API call
 		}
 		
+//		logMessage = "INFO: Synching to Google Drive"
+//		await AppLogger.shared.log(logMessage, level: .info)
+		
 		let tokenFound = await getAccessToken()
 		guard tokenFound, let accessToken = oauth2Token.accessToken else {
-			print("AppLogger - couldn't sync to Drive, no access token")
+			logMessage = "ERROR: AppLogger - couldn't sync to Drive, no access token"
+			await AppLogger.shared.log(logMessage, level: .error)
 			return
 		}
 		
@@ -162,6 +168,10 @@ extension AppLogger {
 				driveFolderID = await findOrCreateDriveFolderID(named: "WSAdmin Log Files", accessToken: accessToken)
 			}
 			succeeded = await createDriveFile(data: logData, accessToken: accessToken, folderID: driveFolderID)
+			if !succeeded {
+				logMessage = "ERROR: AppLogger - couldn't create Google Drive file"
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
 		}
 		
 		// Only clear the flag on a confirmed successful upload — if it failed

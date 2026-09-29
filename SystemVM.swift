@@ -960,522 +960,6 @@ import Foundation
 	
 
 	
-	// ** This Function is Obsolete **
-	// This function validates the Tutor and Student Billing data for the year by reading through all the Timesheets and checking the timesheet data against the Tutor and Student Billing data.
-	//
-	@MainActor func ValidateBillingData(referenceData: ReferenceData) async {
-		var yearBillArray = [BillArray]()					// The monthly processed Timesheet data
-		var yearTutorBilling = [TutorBillingMonth]()				// The monthly Tutor Billing data from the Tutor Billing spreadsheets
-		var yearStudentBilling = [StudentBillingMonth]()			// The monthly Student billing data from the Student Billing spreadsheets
-		var compareTutorBilling = [TutorBillingMonth]()				// The new monthly computed Tutor Billing data directly from the timesheets
-		var compareStudentBilling = [StudentBillingMonth]()			// The new monthly computed Student Billing data directly from the timesheets
-		var openingMonthNum: Int = 0
-		var logMessage: String
-		
-		let billingMessages = WindowMessages()
-		
-		let currentMonthNum = Calendar.current.component(.month, from: Date())                 // Current month may not be billed yet
-		
-		let (currentMonthName, currentMonthYear) = getCurrentMonthYear()
-		//	let currentMonthNum = 13
-		if currentMonthYear == "2024" {
-			openingMonthNum = 7
-			//	openingMonthNum = 11
-		} else {
-			openingMonthNum = 1
-		}
-		// Read in all of the Timesheets for the year (for 2024 -- starting September) into an array of monthly Timesheet data indexed by month
-		// Each yearBillArray element contains a Bill Array of all of the Timesheets for that month processed by client
-		print(" Step 1 - Read in all Tutor Timesheets")
-		var monthNum = openingMonthNum
-		let monthCount = currentMonthNum
-		while monthNum < monthCount {
-			let monthName = monthArray[monthNum - 1]
-			
-			let billArray = BillArray(monthName: monthArray[monthNum] )
-			
-			var tutorNum = 0
-			let tutorCount = referenceData.tutors.tutorsList.count
-			while tutorNum < tutorCount {
-				
-				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
-					print("Processing \(monthName) Timesheet for \(tutorName)")
-					let fileName = "Timesheet " + currentMonthYear + " " + tutorName
-					do {
-						let (result, timesheetFileID) = try await getFileID(fileName: fileName)
-						if result {
-							let timesheet = Timesheet()
-							let timesheetResult = await timesheet.loadTimesheetData(tutorName: tutorName, month: monthName, timesheetID: timesheetFileID, billingMessages: billingMessages, referenceData: referenceData, showBillingDiagnostics: false, showEachSession: false)
-							if !timesheetResult {
-								print("ERROR: Could not load Timesheet for Tutor \(tutorName)")
-							} else {
-								billArray.processTimesheet(timesheet: timesheet, billingMessages: billingMessages, referenceData: referenceData)
-							}
-						}
-					} catch {
-						logMessage = "ERROR:  could not get timesheet fileID for \(fileName) reading Tutor Timesheets"
-						await AppLogger.shared.log(logMessage)
-						print(logMessage)
-					}
-				} else {
-					print("*Not processing Timesheet for deleted Tutor \(tutorName)")
-				}
-				tutorNum += 1
-			}
-			
-			yearBillArray.append(billArray)
-			monthNum += 1
-		}
-		
-		// Read in all of the Student Billing data for the year into a monthly array of Student Billing data
-		// Each yearStudentBilling element contains a StudentBillingMonth instance containing all of the Tutor Billing data for that month
-		print("Step 2 - Read in all Student Billing Months")
-		monthNum = openingMonthNum
-		while monthNum < monthCount {
-			let monthName = monthArray[monthNum - 1]
-			yearStudentBilling.append( await buildBilledStudentMonth(monthName: monthName, yearName: currentMonthYear, loadValidatedData: false) )
-			monthNum += 1
-		}
-		
-		// Read in all of the Tutor Billing data for the year into a monthly array of Tutor Billing data
-		//Each yearTutorBilling element contains a TutorBillingMonth instance containing all of the Tutor Billing data for that month
-		print("Step 3 - Read in all Tutor Billing Months")
-		monthNum = openingMonthNum
-		while monthNum < monthCount {
-			let monthName = monthArray[monthNum - 1]
-			yearTutorBilling.append( await buildBilledTutorMonth(monthName: monthName, yearName: currentMonthYear, loadValidatedData: false) )
-			monthNum += 1
-		}
-		
-		// Loop through each session for each client for each month in the array of Timesheets
-		var monthIndex = 0
-		let monthTotal = yearBillArray.count
-		while monthIndex < monthTotal {
-			
-			print("// Processing Month \(monthIndex) \(yearTutorBilling[monthIndex].monthName)")
-			print("//")
-			//loop through each Client in the Bill Array
-			
-			// Create Billed Tutor and Billed Student instances for the month to hold the costs, revenues and session counts extracted
-			// directly from the Tutor Timesheets for the month
-			let compareBilledTutorMonth = TutorBillingMonth(monthName: yearBillArray[monthIndex].monthName)
-			let compareBilledStudentMonth = StudentBillingMonth(monthName: yearBillArray[monthIndex].monthName)
-			
-			var clientNum = 0
-			let clientCount = yearBillArray[monthIndex].billClients.count
-			while clientNum < clientCount {
-//				let clientName = yearBillArray[monthIndex].billClients[clientNum].clientName
-//				var monthCost = 0
-//				var monthRevenue = 0
-				//Loop through each tutoring session for the client that month
-				var itemNum = 0
-				let itemCount = yearBillArray[monthIndex].billClients[clientNum].billItems.count
-				while itemNum < itemCount {
-					// Get the tutoring session data that was on the Timesheet
-					let studentName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].studentName
-					let timesheetServiceName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].timesheetServiceName
-//					let serviceDate = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].serviceDate
-					let duration = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].duration
-					let tutorName = yearBillArray[monthIndex].billClients[clientNum].billItems[itemNum].tutorName
-					// Get the costs and prices for the Service for the Tutor that conducted the tutoring
-					let (tutorFindResult, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-					let (serviceFindResult, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
-					if serviceFindResult {
-						let (quantity, rate, cost, price) = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].computeSessionCostPrice(duration: duration)
-						// Find the Tutor in the compareBilledTutor instance for the month -- if not found, add the Tutor
-						var (billedTutorFound, billedTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-						if !billedTutorFound {
-							compareBilledTutorMonth.addNewBilledTutor(tutorName: tutorName)
-							(billedTutorFound, billedTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-						}
-						// Increment the month cost, price and sessions for the Tutor for the month based on this tutoring session data
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledCost += cost
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue += price
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledSessions += 1
-						// Find the Student in the compareBilledStudent instance for the month -- if not found, add the Student
-						var (billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-						if !billedStudentFound {
-							compareBilledStudentMonth.addNewBilledStudent(studentName: studentName)
-							(billedStudentFound, billedStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-						}
-						// Increment the month cost, price and sessions for the Student based on this tutoring session data
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledCost += cost
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledRevenue += price
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledSessions += 1
-					} else {
-						print("Error: could not find Service \(timesheetServiceName) for Tutor \(tutorName)")
-					}
-					
-					itemNum += 1
-				}
-				
-				clientNum += 1
-			}
-			
-			// For Tutors that did not have a tutoring session this month, copy their previous month's compareTutorBilling cost, price and session data to this month's totals
-			var tutorNum = 0
-			var tutorCount = referenceData.tutors.tutorsList.count
-			while tutorNum < tutorCount {
-				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-				var (compareTutorFound,compareTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-				if !compareTutorFound {
-					compareBilledTutorMonth.addNewBilledTutor(tutorName: tutorName)
-					(compareTutorFound,compareTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-					if monthIndex > 1 {
-						let (prevMonthFound, prevMonthCompareTutorNum) = compareTutorBilling[monthIndex - 1].findBilledTutorByName(billedTutorName: tutorName)
-						compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledCost = compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthCompareTutorNum].totalBilledCost
-						compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledRevenue = compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthCompareTutorNum].totalBilledRevenue
-						compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledSessions = compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthCompareTutorNum].totalBilledSessions
-						print("Carrying over previous month's compare Tutor data for \(tutorName)")
-					}
-				}
-				tutorNum += 1
-			}
-			
-			// For Students that did not have a tutoring session this month, copy their previous month's compareStudent Billing cost, price and session data to this month's totals
-			var studentNum = 0
-			var studentCount = referenceData.students.studentsList.count
-			while studentNum < studentCount {
-				let studentName = referenceData.students.studentsList[studentNum].studentName
-				var (compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-				if !compareStudentFound {
-					compareBilledStudentMonth.addNewBilledStudent(studentName: studentName)
-					(compareStudentFound,compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-					if monthIndex > 1 {
-						let (prevMonthFound, prevMonthCompareStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByStudentName(billedStudentName: studentName)
-						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledCost = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalBilledCost
-						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledRevenue = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalBilledRevenue
-						compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledSessions = compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthCompareStudentNum].totalBilledSessions
-						print("Carrying over previous month's compare Student data for \(studentName)")
-					}
-				}
-				studentNum += 1
-			}
-			
-			// Go through each Tutor and compared their monthly Billed Tutor cost, price and session data to what is calculated in the compareBilledTutor data
-			var billedTutorNum = 0
-			tutorCount = yearTutorBilling[monthIndex].tutorBillingRows.count
-			while billedTutorNum < tutorCount {
-				let tutorName = yearTutorBilling[monthIndex].tutorBillingRows[billedTutorNum].tutorName
-				let (compareTutorFound, compareTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-				if compareTutorFound {
-					let billedTutorMonthCost = yearTutorBilling[monthIndex].tutorBillingRows[billedTutorNum].monthBilledCost
-					let compareMonthCost = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].monthBilledCost
-					let billedTutorMonthRevenue = yearTutorBilling[monthIndex].tutorBillingRows[billedTutorNum].monthBilledRevenue
-					let compareMonthRevenue = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].monthBilledRevenue
-					let billedTutorMonthSessions = yearTutorBilling[monthIndex].tutorBillingRows[billedTutorNum].monthBilledSessions
-					let compareMonthSessions = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].monthBilledSessions
-					//					print("Tutor:\(tutorName) Billed Student Cost:\(billedTutorCost) Compare Cost:\(compareCost)")
-					if compareMonthCost.rounded() == billedTutorMonthCost.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month costs matches computed value: \(billedTutorMonthCost) vs \(compareMonthCost)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month costs do not match computed value: \(billedTutorMonthCost) vs \(compareMonthCost)\n")
-					}
-					if compareMonthRevenue.rounded() == billedTutorMonthRevenue.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month revenue matches computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month revenue does not match computed value: \(billedTutorMonthRevenue) vs \(compareMonthRevenue)\n")
-					}
-					if compareMonthSessions == billedTutorMonthSessions {
-						print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month sessions matches computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor month sessions do not match computed value: \(billedTutorMonthSessions) vs \(compareMonthSessions)\n")
-					}
-					
-				}
-				billedTutorNum += 1
-			}
-			
-			// Go through each Student and compared their monthly Billed Student cost, price and session data to what is calculated in the compareBilledStudent data
-			var billedStudentNum = 0
-			studentCount = yearStudentBilling[monthIndex].studentBillingRows.count
-			while billedStudentNum < studentCount {
-				let studentName = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].studentName
-				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-				if compareStudentFound {
-					let billedStudentMonthCost = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].monthBilledCost
-					let compareMonthCost = compareBilledStudentMonth.studentBillingRows[compareStudentNum].monthBilledCost
-					let billedStudentMonthRevenue = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].monthBilledRevenue
-					let compareMonthRevenue = compareBilledStudentMonth.studentBillingRows[compareStudentNum].monthBilledRevenue
-					let billedStudentMonthSessions = yearStudentBilling[monthIndex].studentBillingRows[billedStudentNum].monthBilledSessions
-					let compareMonthSessions = compareBilledStudentMonth.studentBillingRows[compareStudentNum].monthBilledSessions
-					//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
-					if compareMonthCost.rounded() == billedStudentMonthCost.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month costs matched \(billedStudentMonthCost) vs \(compareMonthCost)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month costs do not match computed value: \(billedStudentMonthCost) vs \(compareMonthCost)\n")
-					}
-					if compareMonthRevenue.rounded() == billedStudentMonthRevenue.rounded() {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month revenue matches computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month revenue does not match computed value: \(billedStudentMonthRevenue) vs \(compareMonthRevenue)\n")
-					}
-					if compareMonthSessions  == billedStudentMonthSessions {
-						print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month sessions matches computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)")
-					} else {
-						print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student month sessions do not match computed value: \(billedStudentMonthSessions) vs \(compareMonthSessions)\n")
-					}
-					
-				}
-				billedStudentNum += 1
-			}
-			
-			billedTutorNum = 0
-			let billedTutorCount = compareBilledTutorMonth.tutorBillingRows.count
-			while billedTutorNum < billedTutorCount {
-				let tutorName = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].tutorName
-				if monthIndex == 0 {
-					compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledCost
-					compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
-					compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledSessions = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
-				} else {
-					let (prevMonthTutorFound, prevMonthTutorNum) = compareTutorBilling[monthIndex - 1].findBilledTutorByName(billedTutorName: tutorName)
-					if prevMonthTutorFound {
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledCost + compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthTutorNum].totalBilledCost
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue + compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthTutorNum].totalBilledRevenue
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledSessions = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledSessions + compareTutorBilling[monthIndex - 1].tutorBillingRows[prevMonthTutorNum].totalBilledSessions
-					} else {
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledCost
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledRevenue
-						compareBilledTutorMonth.tutorBillingRows[billedTutorNum].totalBilledSessions = compareBilledTutorMonth.tutorBillingRows[billedTutorNum].monthBilledSessions
-						print("      Warning: could not find tutor \(tutorName) in previous month compareBilledTutorMonth \(yearTutorBilling[monthIndex - 1].monthName)")
-					}
-				}
-				
-				let (compareTutorFound, compareTutorNum) = compareBilledTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
-				if compareTutorFound {
-					let (monthBilledTutorFound, monthBilledTutorNum) = yearTutorBilling[monthIndex].findBilledTutorByName(billedTutorName: tutorName)
-					if monthBilledTutorFound {
-						let billedTutorTotalCost = yearTutorBilling[monthIndex].tutorBillingRows[monthBilledTutorNum].totalBilledCost
-						let compareTotalCost = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledCost
-						let billedTutorTotalRevenue = yearTutorBilling[monthIndex].tutorBillingRows[monthBilledTutorNum].totalBilledRevenue
-						let compareTotalRevenue = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledRevenue
-						let billedTutorTotalSessions = yearTutorBilling[monthIndex].tutorBillingRows[monthBilledTutorNum].totalBilledSessions
-						let compareTotalSessions = compareBilledTutorMonth.tutorBillingRows[compareTutorNum].totalBilledSessions
-						//					print("Tutor:\(tutorName) Billed Student Cost:\(billedTutorCost) Compare Cost:\(compareCost)")
-						if compareTotalCost.rounded() == billedTutorTotalCost.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total costs matches computed value: \(billedTutorTotalCost) vs \(compareTotalCost)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total costs do not match computed value: \(billedTutorTotalCost) vs \(compareTotalCost)\n")
-						}
-						if compareTotalRevenue.rounded() == billedTutorTotalRevenue.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total revenue matched computed value: \(billedTutorTotalRevenue) vs \(compareTotalRevenue)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total revenue does not match computed value: \(billedTutorTotalRevenue) vs \(compareTotalRevenue)\n")
-						}
-						if compareTotalSessions == billedTutorTotalSessions {
-							print("          \(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total sessions matches computed value: \(billedTutorTotalSessions) vs \(compareTotalSessions)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Tutor \(tutorName) Billed Tutor total sessions do not match computed value: \(billedTutorTotalSessions) vs \(compareTotalSessions)\n")
-						}
-					} else {
-						print("Error: Could not find \(tutorName) in yearTutorBilling \(yearTutorBilling[monthIndex].monthName)")
-					}
-				} else {
-					print("Error: Could not find \(tutorName) in compareBilledTutorMonth \(yearTutorBilling[monthIndex].monthName)")
-				}
-				
-				
-				billedTutorNum += 1
-			}
-			compareTutorBilling.append(compareBilledTutorMonth)
-			compareStudentBilling.append(compareBilledStudentMonth)
-			
-			billedStudentNum = 0
-			let billedStudentCount = compareBilledStudentMonth.studentBillingRows.count
-			while billedStudentNum < billedStudentCount {
-				let studentName = compareBilledStudentMonth.studentBillingRows[billedStudentNum].studentName
-				if monthIndex == 0 {
-					compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledCost
-					compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledRevenue
-					compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledSessions = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledSessions
-				} else {
-					let (prevMonthBilledStudentFound, prevMonthStudentNum) = compareStudentBilling[monthIndex - 1].findBilledStudentByStudentName(billedStudentName: studentName)
-					if prevMonthBilledStudentFound {
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledCost + compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthStudentNum].totalBilledCost
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledRevenue + compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthStudentNum].totalBilledRevenue
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledSessions = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledSessions + compareStudentBilling[monthIndex - 1].studentBillingRows[prevMonthStudentNum].totalBilledSessions
-					} else {
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledCost
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledRevenue
-						compareBilledStudentMonth.studentBillingRows[billedStudentNum].totalBilledSessions = compareBilledStudentMonth.studentBillingRows[billedStudentNum].monthBilledSessions
-						print("      Warning: could not find Billed Student \(studentName) in comparBilledStudentMonth \(yearTutorBilling[monthIndex - 1].monthName)")
-					}
-				}
-				
-				let (compareStudentFound, compareStudentNum) = compareBilledStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
-				if compareStudentFound {
-					let (monthBilledStudentFound, monthBilledStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
-					if monthBilledStudentFound {
-						let billedStudentTotalCost = yearStudentBilling[monthIndex].studentBillingRows[monthBilledStudentNum].totalBilledCost
-						let compareTotalCost = compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledCost
-						let billedStudentTotalRevenue = yearStudentBilling[monthIndex].studentBillingRows[monthBilledStudentNum].totalBilledRevenue
-						let compareTotalRevenue = compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledRevenue
-						let billedStudentTotalSessions = yearStudentBilling[monthIndex].studentBillingRows[monthBilledStudentNum].totalBilledSessions
-						let compareTotalSessions = compareBilledStudentMonth.studentBillingRows[compareStudentNum].totalBilledSessions
-						//					print("Student:\(studentName) Billed Student Cost:\(billedStudentCost) Compare Cost:\(compareCost)")
-						if compareTotalCost.rounded() == billedStudentTotalCost.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total costs matches computed value: \(billedStudentTotalCost) vs \(compareTotalCost)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total costs do not match computed value: \(billedStudentTotalCost) vs \(compareTotalCost)\n")
-						}
-						if compareTotalRevenue.rounded() == billedStudentTotalRevenue.rounded() {
-							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total revenue matches computed value: \(billedStudentTotalRevenue) vs \(compareTotalRevenue)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total revenue does not match computed value: \(billedStudentTotalRevenue) vs \(compareTotalRevenue)\n")
-						}
-						if compareTotalSessions  == billedStudentTotalSessions {
-							print("          \(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total sessions matches computed value: \(billedStudentTotalSessions) vs \(compareTotalSessions)")
-						} else {
-							print("\(yearTutorBilling[monthIndex].monthName): Student \(studentName) Billed Student total sessions do not match computed value: \(billedStudentTotalSessions) vs \(compareTotalSessions)\n")
-						}
-					} else {
-						print("Error: Could not find Student \(studentName) in yearStudentBilling \(yearTutorBilling[monthIndex].monthName)")
-					}
-				} else {
-					print("Error: Could not find Student \(studentName) in compareBilledStudentMonth \(yearTutorBilling[monthIndex].monthName)")
-				}
-				
-				billedStudentNum += 1
-			}
-			
-			monthIndex += 1
-		}
-		
-		// Sum up total Costs, Revenue and Sessions for Tutors and Students from Bill Students, Billed Tutors, Compare Students and Compare Tutors
-		
-		monthIndex -= 1				// Set to last processed month
-		var totalBilledTutorCosts: Double = 0.0
-		var totalBilledTutorRevenue: Double = 0.0
-		var totalBilledTutorSessions: Int = 0
-		var totalCompareTutorCosts: Double = 0.0
-		var totalCompareTutorRevenue: Double = 0.0
-		var totalCompareTutorSessions: Int = 0
-		var totalBilledStudentCosts: Double = 0.0
-		var totalBilledStudentRevenue: Double = 0.0
-		var totalBilledStudentSessions: Int = 0
-		var totalCompareStudentCosts: Double = 0.0
-		var totalCompareStudentRevenue: Double = 0.0
-		var totalCompareStudentSessions: Int = 0
-		
-		var tutorNum: Int = 0
-		var tutorCount = yearTutorBilling[monthIndex].tutorBillingRows.count
-		while tutorNum < tutorCount {
-			totalBilledTutorCosts += yearTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledCost
-			totalBilledTutorRevenue += yearTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledRevenue
-			totalBilledTutorSessions += yearTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledSessions
-			tutorNum += 1
-		}
-		
-		var studentNum: Int = 0
-		var studentCount = yearStudentBilling[monthIndex].studentBillingRows.count
-		while studentNum < studentCount {
-			totalBilledStudentCosts += yearStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledCost
-			totalBilledStudentRevenue += yearStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledRevenue
-			totalBilledStudentSessions += yearStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledSessions
-			studentNum += 1
-		}
-		
-		tutorNum = 0
-		tutorCount = compareTutorBilling[monthIndex].tutorBillingRows.count
-		while tutorNum < tutorCount {
-			totalCompareTutorCosts += compareTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledCost
-			totalCompareTutorRevenue += compareTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledRevenue
-			totalCompareTutorSessions += compareTutorBilling[monthIndex].tutorBillingRows[tutorNum].totalBilledSessions
-			tutorNum += 1
-		}
-		
-		studentNum = 0
-		studentCount = compareStudentBilling[monthIndex].studentBillingRows.count
-		while studentNum < studentCount {
-			totalCompareStudentCosts += compareStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledCost
-			totalCompareStudentRevenue += compareStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledRevenue
-			totalCompareStudentSessions += compareStudentBilling[monthIndex].studentBillingRows[studentNum].totalBilledSessions
-			studentNum += 1
-		}
-		
-		var totalReferenceTutorCosts:Double = 0.0
-		var totalReferenceTutorRevenue:Double = 0.0
-		var totalReferenceTutorSessions:Int = 0
-		tutorNum = 0
-		tutorCount = referenceData.tutors.tutorsList.count
-		while tutorNum < tutorCount {
-			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-			let refDataCost = referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
-			let refDataRevenue = referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
-			let refDataSessions = referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions
-			print("Tutor: \(tutorName) ReferenceData  \(refDataCost) \(refDataRevenue) \(refDataSessions)")
-			
-			let (billedTutorFound, billingTutorNum) = yearTutorBilling[monthIndex].findBilledTutorByName(billedTutorName: tutorName)
-			if billedTutorFound {
-				let billedCost = yearTutorBilling[monthIndex].tutorBillingRows[billingTutorNum].totalBilledCost
-				let billedRevenue = yearTutorBilling[monthIndex].tutorBillingRows[billingTutorNum].totalBilledRevenue
-				let billedSessions = yearTutorBilling[monthIndex].tutorBillingRows[billingTutorNum].totalBilledSessions
-				print("Tutor: \(tutorName) Billed Tutor   \(billedCost) \(billedRevenue) \(billedSessions) \(yearTutorBilling[monthIndex].monthName)")
-			} else {
-				print("Tutor: \(tutorName) not found in Billed Tutor list \(yearTutorBilling[monthIndex].monthName)")
-			}
-			
-			let (compareTutorFound, compareTutorNum) = compareTutorBilling[monthIndex].findBilledTutorByName(billedTutorName: tutorName)
-			if compareTutorFound {
-				let compareCost = compareTutorBilling[monthIndex].tutorBillingRows[compareTutorNum].totalBilledCost
-				let compareRevenue = compareTutorBilling[monthIndex].tutorBillingRows[compareTutorNum].totalBilledRevenue
-				let compareSessions = compareTutorBilling[monthIndex].tutorBillingRows[compareTutorNum].totalBilledSessions
-				print("Tutor: \(tutorName) Compare Tutor  \(compareCost) \(compareRevenue) \(compareSessions) \(compareTutorBilling[monthIndex].monthName)\n")
-			} else {
-				print("Tutor: \(tutorName) not found in Compare Tutor list for \(compareTutorBilling[monthIndex].monthName)\n")
-			}
-			
-			totalReferenceTutorCosts += referenceData.tutors.tutorsList[tutorNum].tutorTotalCost
-			totalReferenceTutorRevenue += referenceData.tutors.tutorsList[tutorNum].tutorTotalRevenue
-			totalReferenceTutorSessions += referenceData.tutors.tutorsList[tutorNum].tutorTotalSessions
-			tutorNum += 1
-		}
-		
-		var totalReferenceStudentCosts:Double = 0.0
-		var totalReferenceStudentRevenue:Double = 0.0
-		var totalReferenceStudentSessions:Int = 0
-		studentNum = 0
-		studentCount = referenceData.students.studentsList.count
-		while studentNum < studentCount {
-			let studentName = referenceData.students.studentsList[studentNum].studentName
-			let refDataCost = referenceData.students.studentsList[studentNum].studentTotalCost
-			let refDataRevenue = referenceData.students.studentsList[studentNum].studentTotalRevenue
-			let refDataSessions = referenceData.students.studentsList[studentNum].studentSessions
-			print("Student: \(studentName) ReferenceData   \(refDataCost) \(refDataRevenue) \(refDataSessions) \(yearTutorBilling[monthIndex].monthName)")
-			
-			let (billedStudentFound, billingStudentNum) = yearStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
-			if billedStudentFound {
-				let billedCost = yearStudentBilling[monthIndex].studentBillingRows[billingStudentNum].totalBilledCost
-				let billedRevenue = yearStudentBilling[monthIndex].studentBillingRows[billingStudentNum].totalBilledRevenue
-				let billedSessions = yearStudentBilling[monthIndex].studentBillingRows[billingStudentNum].totalBilledSessions
-				print("Student: \(studentName) Billed Student  \(billedCost) \(billedRevenue) \(billedSessions) \(yearTutorBilling[monthIndex].monthName)")
-			} else {
-				print("Student: \(studentName) not found Billed Student list \(yearTutorBilling[monthIndex].monthName) \(yearTutorBilling[monthIndex].monthName)")
-			}
-			let (compareStudentFound, compareStudentNum) = compareStudentBilling[monthIndex].findBilledStudentByStudentName(billedStudentName: studentName)
-			if compareStudentFound {
-				let compareCost = compareStudentBilling[monthIndex].studentBillingRows[compareStudentNum].totalBilledCost
-				let compareRevenue = compareStudentBilling[monthIndex].studentBillingRows[compareStudentNum].totalBilledRevenue
-				let compareSessions = compareStudentBilling[monthIndex].studentBillingRows[compareStudentNum].totalBilledSessions
-				print("Student: \(studentName) Compare Student \(compareCost) \(compareRevenue) \(compareSessions) \(compareTutorBilling[monthIndex].monthName)\n")
-			} else {
-				print("Student: \(studentName) not found in Compare Student list \(compareTutorBilling[monthIndex].monthName)\n")
-			}
-			totalReferenceStudentCosts += referenceData.students.studentsList[studentNum].studentTotalCost
-			totalReferenceStudentRevenue += referenceData.students.studentsList[studentNum].studentTotalRevenue
-			totalReferenceStudentSessions += referenceData.students.studentsList[studentNum].studentSessions
-			studentNum += 1
-		}
-		
-		print("Tutor Reference Data Totals \(totalReferenceTutorCosts) \(totalReferenceTutorRevenue) \(totalReferenceTutorSessions)")
-		print("Tutor Billing Totals \(totalBilledTutorCosts) \(totalBilledTutorRevenue) \(totalBilledTutorSessions)")
-		print("Compare Tutor Totals \(totalCompareTutorCosts) \(totalCompareTutorRevenue) \(totalCompareTutorSessions)\n")
-		print("Student Reference Data Totals \(totalReferenceStudentCosts) \(totalReferenceStudentRevenue) \(totalReferenceStudentSessions)")
-		print("Student Billing Totals \(totalBilledStudentCosts) \(totalBilledStudentRevenue) \(totalBilledStudentSessions)")
-		print("Compare Student Totals \(totalCompareStudentCosts) \(totalCompareStudentRevenue) \(totalCompareStudentSessions)")
-	}
 	//
 	// This function creates backup copies of the key Google Drive spreadsheets for the system.  Copied files are suffixed with current date and time.  If the system is running
 	// against the production files, they are backed up. If its running against the test files, those are backed up.
@@ -1909,17 +1393,57 @@ import Foundation
 	///   - extraEmailAddress: an additional email to grant "writer" access to,
 	///     on top of the standard four (used by Timesheets for the Tutor's own
 	///     email; omit for files that only need the standard recipients).
-	/// - Returns: `success` (false if the copy or permission step failed),
-	///   `newFileID` (the Drive File ID of the new file, if created), and
-	///   `logMessage` describing the outcome.
+	///   - folderName: name of the Google Drive folder to create the new file in
+	///     (the folder is created in My Drive if it doesn't exist). If omitted,
+	///     Drive places the new file in the same folder as the template.
+	///   - subfolderName: name of a subfolder inside `folderName` to create the
+	///     new file in (created if it doesn't exist). Treated as an error if
+	///     `folderName` isn't also given.
+	/// - Returns: `success` (false if the folder lookup/creation, copy or
+	///   permission step failed), `newFileID` (the Drive File ID of the new file, if created),
+	///   and `logMessage` describing the outcome.
 	@MainActor
 	private func copyTemplateAndAssignPermissions(
-		templateFileID: String,
-		newFileName: String,
-		extraEmailAddress: String? = nil
+		templateFileID: String,					// Template file to use to create the new file from
+		newFileName: String,					// Name of the new file
+		extraEmailAddress: String? = nil,			// An additional email address (usually the Tutor for their new Timesheet) to give Google Drive access permission to
+		folderName: String? = nil,				// Name of Google Drive folder to place the new file
+		subfolderName: String? = nil,				// Name of the Google Drive subfolder to place the new file
+		sendNotificationFlag: Bool				// Whether to notify the people given access to the new file
 	) async throws -> (success: Bool, newFileID: String?, logMessage: String) {
+
+		var logMessage: String
 		
-		let (copyResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: templateFileID, newFileName: newFileName)
+		// Find (or create) the destination folder and subfolder, if one was specified
+		var destinationFolderID: String? = nil
+		if let folderName {
+			let (folderFound, folderID) = try await getOrCreateFolderID(folderName: folderName)
+			guard folderFound else {
+				let logMessage = "ERROR: Could not find or create Google Drive folder: \(folderName) to create: \(newFileName)\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+				return (false, nil, logMessage)
+			}
+			destinationFolderID = folderID
+
+			if let subfolderName {
+				let (subfolderFound, subfolderID) = try await getOrCreateFolderID(folderName: subfolderName, parentFolderID: folderID)
+				guard subfolderFound else {
+					let logMessage = "ERROR: Could not find or create Google Drive subfolder: \(folderName)/\(subfolderName) to create: \(newFileName)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					return (false, nil, logMessage)
+				}
+				destinationFolderID = subfolderID
+			}
+		} else if let subfolderName {
+			let logMessage = "ERROR: Subfolder \(subfolderName) specified without a parent folder to create: \(newFileName)\n"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return (false, nil, logMessage)
+		}
+
+		let (copyResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: templateFileID, newFileName: newFileName, parentFolderID: destinationFolderID)
 		
 		guard copyResult else {
 			let logMessage = "ERROR: Could not copy template to create: \(newFileName)\n"
@@ -1935,15 +1459,19 @@ import Foundation
 			return (false, nil, logMessage)
 		}
 		
+		logMessage = "INFO: File: \(newFileName) copied from template"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .info)
+		
 		do {
 			if let extraEmailAddress {
-				try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: extraEmailAddress, sendNotificationEmail: true)
+				try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: extraEmailAddress, sendNotificationEmail: sendNotificationFlag)
 			}
-			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: true)
-			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: true)
-			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: true)
-			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.serviceAccountEmail, sendNotificationEmail: true)
-			let logMessage = "INFO: Created file: \(newFileName)\n"
+			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.russellEmail, sendNotificationEmail: sendNotificationFlag)
+			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.writeSeattleEmail, sendNotificationEmail: sendNotificationFlag)
+//			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.stephenEmail, sendNotificationEmail: sendNotificationFlag)
+//			try await addPermissionToFile(fileID: copyFileID, role: "writer", type: "user", emailAddress: PgmConstants.aiServiceAccountEmail, sendNotificationEmail: sendNotificationFlag)
+			let logMessage = "INFO: Access permissions added to new file: \(newFileName)\n"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .info)
 			return (true, copyFileID, logMessage)
@@ -1966,8 +1494,10 @@ import Foundation
 	@MainActor
 	private func createFileFromTemplate(
 		newFileName: String,
-		templateFileName: String
-	) async throws -> (success: Bool, newFileID: String?, logMessage: String) {
+		templateFileName: String,
+		folderName: String
+		) async throws -> (success: Bool, newFileID: String?, logMessage: String) {
+		var sendNotificationFlag: Bool
 		
 		do {
 			// Ensure the target file doesn't already exist
@@ -1988,7 +1518,12 @@ import Foundation
 				return (false, nil, logMessage)
 			}
 			
-			return try await copyTemplateAndAssignPermissions(templateFileID: templateFileID, newFileName: newFileName)
+			if runMode == .test {
+				sendNotificationFlag = false
+			} else {
+				sendNotificationFlag = true
+			}
+			return try await copyTemplateAndAssignPermissions(templateFileID: templateFileID, newFileName: newFileName, folderName: folderName, sendNotificationFlag: sendNotificationFlag)
 			
 		} catch {
 			let logMessage = "ERROR: could not get FileID generating: \(newFileName)\n"
@@ -1996,6 +1531,127 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 			return (false, nil, logMessage)
 		}
+	}
+	
+	// This function creates a new Timesheet for a specific Tutor for a specific year from a template
+	// - check that the Timesheet doesn't already exist
+	// - check that the timesheet template file does exist
+	// - calls copyTemplateAndAssignPermissions()
+	// - write the Tutor name in the new Timesheet
+	// - put the TutorDetails FileID in the new Timesheet
+	// - put the new Timesheet FileID in the Tutor Details sheet
+	
+	@MainActor func createTimesheetFile(templateFileName: String, timesheetYear: String, tutorName: String, tutorEmail: String, referenceData: ReferenceData) async throws -> (Bool, String?, String) {
+		var logMessage = ""
+		var newTimesheetFileID: String?
+		var timesheetSuccess: Bool = true
+		var googleDriveFolder: String
+		
+		let newTimesheetFileName = "Timesheet " + timesheetYear + " " + tutorName
+		
+		do {
+			// Ensure the target file doesn't already exist
+			let (fileFound, _) = try await getFileID(fileName: newTimesheetFileName)
+			if fileFound {
+				let logMessage = "ERROR: \(newTimesheetFileName) already exists\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+				return (false, nil, logMessage)
+			}
+			
+			// Ensure the template file exists and get its FileID
+			let (templateFound, templateFileID) = try await getFileID(fileName: templateFileName)
+			guard templateFound else {
+				let logMessage = "ERROR: Could not get File ID for Template File: \(templateFileName)\n"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+				return (false, nil, logMessage)
+			}
+			do {
+				var sendNotificationFlag: Bool
+				if runMode == .test {
+					sendNotificationFlag = false
+				} else {
+					sendNotificationFlag = true
+				}
+				// Copy the template file to create the new Timesheet file and assign permissions
+				(timesheetSuccess, newTimesheetFileID, logMessage) =  try await copyTemplateAndAssignPermissions(templateFileID: templateFileID, newFileName: newTimesheetFileName, extraEmailAddress: tutorEmail, folderName: runMode.timesheetFolderLocation, subfolderName: timesheetYear, sendNotificationFlag: sendNotificationFlag)
+				
+				guard timesheetSuccess, let newTimesheetFileID else {
+					// Failure already logged inside the helper above.
+					return(false, nil,"ERROR: Could not create new Timesheet for tutor: \(tutorName)")
+				}
+				
+				// Write the Tutor Name in the new Timesheet
+				do {
+					try await writeSheetCells(
+						fileID: newTimesheetFileID,
+						range: PgmConstants.timesheetTutorNameCell,
+						values: [[tutorName]],
+						logNote: "Tutor Name in new Timesheet")
+						
+					logMessage = "INFO: Tutor name: \(tutorName) written into Timesheet"
+					await AppLogger.shared.log(logMessage, level: .info)
+					
+				} catch {
+					logMessage += "ERROR: can not write Tutor Name into new Tutor Timesheet\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					return(false, newTimesheetFileID, logMessage)
+				}
+				
+				// The new Timesheet needs the FileID of the Tutor Details file in the refData sheet
+				let updateValues = [[tutorDetailsFileID]]
+				let range = PgmConstants.timesheetDetailsFileIDCell
+				do {
+					let writeResult = try await writeSheetCells(fileID: newTimesheetFileID, range: range, values: updateValues, logNote: "Tutor Details FileID in Timesheet RefData")
+					print("INFO: Updating Tutor Details File ID in new Timesheet for \(tutorName)")
+					if !writeResult {
+						logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
+						return(false, newTimesheetFileID, logMessage)
+					} else {
+						logMessage = "INFO: Added Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .info)
+						timesheetSuccess = true
+					}
+				} catch {
+					logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					return(false, newTimesheetFileID, logMessage)
+				}
+				
+				// Update the Timesheet FileID in the Tutor Details sheet for the Tutor
+				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
+				if tutorFound {
+					referenceData.tutors.tutorsList[tutorNum].timesheetFileID = newTimesheetFileID
+					let saveResult = await referenceData.tutors.saveTutorData()
+					if !saveResult {
+						logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName) after updating Timesheet FileID"
+						await AppLogger.shared.log(logMessage, level: .error)
+					} else {
+						logMessage = "INFO: Tutor: \(tutorName) Timesheet FileID updated in Tutor Details File"
+						await AppLogger.shared.log(logMessage, level: .info)
+					}
+				} else {
+					logMessage = "ERROR: Tutor: \(tutorName) not found updating Timesheet FileID in Tutor Details File"
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
+			} catch {
+				logMessage = "ERROR: Could not create new Timesheet or assign permissions for Tutor: \(tutorName)"
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
+			
+		} catch {
+			let logMessage = "ERROR: could not get FileID generating: \(newTimesheetFileName)\n"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return (false, nil, logMessage)
+		}
+		return(timesheetSuccess, newTimesheetFileID, logMessage)
 	}
 	
 	// MARK: - Main function
@@ -2015,7 +1671,8 @@ import Foundation
 		// Tutor Billing — Production
 		let (tutorBillingProdSuccess, _, tutorBillingProdLog) = try await createFileFromTemplate(
 			newFileName: PgmConstants.tutorBillingProdFileNamePrefix + nextYear,
-			templateFileName: PgmConstants.billedTutorTemplateFileName
+			templateFileName: PgmConstants.billedTutorTemplateFileName,
+			folderName: PgmConstants.productionFileFolderName
 		)
 		if !tutorBillingProdSuccess { generateResult = false }
 		logMessage += tutorBillingProdLog
@@ -2023,7 +1680,8 @@ import Foundation
 		// Tutor Billing — Test
 		let (tutorBillingTestSuccess, _, tutorBillingTestLog) = try await createFileFromTemplate(
 			newFileName: PgmConstants.tutorBillingTestFileNamePrefix + nextYear,
-			templateFileName: PgmConstants.billedTutorTemplateFileName
+			templateFileName: PgmConstants.billedTutorTemplateFileName,
+			folderName: PgmConstants.testFileFolderName
 		)
 		if !tutorBillingTestSuccess { generateResult = false }
 		logMessage += tutorBillingTestLog
@@ -2031,7 +1689,9 @@ import Foundation
 		// Student Billing — Production
 		let (studentBillingProdSuccess, _, studentBillingProdLog) = try await createFileFromTemplate(
 			newFileName: PgmConstants.studentBillingProdFileNamePrefix + nextYear,
-			templateFileName: PgmConstants.billedStudentTemplateFileName
+			templateFileName: PgmConstants.billedStudentTemplateFileName,
+			folderName: PgmConstants.productionFileFolderName
+			
 		)
 		if !studentBillingProdSuccess { generateResult = false }
 		logMessage += studentBillingProdLog
@@ -2039,62 +1699,26 @@ import Foundation
 		// Student Billing — Test
 		let (studentBillingTestSuccess, _, studentBillingTestLog) = try await createFileFromTemplate(
 			newFileName: PgmConstants.studentBillingTestFileNamePrefix + nextYear,
-			templateFileName: PgmConstants.billedStudentTemplateFileName
+			templateFileName: PgmConstants.billedStudentTemplateFileName,
+			folderName: PgmConstants.testFileFolderName
 		)
 		if !studentBillingTestSuccess { generateResult = false }
 		logMessage += studentBillingTestLog
 		
 		// Create a Timesheet for each active Tutor for the year
+		var currentYear: String
+		if runMode == .prod {
+			let formatter = DateFormatter()
+			formatter.setLocalizedDateFormatFromTemplate("YYYY")
+			currentYear = formatter.string(from: Date.now)
+		} else {
+			currentYear = "2027"
+		}
+		
 		for tutor in referenceData.tutors.tutorsList
 		where tutor.tutorStatus == .TutorUnassigned || tutor.tutorStatus == .TutorAssigned {
+			let (addResult, newTimesheetFileID, logMessage) = try await createTimesheetFile(templateFileName: runMode.timesheetTemplateFileName, timesheetYear: currentYear, tutorName: tutor.tutorName, tutorEmail: tutor.tutorEmail, referenceData: referenceData)
 			
-			let newTutorTimesheetName = "Timesheet " + nextYear + " " + tutor.tutorName
-			
-			do {
-				// Ensure the Timesheet doesn't already exist
-				let (fileFound, _) = try await getFileID(fileName: newTutorTimesheetName)
-				if fileFound {
-					generateResult = false
-					logMessage += "ERROR: Timesheet: \(newTutorTimesheetName) already exists\n"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
-					continue
-				}
-				
-				// Copy the Timesheet template and assign permissions,
-				// including the Tutor's own email in addition to the standard four
-				let (timesheetSuccess, newTimesheetFileID, timesheetLog) = try await copyTemplateAndAssignPermissions(
-					templateFileID: timesheetTemplateFileID,
-					newFileName: newTutorTimesheetName,
-					extraEmailAddress: tutor.tutorEmail
-				)
-				logMessage += timesheetLog
-				
-				guard timesheetSuccess, let newTimesheetFileID else {
-					// Failure already logged inside the helper above.
-					continue
-				}
-				
-				// Write the Tutor name into the RefData tab of the new Timesheet
-				do {
-					try await writeSheetCells(
-						fileID: newTimesheetFileID,
-						range: PgmConstants.timesheetTutorNameCell,
-						values: [[tutor.tutorName]],
-						logNote: "Tutor Name in new Timesheet"
-					)
-				} catch {
-					logMessage += "ERROR: can not write Tutor Name into new Tutor Timesheet\n"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
-				}
-				
-			} catch {
-				generateResult = false
-				logMessage += "ERROR: Could not create Timesheet for Tutor: \(tutor.tutorName) getting Timesheet FileID\n"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
 		}
 		
 		return (generateResult, logMessage)
@@ -2219,78 +1843,6 @@ import Foundation
 		return(studentBillingMonth)
 	}
 	
-	//
-	// This function creates a new Billed Tutor object for a month, reads in the data for that month and returns that new Billed Tutor object
-	//		monthName: the month to load the Billed Tutor data for
-	//		yearName: the year of the month to load the Billed Tutor data for
-	//
-	func saveBilledTutorMonth(tutorBillingMonth: TutorBillingMonth, monthName: String, yearName: String, saveValidatedData: Bool) async -> Bool {
-		let tutorBillingFileName = tutorBillingFileNamePrefix + yearName
-		var fileIdResult: Bool = true
-		var tutorBillingFileID = ""
-		var saveResult: Bool = true
-		var logMessage: String
-		
-		
-		// Get the fileID of the Billed Tutor spreadsheet for the year containing the month's Billed Tutor data
-		do {
-			(fileIdResult, tutorBillingFileID) = try await getFileID(fileName: tutorBillingFileName)
-			// Read the data from the Billed Tutor spreadsheet for the month into a new TutorBillingMonth object
-			if fileIdResult {
-				saveResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: saveValidatedData)
-				if !saveResult {
-					logMessage = "ERROR: Could not save Tutor Billing Data for \(monthName)"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
-				}
-			} else {
-				logMessage = "ERROR: could not get FileID for file: \(tutorBillingFileName)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
-			logMessage = "ERROR: Could not get FileID for file: \(tutorBillingFileName)"
-			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .error)
-		}
-		
-		return(saveResult)
-	}
-	//
-	// This function creates a new Billed Student object for a month, reads in the data for that month and returns that new Billed Student object
-	//		monthName: the month to load the Billed Student data for
-	//		yearName: the year of the month to load the Billed Student data for
-	//
-	func saveBilledStudentMonth(studentBillingMonth: StudentBillingMonth, monthName: String, yearName: String, saveValidatedData: Bool) async -> Bool {
-		let studentBillingFileName = studentBillingFileNamePrefix + yearName
-		var fileIdResult: Bool = true
-		var studentBillingFileID = ""
-		var saveResult: Bool = true
-		var logMessage: String
-		
-		// Get the fileID of the Billed Student spreadsheet for the year containing the month's Billed Student data
-		do {
-			(fileIdResult, studentBillingFileID) = try await getFileID(fileName: studentBillingFileName)
-			// Read the data from the Billed Student spreadsheet for the month into a new StudentBillingMonth object
-			if fileIdResult {
-				saveResult = await studentBillingMonth.saveStudentBillingMonth(studentBillingFileID: studentBillingFileID, billingMonth: monthName, saveValidatedStudentData: saveValidatedData)
-				if !saveResult {
-					logMessage = "ERROR: Could not save Student Billing Data for \(monthName)"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
-				}
-			} else {
-				logMessage = "ERROR: could not get FileID for file: \(studentBillingFileName)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
-			logMessage = "ERROR: Could not get FileID for file: \(studentBillingFileName)"
-			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .error)
-		}
-		
-		return(saveResult)
-	}
+
 	
 }
