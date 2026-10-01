@@ -53,6 +53,10 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			} else {
+				logMessage = "INFO: Service data for \(timesheetName) saved to Reference Data sheet"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .info)
+				
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
 			
 				if String(describing: serviceType) == "Base" {
@@ -176,18 +180,6 @@ import Foundation
 							await AppLogger.shared.log(logMessage, level: .error)
 							continue
 						}
-						
-//						if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
-//							let tutorName = tutor.tutorName
-//							let completionFlag = await tutor.loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
-//							if !completionFlag {
-//								logMessage = "ERROR: Could not load Tutor Details for Suspended Tutor \(tutorName) to update Service \(originalTimesheetName) for Tutor"
-//								print(logMessage)
-//								await AppLogger.shared.log(logMessage, level: .error)
-//							} else {
-//								print("Loaded Tutor Details for Suspended Tutor \(tutorName)")
-//							}
-//						}
 							
 						let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
 						if serviceFound {

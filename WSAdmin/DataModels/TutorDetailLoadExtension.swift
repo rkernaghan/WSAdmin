@@ -28,7 +28,7 @@ extension ReferenceData {
 			return true
 		}
 
-		let success = await tutor.loadTutorDetails(tutorNum: idx, tutorDataFileID: tutorDetailsFileID)
+		let success = await tutor.loadTutorDetails()
 
 		if success {
 			tutor.tutorDetailsLoaded = true

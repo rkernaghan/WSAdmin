@@ -100,7 +100,7 @@ import Foundation
 	}
 	
 	// This function loads the Students and Services assigned to the Tutor from the TutorDetails sheet from the Tutor and adds it to the Tutor object
-	func loadTutorDetails(tutorNum: Int, tutorDataFileID: String) async -> Bool {
+	func loadTutorDetails() async -> Bool {
 		var completionFlag: Bool = true
 		let tutorName = self.tutorName
 		
@@ -294,22 +294,16 @@ import Foundation
 	
 	// This function takes an array of Student data and adds each Student to the Tutor object using addTutorStudent
 	func loadTutorStudentRows(tutorStudentCount: Int, sheetCells: [[String]] ) {
-		var rowNum = 0
-		var studentNum = 0
-		while studentNum < tutorStudentCount {
-			let studentKey = sheetCells[rowNum][PgmConstants.tutorDataStudentKeyPosition]
-			let studentName = sheetCells[rowNum][PgmConstants.tutorDataStudentNamePosition]
-			let clientName = sheetCells[rowNum][PgmConstants.tutorDataStudentClientNamePosition]
-			let clientEmail = sheetCells[rowNum][PgmConstants.tutorDataStudentClientEmailPosition]
-			let clientPhone = sheetCells[rowNum][PgmConstants.tutorDataStudentClientPhonePosition]
-			let assignedDate = sheetCells[rowNum][PgmConstants.tutorDataStudentAssignedDatePosition]
-			
-			let newTutorStudent = TutorStudent(studentKey: studentKey, studentName: studentName, clientName: clientName, clientEmail: clientEmail, clientPhone: clientPhone, assignedDate: assignedDate)
-			
-			self.addTutorStudent( newTutorStudent: newTutorStudent)
-			rowNum += 1
-			studentNum += 1
+		let newTutorStudents = sheetCells.prefix(tutorStudentCount).map { row in
+			TutorStudent(studentKey: row[PgmConstants.tutorDataStudentKeyPosition],
+						 studentName: row[PgmConstants.tutorDataStudentNamePosition],
+						 clientName: row[PgmConstants.tutorDataStudentClientNamePosition],
+						 clientEmail: row[PgmConstants.tutorDataStudentClientEmailPosition],
+						 clientPhone: row[PgmConstants.tutorDataStudentClientPhonePosition],
+						 assignedDate: row[PgmConstants.tutorDataStudentAssignedDatePosition])
 		}
+
+		tutorStudents.append(contentsOf: newTutorStudents)
 		//       print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
 	
@@ -325,7 +319,6 @@ import Foundation
 		
 		// Write the Tutor Student rows to the Tutor Details spreadsheet
 		let updateValues = unloadTutorStudentRows()
-		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + updateValues.count - 1)
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Student Rows to Tutor Details")
@@ -340,26 +333,20 @@ import Foundation
 	}
 	
 	// This function creates a 2 dimensional array of the data for the Students assigned to a Tutor in preparation for writing it to the Tutor's Tutor Data sheet.
+	// It adds a blank row in case the unload is after a delete to blank out the data from the previous last line.
 	func unloadTutorStudentRows() -> [[String]] {
 		
-		var updateValues = [[String]]()
-		
-		var tutorStudentNum = 0
-		let tutorStudentCount = tutorStudents.count
-		while tutorStudentNum < tutorStudentCount {
-			let studentKey = tutorStudents[tutorStudentNum].studentKey
-			let studentName = tutorStudents[tutorStudentNum].studentName
-			let clientName = tutorStudents[tutorStudentNum].clientName
-			let clientEmail = tutorStudents[tutorStudentNum].clientEmail
-			let clientPhone = tutorStudents[tutorStudentNum].clientPhone
-			let assignedDate = tutorStudents[tutorStudentNum].assignedDate
-			
-			updateValues.insert([studentKey, studentName, clientName, clientEmail, clientPhone, assignedDate], at: tutorStudentNum)
-			tutorStudentNum += 1
+		var updateValues: [[String]] = tutorStudents.map { tutorStudent in
+			[tutorStudent.studentKey,
+			 tutorStudent.studentName,
+			 tutorStudent.clientName,
+			 tutorStudent.clientEmail,
+			 tutorStudent.clientPhone,
+			 tutorStudent.assignedDate]
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " "], at: tutorStudentNum)
-		
+		updateValues.append(Array(repeating: " ", count: 6))
+
 		return(updateValues)
 	}
 	
@@ -485,27 +472,20 @@ import Foundation
 	// This function takes an array of Service data and adds each Service to the Tutor object
 	func loadTutorServiceRows(tutorServiceCount: Int, sheetCells: [[String]] ) {
 		
-		var rowNum = 0
-		var serviceNum = 0
-		
-		while serviceNum < tutorServiceCount {
-			let serviceKey = sheetCells[rowNum][PgmConstants.tutorDataServiceKeyPosition]
-			let timesheetName = sheetCells[rowNum][PgmConstants.tutorDataServiceTimesheetNamePosition]
-			let invoiceName = sheetCells[rowNum][PgmConstants.tutorDataServiceInvoiceNamePosition]
-			let billingType: BillingTypeOption = BillingTypeOption(rawValue: sheetCells[rowNum][PgmConstants.tutorDataServiceBillingTypePosition]) ?? .Fixed
-			let cost1 = Double(sheetCells[rowNum][PgmConstants.tutorDataServiceCost1Position]) ?? 0.0
-			let cost2 = Double(sheetCells[rowNum][PgmConstants.tutorDataServiceCost2Position]) ?? 0.0
-			let cost3 = Double(sheetCells[rowNum][PgmConstants.tutorDataServiceCost3Position]) ?? 0.0
-			let price1 = Double(sheetCells[rowNum][PgmConstants.tutorDataServicePrice1Position]) ?? 0.0
-			let price2 = Double(sheetCells[rowNum][PgmConstants.tutorDataServicePrice2Position]) ?? 0.0
-			let price3 = Double(sheetCells[rowNum][PgmConstants.tutorDataServicePrice3Position]) ?? 0.0
-			
-			let newTutorService = TutorService(serviceKey: serviceKey, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
-			
-			self.addTutorService( newTutorService: newTutorService)
-			rowNum += 1
-			serviceNum += 1
+		let newTutorServices = sheetCells.prefix(tutorServiceCount).map { row in
+			TutorService(serviceKey: row[PgmConstants.tutorDataServiceKeyPosition],
+						 timesheetName: row[PgmConstants.tutorDataServiceTimesheetNamePosition],
+						 invoiceName: row[PgmConstants.tutorDataServiceInvoiceNamePosition],
+						 billingType: BillingTypeOption(rawValue: row[PgmConstants.tutorDataServiceBillingTypePosition]) ?? .Fixed,
+						 cost1: Double(row[PgmConstants.tutorDataServiceCost1Position]) ?? 0.0,
+						 cost2: Double(row[PgmConstants.tutorDataServiceCost2Position]) ?? 0.0,
+						 cost3: Double(row[PgmConstants.tutorDataServiceCost3Position]) ?? 0.0,
+						 price1: Double(row[PgmConstants.tutorDataServicePrice1Position]) ?? 0.0,
+						 price2: Double(row[PgmConstants.tutorDataServicePrice2Position]) ?? 0.0,
+						 price3: Double(row[PgmConstants.tutorDataServicePrice3Position]) ?? 0.0)
 		}
+
+		tutorServices.append(contentsOf: newTutorServices)
 		//       print("Loaded \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
 		
@@ -522,7 +502,6 @@ import Foundation
 		// Get a 2D array of the Tutor Services data from the Tutor Services objects
 		let updateValues = unloadTutorServiceRows()
 		// Write the data
-		let count = updateValues.count
 		let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + updateValues.count - 1)
 		do {
 			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Service Rows to Tutor Details")
@@ -537,29 +516,25 @@ import Foundation
 	}
 	
 	// This function creates a 2 dimensional array of the data for the Services to a Tutor in preparation for writing it to the Tutor's Tutor Data sheet.
+	// It adds a blank row in case the unload is after a delete to blank out the data from the previous last line.
 	func unloadTutorServiceRows() -> [[String]] {
 		
-		var updateValues = [[String]]()
-		
-		var tutorServiceNum = 0
-		let tutorServiceCount = tutorServices.count
-		while tutorServiceNum < tutorServiceCount {
-			let serviceKey = tutorServices[tutorServiceNum].serviceKey
-			let timesheetName = tutorServices[tutorServiceNum].timesheetServiceName
-			let invoiceName = tutorServices[tutorServiceNum].invoiceServiceName
-			let billingType = String(describing: tutorServices[tutorServiceNum].billingType.rawValue)
-			let cost1 = String(tutorServices[tutorServiceNum].cost1.formatted(.number.precision(.fractionLength(2))))
-			let cost2 = String(tutorServices[tutorServiceNum].cost2.formatted(.number.precision(.fractionLength(2))))
-			let cost3 = String(tutorServices[tutorServiceNum].cost3.formatted(.number.precision(.fractionLength(2))))
-			let price1 = String(tutorServices[tutorServiceNum].price1.formatted(.number.precision(.fractionLength(2))))
-			let price2 = String(tutorServices[tutorServiceNum].price2.formatted(.number.precision(.fractionLength(2))))
-			let price3 = String(tutorServices[tutorServiceNum].price3.formatted(.number.precision(.fractionLength(2))))
-			
-			updateValues.insert([serviceKey, timesheetName, invoiceName, billingType, cost1, cost2, cost3, price1, price2, price3], at: tutorServiceNum)
-			tutorServiceNum += 1
+		let twoDecimals = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(2))
+
+		var updateValues: [[String]] = tutorServices.map { tutorService in
+			[tutorService.serviceKey,
+			 tutorService.timesheetServiceName,
+			 tutorService.invoiceServiceName,
+			 String(describing: tutorService.billingType.rawValue),
+			 tutorService.cost1.formatted(twoDecimals),
+			 tutorService.cost2.formatted(twoDecimals),
+			 tutorService.cost3.formatted(twoDecimals),
+			 tutorService.price1.formatted(twoDecimals),
+			 tutorService.price2.formatted(twoDecimals),
+			 tutorService.price3.formatted(twoDecimals)]
 		}
 		// Add a blank row to end in case this was a delete to eliminate last row from Reference Data spreadsheet
-		updateValues.insert([" ", " ", " ", " ", " ", " ", " ", " ", " ", " "], at: tutorServiceNum)
+		updateValues.append(Array(repeating: " ", count: 10))
 		return(updateValues)
 	}
 	

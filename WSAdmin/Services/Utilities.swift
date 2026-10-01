@@ -153,7 +153,7 @@ func readSheetCells(fileID: String, range: String, logNote: String) async throws
 	do {
 		sheetData = try JSONDecoder().decode(SheetData.self, from: data)
 	} catch {
-		logMessage = "ERROR: readSheetCells - Decoding error: \(error.localizedDescription)"
+		logMessage = "ERROR: readSheetCells - Decoding error: \(error)"
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw error
 	}
@@ -202,7 +202,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 	request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
 	
 	logMessage = "INFO: writeSheetCells - \(logNote), Range: \(range), FileID \(fileID)"
-	await AppLogger.shared.log(logMessage)
+	await AppLogger.shared.log(logMessage, level: .info)
 	
 	// Perform the network request, retrying on transient errors and
 	// 429/500/502/503/504 responses; throws on a final non-200 status.

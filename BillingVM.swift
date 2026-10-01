@@ -369,8 +369,6 @@ import GoogleSignIn
 		logMessage = "INFO: generating CSV File for \(billingMonth) \(billingYear)"
 		await AppLogger.shared.log(logMessage)
 		
-		let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-		
 		// First update the billing stats for Tutors, Students and Locations
 		(generationFlag, generationMessage) = await self.updateBillingStats(invoice: invoice, alreadyBilledTutors: alreadyBilledTutors, tutorBillingMonth: tutorBillingMonth, billingMonth: billingMonth, billingYear: billingYear, referenceData: referenceData)
 		

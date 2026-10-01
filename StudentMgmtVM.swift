@@ -147,22 +147,32 @@ import Foundation
 			if completionFlag {
 				if studentName != originalStudentName {
 					// Change the Student Name in any Tutors that Students is assigned to (in case Student assigned to more than one in a month)
-					var tutorNum = 0
-					while tutorNum < referenceData.tutors.tutorsList.count && completionFlag {
-						let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: studentKey)
+					for tutor in referenceData.tutors.tutorsList {
+						guard completionFlag else { break }
+						guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
+							logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) when updating Student \(studentName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							continue
+						}
+						
+						let (tutorStudentFound, tutorStudentNum) = tutor.findTutorStudentByKey(studentKey: studentKey)
 						if tutorStudentFound {
-							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName = studentName
-							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
-							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientEmail = contactEmail
-							referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].clientPhone = contactPhone
-							completionFlag = await referenceData.tutors.tutorsList[tutorNum].saveTutorStudentData(tutorName: referenceData.tutors.tutorsList[tutorNum].tutorName)
+							tutor.tutorStudents[tutorStudentNum].studentName = studentName
+							tutor.tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
+							tutor.tutorStudents[tutorStudentNum].clientEmail = contactEmail
+							tutor.tutorStudents[tutorStudentNum].clientPhone = contactPhone
+							completionFlag = await tutor.saveTutorStudentData(tutorName: tutor.tutorName)
 							if !completionFlag {
-								logMessage = "ERROR: COuld not save Student \(studentName) in Tutor Student List for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								logMessage = "ERROR: Could not save Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
 								print(logMessage)
-								await AppLogger.shared.log(logMessage)
+								await AppLogger.shared.log(logMessage, level: .info)
+							} else {
+								logMessage = "INFO: Updating Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .info)
 							}
 						}
-						tutorNum += 1
 					}
 					
 					// Change the name in the Student Billing spreadsheet for the previous month and current month (in case this month already billed and Student in this month's Student Tutor sheet)
@@ -708,9 +718,16 @@ import Foundation
 						reassignResult = await referenceData.students.saveStudentData()
 						if reassignResult {
 							logMessage = "INFO: Reference data for Student: \(studentName) updated"
+							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .info)
 							
-							referenceData.students.studentsList[studentNum].studentStatus = .StudentReassigned
+							// Ensure Tutor STudent data loaded for the Tutor receiving reassigned Student
+							guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
+								logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutorName) when reassigning Student: \(studentName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+								continue
+							}
 							
 							let assignedDate = dateFormatter.string(from: Date())
 							let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
@@ -723,6 +740,7 @@ import Foundation
 									await AppLogger.shared.log(logMessage, level: .error)
 								} else {
 									logMessage = "INFO: Student: \(studentName) reassigned to Tutor: \(referenceData.tutors.tutorsList[newTutorNum].tutorName)"
+									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .info)
 								}
 							} else {
