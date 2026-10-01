@@ -146,9 +146,12 @@ import GoogleSignIn
 	// for that Tutor before updating the billing stats
 	@MainActor func updateBillingStats(invoice: Invoice, alreadyBilledTutors: [String], tutorBillingMonth: TutorBillingMonth, billingMonth: String, billingYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		
-		var logMessage: String
-		logMessage = "INFO: Starting updating billing stats for Month: \(billingMonth); AlreadyBilled:\(alreadyBilledTutors), AlreadyBilled Count: \(alreadyBilledTutors.count)"
-		print(logMessage)
+		do {
+			let logMessage = "INFO: Starting updating billing stats for Month: \(billingMonth); AlreadyBilled:\(alreadyBilledTutors), AlreadyBilled Count: \(alreadyBilledTutors.count)"
+			await AppLogger.shared.log(logMessage, level: .info)
+			print(logMessage)
+		}
+		
 		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
@@ -169,7 +172,7 @@ import GoogleSignIn
 			if resultFlag {
 				resultFlag = await studentBillingMonth.getStudentBillingMonth(monthName: billingMonth, studentBillingFileID: billingMonthStudentFileID, loadValidatedData: false)
 				guard  resultFlag else {
-					logMessage = "ERROR: Could not read in the Student Billing Month for Month: \(billingMonth) with File Name: \(billingMonthStudentFileName)"
+					let logMessage = "ERROR: Could not read in the Student Billing Month for Month: \(billingMonth) with File Name: \(billingMonthStudentFileName)"
 					await AppLogger.shared.log(logMessage, level: .error)
 					return(false, logMessage)
 				}
@@ -210,7 +213,7 @@ import GoogleSignIn
 							
 							let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 							guard tutorFound else {
-								logMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
+								let logMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 								return(false,logMessage)
@@ -218,7 +221,7 @@ import GoogleSignIn
 							
 							let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							guard studentFound  else {
-								logMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
+								let logMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 								return(false, logMessage)
@@ -227,7 +230,7 @@ import GoogleSignIn
 							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 							let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
 							guard locationFound else {
-								logMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
+								let logMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 								return(false, logMessage)
@@ -306,6 +309,9 @@ import GoogleSignIn
 							referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 							referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
 							}
+						} else {
+							let logMessage = "ERROR: Billed Tutor \(tutorName) not found updating Billing Stats for \(billingMonth)"
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					
 					invoiceLineNum += 1
@@ -329,12 +335,12 @@ import GoogleSignIn
 									}
 								}
 							} else {
-								logMessage = "ERROR: Could not get File ID for Tutor Billing File: \(billingMonthTutorFileName)"
+								let logMessage = "ERROR: Could not get File ID for Tutor Billing File: \(billingMonthTutorFileName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						} catch {
-							logMessage = "ERROR: Saving Tutor Billing Data for BillingMonth: \(billingMonth)"
+							let logMessage = "ERROR: Saving Tutor Billing Data for BillingMonth: \(billingMonth)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
 							resultFlag = false
@@ -344,7 +350,7 @@ import GoogleSignIn
 				}
 			}
 		} catch {
-			logMessage = "Could not get File ID for Student Billing File: \(billingMonthStudentFileName)"
+			let logMessage = "Could not get File ID for Student Billing File: \(billingMonthStudentFileName)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 			resultFlag = false
@@ -376,6 +382,7 @@ import GoogleSignIn
 			
 			do {
 				let dateFormatter = DateFormatter()
+				dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
 				let fileDate = dateFormatter.string(from: Date())
 				
@@ -539,6 +546,7 @@ import GoogleSignIn
 			
 			do {
 				let dateFormatter = DateFormatter()
+				dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 				dateFormatter.dateFormat = "yyyy-MM-dd HH-mm"
 				let fileDate = dateFormatter.string(from: Date())
 				

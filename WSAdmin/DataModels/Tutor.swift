@@ -69,6 +69,7 @@ import Foundation
 	func markDeleted() {
 		tutorStatus = .TutorDeleted
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		tutorEndDate = dateFormatter.string(from: Date())
 	}

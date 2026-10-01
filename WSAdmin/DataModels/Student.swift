@@ -68,6 +68,7 @@ import Foundation
 	func markDeleted() {
 		self.studentStatus = .StudentDeleted
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentEndDate = dateFormatter.string(from: Date())
 	}
@@ -94,6 +95,7 @@ import Foundation
 		self.studentCurrentTutorKey = referenceData.tutors.tutorsList[tutorNum].tutorKey
 		self.studentCurrentTutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
@@ -106,6 +108,7 @@ import Foundation
 		self.studentCurrentTutorKey = " "
 		self.studentCurrentTutorName = " "
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
@@ -127,6 +130,7 @@ import Foundation
 	// This function updates the Student's Last Billed Date.
 	func updateLastBilledDate(serviceDate: String) {
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let date = dateFormatter.date(from: serviceDate)
 		if let date = date {

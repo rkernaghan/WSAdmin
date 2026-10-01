@@ -37,6 +37,7 @@ import GoogleSignIn
 		} else {
 			let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
 			let dateFormatter = DateFormatter()
+			dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 			dateFormatter.dateFormat = "yyyy/MM/dd"
 			let startDate = dateFormatter.string(from: Date())
 			//       let maxStudentsInt = Int(maxStudents) ?? 0
@@ -640,6 +641,9 @@ import GoogleSignIn
 	func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var assignResult: Bool = true
 		var logMessage: String = ""
+		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 
 		// Must have the Tutor's existing Students/Services loaded before any
 		// addNewTutorStudent call below, otherwise it would save an in-memory
@@ -665,8 +669,7 @@ import GoogleSignIn
 					
 					assignResult = await referenceData.students.saveStudentData()
 					if assignResult {
-						let dateFormatter = DateFormatter()
-						dateFormatter.dateFormat = "yyyy/MM/dd"
+
 						let assignedDate = dateFormatter.string(from: Date())
 						let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
 						

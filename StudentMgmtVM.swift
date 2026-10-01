@@ -614,6 +614,9 @@ import Foundation
 		var assignResult: Bool = true
 		var logMessage: String = ""
 		var studentName: String = "unknown"
+		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
@@ -642,9 +645,6 @@ import Foundation
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
-						//
-						let dateFormatter = DateFormatter()
-						dateFormatter.dateFormat = "yyyy/MM/dd"
 						let assignedDate = dateFormatter.string(from: Date())
 						let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
 						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
@@ -684,6 +684,8 @@ import Foundation
 		var reassignResult: Bool = true
 		var logMessage: String = ""
 		var studentName: String = "unknown"
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "yyyy/MM/dd"
 		
 		for objectID in tutorIndex {
 			if let newTutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
@@ -709,8 +711,7 @@ import Foundation
 							await AppLogger.shared.log(logMessage, level: .info)
 							
 							referenceData.students.studentsList[studentNum].studentStatus = .StudentReassigned
-							let dateFormatter = DateFormatter()
-							dateFormatter.dateFormat = "yyyy/MM/dd"
+							
 							let assignedDate = dateFormatter.string(from: Date())
 							let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: studentName, clientName: referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
 							let unassignResult = await referenceData.tutors.tutorsList[newTutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)

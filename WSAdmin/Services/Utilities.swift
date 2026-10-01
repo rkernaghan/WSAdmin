@@ -265,7 +265,7 @@ func requestAdditionalScopes(additionalScopes: [String]) async -> Bool {
 	return(requestResult)
 }
 
-// renameGoogleDriveFile - renames a Google Drive File.  Used when a Tutor name changes to rename the Tutor's Timesheet
+// renameGoogleDriveFile - renames a Google Drive File.  Used when a Tutor name changes to rename the Tutor's Timesheet or if resetting Test files and can't delete a file owned by someone else
 //	Parameters:
 //		fileID: the Google Drive FileID of the file being renamed
 //		newName: the name the file should be renamed to

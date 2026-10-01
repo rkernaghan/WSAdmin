@@ -113,19 +113,20 @@ class BillArray {
 		let brandingTheme = "Standard"
 		let accountCode = referenceData.dataCounts.accountCode
 		let fixedQuantity: String = "1.0"
-		var logMessage: String
 		
 		let newInvoice = Invoice()
 		var timesheetServiceName: String = ""
 		var duration: Int = 0
 		
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let invoiceDate = dateFormatter.string(from: Date())
 		
-		logMessage = "INFO: Generating invoice on \(invoiceDate)"
-		print(logMessage)
+		
 		Task {
+			let logMessage = "INFO: Generating invoice on \(invoiceDate)"
+			print(logMessage)
 			await AppLogger.shared.log(logMessage, newLine: true)
 		}
 		
@@ -157,7 +158,7 @@ class BillArray {
 						// Get the ServiceCode for the Service using TimesheetServiceName
 						let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
 						if !serviceFound {
-							logMessage = "ERROR: could not find Service: \(timesheetServiceName) to get Service Code"
+							let logMessage = "ERROR: could not find Service: \(timesheetServiceName) to get Service Code"
 							billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 							Task {
 								await AppLogger.shared.log(logMessage, level: .error)
@@ -183,7 +184,7 @@ class BillArray {
 							
 							let (foundFlag, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 							if !foundFlag {
-								logMessage = "ERROR: Could not find Student: \(studentName) in Students List"
+								let logMessage = "ERROR: Could not find Student: \(studentName) in Students List"
 								Task {
 									await AppLogger.shared.log(logMessage, level: .error)
 								}

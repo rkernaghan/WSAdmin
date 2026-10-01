@@ -165,40 +165,45 @@ import Foundation
         
 			// Go through each Tutor and check if the updated Services is assigned to that Tutor and if so, update the Service Name
 			if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
-				var tutorNum = 0
-				while tutorNum < referenceData.tutors.tutorsList.count && updateResult {
-					if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
-						if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
-							let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-							let completionFlag = await referenceData.tutors.tutorsList[tutorNum].loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
-							if !completionFlag {
-								logMessage = "ERROR: Could not load Tutor Details for Suspended Tutor \(tutorName) to update Service \(originalTimesheetName) for Tutor"
-								print(logMessage)
-								await AppLogger.shared.log(logMessage, level: .error)
-							} else {
-								print("Loaded Tutor Details for Suspended Tutor \(tutorName)")
-							}
+				
+				for tutor in referenceData.tutors.tutorsList {
+					guard updateResult else { break }
+					
+					if tutor.tutorStatus != .TutorDeleted {
+						guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
+							logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) when updating Service \(timesheetName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							continue
 						}
+						
+//						if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
+//							let tutorName = tutor.tutorName
+//							let completionFlag = await tutor.loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
+//							if !completionFlag {
+//								logMessage = "ERROR: Could not load Tutor Details for Suspended Tutor \(tutorName) to update Service \(originalTimesheetName) for Tutor"
+//								print(logMessage)
+//								await AppLogger.shared.log(logMessage, level: .error)
+//							} else {
+//								print("Loaded Tutor Details for Suspended Tutor \(tutorName)")
+//							}
+//						}
 							
-						let (serviceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
+						let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
 						if serviceFound {
-							updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
+							updateResult = await tutor.updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
-								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor: \(tutor.tutorName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 							} else {
-								logMessage = "INFO: Tutor Service: \(timesheetName) updated for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								logMessage = "INFO: Tutor Service: \(timesheetName) updated for Tutor: \(tutor.tutorName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .info)
 							}
 						}
-					} else {
-						// Tutor Status is Deleted (not sure what this does or why??)
-						let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-						let completionFlag = await referenceData.tutors.tutorsList[tutorNum].loadTutorDetails(tutorNum: tutorNum, tutorDataFileID: tutorDetailsFileID)
 					}
-					tutorNum += 1
+
 				}
 			}
 		}

@@ -760,7 +760,7 @@ import Foundation
 		}
 		
 		// Validate that the sum of the Tutors total revenue equals Student total revenue equals Location total revenue equals Billed Student revenue count equals Billed Tutor revenue Count
-		if !CompareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: studentRevenue) || !CompareTotals(referenceDataTotal: studentRevenue, billedDataTotal: locationRevenue) || !CompareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: locationRevenue) || !CompareTotals(referenceDataTotal: locationRevenue, billedDataTotal: billedTutorTotalRevenue) || !CompareTotals(referenceDataTotal: billedTutorTotalRevenue, billedDataTotal: billedStudentTotalRevenue) {
+		if !compareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: studentRevenue) || !compareTotals(referenceDataTotal: studentRevenue, billedDataTotal: locationRevenue) || !compareTotals(referenceDataTotal: tutorRevenue, billedDataTotal: locationRevenue) || !compareTotals(referenceDataTotal: locationRevenue, billedDataTotal: billedTutorTotalRevenue) || !compareTotals(referenceDataTotal: billedTutorTotalRevenue, billedDataTotal: billedStudentTotalRevenue) {
 			let formatter = NumberFormatter()
 			formatter.numberStyle = .currency
 			formatter.locale = Locale(identifier: "en_US")
@@ -789,7 +789,7 @@ import Foundation
 					} else {
 						let billedStudentRevenue = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledRevenue
 
-						if !CompareTotals(referenceDataTotal: refStudentRevenue, billedDataTotal: billedStudentRevenue) {
+						if !compareTotals(referenceDataTotal: refStudentRevenue, billedDataTotal: billedStudentRevenue) {
 							logMessage = "INFO: *** Validation Error: Billed Student revenue \(billedStudentRevenue) does not match Reference Data Student revenue \(refStudentRevenue) for \(studentName) "
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
@@ -813,7 +813,7 @@ import Foundation
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					} else {
 						let billedTutorRevenue = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledRevenue
-						if !CompareTotals(referenceDataTotal: refTutorRevenue, billedDataTotal: billedTutorRevenue) {
+						if !compareTotals(referenceDataTotal: refTutorRevenue, billedDataTotal: billedTutorRevenue) {
 							logMessage = "INFO: *** Validation Error: Billed Tutor revenue \(billedTutorRevenue) does not match Reference Data Tutor revenue \(refTutorRevenue) for \(tutorName) "
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
@@ -825,7 +825,7 @@ import Foundation
 		}
 		
 		// Validate that the Tutors total cost, Student total cost, billed Student total cost and billed Tutor Total Cost all match
-		if !CompareTotals(referenceDataTotal: tutorCost, billedDataTotal: studentCost) || !CompareTotals(referenceDataTotal: studentCost, billedDataTotal: billedTutorTotalCost) || !CompareTotals(referenceDataTotal: billedTutorTotalCost, billedDataTotal: billedStudentTotalCost) {
+		if !compareTotals(referenceDataTotal: tutorCost, billedDataTotal: studentCost) || !compareTotals(referenceDataTotal: studentCost, billedDataTotal: billedTutorTotalCost) || !compareTotals(referenceDataTotal: billedTutorTotalCost, billedDataTotal: billedStudentTotalCost) {
 			logMessage = "INFO: *** Validation Error: Tutor cost \(tutorCost), Student cost \(studentCost), Billed Tutor cost \(billedStudentTotalCost) and Billed Student total cost \(billedStudentTotalCost) do not match"
 			await AppLogger.shared.log(logMessage)
 			validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
@@ -845,7 +845,7 @@ import Foundation
 					} else {
 						let billedStudentCost = billedStudentMonth.studentBillingRows[billedStudentNum].totalBilledCost
 
-						if !CompareTotals(referenceDataTotal: refStudentCost, billedDataTotal: billedStudentCost) {
+						if !compareTotals(referenceDataTotal: refStudentCost, billedDataTotal: billedStudentCost) {
 							logMessage = "INFO: *** Validation Error: Billed Student cost \(billedStudentCost) does not match Reference Data Student cost \(refStudentCost) for \(studentName) "
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
@@ -876,7 +876,7 @@ import Foundation
 					} else {
 						let billedTutorCost = billedTutorMonth.tutorBillingRows[billedTutorNum].totalBilledCost
 
-						if !CompareTotals(referenceDataTotal: refTutorCost, billedDataTotal: billedTutorCost) {
+						if !compareTotals(referenceDataTotal: refTutorCost, billedDataTotal: billedTutorCost) {
 							logMessage = "INFO: *** Validation Error: Billed Tutor cost \(billedTutorCost) does not match Reference Data Tutor cost \(refTutorCost) for \(tutorName) "
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
@@ -946,7 +946,7 @@ import Foundation
 	}
 	
 	// This function compares a Reference Data total (e.g. revenue) against the Billed data to see if they are close and returns a boolean based on the result
-	func CompareTotals(referenceDataTotal: Double, billedDataTotal: Double) -> Bool {
+	func compareTotals(referenceDataTotal: Double, billedDataTotal: Double) -> Bool {
 		if billedDataTotal == 0 {
 			return true
 		} else {
@@ -979,6 +979,7 @@ import Foundation
 		var copyFileName: String = ""
 		
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
 		let backupDate = dateFormatter.string(from: Date())
 		dateFormatter.dateFormat = "yyyy"
@@ -1088,7 +1089,7 @@ import Foundation
 	}
 	
 	// This function re-initializes the 4 key test files
-	//    	delete the existing file
+	//    	delete the existing file or rename if delete fails (usually because owned by someone else)
 	//	copy the initialization version
 	func resetTestFiles() async -> (Bool, String) {
 		var logMessage: String
@@ -1101,8 +1102,6 @@ import Foundation
 		var copyFileName: String
 		var deleteFileName: String
 		var fileIDResult: Bool
-		var deleteFileID: String
-		var deleteResult: Bool
 		var sourceFileName: String
 		var sourceFileID: String
 		
@@ -1111,20 +1110,8 @@ import Foundation
 		
 		// Delete the test Reference Data spreadsheet
 		deleteFileName = PgmConstants.testRefFileName
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Reference Data File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Reference Data File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Reference Data spreadsheet
@@ -1156,20 +1143,8 @@ import Foundation
 		
 		// Delete the test Tutor Details spreadsheet
 		deleteFileName = PgmConstants.tutorDetailsTestFileName
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Details Data File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Tutor Details Data File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Tutor Details spreadsheet
@@ -1201,20 +1176,8 @@ import Foundation
 		
 		// Delete the first year Tutor Billing spreadsheet
 		deleteFileName = PgmConstants.tutorBillingTestFileName1
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Billing File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Tutor Billing File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Tutor Billing spreadsheet
@@ -1246,20 +1209,8 @@ import Foundation
 		
 		// Delete the second year Tutor Billing spreadsheet
 		deleteFileName = PgmConstants.tutorBillingTestFileName2
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Billing File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Tutor Billing File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Tutor Billing spreadsheet
@@ -1291,20 +1242,8 @@ import Foundation
 		
 		// Delete the first year Student Billing spreadsheet
 		deleteFileName = PgmConstants.studentBillingTestFileName1
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Student Billing File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Student Billing File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Student Billing spreadsheet
@@ -1336,20 +1275,8 @@ import Foundation
 		
 		// Delete the second year Student Billing spreadsheet
 		deleteFileName = PgmConstants.studentBillingTestFileName2
-		do {
-			(fileIDResult, deleteFileID) = try await getFileID(fileName: deleteFileName)
-			deleteResult = try await deleteFile(fileID: deleteFileID)
-			if deleteResult {
-				logMessage = "INFO: \(deleteFileName) deleted"
-				await AppLogger.shared.log(logMessage, level: .info)
-			} else {
-				logMessage = "ERROR: \(deleteFileName) not deleted"
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		} catch {
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Student Billing File")) {
 			resetResult = false
-			logMessage = "ERROR: could not delete test Student Billing File: \(deleteFileName) resetting test files"
-			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		// Copy the initialization Student Billing spreadsheet
@@ -1380,6 +1307,71 @@ import Foundation
 		}
 		
 	return (resetResult, logMessage)
+	}
+
+	// Deletes a test file as part of resetting the test files.  If the delete fails (usually because the file
+	// is owned by someone else), the file is renamed with a suffix of "(Old from reset on <date>)" so that the
+	// initialization version can still be copied in under the original name.
+	//	Parameters:
+	//		fileName: name of the Google Drive file to delete
+	//		fileDescription: description of the file used in log messages
+	//	Returns:
+	//		true if the file was deleted or renamed, false if neither succeeded
+	//
+	private func deleteOrRenameTestFile(fileName: String, fileDescription: String) async -> Bool {
+		var logMessage: String
+		var fileIDResult: Bool
+		var fileID: String
+		var deleteResult: Bool = false
+
+		do {
+			(fileIDResult, fileID) = try await getFileID(fileName: fileName)
+		} catch {
+			logMessage = "ERROR: could not get File ID for test \(fileDescription): \(fileName) resetting test files, error: \(error.localizedDescription)"
+			await AppLogger.shared.log(logMessage, level: .error)
+			return false
+		}
+
+		// Nothing to delete or rename if the file doesn't exist
+		if !fileIDResult {
+			logMessage = "WARNING: test \(fileDescription): \(fileName) not found, nothing to delete"
+			await AppLogger.shared.log(logMessage, level: .warning)
+			return true
+		}
+
+		do {
+			deleteResult = try await deleteFile(fileID: fileID)
+		} catch {
+			logMessage = "ERROR: could not delete test \(fileDescription): \(fileName) resetting test files, error: \(error.localizedDescription)"
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
+
+		if deleteResult {
+			logMessage = "INFO: \(fileName) deleted"
+			await AppLogger.shared.log(logMessage, level: .info)
+			return true
+		}
+
+		// Delete failed - rename the file out of the way instead
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "yyyy-MM-dd"
+		let renamedFileName = "\(fileName) (Old from reset on \(dateFormatter.string(from: Date())))"
+
+		do {
+			let renameResult = try await renameGoogleDriveFile(fileID: fileID, newName: renamedFileName)
+			if renameResult {
+				logMessage = "WARNING: \(fileName) not deleted, renamed to \(renamedFileName)"
+				await AppLogger.shared.log(logMessage, level: .warning)
+				return true
+			} else {
+				logMessage = "ERROR: \(fileName) not deleted and could not be renamed to \(renamedFileName)"
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
+		} catch {
+			logMessage = "ERROR: \(fileName) not deleted and could not be renamed to \(renamedFileName), error: \(error.localizedDescription)"
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
+		return false
 	}
 	
 	// Copies a known template file (by File ID) to create a new file, then
@@ -1550,7 +1542,7 @@ import Foundation
 		let newTimesheetFileName = "Timesheet " + timesheetYear + " " + tutorName
 		
 		do {
-			// Ensure the target file doesn't already exist
+			// // Get the FileID of the Timesheet template file
 			let (fileFound, _) = try await getFileID(fileName: newTimesheetFileName)
 			if fileFound {
 				let logMessage = "ERROR: \(newTimesheetFileName) already exists\n"

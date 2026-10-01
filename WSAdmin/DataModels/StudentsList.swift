@@ -43,6 +43,7 @@ import Foundation
 		
 		let newStudentKey = PgmConstants.studentKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestStudentKey + 1)
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		let startDate = dateFormatter.string(from: Date())
 		// Create new Student object
@@ -120,6 +121,7 @@ import Foundation
 	func loadStudentRows(studentCount: Int, sheetCells: [[String]] ) {
 		
 		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
 		
 		var studentIndex = 0
