@@ -16,25 +16,25 @@ import Foundation
 	}
 	
 	// This function finds a Student object in the Students List object array by Student key
-	func findStudentByKey(studentKey: String) -> (Bool, Int) {
+	func findStudentByKey(studentKey: String) -> (Bool, Int?) {
 		
 		if let index = studentsList.firstIndex(
 			where: { $0.studentKey == studentKey }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function finds a Student object in the Students List object array by Student name
-	func findStudentByName(studentName: String) -> (Bool, Int) {
+	func findStudentByName(studentName: String) -> (Bool, Int?) {
 		
 		if let index = studentsList.firstIndex(
 			where: { $0.studentName == studentName }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 
 	

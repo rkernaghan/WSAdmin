@@ -1227,14 +1227,61 @@ func performRequestWithRetry(
 		// Single throw point for a final non-200 status, whether or not it
 		// was ever retryable — no separate post-loop check needed.
 		guard statusCode == 200 else {
-			let logMessage = "ERROR: \(context) - HTTP Result Error Code: \(statusCode)"
+			let errorDetails = httpErrorDetails(from: data)
+			let logMessage = "ERROR: \(context) - HTTP Result Error Code: \(statusCode), Response: \(errorDetails)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
-			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: nil)
+			throw NSError(domain: "Invalid Response", code: statusCode, userInfo: ["responseBody": errorDetails])
 		}
 		
 		return (data, httpResponse)
 	}
+}
+
+/// Builds a log-friendly description of the body of a failed HTTP response.
+/// Google APIs return errors as JSON in the form
+/// `{"error": {"code": 400, "message": "...", "status": "INVALID_ARGUMENT"}}`;
+/// when the body has that shape, the status and message are pulled out and the
+/// full JSON is appended. An HTML error page (which docs.google.com endpoints
+/// return) is reduced to its title and visible text, without scripts, styles or
+/// tags. Any other body is returned as text. Text is truncated to `maxLength` characters.
+func httpErrorDetails(from data: Data, maxLength: Int = 1000) -> String {
+	guard !data.isEmpty else {
+		return "(empty body)"
+	}
+
+	let bodyText = String(decoding: data, as: UTF8.self)
+
+	func truncated(_ text: String) -> String {
+		text.count > maxLength ? String(text.prefix(maxLength)) + "... (truncated)" : text
+	}
+
+	if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+	   let error = json["error"] as? [String: Any] {
+		let status = error["status"] as? String ?? "unknown status"
+		let message = error["message"] as? String ?? "no message"
+		return "\(status): \(message) | JSON: \(truncated(bodyText))"
+	}
+
+	if bodyText.range(of: "<html", options: .caseInsensitive) != nil {
+		var title = ""
+		if let titleMatch = bodyText.range(of: "(?is)<title[^>]*>(.*?)</title>", options: .regularExpression) {
+			title = bodyText[titleMatch]
+				.replacingOccurrences(of: "(?is)</?title[^>]*>", with: "", options: .regularExpression)
+				.trimmingCharacters(in: .whitespacesAndNewlines)
+		}
+		let visibleText = bodyText
+			.replacingOccurrences(of: "(?is)<(script|style|title)[^>]*>.*?</\\1>", with: " ", options: .regularExpression)
+			.replacingOccurrences(of: "(?s)<[^>]+>", with: " ", options: .regularExpression)
+			.replacingOccurrences(of: "&#39;", with: "'")
+			.replacingOccurrences(of: "&quot;", with: "\"")
+			.replacingOccurrences(of: "&amp;", with: "&")
+			.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+			.trimmingCharacters(in: .whitespacesAndNewlines)
+		return "HTML page - Title: \(title.isEmpty ? "(none)" : title) | Text: \(truncated(visibleText.isEmpty ? "(none)" : visibleText))"
+	}
+
+	return truncated(bodyText)
 }
 
 /// Parses the Retry-After header from an HTTP response, which per RFC 7231

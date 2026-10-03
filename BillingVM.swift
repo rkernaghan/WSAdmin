@@ -212,7 +212,7 @@ import GoogleSignIn
 						if billedStudentFound {
 							
 							let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-							guard tutorFound else {
+							guard tutorFound, let tutorNum else {
 								let logMessage = "ERROR: BillingVM:updateBillingStats: Could not find Tutor: \(tutorName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
@@ -220,7 +220,7 @@ import GoogleSignIn
 							}
 							
 							let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-							guard studentFound  else {
+							guard studentFound, let studentNum else {
 								let logMessage = "ERROR: BillingVM:updateBillingStats: Could not find student: \(studentName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
@@ -436,9 +436,10 @@ import GoogleSignIn
 					invoiceLineNum += 1
 					// referenceData.dataCounts.increaseHighestInvoiceNumber()
 				}
-				// Save the Students List as the Last Billing Dates will have been updated
+				// Save the Students List as the Last Billing Dates will have been updated in the Student Record and Tutor Student Record
 				let studentCompletionFlag = await referenceData.students.saveStudentData()
 				let dataCountCompletionFlag = await referenceData.dataCounts.saveDataCounts()
+				let TutorCompletionFlag = await referenceData.tutors.saveTutorData()
 				
 				// Close the CSV file when done
 				fileHandle.closeFile()
@@ -473,7 +474,7 @@ import GoogleSignIn
 		let zipCode = invoiceLine.zipCode
 		let invoiceDate = invoiceLine.invoiceDate
 		let invoiceDueDate = invoiceLine.dueDate
-		let invoiceReference = invoiceLine.studentName + " - " + invoiceLine.tutorName
+		let invoiceReference = invoiceLine.studentName
 //		let invoiceTerm = invoiceLine.terms
 //		let invoiceLocation = invoiceLine.locationName
 //		let invoiceTutor = invoiceLine.tutorName
@@ -514,8 +515,8 @@ import GoogleSignIn
 		// Set the Last Billed Date for the Student to today's date
 		let studentName = invoiceLine.studentName
 		let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-		if studentFound {
-			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate)
+		if studentFound, let studentNum {
+			referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: invoiceServiceDate, referenceData: referenceData)
 		} else {
 			logMessage = "ERROR: Student not found when updating Student Last Billed Date"
 			Task {
@@ -634,7 +635,7 @@ import GoogleSignIn
 				studentBillingMonth.studentBillingRows[billedStudentNum].resetBilledStudentMonth(sessions: sessions, cost: cost, revenue: revenue, profit: revenue - cost)
 				
 				let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-				guard studentFound else {
+				guard studentFound, let studentNum else {
 					statsMessage = "ERROR: Student: \(studentName) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)"
 					Task {
 						await AppLogger.shared.log(statsMessage, level: .error)
@@ -671,7 +672,7 @@ import GoogleSignIn
 			}
 				
 			let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-			guard tutorFound else {
+			guard tutorFound, let tutorNum else {
 				statsMessage = "ERROR: Tutor: \(tutorName) not found in Reference Data billing stats for \(billingMonth) \(billingYear)"
 				print(statsMessage)
 				Task {
@@ -726,9 +727,9 @@ import GoogleSignIn
 						let serviceDate = timesheet.timesheetRows[timesheetNum].serviceDate
 						
 						let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-						if studentFound {
+						if studentFound, let studentNum {
 							print ("\t\(studentName), \(serviceDate)")
-							referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: serviceDate)
+							referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: serviceDate, referenceData: referenceData)
 						} else {
 							print ("Could not find Student: \(studentName)")
 						}

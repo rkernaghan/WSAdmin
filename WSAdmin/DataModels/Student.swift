@@ -127,8 +127,8 @@ import Foundation
 		self.studentTotalProfit -= monthRevenue - monthCost
 	}
 	
-	// This function updates the Student's Last Billed Date.
-	func updateLastBilledDate(serviceDate: String) {
+	// This function updates the Student's Last Billed Date in the main Student object and the TutorStudent object assigned to the Tutor
+	@MainActor func updateLastBilledDate(serviceDate: String, referenceData: ReferenceData) {
 		let dateFormatter = DateFormatter()
 		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "MM/dd/yyyy"
@@ -137,7 +137,16 @@ import Foundation
 			dateFormatter.dateFormat = "yyyy/MM/dd"
 			let formattedDate = dateFormatter.string(from: date)
 			self.studentLastBilledDate = formattedDate
+			
+			let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: self.studentCurrentTutorKey)
+			if foundFlag, let tutorNum {
+				let (tutorStudentFound, tutorStudentNum) = referenceData.tutors.tutorsList[tutorNum].findTutorStudentByKey(studentKey: self.studentKey)
+				if tutorStudentFound, let tutorStudentNum {
+					referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].lastBilledDate = formattedDate
+				}
+			}
 		}
+		
 	}
 	
 }

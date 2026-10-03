@@ -40,7 +40,7 @@ import Foundation
 				
 				let fetchServicesResult = await referenceData.services.fetchServiceData( serviceCount: referenceData.dataCounts.totalServices)
 				
-				let buildResult = buildTutorStudentBilledDate(referenceData: referenceData)
+//				let buildResult = buildTutorStudentBilledDate(referenceData: referenceData)
 				
 				if !fetchTutorsResult || !fetchStudentsResult || !fetchLocationsResult || !fetchServicesResult {
 					completionResult = false
@@ -66,7 +66,7 @@ import Foundation
 			
 			let (studentFound, studentIndex) = referenceData.students.findStudentByKey(studentKey: studentKey)
 			
-			if studentFound {
+			if studentFound, let studentIndex {
 				referenceData.tutors.tutorsList[tutorNum].tutorStudents[studentNum].lastBilledDate = referenceData.students.studentsList[studentIndex].studentLastBilledDate
 			}
 			

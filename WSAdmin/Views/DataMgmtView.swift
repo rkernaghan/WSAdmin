@@ -131,6 +131,7 @@ struct SideView: View {
 	@State private var isSystemResetting = false					// To disable Reset Test Files Files button when processing
 	@State private var isSystemBackingUp = false					// To disable Backup System button when processing
 	@State private var creatingNewYearsFiles = false				// To disable Create New Years Files button when processing
+	@State private var updatingTimesheetFileIDs = false				// To disable Update Timesheet FileIDs button when processing
 	
 	var body: some View {
  
@@ -322,6 +323,29 @@ struct SideView: View {
 			
 			}
 			
+			Button(action: {
+				Task {
+					statusMessage = " "
+					updatingTimesheetFileIDs = true
+					let (generateResult, generateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
+					updatingTimesheetFileIDs = false
+					
+					if !generateResult {
+						showAlert.toggle()
+						buttonErrorMsg = generateMessage
+					} else {
+						statusMessage = "Tutor Details FileIDs updated in Timesheets"
+					}
+				}
+			} ) {
+				if updatingTimesheetFileIDs {
+					ProgressView()
+				} else {
+					Text("Update Tutor Details FileIDs in Timesheets")
+				}
+			}
+			.disabled(updatingTimesheetFileIDs)
+			
 			
 			Button(action: {
 				Task {
@@ -347,15 +371,15 @@ struct SideView: View {
 			.disabled(creatingNewYearsFiles)
 			
 			
-			Button("Update Tutor Timesheet File IDs") {
+			Button("Update Tutor Details Timesheet File IDs") {
 				Task {
 					statusMessage = " "
-					let (updateResult, updateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
+					let (updateResult, updateMessage) = await systemVM.updateTutorDetailsTimesheetFileIDs(referenceData: referenceData)
 					if !updateResult {
 						showAlert.toggle()
 						buttonErrorMsg = updateMessage
 					} else {
-						statusMessage = "Timesheet File IDs Update Successful"
+						statusMessage = "Updated of Timesheet File IDs in Tutor Details sheets Successful"
 					}
 				}
 			}

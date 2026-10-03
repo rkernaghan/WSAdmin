@@ -182,7 +182,7 @@ import Foundation
 						}
 							
 						let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
-						if serviceFound {
+						if serviceFound, let tutorServiceNum {
 							updateResult = await tutor.updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
 								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor: \(tutor.tutorName)"

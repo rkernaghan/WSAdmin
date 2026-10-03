@@ -316,7 +316,7 @@ class TutorBillingMonth {
 			while prevTutorNum < prevTutorCount {
 				let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
 				let (foundTutorFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-				guard foundTutorFlag  else {
+				guard foundTutorFlag, let tutorNum else {
 					print("Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
 					return(false, "Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
 				}

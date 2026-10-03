@@ -18,25 +18,25 @@ import Foundation
 	}
 	
 	// This function finds a Tutor object in the Tutors List object array by Tutor key
-	func findTutorByKey(tutorKey: String) -> (Bool, Int) {
+	func findTutorByKey(tutorKey: String) -> (Bool, Int?) {
 		
 		if let index = tutorsList.firstIndex(
 			where: { $0.tutorKey == tutorKey }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function finds a Tutor object in the Tutors List object array by Tutor name
-	func findTutorByName(tutorName: String) -> (Bool, Int) {
+	func findTutorByName(tutorName: String) -> (Bool, Int?) {
 		
 		if let index = tutorsList.firstIndex(
 			where: { $0.tutorName == tutorName }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function adds a new Tutor object to the Tutors List object array
@@ -111,13 +111,6 @@ import Foundation
 			// Add the new Tutor object to the Tutors List object array
 			self.tutorsList.append(newTutor)
 			
-			// If the Tutor Status is not "Deleted" or "Suspended", load in the Tutors Services and Students data
-			if newTutorStatus != .TutorDeleted &&  newTutorStatus != .TutorSuspended {
-//				completionFlag = await self.tutorsList[tutorIndex].loadTutorDetails(tutorNum: tutorIndex, tutorDataFileID: tutorDetailsFileID)
-//				if completionFlag {
-//					self.tutorsList[tutorIndex].tutorDetailsLoaded = true
-//				}
-			}
 			print("Loaded Tutor \(newTutorName)")
 			
 			tutorIndex += 1

@@ -100,7 +100,7 @@ class Timesheet: Identifiable {
 		let (tutorFoundFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 		if !tutorFoundFlag {
 			billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: " ** Error in Timesheet.loadTimesheetRows - Tutor \(tutorName) not found in Reference Data"))
-		} else {
+		} else if let tutorNum {
 			
 			// Check if at least one session in the Timesheet
 			if sheetCells.count > 0 {

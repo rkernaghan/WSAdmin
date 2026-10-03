@@ -112,8 +112,12 @@ import Foundation
 			completionFlag = await self.fetchTutorStudentData( tutorName: tutorName, tutorStudentCount: tutorStudentCount)
 		}
 		
+		
 		if completionFlag {
 			self.tutorDetailsLoaded = true
+		} else {
+			let logMessage = "ERROR: Unable to load Tutor details for Tutor \(self.tutorName)"
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(completionFlag)
@@ -194,33 +198,21 @@ import Foundation
 	//
 
 	// Find a Student assigned to this Tutor by Student Key
-	func findTutorStudentByKey(studentKey: String) -> (Bool, Int) {
-		var studentFound = false
-		var tutorStudentNum = 0
-		
-		while tutorStudentNum < tutorStudents.count && !studentFound {
-			if tutorStudents[tutorStudentNum].studentKey == studentKey {
-				studentFound = true
-			} else {
-				tutorStudentNum += 1
-			}
+	// The index is nil if not found
+	func findTutorStudentByKey(studentKey: String) -> (Bool, Int?) {
+		if let tutorStudentNum = tutorStudents.firstIndex(where: { $0.studentKey == studentKey }) {
+			return(true, tutorStudentNum)
 		}
-		return(studentFound, tutorStudentNum)
+		return(false, nil)
 	}
 	
 	// Find a Student assigned to this Tutor by Student Name
-	func findTutorStudentByName(studentName: String) -> (Bool, Int) {
-		var studentFound = false
-		var tutorStudentNum = 0
-		
-		while tutorStudentNum < tutorStudents.count && !studentFound {
-			if tutorStudents[tutorStudentNum].studentName == studentName {
-				studentFound = true
-			} else {
-				tutorStudentNum += 1
-			}
+	// The index is nil if not found
+	func findTutorStudentByName(studentName: String) -> (Bool, Int?) {
+		if let tutorStudentNum = tutorStudents.firstIndex(where: { $0.studentName == studentName }) {
+			return(true, tutorStudentNum)
 		}
-		return(studentFound, tutorStudentNum)
+		return(false, nil)
 	}
 	
 	// This function updates a Tutor to add a newly assigned Student
@@ -243,7 +235,7 @@ import Foundation
 		
 		let (studentFound, tutorStudentNum) = findTutorStudentByKey(studentKey: studentKey)
 		
-		if studentFound {
+		if studentFound, let tutorStudentNum {
 			tutorStudents.remove(at: tutorStudentNum)
 			completionFlag = await saveTutorStudentData(tutorName: self.tutorName)
 			if completionFlag {
@@ -357,33 +349,21 @@ import Foundation
 	//
 
 	// Find a Service assigned to this Tutor by Service key
-	func findTutorServiceByKey(serviceKey: String) -> (Bool, Int) {
-		var serviceFound = false
-		var tutorServiceNum = 0
-		
-		while tutorServiceNum < tutorServices.count && !serviceFound {
-			if tutorServices[tutorServiceNum].serviceKey == serviceKey {
-				serviceFound = true
-			} else {
-				tutorServiceNum += 1
-			}
+	// The index is nil if not found
+	func findTutorServiceByKey(serviceKey: String) -> (Bool, Int?) {
+		if let tutorServiceNum = tutorServices.firstIndex(where: { $0.serviceKey == serviceKey }) {
+			return(true, tutorServiceNum)
 		}
-		return(serviceFound, tutorServiceNum)
+		return(false, nil)
 	}
 	
 	// Find a Service assigned to this Tutor by Service Name
-	func findTutorServiceByName(serviceName: String) -> (Bool, Int) {
-		var serviceFound = false
-		var tutorServiceNum = 0
-		
-		while tutorServiceNum < tutorServices.count && !serviceFound {
-			if tutorServices[tutorServiceNum].timesheetServiceName == serviceName {
-				serviceFound = true
-			} else {
-				tutorServiceNum += 1
-			}
+	// The index is nil if not found
+	func findTutorServiceByName(serviceName: String) -> (Bool, Int?) {
+		if let tutorServiceNum = tutorServices.firstIndex(where: { $0.timesheetServiceName == serviceName }) {
+			return(true, tutorServiceNum)
 		}
-		return(serviceFound, tutorServiceNum)
+		return(false, nil)
 	}
 	
 	// This function updates a Tutor to add a newly assigned Service to the Tutor and returns a completion flag
@@ -405,7 +385,7 @@ import Foundation
 		
 		let (serviceFound, tutorServiceNum) = findTutorServiceByKey(serviceKey: serviceKey)
 		
-		if serviceFound {
+		if serviceFound, let tutorServiceNum {
 			tutorServices.remove(at: tutorServiceNum)
 			completionFlag = await saveTutorServiceData(tutorName: self.tutorName)
 			if completionFlag {

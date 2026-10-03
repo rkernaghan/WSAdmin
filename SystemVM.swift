@@ -387,7 +387,7 @@ import Foundation
 				let tutorStudentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
 				let tutorStudentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
 				let (studentFound, studentNum) = referenceData.students.findStudentByKey(studentKey: tutorStudentKey)
-				if studentFound {
+				if studentFound, let studentNum {
 					let studentName = referenceData.students.studentsList[studentNum].studentName
 					
 					if studentName != tutorStudentName {
@@ -1088,7 +1088,7 @@ import Foundation
 		return(completionFlag)
 	}
 	
-	// This function re-initializes the 4 key test files
+	// This function re-initializes the 4 key test files (ReferenceData, Tutor Details, 2 years Student Billing and 2 years Tutor Billing) and the test Timesheets
 	//    	delete the existing file or rename if delete fails (usually because owned by someone else)
 	//	copy the initialization version
 	func resetTestFiles() async -> (Bool, String) {
@@ -1104,10 +1104,12 @@ import Foundation
 		var fileIDResult: Bool
 		var sourceFileName: String
 		var sourceFileID: String
-		
+		var testTutorDetailsFileID: String = ""
+
 		logMessage = "INFO: ** Resetting Test Files ** "
 		await AppLogger.shared.log(logMessage, level: .info, newLine: true)
 		
+	// Reset ReferenceData file
 		// Delete the test Reference Data spreadsheet
 		deleteFileName = PgmConstants.testRefFileName
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Reference Data File")) {
@@ -1141,6 +1143,7 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
+	// Reset Tutor Details file
 		// Delete the test Tutor Details spreadsheet
 		deleteFileName = PgmConstants.tutorDetailsTestFileName
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Details Data File")) {
@@ -1157,6 +1160,7 @@ import Foundation
 				
 				(copyFileResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: sourceFileID, newFileName: copyFileName)
 				if copyFileResult {
+					testTutorDetailsFileID = copyFileID ?? ""
 					logMessage = "INFO: Tutor Details initialization file copied to file: \(copyFileName)"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .info)
@@ -1174,6 +1178,7 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
+	// Reset first Tutor Billing Summary file
 		// Delete the first year Tutor Billing spreadsheet
 		deleteFileName = PgmConstants.tutorBillingTestFileName1
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Billing File")) {
@@ -1206,7 +1211,8 @@ import Foundation
 			logMessage = "ERROR: Error resetting Tutor Billing spreadsheet \(copyFileName), error: \(error.localizedDescription)"
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
-		
+	
+	// Reset second Tutor Billing Summary file
 		// Delete the second year Tutor Billing spreadsheet
 		deleteFileName = PgmConstants.tutorBillingTestFileName2
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Tutor Billing File")) {
@@ -1240,6 +1246,7 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
+	// Reset first Student Billing Summary file
 		// Delete the first year Student Billing spreadsheet
 		deleteFileName = PgmConstants.studentBillingTestFileName1
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Student Billing File")) {
@@ -1272,7 +1279,8 @@ import Foundation
 			logMessage = "ERROR: Error resetting Student Billing spreadsheet \(copyFileName), error: \(error.localizedDescription)"
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
-		
+
+	// Reset second Student Billing Summary file
 		// Delete the second year Student Billing spreadsheet
 		deleteFileName = PgmConstants.studentBillingTestFileName2
 		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Student Billing File")) {
@@ -1306,7 +1314,133 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
+	// Reset the Test Timesheets and write the Tutor Details File ID into each one
+		var timesheetResult: Bool
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName1A, sourceFileName: PgmConstants.initializationTestTimesheetFileName1A, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName2A, sourceFileName: PgmConstants.initializationTestTimesheetFileName2A, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName3A, sourceFileName: PgmConstants.initializationTestTimesheetFileName3A, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName4A, sourceFileName: PgmConstants.initializationTestTimesheetFileName4A, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName5A, sourceFileName: PgmConstants.initializationTestTimesheetFileName5A, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName1B, sourceFileName: PgmConstants.initializationTestTimesheetFileName1B, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName2B, sourceFileName: PgmConstants.initializationTestTimesheetFileName2B, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName3B, sourceFileName: PgmConstants.initializationTestTimesheetFileName3B, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName4B, sourceFileName: PgmConstants.initializationTestTimesheetFileName4B, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		
+		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName5B, sourceFileName: PgmConstants.initializationTestTimesheetFileName5B, tutorDetailsFileID: testTutorDetailsFileID)
+		if !timesheetResult {
+			resetResult = false
+		}
+		logMessage = "INFO: Test file reset complete"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .info)
+		
 	return (resetResult, logMessage)
+	}
+
+	// Resets one Test Timesheet as part of resetting the test files.  Deletes (or renames) the existing Test Timesheet,
+	// copies the initialization Timesheet in its place and writes the Tutor Details File ID into the new Timesheet's RefData sheet.
+	//	Parameters:
+	//		deleteFileName: name of the Test Timesheet to delete; also used as the name of the new copy
+	//		sourceFileName: name of the initialization Timesheet to copy
+	//		tutorDetailsFileID: File ID of the test Tutor Details spreadsheet to write into the new Timesheet
+	//	Returns:
+	//		a Bool indicating whether the Timesheet was reset and the last log message
+	//
+	private func resetTestTimesheet(deleteFileName: String, sourceFileName: String, tutorDetailsFileID: String) async -> (Bool, String) {
+		var logMessage: String = ""
+		var resetResult: Bool = true
+		
+		var copyFileResult: Bool
+		var copyFileID: String?
+		var fileIDResult: Bool
+		var sourceFileID: String
+		
+		// Delete the Test Timesheet spreadsheet
+		if !(await deleteOrRenameTestFile(fileName: deleteFileName, fileDescription: "Test Timesheet")) {
+			resetResult = false
+		}
+		
+		// Copy the initialization Timesheet
+		let copyFileName = deleteFileName
+		
+		do {
+			(fileIDResult, sourceFileID) = try await getFileID(fileName: sourceFileName)
+			if fileIDResult {
+				
+				(copyFileResult, copyFileID) = try await copyGoogleDriveFile(sourceFileId: sourceFileID, newFileName: copyFileName)
+				if copyFileResult, let newTimesheetFileID = copyFileID {
+					logMessage = "INFO: Timesheet initialization file copied to file: \(copyFileName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+					
+					// Write the Tutor Details File ID into the new Timesheet's RefData sheet
+					let updateValues = [[tutorDetailsFileID]]
+					let range = PgmConstants.timesheetDetailsFileIDCell
+					if try await writeSheetCells(fileID: newTimesheetFileID, range: range, values: updateValues, logNote: "Tutor Details FileID in Test Timesheet") {
+						logMessage = "INFO: Added Tutor Details File ID to Test Timesheet: \(copyFileName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .info)
+					} else {
+						resetResult = false
+						logMessage = "ERROR: Could not add Tutor Details File ID to Test Timesheet: \(copyFileName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
+					}
+				} else {
+					resetResult = false
+					logMessage = "ERROR: Timesheet: \(sourceFileName) not reset"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
+			} else {
+				logMessage = "ERROR: Could not get File ID for Initialization Timesheet: \(sourceFileName)"
+				await AppLogger.shared.log(logMessage, level: .error)
+				print(logMessage)
+				
+			}
+		} catch {
+			logMessage = "ERROR: Error resetting test Timesheet \(copyFileName), error: \(error.localizedDescription)"
+			await AppLogger.shared.log(logMessage, level: .error)
+			print(logMessage)
+		}
+		
+		return (resetResult, logMessage)
 	}
 
 	// Deletes a test file as part of resetting the test files.  If the delete fails (usually because the file
@@ -1618,7 +1752,7 @@ import Foundation
 				
 				// Update the Timesheet FileID in the Tutor Details sheet for the Tutor
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-				if tutorFound {
+				if tutorFound, let tutorNum {
 					referenceData.tutors.tutorsList[tutorNum].timesheetFileID = newTimesheetFileID
 					let saveResult = await referenceData.tutors.saveTutorData()
 					if !saveResult {
@@ -1715,9 +1849,71 @@ import Foundation
 		
 		return (generateResult, logMessage)
 	}
+	// This function updates the Tutor Details FileIDs in the RefData sheet for each Tutor's Timesheet
+	@MainActor func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
+		var updateResult: Bool = true
+		var logMessage: String = ""
+		var timesheetFileName: String
+		
+		let (currentMonth, currentMonthYear) = getCurrentMonthYear()
+		
+		do {
+			let (getResult, tutorDetailsFileID) = try await getFileID(fileName: runMode.tutorDetailsFileName)
+			
+			if getResult {
+				
+				for tutor in referenceData.tutors.tutorsList {
+					if tutor.tutorStatus != .TutorDeleted && tutor.tutorStatus != .TutorSuspended {
+						let tutorName = tutor.tutorName
+						if runMode == .test {
+							timesheetFileName = "Timesheet " + currentMonthYear + " " + tutorName
+						} else {
+							timesheetFileName = "Timesheet " + currentMonthYear + " " + tutorName
+						}
+						
+						do {
+							let (getResult, timesheetFileID) = try await getFileID(fileName: timesheetFileName)
+							if getResult {
+								let range = PgmConstants.timesheetDetailsFileIDCell
+								let updateValues = [[tutorDetailsFileID]]
+								do {
+									updateResult = try await writeSheetCells(fileID: timesheetFileID, range: range, values: updateValues, logNote: "Tutor Details FileID in Timesheet")
+									print("INFO: Updating Tutor Details File ID for \(tutorName) in Tutor Timesheet")
+								} catch {
+									updateResult = false
+									logMessage += "ERROR: Updating Tutor Details file ID for \(tutorName) Timesheet\n"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								}
+							} else {
+								logMessage += "ERROR: Getting timesheet file ID for \(tutorName) updating Timesheet File IDs, Tutor skipped\n"
+								await AppLogger.shared.log(logMessage, level: .error)
+							}
+						} catch {
+							updateResult = false
+							logMessage += "ERROR: Getting file ID for \(timesheetFileName)\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+						}
+					}
+				}
+			} else {
+				logMessage = "ERROR: could not get FileID for Tutor Details sheet updating Timesheet File IDs"
+				await AppLogger.shared.log(logMessage, level: .error)
+				updateResult = false
+			}
+		} catch {
+			logMessage = "ERROR: could not get FileID for Tutor Details sheet updating Timesheet File IDs"
+			await AppLogger.shared.log(logMessage, level: .error)
+			return(false, logMessage)
+		}
+		
+		return(updateResult, logMessage)
+	}
+	
 	
 	// This function updates the Timesheet FileIDs in the Tutor Details sheet for each Tutor
-	@MainActor func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
+	@MainActor func updateTutorDetailsTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
 		var updateResult: Bool = true
 		var logMessage: String = ""
 		

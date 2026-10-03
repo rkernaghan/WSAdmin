@@ -29,8 +29,8 @@ class StudentBillingMonth {
 	func findBilledStudentsByTutorName(tutorName: String) -> (Bool, [Int]) {
 		var found = false
 		var billedStudentNumbers: [Int] = []
+		
 		var billedStudentNum = 0
-	
 		while billedStudentNum < studentBillingRows.count {
 			if studentBillingRows[billedStudentNum].tutorName == tutorName {
 				found = true

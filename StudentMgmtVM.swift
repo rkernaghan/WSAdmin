@@ -110,6 +110,12 @@ import Foundation
 		await AppLogger.shared.log(logMessage, newLine: true)
 		
 		let (foundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+		guard foundFlag, let studentNum else {
+			logMessage = "ERROR: Could not find Student: \(originalStudentName) with key \(studentKey) in Reference Data when updating Student"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return(false, logMessage)
+		}
 		let originalLocation = referenceData.students.studentsList[studentNum].studentLocation
 		
 		referenceData.students.studentsList[studentNum].studentName = studentName
@@ -157,7 +163,7 @@ import Foundation
 						}
 						
 						let (tutorStudentFound, tutorStudentNum) = tutor.findTutorStudentByKey(studentKey: studentKey)
-						if tutorStudentFound {
+						if tutorStudentFound, let tutorStudentNum {
 							tutor.tutorStudents[tutorStudentNum].studentName = studentName
 							tutor.tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
 							tutor.tutorStudents[tutorStudentNum].clientEmail = contactEmail
@@ -795,7 +801,7 @@ import Foundation
 					unassignResult = await referenceData.students.saveStudentData()
 					if unassignResult {
 						let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
-						if foundFlag {
+						if foundFlag, let tutorNum {
 							// Must load before removeTutorStudent below: an unloaded
 							// tutorStudents array would make it a silent no-op (it
 							// only removes/saves when the student is found in the
@@ -865,7 +871,7 @@ import Foundation
 					let tutorName = referenceData.students.studentsList[studentNum].studentPreviousTutorName
 					
 					let (foundFlag, tutorNum) = referenceData.tutors.findTutorByKey(tutorKey: tutorKey)
-					if foundFlag {
+					if foundFlag, let tutorNum {
 						// Must load before removeTutorStudent below: an unloaded
 						// tutorStudents array would make it a silent no-op (it
 						// only removes/saves when the student is found in the
@@ -931,6 +937,14 @@ import Foundation
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
 				let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+
+				guard studentFoundFlag, let studentNum else {
+					unassignResult = false
+					logMessage = "ERROR: Could not find Student: \(studentName) with key \(studentKey) in Reference Data when unassigning from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
 				
 				referenceData.students.studentsList[studentNum].unassignTutor()
 				unassignResult = await referenceData.students.saveStudentData()

@@ -48,7 +48,7 @@ import GoogleSignIn
 			if !tutorFound {
 				logMessage = "ERROR: could not find Tutor: \(tutorName) in Tutorslist after create Tutor"
 				await AppLogger.shared.log(logMessage, level: .error)
-			} else {
+			} else if let tutorNum {
 				
 				// Create a new Timesheet for the Tutor
 				do {
@@ -1091,7 +1091,7 @@ import GoogleSignIn
 				}
 				
 				let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: serviceKey)
-				if serviceFound {
+				if serviceFound, let tutorServiceNum {
 					let tutorKey = tutor.tutorKey
 					let tutorName = tutor.tutorName
 					let cost1 = tutor.tutorServices[tutorServiceNum].cost1

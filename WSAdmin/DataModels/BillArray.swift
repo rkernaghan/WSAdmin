@@ -44,7 +44,7 @@ class BillArray {
 			if !foundFlag {
 				let studentName = timesheet.timesheetRows[timesheetRowNum].studentName
 				let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
-				if studentFound {
+				if studentFound, let studentNum {
 					address1 = referenceData.students.studentsList[studentNum].studentContactAddress1
 					address2 = referenceData.students.studentsList[studentNum].studentContactAddress2
 					city = referenceData.students.studentsList[studentNum].studentContactCity
@@ -69,6 +69,11 @@ class BillArray {
 			let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
 			if serviceFound {
 				invoiceServiceName = referenceData.services.servicesList[serviceNum].serviceInvoiceName
+			} else {
+				Task {
+					let logMessage = "ERROR: Service: \(timesheetServiceName) not found processing timesheet"
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
 			}
 			
 			if timesheet.timesheetRows[timesheetRowNum].notes != "-" {
@@ -123,7 +128,6 @@ class BillArray {
 		dateFormatter.dateFormat = "MM/dd/yyyy"
 		let invoiceDate = dateFormatter.string(from: Date())
 		
-		
 		Task {
 			let logMessage = "INFO: Generating invoice on \(invoiceDate)"
 			print(logMessage)
@@ -150,10 +154,10 @@ class BillArray {
 			while billItemNum < billClients[clientNum].billItems.count {
 				let tutorName = billClients[clientNum].billItems[billItemNum].tutorName
 				let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
-				if tutorFound {
+				if tutorFound, let tutorNum {
 					timesheetServiceName = billClients[clientNum].billItems[billItemNum].timesheetServiceName
 					let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: timesheetServiceName)
-					if tutorServiceFound {
+					if tutorServiceFound, let tutorServiceNum {
 						
 						// Get the ServiceCode for the Service using TimesheetServiceName
 						let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
@@ -190,7 +194,7 @@ class BillArray {
 								}
 								print(logMessage)
 								billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
-							} else {
+							} else if let studentNum {
 								let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 								
 								clientName = billClients[clientNum].clientName
@@ -200,7 +204,7 @@ class BillArray {
 								city = billClients[clientNum].clientCity
 								state = billClients[clientNum].clientState
 								zipCode = billClients[clientNum].clientZipCode
-								var description = serviceDate + " - " + invoiceServiceName
+								var description = serviceDate + " - " + invoiceServiceName + " - " + tutorName
 								if (notes != "") {
 									description += " - " + notes
 								}

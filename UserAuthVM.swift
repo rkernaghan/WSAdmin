@@ -128,22 +128,35 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 		}
 	}
 	
-	// Checks whether user has necessary Goolge scopes necessary for program
+	// Checks whether user has necessary Google scopes necessary for program
 	// "drive" scope required to create new Timesheet for new Tutor
-	//
+	// "gmail" scope to send emails from logger
 	func checkAuthScope() -> Bool {
+		
 		let additionalScopes = [sheetScope, driveScope, gmailScope]
 		guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
-			print("UserAuthVM-checkAuthScope: Not signed in")
+			Task{
+				let logMessage = "WARNING: UserAuthVM-checkAuthScope: Not signed in"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .warning)
+			}
 			return(false) ;  /* Not signed in. */
 		}
 		
 		let grantedScopes = currentUser.grantedScopes
-		if grantedScopes == nil || !grantedScopes!.contains(sheetScope) {
-			print("UserAuthVM-checkAuthScope: Need to request additional scope")
+		if grantedScopes == nil || !grantedScopes!.contains(sheetScope) || !grantedScopes!.contains(driveScope) || !grantedScopes!.contains(gmailScope){
+			Task {
+				let logMessage = "WARNING: UserAuthVM-checkAuthScope: Need to request additional scope"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .warning)
+			}
 			return(false)
 		} else {
-			print("UserAuthVM-checkAuthScope: Already have scope")
+			Task {
+				let logMessage = "INFO: UserAuthVM-checkAuthScope: Already have scope"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .info)
+			}
 			return(true)
 		}
 	}
