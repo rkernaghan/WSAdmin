@@ -98,10 +98,6 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 					oauth2Token.clientID = clientID
 				}
 				
-//				print("\nUserAuthVM-checkSignInStatus: accessToken: \(accessOAuthToken)")
-//				print("UserAuthVM-checkSignInStatus: refreshToken: \(refreshOAuthToken)")
-//				print("UserAuthVM-checkSignInStatus: tokenExpirationDate: \(String(describing: tokenExpirationDate))")
-//				print("UserAuthVM-checkSignInStatus: clientID: \(String(describing: clientID))\n")
 				
 				let scopeStatus = checkAuthScope()
 				if !scopeStatus {
@@ -196,6 +192,7 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 		accessOAuthToken = ""
 		refreshOAuthToken = ""
 		clientOAuthID = ""
+		oauth2Token.accessToken = ""
 		
 	}
 }

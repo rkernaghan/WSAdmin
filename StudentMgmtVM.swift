@@ -40,7 +40,13 @@ import Foundation
 			} else {
 				
 				let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
-				referenceData.locations.locationsList[locationNum].increaseStudentCount()
+				if locationFound, let locationNum {
+					referenceData.locations.locationsList[locationNum].increaseStudentCount()
+				} else {
+					logMessage = "ERROR: Could not find Location \(location) to increase Location Count when adding new Student \(studentName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
 				let saveLocationsResult = await referenceData.locations.saveLocationData()
 				if !saveLocationsResult {
 					completionFlag = false
@@ -138,12 +144,18 @@ import Foundation
 			// Update the Locations count of Students at each Location if the Student's Location was changed in the update
 			if location != originalLocation {
 				let (originalLocationFound, originalLocationNum) = referenceData.locations.findLocationByName(locationName: originalLocation)
-				referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
+				if originalLocationFound, let originalLocationNum {
+					referenceData.locations.locationsList[originalLocationNum].decreaseStudentCount()
+				} else {
+					logMessage = "ERROR: Could not find Location \(originalLocation) to decrease Location Count for Student \(studentName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
 				let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
-				if locationFound {
+				if locationFound, let locationNum {
 					referenceData.locations.locationsList[locationNum].increaseStudentCount()
 				} else {
-					logMessage = "ERROR: COuld not find Location \(referenceData.locations.locationsList[locationNum].locationName) to increase Location Count for Student \(studentName)"
+					logMessage = "ERROR: Could not find Location \(location) to increase Location Count for Student \(studentName)"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage)
 				}
@@ -492,7 +504,7 @@ import Foundation
 							logMessage = "Error: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) when deleting Student \(referenceData.students.studentsList[studentNum].studentName)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
-						} else {
+						} else if let locationNum {
 							referenceData.locations.locationsList[locationNum].decreaseStudentCount()
 							// Save the updated Location List data
 							let saveResult = await referenceData.locations.saveLocationData()
@@ -595,7 +607,13 @@ import Foundation
 					if unDeleteResult {
 						referenceData.dataCounts.increaseActiveStudentCount()
 						let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: referenceData.students.studentsList[studentNum].studentLocation)
-						referenceData.locations.locationsList[locationNum].increaseStudentCount()
+						if locationFound, let locationNum {
+							referenceData.locations.locationsList[locationNum].increaseStudentCount()
+						} else {
+							logMessage = "ERROR: Could not find Location \(referenceData.students.studentsList[studentNum].studentLocation) to increase Location Count when Undeleting Student \(studentName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+						}
 						unDeleteResult = await referenceData.locations.saveLocationData()
 						if !unDeleteResult {
 							logMessage = "ERROR: could not save Location data when Undeleting Student"

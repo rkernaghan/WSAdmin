@@ -67,7 +67,7 @@ class BillArray {
 			let duration = timesheet.timesheetRows[timesheetRowNum].duration
 			let timesheetServiceName = timesheet.timesheetRows[timesheetRowNum].timesheetServiceName
 			let (serviceFound, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetServiceName)
-			if serviceFound {
+			if serviceFound, let serviceNum {
 				invoiceServiceName = referenceData.services.servicesList[serviceNum].serviceInvoiceName
 			} else {
 				Task {
@@ -167,7 +167,7 @@ class BillArray {
 							Task {
 								await AppLogger.shared.log(logMessage, level: .error)
 							}
-						} else {
+						} else if let serviceNum {
 							let serviceCode = referenceData.services.servicesList[serviceNum].serviceCode
 							
 							duration = billClients[clientNum].billItems[billItemNum].duration

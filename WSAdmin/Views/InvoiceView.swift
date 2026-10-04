@@ -82,7 +82,7 @@ struct InvoiceView: View {
 //						TableColumn("Item", value: \InvoiceLine.itemName)
 //							.width(min: 100, ideal: 150, max: 220)
 						TableColumn("Description", value: \InvoiceLine.description)
-							.width(min: 140, ideal: 200, max: 260)
+							.width(min: 140, ideal: 260, max: 360)
 						TableColumn("Quantity", value: \InvoiceLine.quantity)
 							.width(min: 35, ideal: 35, max: 50)
 //						TableColumn("Rate", value: \InvoiceLine.rate)

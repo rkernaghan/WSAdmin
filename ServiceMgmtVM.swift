@@ -83,8 +83,14 @@ import Foundation
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .info)
 								}
-								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-								referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
+								if serviceFound, let serviceNum {
+									referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+									referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
+								} else {
+									logMessage = "ERROR: Could not find new Service \(timesheetName) with key \(newServiceKey) to increase its use count"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								}
 							}
 							tutorNum += 1
 						}

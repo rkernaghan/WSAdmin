@@ -527,7 +527,7 @@ import GoogleSignIn
 						while tutorServiceNum < tutorServiceCount {
 							let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
 							let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey)
-							if serviceFound {
+							if serviceFound, let serviceNum {
 								referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
 							}
 							tutorServiceNum += 1
@@ -837,7 +837,7 @@ import GoogleSignIn
 		
 		let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
 		let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
-		if serviceFound {
+		if serviceFound, let serviceNum {
 			logMessage = "INFO: Unssigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 			await AppLogger.shared.log(logMessage)
 			
@@ -880,11 +880,11 @@ import GoogleSignIn
 				let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
 				
-				logMessage = "INFO: Unassigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				logMessage = "INFO: Unassigning Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage)
 				
-				if serviceFound {
+				if serviceFound, let serviceNum {
 					referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
 					unassignResult = await referenceData.services.saveServiceData()
 					if unassignResult {

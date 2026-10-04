@@ -17,25 +17,25 @@ import Foundation
 	}
 	
 	// This function finds a Service object in the Services List object array by Service key
-	func findServiceByKey(serviceKey: String) -> (Bool, Int) {
+	func findServiceByKey(serviceKey: String) -> (Bool, Int?) {
 		
 		if let index = servicesList.firstIndex(
 			where: { $0.serviceKey == serviceKey }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function finds a Service object in the Services List object array by Timesheet (Service) name
-	func findServiceByName(timesheetName: String) -> (Bool, Int) {
+	func findServiceByName(timesheetName: String) -> (Bool, Int?) {
 		
 		if let index = servicesList.firstIndex(
 			where: { $0.serviceTimesheetName == timesheetName }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	
 	}
 	

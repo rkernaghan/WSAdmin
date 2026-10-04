@@ -682,7 +682,7 @@ var tokenExpiryTime: Date = Date.now
 
 let oauth2Token = OAuth2Token()
 
-var runMode: RunMode = .prod			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+var runMode: RunMode = .test			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

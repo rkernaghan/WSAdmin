@@ -229,7 +229,7 @@ import GoogleSignIn
 							
 							let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 							let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-							guard locationFound else {
+							guard locationFound, let locationNum else {
 								let logMessage = "Error: BillingVM:updateBillingStats: Could not find Location: \(studentLocation) for Student: \(studentName) in Reference Data"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
@@ -648,7 +648,7 @@ import GoogleSignIn
 				// Reset the Location data associated with the Student
 				let studentLocation = referenceData.students.studentsList[studentNum].studentLocation
 				let (locationFound,locationNum) = referenceData.locations.findLocationByName(locationName: studentLocation)
-				guard locationFound  else {
+				guard locationFound, let locationNum else {
 					statsMessage = "ERROR: Location: \(studentLocation) not found in Reference Data resetting billing stats for \(billingMonth) \(billingYear)"
 					print(statsMessage)
 					Task {

@@ -411,7 +411,7 @@ import Foundation
 				let tutorServiceName = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName
 				
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: tutorServiceKey)
-				if serviceFound {
+				if serviceFound, let serviceNum {
 					let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 					
 					if serviceName != tutorServiceName {

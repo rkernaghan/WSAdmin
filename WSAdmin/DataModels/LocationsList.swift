@@ -20,25 +20,25 @@ import GoogleSignIn
 	}
 	
 	// This function finds a Location object in the Locations List object array by Location key
-	func findLocationByKey(locationKey: String) -> (Bool, Int) {
+	func findLocationByKey(locationKey: String) -> (Bool, Int?) {
 		
 		if let index = locationsList.firstIndex(
 			where: { $0.locationKey == locationKey }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function finds a Location object in the Locations List object array by Location name
-	func findLocationByName(locationName: String) -> (Bool, Int) {
+	func findLocationByName(locationName: String) -> (Bool, Int?) {
 		
 		if let index = locationsList.firstIndex(
 			where: { $0.locationName == locationName }
 		) {
 			return (true, index)
 		}
-		return (false, 0)
+		return (false, nil)
 	}
 	
 	// This function adds a new Location object to the Locations List object array
