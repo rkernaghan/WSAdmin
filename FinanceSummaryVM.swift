@@ -6,6 +6,7 @@
 //
 import Foundation
 
+@MainActor
 @Observable class FinanceSummaryVM {
 	
 	func buildFinanceSummary() async -> [FinanceSummaryRow] {

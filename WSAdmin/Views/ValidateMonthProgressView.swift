@@ -17,7 +17,6 @@ struct ValidateMonthProgressView: View {
 	
 	@Environment(RefDataVM.self) var refDataModel: RefDataVM
 	
-	@State private var showAlert: Bool = false
 	
 	var body: some View {
 		
@@ -26,9 +25,6 @@ struct ValidateMonthProgressView: View {
 				Text($0.windowLineText)
 			}
 			
-		}
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
 		}
 		
 		

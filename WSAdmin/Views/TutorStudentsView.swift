@@ -16,6 +16,7 @@ struct TutorStudentsView: View {
 	
 	@State private var selectedStudents: Set<Student.ID> = []
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
     
 	var body: some View {
 		VStack {

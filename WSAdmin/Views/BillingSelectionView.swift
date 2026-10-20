@@ -20,7 +20,6 @@ struct BillingSelectionView: View {
 	@State private var selectedMonth: String = monthArray[Calendar.current.dateComponents([.month], from: Date()).month! - 1]
 	@State private var selectedYear: String = yearArray[Calendar.current.dateComponents([.year], from: Date()).year! - 2024]
 	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
-	@State private var showAlert: Bool = false
 	@State private var showInvoice: Bool = false
 	@State private var selectAll: Bool = false
 	@State private var invoice = Invoice()
@@ -109,9 +108,6 @@ struct BillingSelectionView: View {
 						}
 					} label: {
 						Label("Generate Invoice", systemImage: "square.and.arrow.up")
-					}
-					.alert(buttonErrorMsg, isPresented: $showAlert) {
-						Button("OK", role: .cancel) { }
 					}
 				}
 			}

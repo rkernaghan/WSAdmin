@@ -52,7 +52,7 @@ class TutorBillingMonth {
 		do {
 			tutorCountData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange, logNote: "Tutor Billing Count")
 			if let tutorCountData = tutorCountData {
-				tutorBillingCount = Int(tutorCountData.values[0][0]) ?? 0
+				tutorBillingCount = Int(tutorCountData.values.first?.first ?? "") ?? 0
 				// Read in the Billed Tutors from the Billed Tutor spreadsheet
 				if tutorBillingCount > 0 {			// Could be zero if loading a Billed Tutor month not yet billed
 					do {
@@ -153,40 +153,40 @@ class TutorBillingMonth {
 		while tutorBillingIndex < tutorBillingCount {
 			let tutorName = sheetCells[rowNumber][PgmConstants.tutorBillingTutorCol]
 			let monthBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingMonthSessionCol]) ?? 0
-			let monthBillingHours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthHoursCol]) ?? 0.0
-			let monthBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthCostCol]) ?? 0.0
-			let monthBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthRevenueCol]) ?? 0.0
-			let monthBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingMonthProfitCol]) ?? 0.0
+			let monthBillingHours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingMonthHoursCol])
+			let monthBillingCost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingMonthCostCol])
+			let monthBillingRevenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingMonthRevenueCol])
+			let monthBillingProfit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingMonthProfitCol])
 			
 			let q1Sessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingQ1SessionCol]) ?? 0
-			let q1Hours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ1HoursCol]) ?? 0.0
-			let q1Cost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ1CostCol]) ?? 0.0
-			let q1Revenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ1RevenueCol]) ?? 0.0
-			let q1Profit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ1ProfitCol]) ?? 0.0
+			let q1Hours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ1HoursCol])
+			let q1Cost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ1CostCol])
+			let q1Revenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ1RevenueCol])
+			let q1Profit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ1ProfitCol])
 
 			let q2Sessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingQ2SessionCol]) ?? 0
-			let q2Hours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ2HoursCol]) ?? 0.0
-			let q2Cost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ2CostCol]) ?? 0.0
-			let q2Revenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ2RevenueCol]) ?? 0.0
-			let q2Profit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ2ProfitCol]) ?? 0.0
+			let q2Hours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ2HoursCol])
+			let q2Cost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ2CostCol])
+			let q2Revenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ2RevenueCol])
+			let q2Profit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ2ProfitCol])
 			
 			let q3Sessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingQ3SessionCol]) ?? 0
-			let q3Hours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ3HoursCol]) ?? 0.0
-			let q3Cost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ3CostCol]) ?? 0.0
-			let q3Revenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ3RevenueCol]) ?? 0.0
-			let q3Profit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ3ProfitCol]) ?? 0.0
+			let q3Hours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ3HoursCol])
+			let q3Cost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ3CostCol])
+			let q3Revenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ3RevenueCol])
+			let q3Profit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ3ProfitCol])
 			
 			let q4Sessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingQ4SessionCol]) ?? 0
-			let q4Hours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ4HoursCol]) ?? 0.0
-			let q4Cost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ4CostCol]) ?? 0.0
-			let q4Revenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ4RevenueCol]) ?? 0.0
-			let q4Profit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingQ4ProfitCol]) ?? 0.0
+			let q4Hours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ4HoursCol])
+			let q4Cost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ4CostCol])
+			let q4Revenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ4RevenueCol])
+			let q4Profit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingQ4ProfitCol])
 			
 			let totalBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.tutorBillingTotalSessionCol]) ?? 0
-			let totalBillingHours: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalHoursCol]) ?? 0.0
-			let totalBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalCostCol]) ?? 0.0
-			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol]) ?? 0.0
-			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol]) ?? 0.0
+			let totalBillingHours: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingTotalHoursCol])
+			let totalBillingCost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingTotalCostCol])
+			let totalBillingRevenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingTotalRevenueCol])
+			let totalBillingProfit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorBillingTotalProfitCol])
 			
 			let tutorBillingStatus = TutorBillingStatusOption( rawValue: sheetCells[rowNumber][PgmConstants.tutorBillingStatusCol]) ?? .BilledTutorActive
 			
@@ -292,6 +292,10 @@ class TutorBillingMonth {
 	@MainActor func copyTutorBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		var completionFlag: Bool = true
 		var completionMessage: String = ""
+		var logMessage: String
+		
+		logMessage = "INFO: Copying Tutor Billing Month: \(billingMonth) \(billingMonthYear)"
+		await AppLogger.shared.log(logMessage, level: .info)
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)
 		// Load the Billed Tutor data from the previous month's sheet
@@ -300,14 +304,16 @@ class TutorBillingMonth {
 		do {
 			let (resultFlag, prevMonthTutorFileID) = try await getFileID(fileName: prevMonthTutorFileName)
 			guard resultFlag else {
-				print("Error: could not get File ID for \(prevMonthTutorFileName)")
-				return(false, "Error: could not get File ID for \(prevMonthTutorFileName)")
+				logMessage = "Error: could not get File ID for \(prevMonthTutorFileName)"
+				await AppLogger.shared.log(logMessage, level: .error)
+				return(false, logMessage)
 			}
 				
 			completionFlag = await prevTutorBillingMonth.getTutorBillingMonth(monthName: prevMonth, tutorBillingFileID: prevMonthTutorFileID, loadValidatedData: false)
 			guard completionFlag else {
-				print("Error: could not load prev month Billed Tutor month \(billingMonth) \(billingMonthYear)")
-				return(false, "Error: could not load prev month Billed Tutor month \(billingMonth) \(billingMonthYear)")
+				logMessage = "Error: could not load prev month Billed Tutor month \(billingMonth) \(billingMonthYear)"
+				await AppLogger.shared.log(logMessage, level: .error)
+				return(false, logMessage)
 			}
 			
 			// Loop through each Tutor from the previous month's Billed Tutor sheet
@@ -317,8 +323,9 @@ class TutorBillingMonth {
 				let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
 				let (foundTutorFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 				guard foundTutorFlag, let tutorNum else {
-					print("Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
-					return(false, "Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data")
+					logMessage = "Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data"
+					await AppLogger.shared.log(logMessage, level: .error)
+					return(false, logMessage)
 				}
 				
 				// If Tutor does not already exist in Billed Tutor file for month, copy previous month's data
@@ -371,8 +378,9 @@ class TutorBillingMonth {
 				prevTutorNum += 1
 			}
 		} catch {
-			print("Error: Could not load \(prevMonth) Tutor Billing Data")
 			completionMessage = "Error: Could not load \(prevMonth) Tutor Billing Data"
+			print(completionMessage)
+			await AppLogger.shared.log(completionMessage, level: .error)
 			completionFlag = false
 		}
 		

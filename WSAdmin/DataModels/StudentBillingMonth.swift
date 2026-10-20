@@ -74,26 +74,26 @@ class StudentBillingMonth {
 		while studentBillingIndex < studentBillingCount {
 			let studentName = sheetCells[rowNumber][PgmConstants.studentBillingStudentCol]
 			let monthBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.studentBillingMonthSessionCol]) ?? 0
-			let monthBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthCostCol]) ?? 0.0
-			let monthBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthRevenueCol]) ?? 0.0
-			let monthBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingMonthProfitCol]) ?? 0.0
+			let monthBillingCost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingMonthCostCol])
+			let monthBillingRevenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingMonthRevenueCol])
+			let monthBillingProfit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingMonthProfitCol])
 			
 			let totalBillingSessions: Int = Int(sheetCells[rowNumber][PgmConstants.studentBillingTotalSessionCol]) ?? 0
-			let totalBillingCost: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol]) ?? 0.0
-			let totalBillingRevenue: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol]) ?? 0.0
-			let totalBillingProfit: Double = Double(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol]) ?? 0.0
+			let totalBillingCost: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingTotalCostCol])
+			let totalBillingRevenue: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingTotalRevenueCol])
+			let totalBillingProfit: Double = sheetDouble(sheetCells[rowNumber][PgmConstants.studentBillingTotalProfitCol])
 			let studentStatus = StudentBillingStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.studentBillingStatusCol]) ?? .BilledStudentActive
 			
 			if loadValidationDataFlag {
 				monthValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.studentValidatedMonthSessionCol]) ?? 0
-				monthValidatedCost = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthCostCol]) ?? 0.0
-				monthValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthRevenueCol]) ?? 0.0
-				monthValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.studentValidatedMonthProfitCol]) ?? 0.0
+				monthValidatedCost = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedMonthCostCol])
+				monthValidatedRevenue = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedMonthRevenueCol])
+				monthValidatedProfit = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedMonthProfitCol])
 				
 				totalValidatedSessions = Int(sheetCells[rowNumber][PgmConstants.studentValidatedTotalSessionCol]) ?? 0
-				totalValidatedCost = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalCostCol]) ?? 0.0
-				totalValidatedRevenue = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalRevenueCol]) ?? 0.0
-				totalValidatedProfit = Double(sheetCells[rowNumber][PgmConstants.studentValidatedTotalProfitCol]) ?? 0.0
+				totalValidatedCost = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedTotalCostCol])
+				totalValidatedRevenue = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedTotalRevenueCol])
+				totalValidatedProfit = sheetDouble(sheetCells[rowNumber][PgmConstants.studentValidatedTotalProfitCol])
 			}
 			
 			let rowSize = sheetCells[rowNumber].count
@@ -174,7 +174,7 @@ class StudentBillingMonth {
 			// Get the count of Students in the Billed Student spreadsheet
 			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange, logNote: "Student Billing Count")
 			if let studentCountData = studentCountData {
-				studentBillingCount = Int(studentCountData.values[0][0]) ?? 0
+				studentBillingCount = Int(studentCountData.values.first?.first ?? "") ?? 0
 				// Read in the Billed Students from the Billed Student spreadsheet based on count
 				if studentBillingCount > 0 {
 					do {
@@ -261,6 +261,9 @@ class StudentBillingMonth {
 	@MainActor func copyStudentBillingMonth(billingMonth: String, billingMonthYear: String, referenceData: ReferenceData) async -> (Bool, String) {
 		var completionFlag: Bool = true
 		var logMessage: String = ""
+		
+		logMessage = "INFO: Copying Student Billing Month: \(billingMonth) \(billingMonthYear)"
+		await AppLogger.shared.log(logMessage, level: .info)
 		
 		// Determine the file name of the previous month Student Billiing spreadsheet (could be a previous year)
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingMonthYear)

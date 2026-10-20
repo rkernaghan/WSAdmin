@@ -68,8 +68,6 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 	//		- determines whether the user already has necessary Google scope
 	//
 	func checkSignInStatus() async {
-		var tokenExpirationDate: Date?
-		
 		print("UserAuthVM-checkSignInStatus: Starting checkSignInStatus")
 		
 		if (GIDSignIn.sharedInstance.currentUser != nil) {
@@ -85,17 +83,8 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 				
 				let clientID = GIDSignIn.sharedInstance.configuration?.clientID
 				let currentUser = GIDSignIn.sharedInstance.currentUser
-				if let user = currentUser {
-					accessOAuthToken = user.accessToken.tokenString
-					refreshOAuthToken = user.refreshToken.tokenString
-					tokenExpirationDate = user.accessToken.expirationDate
-				}
-				
-				if let tokenExpirationDate = tokenExpirationDate {
-					oauth2Token.accessToken = accessOAuthToken
-					oauth2Token.refreshToken = refreshOAuthToken
-					oauth2Token.expiresAt = tokenExpirationDate
-					oauth2Token.clientID = clientID
+				if let user = currentUser, let tokenExpirationDate = user.accessToken.expirationDate {
+					await TokenStore.shared.set(accessToken: user.accessToken.tokenString, refreshToken: user.refreshToken.tokenString, clientID: clientID, expiresAt: tokenExpirationDate)
 				}
 				
 				
@@ -189,10 +178,9 @@ let gmailScope:String = "https://www.googleapis.com/auth/gmail.send"
 		}
 		GIDSignIn.sharedInstance.signOut()
 		isLoggedIn = false
-		accessOAuthToken = ""
-		refreshOAuthToken = ""
-		clientOAuthID = ""
-		oauth2Token.accessToken = ""
+		Task {
+			await TokenStore.shared.clear()
+		}
 		
 	}
 }

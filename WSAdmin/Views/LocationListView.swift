@@ -19,6 +19,7 @@ struct LocationListView: View {
 	@State private var locationNumber: Int = 0
 	@State private var showDeleted: Bool = false
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	
 	var body: some View {
 		if referenceData.locations.isLocationDataLoaded {

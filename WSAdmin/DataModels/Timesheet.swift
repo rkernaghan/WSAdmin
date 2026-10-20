@@ -178,7 +178,7 @@ class Timesheet: Identifiable {
 														billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: "**   Warning: Client Name cell empty for \(date) with Student \(student) in Timesheet row \(rowNum + 1)"))
 													} else {
 														
-														let cost = Double(sheetCells[rowNum][PgmConstants.timesheetCostCol]) ?? 0.0
+														let cost = sheetDouble(sheetCells[rowNum][PgmConstants.timesheetCostCol])
 														
 														let clientEmail = sheetCells[rowNum][PgmConstants.timesheetClientEmailCol]
 														let clientPhone = sheetCells[rowNum][PgmConstants.timesheetClientPhoneCol]

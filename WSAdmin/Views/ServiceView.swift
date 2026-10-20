@@ -29,6 +29,7 @@ struct ServiceView: View {
 	@State var price3: Double
 	
 	@State private var showAlert:Bool = false
+	@State private var buttonErrorMsg: String = " "
 	
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(ServiceMgmtVM.self) var serviceMgmtVM: ServiceMgmtVM

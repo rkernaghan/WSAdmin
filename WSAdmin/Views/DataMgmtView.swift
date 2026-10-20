@@ -47,6 +47,7 @@ struct DataMgmtView: View {
 	
 	@State var referenceData = ReferenceData()
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var statusMessage: String = ""
     
 	var body: some View {
@@ -57,43 +58,49 @@ struct DataMgmtView: View {
 			
 				.onAppear(perform: {
 					Task {
-						(detailsFlag, tutorDetailsFileID) = try await getFileID(fileName: runMode.tutorDetailsFileName)
-						if detailsFlag {
+						do {
+							(detailsFlag, tutorDetailsFileID) = try await getFileID(fileName: runMode.tutorDetailsFileName)
+							if detailsFlag {
 							
-							(refDataFlag, referenceDataFileID) = try await getFileID(fileName: runMode.referenceDataFileName)
-							if refDataFlag {
-								(templateFlag, timesheetTemplateFileID) = try await getFileID(fileName: runMode.timesheetTemplateFileName)
-								if templateFlag {
-									studentBillingFileNamePrefix = runMode.studentBillingFileNamePrefix
-									tutorBillingFileNamePrefix = runMode.tutorBillingFileNamePrefix
+								(refDataFlag, referenceDataFileID) = try await getFileID(fileName: runMode.referenceDataFileName)
+								if refDataFlag {
+									(templateFlag, timesheetTemplateFileID) = try await getFileID(fileName: runMode.timesheetTemplateFileName)
+									if templateFlag {
+										studentBillingFileNamePrefix = runMode.studentBillingFileNamePrefix
+										tutorBillingFileNamePrefix = runMode.tutorBillingFileNamePrefix
 									
-									let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
-									if !loadResult {
-										showAlert.toggle()
-										buttonErrorMsg = "ERROR: Unable to load Reference Data - Restart program"
-										await AppLogger.shared.log(buttonErrorMsg, level: .error)
+										let loadResult = await refDataVM.loadReferenceData(referenceData: referenceData)
+										if !loadResult {
+											showAlert.toggle()
+											buttonErrorMsg = "ERROR: Unable to load Reference Data - Restart program"
+											await AppLogger.shared.log(buttonErrorMsg, level: .error)
+										} else {
+											let tutorCount = referenceData.tutors.tutorsList.count
+											let studentCount = referenceData.students.studentsList.count
+											let serviceCount = referenceData.services.servicesList.count
+											let locationCount = referenceData.locations.locationsList.count
+											statusMessage = "Reference Data Loaded: \(tutorCount) Tutors, \(studentCount) Students, \(serviceCount) Services, \(locationCount) Locations"
+											await AppLogger.shared.log(statusMessage, level: .info)
+										}
 									} else {
-										let tutorCount = referenceData.tutors.tutorsList.count
-										let studentCount = referenceData.students.studentsList.count
-										let serviceCount = referenceData.services.servicesList.count
-										let locationCount = referenceData.locations.locationsList.count
-										statusMessage = "Reference Data Loaded: \(tutorCount) Tutors, \(studentCount) Students, \(serviceCount) Services, \(locationCount) Locations"
-										await AppLogger.shared.log(statusMessage, level: .info)
+										buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.timesheetTemplateFileName) - Restart program"
+										await AppLogger.shared.log(buttonErrorMsg, level: .error)
+										showAlert.toggle()
 									}
 								} else {
-									buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.timesheetTemplateFileName) - Restart program"
+									buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.referenceDataFileName) - Restart program"
 									await AppLogger.shared.log(buttonErrorMsg, level: .error)
 									showAlert.toggle()
 								}
 							} else {
-								buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.referenceDataFileName) - Restart program"
+								buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.tutorDetailsFileName) - Restart program"
 								await AppLogger.shared.log(buttonErrorMsg, level: .error)
 								showAlert.toggle()
 							}
-						} else {
-							buttonErrorMsg = "ERROR: Unable to getFileID for \(runMode.tutorDetailsFileName) - Restart program"
-							await AppLogger.shared.log(buttonErrorMsg, level: .error)
-							showAlert.toggle()
+						} catch {
+							buttonErrorMsg = "ERROR: Unable to access Google Drive files - Restart program. \(error.localizedDescription)"
+							await AppLogger.shared.log("\(buttonErrorMsg) (\(error))", level: .error)
+							showAlert = true
 						}
 					}
 				})
@@ -112,6 +119,7 @@ struct SideView: View {
 	@Binding var path: NavigationPath
 	
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var showFinanceSummary: Bool = false
 	@State private var showTutorAvailabilitySummary: Bool = false
 	@State private var showDataIntegritySummary: Bool = false
@@ -351,21 +359,28 @@ struct SideView: View {
 				Task {
 					statusMessage = " "
 					creatingNewYearsFiles = true
-					let (generateResult, generateMessage) = try await systemVM.generateNewYearFiles(referenceData: referenceData)
-					creatingNewYearsFiles = false
-					
-					if !generateResult {
-						showAlert.toggle()
-						buttonErrorMsg = generateMessage
-					} else {
-						statusMessage = "Files Generated For New Year"
+					do {
+						let (generateResult, generateMessage) = try await systemVM.generateNewYearFiles(referenceData: referenceData)
+						creatingNewYearsFiles = false
+
+						if !generateResult {
+							showAlert.toggle()
+							buttonErrorMsg = generateMessage
+						} else {
+							statusMessage = "Files Generated For New Year"
+						}
+					} catch {
+						creatingNewYearsFiles = false
+						buttonErrorMsg = "ERROR: Unable to generate New Year files. \(error.localizedDescription)"
+						await AppLogger.shared.log("\(buttonErrorMsg) (\(error))", level: .error)
+						showAlert = true
 					}
 				}
 			} ) {
 				if creatingNewYearsFiles {
 					ProgressView()
 				} else {
-					Text("Create New Years Files")
+					Text("Create New Years Files (in early January")
 				}
 			}
 			.disabled(creatingNewYearsFiles)

@@ -20,6 +20,7 @@ struct TutorServicesView: View {
 	@State private var editTutorService = false
 	@State private var unassignTutorService = false
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var sortOrder = [KeyPathComparator(\TutorService.timesheetServiceName)]
 	
 	var body: some View {

@@ -27,6 +27,7 @@ struct ServiceListView: View {
 	@State private var showUnassigned: Bool = true
 	@State private var showDeleted: Bool = false
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	
 	@State private var emptyArray = [Service]()
 	@State private var serviceNumber: Int = 0

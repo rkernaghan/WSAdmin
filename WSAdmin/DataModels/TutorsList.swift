@@ -103,9 +103,9 @@ import Foundation
 			let newTutorStudentCount = Int(sheetCells[rowNumber][PgmConstants.tutorStudentCountPosition]) ?? 0
 			let newTutorServiceCount = Int(sheetCells[rowNumber][PgmConstants.tutorServiceCountPosition]) ?? 0
 			let newTutorTotalSessions = Int(sheetCells[rowNumber][PgmConstants.tutorSessionCountPosition]) ?? 0
-			let newTutorCost = Double(sheetCells[rowNumber][PgmConstants.tutorTotalCostPosition]) ?? 0.0
-			let newTutorRevenue = Double(sheetCells[rowNumber][PgmConstants.tutorTotalRevenuePosition]) ?? 0.0
-			let newTutorProfit = Double(sheetCells[rowNumber][PgmConstants.tutorTotalProfitPosition]) ?? 0.0
+			let newTutorCost = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorTotalCostPosition])
+			let newTutorRevenue = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorTotalRevenuePosition])
+			let newTutorProfit = sheetDouble(sheetCells[rowNumber][PgmConstants.tutorTotalProfitPosition])
 			// Create a new Tutor object
 			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: newTutorName, tutorEmail: newTutorEmail, tutorPhone: newTutorPhone, tutorType: newTutorType,tutorStatus: newTutorStatus, tutorStartDate: newTutorStartDateString, tutorEndDate: newTutorEndDateString, tutorMaxStudents: newTutorMaxStudents, tutorStudentCount: newTutorStudentCount, tutorServiceCount: newTutorServiceCount, tutorTotalSessions: newTutorTotalSessions, tutorTotalCost: newTutorCost, tutorTotalRevenue: newTutorRevenue, tutorTotalProfit: newTutorProfit, timesheetFileID: "")
 			// Add the new Tutor object to the Tutors List object array
@@ -170,9 +170,9 @@ import Foundation
 			let tutorTotalStudents = String(tutorsList[tutorNum].tutorStudentCount)
 			let tutorTotalServices = String(tutorsList[tutorNum].tutorServiceCount)
 			let tutorTotalSessions = String(tutorsList[tutorNum].tutorTotalSessions)
-			let tutorTotalCost = String(tutorsList[tutorNum].tutorTotalCost.formatted(.number.precision(.fractionLength(2))))
-			let tutorTotalRevenue = String(tutorsList[tutorNum].tutorTotalRevenue.formatted(.number.precision(.fractionLength(2))))
-			let tutorTotalProfit = String(tutorsList[tutorNum].tutorTotalProfit.formatted(.number.precision(.fractionLength(2))))
+			let tutorTotalCost = String(tutorsList[tutorNum].tutorTotalCost.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let tutorTotalRevenue = String(tutorsList[tutorNum].tutorTotalRevenue.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let tutorTotalProfit = String(tutorsList[tutorNum].tutorTotalProfit.formatted(.number.grouping(.never).precision(.fractionLength(2))))
 			// Add a new row to the 2D array containing the Tutor object attributes
 			updateValues.insert([tutorKey, tutorName, tutorEmail, tutorPhone, tutorType, tutorStatus, tutorStartDate, tutorEndDate, tutorMaxStudents, tutorTotalStudents, tutorTotalServices, tutorTotalSessions, tutorTotalCost, tutorTotalRevenue, tutorTotalProfit], at: tutorNum)
 			tutorNum += 1

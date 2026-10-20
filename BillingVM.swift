@@ -152,12 +152,12 @@ import GoogleSignIn
 			print(logMessage)
 		}
 		
-		
 		var billingMonthStudentFileID: String = ""
 		var billingMonthTutorFileID: String = ""
 		
 		let studentBillingMonth = StudentBillingMonth(monthName: billingMonth)
 		var resultFlag: Bool = false
+		var resultMessage: String
 		
 		let (prevMonth, prevMonthYear) = findPrevMonthYear(currentMonth: billingMonth, currentYear: billingYear)
 		
@@ -177,12 +177,13 @@ import GoogleSignIn
 					return(false, logMessage)
 				}
 				
-				var (resultFlag, resultMessage) = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
+				(resultFlag, resultMessage) = await tutorBillingMonth.copyTutorBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 				guard resultFlag else {
 					return(false, resultMessage)
 				}
 				
-			print("updateBillingStats already Billed Tutors \(tutorBillingMonth.tutorBillingRows.count)")
+				print("updateBillingStats already Billed Tutors \(tutorBillingMonth.tutorBillingRows.count)")
+				
 				(resultFlag, resultMessage) = await studentBillingMonth.copyStudentBillingMonth(billingMonth: billingMonth, billingMonthYear: billingYear, referenceData: referenceData)
 				guard resultFlag else {
 					return(false,resultMessage)
@@ -253,7 +254,7 @@ import GoogleSignIn
 							tutorBillingMonth.tutorBillingRows[billedTutorNum].totalBilledProfit += profit
 							
 							
-//							let quarterNum = getCurrentQuarter()
+							//							let quarterNum = getCurrentQuarter()
 							switch billingQuarter {
 								case 1:		// First quarter
 									tutorBillingMonth.tutorBillingRows[billedTutorNum].q1BilledSessions += 1
@@ -308,11 +309,14 @@ import GoogleSignIn
 							
 							referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 							referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
-							}
 						} else {
-							let logMessage = "ERROR: Billed Tutor \(tutorName) not found updating Billing Stats for \(billingMonth)"
+							let logMessage = "ERROR: Billed Student \(studentName) not found updating Billing Stats for \(billingMonth)"
 							await AppLogger.shared.log(logMessage, level: .error)
 						}
+					} else {
+						let logMessage = "ERROR: Billed Tutor \(tutorName) not found updating Billing Stats for \(billingMonth)"
+						await AppLogger.shared.log(logMessage, level: .error)
+					}
 					
 					invoiceLineNum += 1
 					}
@@ -366,7 +370,7 @@ import GoogleSignIn
 		var generationMessage: String = ""
 		var logMessage: String
 		
-		logMessage = "INFO: generating CSV File for \(billingMonth) \(billingYear)"
+		logMessage = "INFO: Begining generate CSV File for \(billingMonth) \(billingYear)"
 		await AppLogger.shared.log(logMessage)
 		
 		// First update the billing stats for Tutors, Students and Locations
@@ -417,6 +421,8 @@ import GoogleSignIn
 				
 				// Open the file for writing
 				let fileHandle = try FileHandle(forWritingTo: fileURL)
+				defer { try? fileHandle.close() }
+				try fileHandle.truncate(atOffset: 0)
 				
 				//Create a CSV header line in Xero format
 				let csvLine = PgmConstants.csvXeroInvoiceHeader
@@ -438,18 +444,34 @@ import GoogleSignIn
 				}
 				// Save the Students List as the Last Billing Dates will have been updated in the Student Record and Tutor Student Record
 				let studentCompletionFlag = await referenceData.students.saveStudentData()
-				let dataCountCompletionFlag = await referenceData.dataCounts.saveDataCounts()
-				let TutorCompletionFlag = await referenceData.tutors.saveTutorData()
+				if !studentCompletionFlag {
+					generationFlag = false
+					generationMessage += "ERROR: Could not save Student data in generateCSVFile\n"
+					await AppLogger.shared.log(generationMessage, level: .error)
+				}
 				
-				// Close the CSV file when done
-				fileHandle.closeFile()
+				let dataCountCompletionFlag = await referenceData.dataCounts.saveDataCounts()
+				if !dataCountCompletionFlag {
+					generationFlag = false
+					generationMessage += "ERROR: Could not save DataCounts in generateCSVFile\n"
+					await AppLogger.shared.log(generationMessage, level: .error)
+				}
+				
+				let tutorCompletionFlag = await referenceData.tutors.saveTutorData()
+				if !tutorCompletionFlag {
+					generationFlag = false
+					generationMessage += "ERROR: Could not save Tutor data in generateCSVFile\n"
+					await AppLogger.shared.log(generationMessage, level: .error)
+				}
+				
+				// The CSV file is closed by the defer above when this scope exits
 				print("Lines written to CSV file successfully.")
 				
 				logMessage = "INFO: CSV File \(fileName) for \(billingMonth) \(billingYear) generation complete"
 				await AppLogger.shared.log(logMessage)
 			} catch {
 				generationFlag = false
-				generationMessage = "Error: Could not write to CSV file: \(error)"
+				generationMessage = "ERROR: Could not write to CSV file: \(error)"
 				print(generationMessage)
 				await AppLogger.shared.log(generationMessage, level: .error)
 			}
@@ -483,7 +505,7 @@ import GoogleSignIn
 //		let invoiceQuantity = invoiceLine.quantity
 		let invoiceServiceDate = invoiceLine.serviceDate
 		let invoiceRate = invoiceLine.rate
-		let invoiceAmount = String(invoiceLine.amount.formatted(.number.precision(.fractionLength(2))))
+		let invoiceAmount = String(invoiceLine.amount.formatted(.number.grouping(.never).precision(.fractionLength(2))))
 		let invoiceTaxCode = invoiceLine.taxCode
 		let invoiceItemCode = invoiceLine.serviceCode
 
@@ -560,6 +582,8 @@ import GoogleSignIn
 				}
 				// Open the file for writing
 				let fileHandle = try FileHandle(forWritingTo: fileURL)
+				defer { try? fileHandle.close() }
+				try fileHandle.truncate(atOffset: 0)
 				
 				let csvLine = PgmConstants.csvClientListHeader
 				if let data = "\(csvLine)\n".data(using: .utf8) { // Convert each line to Data and add a newline
@@ -577,8 +601,7 @@ import GoogleSignIn
 					studentNum += 1
 				}
 				
-				// Close the CSV file when done
-				fileHandle.closeFile()
+				// The CSV file is closed by the defer above when this scope exits
 				print("Lines written to CSV file successfully.")
 			} catch {
 				print("Error: Could not write to CSV file: \(error)")

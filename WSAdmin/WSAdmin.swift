@@ -654,35 +654,36 @@ struct SheetData: Decodable {
 	let range: String
 	let majorDimension: String
 	let values: [[String]]
+	
+	enum CodingKeys: String, CodingKey {
+		case range, majorDimension, values
+	}
+	
+	// The Google Sheets API omits the "values" key entirely when the requested range contains no data
+	// (for example an empty sheet or a tutor with no students yet), so treat a missing key as no rows.
+	init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		range = try container.decode(String.self, forKey: .range)
+		majorDimension = try container.decodeIfPresent(String.self, forKey: .majorDimension) ?? "ROWS"
+		values = try container.decodeIfPresent([[String]].self, forKey: .values) ?? []
+	}
 }
 
-class OAuth2Token{
-	var accessToken: String?
-	var refreshToken: String?
-	var expiresAt: Date?
-	var clientID: String?
-}
 
 let monthArray = ["Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
 let yearArray = ["2024", "2025", "2026", "2027", "2028", "2029", "2030", "2031"]
 let yearNumbersArray = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
  
-var buttonErrorMsg: String = " "
 
-var studentBillingFileNamePrefix: String = ""
-var tutorBillingFileNamePrefix: String = ""
-var referenceDataFileID: String = ""
-var tutorDetailsFileID: String = ""
-var timesheetTemplateFileID: String = ""
+@MainActor var studentBillingFileNamePrefix: String = ""
+@MainActor var tutorBillingFileNamePrefix: String = ""
+@MainActor var referenceDataFileID: String = ""
+@MainActor var tutorDetailsFileID: String = ""
+@MainActor var timesheetTemplateFileID: String = ""
 
-var accessOAuthToken: String = ""
-var refreshOAuthToken: String = ""
-var clientOAuthID: String = ""
-var tokenExpiryTime: Date = Date.now
 
-let oauth2Token = OAuth2Token()
 
-var runMode: RunMode = .test			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+let runMode: RunMode = .prod			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

@@ -20,12 +20,12 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 //	var fileFound: Bool = false
 	var logMessage: String
 		
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
-			// URL for Google Sheets API
-			let urlString = "https://www.googleapis.com/drive/v3/files?q=name='\(fileName)'&fields=files(id,name)"
+			// URL for Google Sheets API (escape backslashes and single quotes in the file name, as quotes delimit the name in the query)
+			let escapedFileName = fileName.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+			let urlString = "https://www.googleapis.com/drive/v3/files?q=name='\(escapedFileName)' and trashed=false&fields=files(id,name)"
 			guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
 				logMessage = "ERROR: Invalid URL in GelFileID \(urlString)"
 				print(logMessage)
@@ -38,59 +38,12 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 			request.httpMethod = "GET"
 			request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 			
-			// Use async URLSession to fetch the data
-			var data: Data
-			var response: URLResponse
-			var attempt = 0
-			let maxAttempts = PgmConstants.maxSheetAttempts // number of times to retry
-			
-			while true {
-				attempt += 1
-				do {
-					(data, response) = try await URLSession.shared.data(for: request)
-				} catch {
-					if attempt < maxAttempts {
-						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-						logMessage = "WARNING: getFileID - URLSession request failed for File: \(fileName), error: \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .warning)
-						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
-						continue
-					} else {
-						logMessage = "ERROR: getFileID - URLSession request failed for File: \(fileName), error: \(error.localizedDescription), attempt: \(attempt), request url: \(request)"
-						await AppLogger.shared.log(logMessage, level: .error)
-						throw error
-					}
-				}
-				
-				if let httpResponse = response as? HTTPURLResponse {
-					if httpResponse.statusCode == 503, attempt < maxAttempts {
-						let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-						logMessage = "WARNING: Utilities.getFileID - HTTP 503 for Filename \(fileName), retrying in \(delaySeconds) seconds (attempt \(attempt))"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage,level: .warning)
-						try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
-						continue
-					}
-					
-					if httpResponse.statusCode != 200 {
-						logMessage = "ERROR: Utilities.getFileID - HTTP Result Error Code: \(httpResponse.statusCode) for Filename \(fileName)"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .error)
-					}
-				}
-				
-				break
-			}
-			
-			// Check if the response is successful
-			guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-				let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-				logMessage = "ERROR: Invalid HTTP Response in getFileID Status Code: \(statusCode)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage,level: .error)
-				throw NSError(domain: logMessage, code: statusCode, userInfo: nil)
-			}
+			// Fetch the data, retrying on transient errors
+			let (data, _) = try await performRequestWithRetry(
+				request: request,
+				maxAttempts: PgmConstants.maxSheetAttempts,
+				context: "Utilities.getFileID - Filename \(fileName)"
+			)
 			
 			// Parse the JSON response
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
@@ -120,14 +73,13 @@ func readSheetCells(fileID: String, range: String, logNote: String) async throws
 	var sheetData: SheetData?
 	var logMessage: String
 	
-	let tokenFound = await getAccessToken()
-	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+	guard let accessToken = await TokenStore.shared.validAccessToken() else {
 		return nil
 	}
 	
 	// URL for Google Sheets API
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)"
-	guard let url = URL(string: urlString) else {
+	guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
 		logMessage = "ERROR: Bad URL in readSheetCells URL: \(urlString)"
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
@@ -138,7 +90,7 @@ func readSheetCells(fileID: String, range: String, logNote: String) async throws
 	request.httpMethod = "GET"
 	request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 	
-	logMessage = "INFO: readSheetCells \(logNote) - Range: \(range), FileID \(fileID)"
+	logMessage = "                     INFO: readSheetCells \(logNote) - Range: \(range), FileID \(fileID)"
 	await AppLogger.shared.log(logMessage)
 	
 	// Perform the network request, retrying on transient errors and
@@ -153,7 +105,7 @@ func readSheetCells(fileID: String, range: String, logNote: String) async throws
 	do {
 		sheetData = try JSONDecoder().decode(SheetData.self, from: data)
 	} catch {
-		logMessage = "ERROR: readSheetCells - Decoding error: \(error)"
+		logMessage = "ERROR: readSheetCells \(logNote) - Range: \(range), FileID \(fileID) - Decoding error: \(error)"
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw error
 	}
@@ -174,13 +126,12 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 	var completionFlag: Bool = true
 	var logMessage: String
 	
-	let tokenFound = await getAccessToken()
-	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+	guard let accessToken = await TokenStore.shared.validAccessToken() else {
 		return false
 	}
 	
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
-	guard let url = URL(string: urlString) else {
+	guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
 		logMessage = "ERROR: Invalid URL for Google Sheets API \(urlString)"
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
@@ -201,7 +152,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 	
 	request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
 	
-	logMessage = "INFO: writeSheetCells - \(logNote), Range: \(range), FileID \(fileID)"
+	logMessage = "                    INFO: writeSheetCells - \(logNote), Range: \(range), FileID \(fileID)"
 	await AppLogger.shared.log(logMessage, level: .info)
 	
 	// Perform the network request, retrying on transient errors and
@@ -277,9 +228,8 @@ func renameGoogleDriveFile(fileID: String, newName: String) async throws -> Bool
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(fileID)"
 	var logMessage: String
 	    
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			guard let url = URL(string: urlString) else {
 				logMessage = "ERROR: invalid URLString in renameGoogleDrive URL: \(urlString)"
@@ -310,7 +260,7 @@ func renameGoogleDriveFile(fileID: String, newName: String) async throws -> Bool
 			
 			// Handle the response
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				logMessage = "INFO: Google Drive File renamed successfully: \(json)"
+				logMessage = "INFO: Google Drive File renamed to: \(newName) successfully: \(json)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
 			}
@@ -337,9 +287,8 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String, parentFolder
 	
 	let urlString = "https://www.googleapis.com/drive/v3/files/\(sourceFileId)/copy"
 	
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			guard let url = URL(string: urlString) else {
 				logMessage = "ERROR: Utilities.copyGoogleDriveFile - bad URL for source file \(sourceFileId)"
@@ -375,7 +324,7 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String, parentFolder
 			// Parse the response JSON and pull out the new file's ID
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
 			   let newFileId = json["id"] as? String {
-				logMessage = "INFO: Google Drive File copied successfully: \(json)"
+				logMessage = "INFO: Google Drive File \(newFileName) copied successfully"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage)
 				return (true, newFileId)
@@ -401,15 +350,14 @@ func copyGoogleDriveFile(sourceFileId: String, newFileName: String, parentFolder
 func getFolderID(folderName: String, parentFolderID: String? = nil) async throws -> (Bool, String) {
 	var logMessage: String
 
-	let tokenFound = await getAccessToken()
-	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+	guard let accessToken = await TokenStore.shared.validAccessToken() else {
 		logMessage = "ERROR: Utilities.getFolderID - no Access Token looking up folder \(folderName)"
 		print(logMessage)
 		await AppLogger.shared.log(logMessage, level: .error)
 		return (false, "")
 	}
 
-	let escapedName = folderName.replacingOccurrences(of: "'", with: "\\'")
+	let escapedName = folderName.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
 	var query = "mimeType='application/vnd.google-apps.folder' and name='\(escapedName)' and trashed=false"
 	if let parentFolderID {
 		query += " and '\(parentFolderID)' in parents"
@@ -463,8 +411,7 @@ func getFolderID(folderName: String, parentFolderID: String? = nil) async throws
 func createFolder(folderName: String, parentFolderID: String? = nil) async throws -> (Bool, String) {
 	var logMessage: String
 
-	let tokenFound = await getAccessToken()
-	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+	guard let accessToken = await TokenStore.shared.validAccessToken() else {
 		logMessage = "ERROR: Utilities.createFolder - no Access Token creating folder \(folderName)"
 		print(logMessage)
 		await AppLogger.shared.log(logMessage, level: .error)
@@ -541,9 +488,8 @@ func getOrCreateFolderID(folderName: String, parentFolderID: String? = nil) asyn
 func addPermissionToFile(fileID: String, role: String, type: String, emailAddress: String? = nil, sendNotificationEmail: Bool) async throws -> [String: Any]? {
 	var logMessage: String
 	
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			
 			let urlString = "https://www.googleapis.com/drive/v3/files/\(fileID)/permissions?sendNotificationEmail=\(sendNotificationEmail)"
@@ -581,7 +527,7 @@ func addPermissionToFile(fileID: String, role: String, type: String, emailAddres
 			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				logMessage = "INFO: Permission added successfully: \(json)"
+				logMessage = "INFO: Permission: \(role) added successfully for \(emailAddress)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
 				return json
@@ -605,9 +551,8 @@ func getSheetIdByName(spreadsheetID: String, sheetName: String) async throws -> 
 	    
 	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID)?fields=sheets.properties"
 	
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			
 			guard let url = URL(string: urlString) else {
@@ -667,9 +612,8 @@ func createNewSheetInSpreadsheet(spreadsheetID: String, sheetTitle: String) asyn
 		throw URLError(.badURL)
 	}
 	
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			// Set up the request
 			var request = URLRequest(url: url)
@@ -701,7 +645,7 @@ func createNewSheetInSpreadsheet(spreadsheetID: String, sheetTitle: String) asyn
 			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				logMessage = "INFO: New Sheet \(sheetTitle) created successfully: \(json)"
+				logMessage = "INFO: New Tutor Details Sheet: \(sheetTitle) created successfully"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
 				return json
@@ -726,9 +670,8 @@ func renameSheetInSpreadsheet(spreadsheetID: String, sheetId: Int, newSheetName:
 	var renameResult: Bool = true
 	var logMessage: String
 	    
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 			
 			let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID):batchUpdate"
@@ -772,7 +715,7 @@ func renameSheetInSpreadsheet(spreadsheetID: String, sheetId: Int, newSheetName:
 			
 			// Handle the response
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				logMessage = "Sheet renamed successfully: \(json)"
+				logMessage = "INFO: Sheet renamed successfully to \(newSheetName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
 			}
@@ -805,9 +748,8 @@ func deleteSheet(spreadsheetID: String, sheetID: Int) async throws -> [String: A
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
 	}
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {		// Set up the request
 			var request = URLRequest(url: url)
 			request.httpMethod = "POST"
@@ -836,7 +778,7 @@ func deleteSheet(spreadsheetID: String, sheetID: Int) async throws -> [String: A
 			
 			// Parse and return the response JSON
 			if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-				logMessage = "INFO: Sheet deleted successfully: \(json)"
+				logMessage = "INFO: Sheet deleted successfully"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
 				return json
@@ -862,8 +804,7 @@ func deleteFile(fileID: String) async throws -> Bool {
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw URLError(.badURL)
 	}
-	let tokenFound = await getAccessToken()
-	guard tokenFound, let accessToken = oauth2Token.accessToken else {
+	guard let accessToken = await TokenStore.shared.validAccessToken() else {
 		return false
 	}
 
@@ -871,62 +812,18 @@ func deleteFile(fileID: String) async throws -> Bool {
 	request.httpMethod = "DELETE"
 	request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
-	// Drive's DELETE endpoint returns 204 No Content on success, unlike the 200
-	// performRequestWithRetry expects, so this call handles retries itself.
-	let retryableStatusCodes: Set<Int> = [429, 500, 502, 503, 504]
-	let maxAttempts = PgmConstants.maxSheetAttempts // number of times to retry
-	var attempt = 0
-
-	while true {
-		attempt += 1
-		let data: Data
-		let response: URLResponse
-		do {
-			(data, response) = try await URLSession.shared.data(for: request)
-		} catch {
-			if attempt < maxAttempts {
-				let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-				logMessage = "WARNING: deleteFile - URLSession request failed for FileID: \(fileID), error: \(error.localizedDescription), retrying in \(delaySeconds) seconds (attempt \(attempt))"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .warning)
-				try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
-				continue
-			} else {
-				logMessage = "ERROR: deleteFile - URLSession request failed for FileID: \(fileID), error: \(error.localizedDescription), attempt: \(attempt)"
-				await AppLogger.shared.log(logMessage, level: .error)
-				throw error
-			}
-		}
-
-		guard let httpResponse = response as? HTTPURLResponse else {
-			logMessage = "ERROR: deleteFile - response was not an HTTPURLResponse for FileID: \(fileID)"
-			await AppLogger.shared.log(logMessage, level: .error)
-			throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
-		}
-
-		let statusCode = httpResponse.statusCode
-
-		if retryableStatusCodes.contains(statusCode), attempt < maxAttempts {
-			let delaySeconds = 1 << (attempt - 1) // 1, 2, 4, 8...
-			logMessage = "WARNING: deleteFile - HTTP \(statusCode) for FileID: \(fileID), retrying in \(delaySeconds) seconds (attempt \(attempt))"
-			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .warning)
-			try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
-			continue
-		}
-
-		guard statusCode == 204 || statusCode == 200 else {
-			logMessage = "ERROR: deleteFile - HTTP Result Error Code: \(statusCode) for FileID: \(fileID)"
-			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .error)
-			return false
-		}
-
-		logMessage = "INFO: File deleted successfully - FileID: \(fileID)"
-		print(logMessage)
-		await AppLogger.shared.log(logMessage, level: .info)
-		return true
-	}
+	// Drive's DELETE endpoint returns 204 No Content on success, so accept 204 as well as 200
+	_ = try await performRequestWithRetry(
+		request: request,
+		maxAttempts: PgmConstants.maxSheetAttempts,
+		context: "Utilities.deleteFile - FileID \(fileID)",
+		acceptedStatusCodes: [200, 204]
+	)
+	
+	logMessage = "INFO: File deleted successfully - FileID: \(fileID)"
+	print(logMessage)
+	await AppLogger.shared.log(logMessage, level: .info)
+	return true
 }
 
 struct GoogleSheetsResponse: Codable {
@@ -953,15 +850,15 @@ func getSheetCount(spreadsheetID: String) async throws -> Int {
 	var logMessage: String
 	var sheetCount: Int = 0
 	
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID)"
+	// Only request the sheet properties that GoogleSheetsResponse decodes, not the whole spreadsheet's metadata
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetID)?fields=sheets.properties(sheetId,title)"
 	guard let url = URL(string: urlString) else {
 		logMessage = "ERROR: invalid URLString in getSheetCount URL: \(urlString)"
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw NSError(domain: "Invalid URL", code: -1, userInfo: nil)
 	}
-	let tokenFound = await getAccessToken()
-	if tokenFound {
-		let accessToken = oauth2Token.accessToken
+	let accessToken = await TokenStore.shared.validAccessToken()
+	if accessToken != nil {
 		if let accessToken = accessToken {
 
 			var request = URLRequest(url: url)
@@ -988,131 +885,149 @@ func getSheetCount(spreadsheetID: String) async throws -> Int {
 }
 
 
-// getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
-//		if not attempt to refresh the Access Token
-//	Parameters:
-//		none
-//	Returns:
-//		returns a boolean indicating whether the user has a valid OAuth Access Token
-//	Throws:
+// TokenStore - holds the signed-in user's Google OAuth tokens and hands out a valid access token, refreshing it
+// when it is close to expiring.  It is an actor so the tokens can be read and refreshed safely from any task (as Swift 6
+// requires), and so tasks that need a refresh at the same time share one refresh request instead of each sending one.
 //
-func getAccessToken() async -> Bool {
-	var returnResult: Bool = true
-	var logMessage: String
+actor TokenStore {
+	static let shared = TokenStore()
 	
-	guard oauth2Token.accessToken != nil else {
-		logMessage = "ERROR: Access Token is nil in getAccessToken"
-		print(logMessage)
-		await AppLogger.shared.log(logMessage, level: .error)
-		return false
+	private var accessToken: String?
+	private var refreshToken: String?
+	private var clientID: String?
+	private var expiresAt: Date?
+	
+	private var refreshTask: Task<(accessToken: String, expiresAt: Date)?, Never>?	// The refresh in progress, if any
+	private var lastFailedRefreshAt: Date?						// When the most recent refresh failed
+	private var generation: Int = 0							// Changes on every set() or clear(), so a refresh that finishes after a sign-out or new sign-in is discarded
+	
+	private let refreshMargin: TimeInterval = 120					// Refresh the token when it has less than 2 minutes left
+	private let failedRefreshCooldown: TimeInterval = 30				// After a failed refresh, wait 30 seconds before trying again
+	
+	// set - stores the tokens from a successful Google sign-in
+	//	Parameters:
+	//		accessToken: the OAuth access token
+	//		refreshToken: the OAuth refresh token used to get a new access token when it expires
+	//		clientID: the app's Google OAuth client ID
+	//		expiresAt: when the access token expires
+	//
+	func set(accessToken: String, refreshToken: String, clientID: String?, expiresAt: Date) {
+		self.accessToken = accessToken
+		self.refreshToken = refreshToken
+		self.clientID = clientID
+		self.expiresAt = expiresAt
+		generation += 1
+		refreshTask = nil
+		lastFailedRefreshAt = nil
 	}
 	
-	guard isTokenExpired() else {
-		// Access token exists and isn't expired — nothing further to do.
-		return true
+	// clear - removes all tokens when the user signs out
+	//
+	func clear() {
+		accessToken = nil
+		refreshToken = nil
+		clientID = nil
+		expiresAt = nil
+		generation += 1
+		refreshTask = nil
+		lastFailedRefreshAt = nil
 	}
 	
-	logMessage = "INFO: Access Token expired"
-	print(logMessage)
-	await AppLogger.shared.log(logMessage, level: .info)
-	
-	guard oauth2Token.refreshToken != nil else {
-		logMessage = "ERROR: Refresh Token is nil in getAccessToken"
-		print(logMessage)
-		await AppLogger.shared.log(logMessage, level: .error)
-		return false
-	}
-	
-	guard oauth2Token.clientID != nil else {
-		logMessage = "ERROR: Client ID is nil in getAccessToken"
-		print(logMessage)
-		await AppLogger.shared.log(logMessage, level: .error)
-		return false
-	}
-	
-	do {
-		let time = Date()
-		let timeFormatter = DateFormatter()
-		timeFormatter.dateFormat = "HH:mm"
-		let stringDate = timeFormatter.string(from: time)
-		print("Refreshing Access Token at \(stringDate)")
-		let (newExpiryDate, newAccessToken) = try await refreshAccessToken()
+	// validAccessToken - returns an access token that is valid for at least another 2 minutes, refreshing it if needed
+	//	Returns:
+	//		the access token, or nil if the user is not signed in or the token could not be refreshed
+	//
+	func validAccessToken() async -> String? {
+		var logMessage: String
 		
-		oauth2Token.expiresAt = newExpiryDate
-		oauth2Token.accessToken = newAccessToken
-	} catch {
-		returnResult = false
-		logMessage = "WARNING: Could not refresh access Token"
+		guard let accessToken else {
+			return nil								// Not signed in
+		}
+		
+		if let expiresAt, expiresAt.timeIntervalSinceNow > refreshMargin {
+			return accessToken
+		}
+		
+		// Another task is already refreshing the token - wait for its result instead of sending a second request
+		if let refreshTask {
+			return await refreshTask.value?.accessToken
+		}
+		
+		// A refresh failed recently - don't try again yet.  Without this, an ERROR logged by a failed refresh sends an
+		// error alert, whose own refresh fails and logs another ERROR, in an endless loop
+		if let lastFailedRefreshAt, Date().timeIntervalSince(lastFailedRefreshAt) < failedRefreshCooldown {
+			return nil
+		}
+		
+		guard let refreshToken, let clientID else {
+			lastFailedRefreshAt = Date()
+			logMessage = "ERROR: TokenStore - Refresh Token or Client ID is nil, can't refresh the Access Token"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+			return nil
+		}
+		
+		logMessage = "INFO: Access Token expiring, refreshing it"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, level: .info)
+		
+		let startingGeneration = generation
+		let task = Task { await TokenStore.requestNewAccessToken(refreshToken: refreshToken, clientID: clientID) }
+		refreshTask = task
+		let result = await task.value
+		
+		// If the user signed out or signed in again while the refresh was running, ignore its result
+		guard generation == startingGeneration else {
+			return self.accessToken
+		}
+		refreshTask = nil
+		
+		if let result {
+			self.accessToken = result.accessToken
+			self.expiresAt = result.expiresAt
+			return result.accessToken
+		}
+		
+		lastFailedRefreshAt = Date()
+		logMessage = "WARNING: Could not refresh Access Token"
 		print(logMessage)
 		await AppLogger.shared.log(logMessage, level: .warning)
+		return nil
 	}
 	
-	return returnResult
-}
-// isTokenExpired - Function to check if the user's OAuth token is expired (i.e. current date/time is past expiry date/time)
-//	Parameters:
-//		none
-//	Returns:
-//		returns a boolean indicating whether the user's OAuth token is expired
-//	Throws:
-//
-func isTokenExpired() -> Bool {
-	let token = oauth2Token.accessToken
-	if let token = token {
-		let tokenExpiry = oauth2Token.expiresAt
-		// Check if current date/time > token expiry date/time and return result
-		if let tokenExpiry = tokenExpiry {
-			return Date() >= tokenExpiry
-		} else {
-			return true
+	// requestNewAccessToken - asks Google for a new access token using the refresh token
+	//	Parameters:
+	//		refreshToken: the OAuth refresh token
+	//		clientID: the app's Google OAuth client ID
+	//	Returns:
+	//		the new access token and when it expires, or nil if the request failed
+	//
+	private static func requestNewAccessToken(refreshToken: String, clientID: String) async -> (accessToken: String, expiresAt: Date)? {
+		var logMessage: String
+		
+		guard let url = URL(string: "https://oauth2.googleapis.com/token") else {
+			return nil
 		}
-	} else {
-		return true // No token available
-	}
-}
-
-// refreshAccessToken - Function to attempt to refresh user's OAuth token
-//	Parameters:
-//		none
-//	Returns:
-//		the new token expiry date and new OAuth access token
-//	Throws:
-//
-func refreshAccessToken() async throws -> (Date?, String?) {
-	var newAccessToken: String?
-	var newTokenExpiryDate: Date?
-	var logMessage: String
-	var data: Data
-	var response: URLResponse
-	
-	var bodyParameters = [String: String]()
-	let url = URL(string: "https://oauth2.googleapis.com/token")!
-	
-	// Set up the request parameters
-	var request = URLRequest(url: url)
-	request.httpMethod = "POST"
-	request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-	
-	// HTTP request body with URL-encoded parameters
-	let refreshToken = oauth2Token.refreshToken
-	
-	if let refreshToken = refreshToken {
-		let clientID = oauth2Token.clientID
-		if let clientID = clientID {
-			bodyParameters = [
-				"client_id": clientID,
-				"refresh_token": refreshToken,
-				"grant_type": "refresh_token"
-			]
-			
-			request.httpBody = bodyParameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&").data(using: .utf8)
-			
-			let maxAttempts = PgmConstants.maxSheetAttempts // number of times to retry
-			
-			let (data, response) = try await performRequestWithRetry(
+		
+		// Set up the request parameters
+		var request = URLRequest(url: url)
+		request.httpMethod = "POST"
+		request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+		
+		// HTTP request body with URL-encoded parameters
+		let bodyParameters = [
+			"client_id": clientID,
+			"refresh_token": refreshToken,
+			"grant_type": "refresh_token"
+		]
+		request.httpBody = bodyParameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&").data(using: .utf8)
+		
+		do {
+			// performRequestWithRetry logs the failure itself if the request doesn't succeed
+			let (data, _) = try await performRequestWithRetry(
 				request: request,
-				maxAttempts: maxAttempts,
-				context: "refreshAccessToken - request url: \(request)"
+				maxAttempts: PgmConstants.maxSheetAttempts,
+				context: "TokenStore.requestNewAccessToken"
 			)
 			
 			// Parse the response JSON to retrieve the new access token
@@ -1121,23 +1036,15 @@ func refreshAccessToken() async throws -> (Date?, String?) {
 			      let expiresIn = json["expires_in"] as? Double
 			else {
 				logMessage = "ERROR: Invalid JSON structure in response to Access Token refresh"
+				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
-				throw NSError(domain: "Invalid JSON structure", code: -1, userInfo: nil)
+				return nil
 			}
-			let newExpirationDate = Date().addingTimeInterval(expiresIn)
-			return(newExpirationDate, newAccessToken)
-		} else {
-			logMessage = "ERROR: Client ID is nil refreshing Access Token"
-			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .error)
+			return (newAccessToken, Date().addingTimeInterval(expiresIn))
+		} catch {
+			return nil
 		}
-	} else {
-		logMessage = "Error: Refresh Token is nil refreshing Access Token"
-		print(logMessage)
-		await AppLogger.shared.log(logMessage, level: .error)
 	}
-	return(newTokenExpiryDate, newAccessToken)
-	
 }
 
 
@@ -1161,16 +1068,20 @@ import Foundation
 ///     `"writeSheetCells - Range: A1:B2, FileID abc123"`. Keep it specific
 ///     enough to find the right log lines, since this function's own log
 ///     lines no longer include per-call-site details beyond what you pass in.
+///   - acceptedStatusCodes: the status codes treated as success. Defaults to
+///     `[200]`; pass `[200, 204]` for endpoints such as Drive's DELETE that
+///     return 204 No Content.
 /// - Returns: the successful `(Data, HTTPURLResponse)` pair once the request
-///   returns HTTP 200.
+///   returns an accepted status code.
 /// - Throws: the underlying `URLSession` error if attempts are exhausted on
 ///   a transport failure; an `NSError` (domain `"Invalid Response"`) if the
 ///   response isn't an `HTTPURLResponse`, or if the final status code isn't
-///   200 after retries are exhausted.
+///   an accepted one after retries are exhausted.
 func performRequestWithRetry(
 	request: URLRequest,
 	maxAttempts: Int,
-	context: String
+	context: String,
+	acceptedStatusCodes: Set<Int> = [200]
 ) async throws -> (Data, HTTPURLResponse) {
 	
 	let retryableStatusCodes: Set<Int> = [429, 500, 502, 503, 504]
@@ -1226,7 +1137,7 @@ func performRequestWithRetry(
 		
 		// Single throw point for a final non-200 status, whether or not it
 		// was ever retryable — no separate post-loop check needed.
-		guard statusCode == 200 else {
+		guard acceptedStatusCodes.contains(statusCode) else {
 			let errorDetails = httpErrorDetails(from: data)
 			let logMessage = "ERROR: \(context) - HTTP Result Error Code: \(statusCode), Response: \(errorDetails)"
 			print(logMessage)
@@ -1397,16 +1308,8 @@ func getQuarterNum(monthName: String) -> Int {
 	return(quarterNum)
 }
 
+// findPrevMonthYear finds the year of the previous month.  So the previous month year for Jan 2026 is 2025 but the previous month year for Feb 2026 to Dec 2026 is 2026
 
-
-// getAccessToken - Function to check if the user has a valid, non-expired OAuth Access Token and
-//		if not attempt to refresh the Access Token
-//	Parameters:
-//		none
-//	Returns:
-//		returns a boolean indicating whether the user has a valid OAuth Access Token
-//	Throws:
-//
 func findPrevMonthYear(currentMonth: String, currentYear: String) -> (String, String) {
 	    var prevMonthName: String = ""
 	    var prevYearName: String = ""
@@ -1649,4 +1552,14 @@ func validateDateField(dateField: String, monthName: String) -> Bool {
 	}
 		
 	return(validDateField)
+}
+
+// Parse a numeric cell value read from a Google Sheet.  Values written before grouping separators were disabled
+// may contain thousands separators (e.g. "1,234.50"), which Double(String) rejects, so strip them and retry.
+// Returns 0.0 if the value cannot be parsed.
+//
+func sheetDouble(_ cellValue: String) -> Double {
+	let trimmed = cellValue.trimmingCharacters(in: .whitespaces)
+	if let value = Double(trimmed) { return value }
+	return Double(trimmed.replacingOccurrences(of: ",", with: "")) ?? 0.0
 }

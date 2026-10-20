@@ -36,6 +36,8 @@ import Foundation
 				logMessage = "ERROR: Could not save Data Counts when adding new Location: \(locationName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
+			} else {
+				logMessage = "INFO: New Location: \(locationName) saved to ReferenceData"
 			}
 		}
 		return(saveResult, logMessage)

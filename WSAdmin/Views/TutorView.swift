@@ -20,6 +20,7 @@ struct TutorView: View {
 	@State var tutorType: TutorTypeOption
 	
 	@State private var showAlert = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var dismissAlert = false
 	@State private var isTutorUpdateInProcess = false				// To disable Add/Update Tutor button when already processing
 	
@@ -96,15 +97,22 @@ struct TutorView: View {
 						isTutorUpdateInProcess = true
 						let (tutorValidationResult, validationMessage) = tutorMgmtVM.validateNewTutor(tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, tutorMaxStudents: maxStudents, referenceData: referenceData)
 						if tutorValidationResult {
-							let (addResult, addMessage) = try await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
-							isTutorUpdateInProcess = false
-							if !addResult {
-								buttonErrorMsg = addMessage
+							do {
+								let (addResult, addMessage) = try await tutorMgmtVM.addNewTutor(referenceData: referenceData, tutorName: tutorName, tutorEmail: contactEmail, tutorPhone: contactPhone, maxStudents: maxStudents, tutorType: tutorType)
+								isTutorUpdateInProcess = false
+								if !addResult {
+									buttonErrorMsg = addMessage
+									showAlert = true
+								} else {
+									showAlert = true
+									buttonErrorMsg = "You must Allow Access in 2 cells in RefData tab of new Timesheet for \(tutorName)"
+									dismissAlert = true
+								}
+							} catch {
+								isTutorUpdateInProcess = false
+								buttonErrorMsg = "ERROR: Unable to add new Tutor. \(error.localizedDescription)"
+								await AppLogger.shared.log("\(buttonErrorMsg) (\(error))", level: .error)
 								showAlert = true
-							} else {
-								showAlert = true
-								buttonErrorMsg = "You must Allow Access in 2 cells in RefData tab of new Timesheet for \(tutorName)"
-								dismissAlert = true
 							}
 						} else {
 							isTutorUpdateInProcess = false

@@ -17,7 +17,6 @@ struct ValidateDataIntegrityView: View {
 
     @Environment(RefDataVM.self) var refDataModel: RefDataVM
 
-    @State private var showAlert: Bool = false
 
     var body: some View {
         VStack {
@@ -29,9 +28,6 @@ struct ValidateDataIntegrityView: View {
             Button("Print") {
                 printValidationMessages()
             }
-        }
-        .alert(buttonErrorMsg, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
         }
     }
 

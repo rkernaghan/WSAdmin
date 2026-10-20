@@ -27,7 +27,6 @@ PODS:
     - GTMSessionFetcher/Core
 
 DEPENDENCIES:
-  - AppAuth
   - GoogleAPIClientForREST/Drive
   - GoogleAPIClientForREST/Sheets
   - GoogleSignIn
@@ -50,6 +49,6 @@ SPEC CHECKSUMS:
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
 
-PODFILE CHECKSUM: 8c38001361c6b5393cbd1c874fcac352f6020d96
+PODFILE CHECKSUM: 473bf022ecb1f98c213eabda626ef3bebf667ad4
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

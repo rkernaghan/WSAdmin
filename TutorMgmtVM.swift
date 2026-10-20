@@ -43,6 +43,7 @@ import GoogleSignIn
 			//       let maxStudentsInt = Int(maxStudents) ?? 0
 			
 			let newTutor = Tutor(tutorKey: newTutorKey, tutorName: tutorName, tutorEmail: tutorEmail, tutorPhone: tutorPhone, tutorType: tutorType, tutorStatus: .TutorUnassigned, tutorStartDate: startDate, tutorEndDate: " ", tutorMaxStudents: maxStudents, tutorStudentCount: 0, tutorServiceCount: 0, tutorTotalSessions: 0, tutorTotalCost: 0.0, tutorTotalRevenue: 0.0, tutorTotalProfit: 0.0, timesheetFileID: "")
+			newTutor.tutorDetailsLoaded = true						// Needed because new Services added in memory version to avoid reloaded from disk and duplicating Services
 			referenceData.tutors.addTutor(newTutor: newTutor)
 			let (tutorFound, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 			if !tutorFound {
@@ -50,11 +51,15 @@ import GoogleSignIn
 				await AppLogger.shared.log(logMessage, level: .error)
 			} else if let tutorNum {
 				
+				logMessage = "INFO: Added Tutor: \(tutorName) to ReferenceData with key: \(referenceData.tutors.tutorsList[tutorNum].tutorKey)"
+				await AppLogger.shared.log(logMessage, level: .info)
+				
 				// Create a new Timesheet for the Tutor
 				do {
 					let formatter = DateFormatter()
 					formatter.setLocalizedDateFormatFromTemplate("YYYY")
-					let currentYear = formatter.string(from: Date.now)
+//					let currentYear = formatter.string(from: Date.now)
+					let currentYear = String(Calendar.current.component(.year, from: Date() ))
 					let systemVM = SystemVM()
 					(addResult, newTimesheetFileID, logMessage) = try await systemVM.createTimesheetFile(templateFileName: runMode.timesheetTemplateFileName, timesheetYear: currentYear, tutorName: tutorName, tutorEmail: tutorEmail, referenceData: referenceData)
 					
@@ -90,6 +95,9 @@ import GoogleSignIn
 										if !addResult {
 											logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
 											await AppLogger.shared.log(logMessage, level: .error)
+										} else {
+											logMessage = "INFO: Added Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(tutorName)"
+											await AppLogger.shared.log(logMessage, level: .info)
 										}
 										referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 									}
@@ -106,9 +114,11 @@ import GoogleSignIn
 								if !addResult {
 									logMessage = "ERROR: Could not save Services data for Tutor \(tutorName)"
 									await AppLogger.shared.log(logMessage, level: .error)
+								} else {
+									logMessage = "INFO: Saved Services data for Tutor \(tutorName)"
+									await AppLogger.shared.log(logMessage, level: .info)
 								}
 							}
-							
 						}
 					}
 					
@@ -223,7 +233,8 @@ import GoogleSignIn
 										// Change the name of the Tutor's timesheet and the Tutor name within the Timesheet RefData sheet
 										let formatter = DateFormatter()
 										formatter.setLocalizedDateFormatFromTemplate("YYYY")
-										let currentYear = formatter.string(from: Date.now)
+//										let currentYear = formatter.string(from: Date.now)
+										let currentYear = String(Calendar.current.component(.year, from: Date() ) )
 										let newTutorTimesheetName = "Timesheet " + currentYear + " " + tutorName
 										let currentTimesheetName = "Timesheet " + currentYear + " " + originalTutorName
 										
@@ -618,9 +629,9 @@ import GoogleSignIn
 						}
 					}
 				} else {
-					logMessage = "Error: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					logMessage = "WARNING: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
+					await AppLogger.shared.log(logMessage, level: .warning)
 					deleteResult = false
 				}
 			}

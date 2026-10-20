@@ -103,6 +103,9 @@ import Foundation
 	func loadTutorDetails() async -> Bool {
 		var completionFlag: Bool = true
 		let tutorName = self.tutorName
+		var studentCount: Int
+		var serviceCount: Int
+		var timesheetFileID: String
 		
 		if self.tutorServiceCount > 0 {
 			completionFlag = await self.fetchTutorServiceData( tutorName: tutorName, tutorServiceCount: tutorServiceCount)
@@ -112,6 +115,10 @@ import Foundation
 			completionFlag = await self.fetchTutorStudentData( tutorName: tutorName, tutorStudentCount: tutorStudentCount)
 		}
 		
+		if completionFlag {
+			(studentCount, serviceCount, timesheetFileID) = await self.fetchTutorDataCounts( tutorName: tutorName)
+			self.timesheetFileID = timesheetFileID
+		}
 		
 		if completionFlag {
 			self.tutorDetailsLoaded = true
@@ -130,10 +137,10 @@ import Foundation
 	//
 	
 	// This function reads in the Tutor's Student and Service counts from the TutorDetails sheet for the Tutor and returns the counts and the Tutor's Timesheet FileID
-	func fetchTutorDataCounts(tutorName: String) async -> (Int, Int, String){
+	func fetchTutorDataCounts(tutorName: String) async -> (Int, Int, String) {
 		var sheetCells = [[String]]()
-		var sheetData: SheetData?
-		var range: String
+//		var sheetData: SheetData?
+//		var range: String
 		var timesheetFileID: String = ""
 		var studentCount: Int
 		var serviceCount: Int
@@ -142,13 +149,13 @@ import Foundation
 		// Read in the Tutor Data counts from the Tutor Details spreadsheet
 		
 		do {
-			range = tutorName + PgmConstants.tutorDataCountsRange
-			sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor Details Student/Service counts \(tutorName)")
+			let range1 = tutorName + PgmConstants.tutorDataCountsRange
+			let sheetData1 = try await readSheetCells(fileID: tutorDetailsFileID, range: range1, logNote: "Tutor Details Student/Service counts \(tutorName)")
 			
-			if let sheetData = sheetData {
-				sheetCells = sheetData.values
-				studentCount = Int( sheetCells[0][0] ) ?? 0
-				serviceCount = Int( sheetCells[1][0] ) ?? 0
+			if let sheetData1 = sheetData1 {
+				sheetCells = sheetData1.values
+				studentCount = Int( sheetCells.first?.first ?? "" ) ?? 0
+				serviceCount = Int( sheetCells.dropFirst().first?.first ?? "" ) ?? 0
 			} else {
 				logMessage = "ERROR: could not read Tutor Data Counts for Tutor \(tutorName)"
 				print(logMessage)
@@ -163,6 +170,24 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 			studentCount = 0
 			serviceCount = 0
+		}
+		
+		do {
+			let range2 = tutorName + PgmConstants.tutorDataTimesheetFileIDRange
+			let sheetData2 = try await readSheetCells(fileID: tutorDetailsFileID, range: range2, logNote: "Tutor Details Timesheet FileID for: \(tutorName)")
+			
+			if let sheetData2 = sheetData2 {
+				sheetCells = sheetData2.values
+				timesheetFileID = sheetCells.first?.first ?? timesheetFileID
+			} else {
+				logMessage = "ERROR: could not read Timesheet FileID for Tutor \(tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .error)
+			}
+		} catch {
+			logMessage = "ERROR: could not read Timesheet FileID for Tutor \(tutorName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
 		return(studentCount, serviceCount, timesheetFileID)
@@ -375,7 +400,8 @@ import Foundation
 		if completionFlag {
 			tutorServiceCount += 1
 			completionFlag = await saveTutorDataCounts()
-		} 
+		}
+		
 		return(completionFlag)
 	}
 	
@@ -457,12 +483,12 @@ import Foundation
 						 timesheetName: row[PgmConstants.tutorDataServiceTimesheetNamePosition],
 						 invoiceName: row[PgmConstants.tutorDataServiceInvoiceNamePosition],
 						 billingType: BillingTypeOption(rawValue: row[PgmConstants.tutorDataServiceBillingTypePosition]) ?? .Fixed,
-						 cost1: Double(row[PgmConstants.tutorDataServiceCost1Position]) ?? 0.0,
-						 cost2: Double(row[PgmConstants.tutorDataServiceCost2Position]) ?? 0.0,
-						 cost3: Double(row[PgmConstants.tutorDataServiceCost3Position]) ?? 0.0,
-						 price1: Double(row[PgmConstants.tutorDataServicePrice1Position]) ?? 0.0,
-						 price2: Double(row[PgmConstants.tutorDataServicePrice2Position]) ?? 0.0,
-						 price3: Double(row[PgmConstants.tutorDataServicePrice3Position]) ?? 0.0)
+						 cost1: sheetDouble(row[PgmConstants.tutorDataServiceCost1Position]),
+						 cost2: sheetDouble(row[PgmConstants.tutorDataServiceCost2Position]),
+						 cost3: sheetDouble(row[PgmConstants.tutorDataServiceCost3Position]),
+						 price1: sheetDouble(row[PgmConstants.tutorDataServicePrice1Position]),
+						 price2: sheetDouble(row[PgmConstants.tutorDataServicePrice2Position]),
+						 price3: sheetDouble(row[PgmConstants.tutorDataServicePrice3Position]))
 		}
 
 		tutorServices.append(contentsOf: newTutorServices)
@@ -499,7 +525,7 @@ import Foundation
 	// It adds a blank row in case the unload is after a delete to blank out the data from the previous last line.
 	func unloadTutorServiceRows() -> [[String]] {
 		
-		let twoDecimals = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(2))
+		let twoDecimals = FloatingPointFormatStyle<Double>.number.grouping(.never).precision(.fractionLength(2))
 
 		var updateValues: [[String]] = tutorServices.map { tutorService in
 			[tutorService.serviceKey,

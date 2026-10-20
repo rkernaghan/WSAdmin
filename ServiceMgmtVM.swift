@@ -53,12 +53,13 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			} else {
-				logMessage = "INFO: Service data for \(timesheetName) saved to Reference Data sheet"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .info)
-				
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: newServiceKey)
-			
+				if serviceFound, let serviceNum {
+					logMessage = "INFO: Service data for \(timesheetName) saved to Reference Data sheet with key \(referenceData.services.servicesList[serviceNum].serviceKey)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+				}
+
 				if String(describing: serviceType) == "Base" {
 					if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
 						var tutorNum = 0

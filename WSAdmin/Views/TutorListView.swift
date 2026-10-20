@@ -27,6 +27,7 @@ struct TutorListView: View {
 	@State private var selectedTutors: Set<Tutor.ID> = []
 	@State private var sortOrder = [KeyPathComparator(\Tutor.tutorName)]
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var viewChange: Bool = false
 	
 	@State private var showAssigned: Bool = true

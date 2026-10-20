@@ -38,7 +38,17 @@ import Foundation
 				logMessage = "ERROR: could not save Student Count Data Counts to ReferenceData spreadsheet when adding new Student \(studentName)"
 				await AppLogger.shared.log(logMessage)
 			} else {
-				
+				let(studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
+				if studentFound, let studentNum {
+					logMessage = "INFO: Student \(studentName) added to Reference Data with key: \(referenceData.students.studentsList[studentNum].studentKey)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+				} else {
+					logMessage = "ERROR: Student \(studentName) not added to Reference Data"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				}
+
 				let (locationFound, locationNum) = referenceData.locations.findLocationByName(locationName: location)
 				if locationFound, let locationNum {
 					referenceData.locations.locationsList[locationNum].increaseStudentCount()
@@ -162,33 +172,36 @@ import Foundation
 				completionFlag = await referenceData.locations.saveLocationData()
 				
 			}
+			
 			if completionFlag {
 				if studentName != originalStudentName {
-					// Change the Student Name in any Tutors that Students is assigned to (in case Student assigned to more than one in a month)
+					// Change the Student Name in any Tutors that Students is assigned to (check all assigned Tutors in case Student assigned to more than one in a month)
 					for tutor in referenceData.tutors.tutorsList {
-						guard completionFlag else { break }
-						guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
-							logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) when updating Student \(studentName)"
-							print(logMessage)
-							await AppLogger.shared.log(logMessage, level: .error)
-							continue
-						}
-						
-						let (tutorStudentFound, tutorStudentNum) = tutor.findTutorStudentByKey(studentKey: studentKey)
-						if tutorStudentFound, let tutorStudentNum {
-							tutor.tutorStudents[tutorStudentNum].studentName = studentName
-							tutor.tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
-							tutor.tutorStudents[tutorStudentNum].clientEmail = contactEmail
-							tutor.tutorStudents[tutorStudentNum].clientPhone = contactPhone
-							completionFlag = await tutor.saveTutorStudentData(tutorName: tutor.tutorName)
-							if !completionFlag {
-								logMessage = "ERROR: Could not save Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
+						if tutor.tutorStatus == .TutorAssigned {
+							guard completionFlag else { break }
+							guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
+								logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) when updating Student \(studentName)"
 								print(logMessage)
-								await AppLogger.shared.log(logMessage, level: .info)
-							} else {
-								logMessage = "INFO: Updating Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
-								print(logMessage)
-								await AppLogger.shared.log(logMessage, level: .info)
+								await AppLogger.shared.log(logMessage, level: .error)
+								continue
+							}
+							
+							let (tutorStudentFound, tutorStudentNum) = tutor.findTutorStudentByKey(studentKey: studentKey)
+							if tutorStudentFound, let tutorStudentNum {
+								tutor.tutorStudents[tutorStudentNum].studentName = studentName
+								tutor.tutorStudents[tutorStudentNum].clientName = contactFirstName + " " + contactLastName
+								tutor.tutorStudents[tutorStudentNum].clientEmail = contactEmail
+								tutor.tutorStudents[tutorStudentNum].clientPhone = contactPhone
+								completionFlag = await tutor.saveTutorStudentData(tutorName: tutor.tutorName)
+								if !completionFlag {
+									logMessage = "ERROR: Could not save Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								} else {
+									logMessage = "INFO: Updating Student \(studentName) in Tutor Student List for Tutor \(tutor.tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								}
 							}
 						}
 					}

@@ -22,7 +22,6 @@ struct BillingProgressView: View {
 	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM
 	
 	@State private var showInvoice: Bool = false
-	@State private var showAlert: Bool = false
 	
 //	@State private var isInvoiceProcessing = false				// To disable Generate Invoice button when already processing Invoice
 	
@@ -42,9 +41,6 @@ struct BillingProgressView: View {
 		}
 		.navigationTitle("Billing Progress View")
 		
-		.alert(buttonErrorMsg, isPresented: $showAlert) {
-			Button("OK", role: .cancel) { }
-		}
 		
 		.navigationDestination(isPresented: $showInvoice) {
 			InvoiceView(invoice: invoice, billingMonth: billingMonth, billingYear: billingYear, billedTutorMonth: billedTutorMonth, alreadyBilledTutors: alreadyBilledTutors, referenceData: referenceData, path: $path)

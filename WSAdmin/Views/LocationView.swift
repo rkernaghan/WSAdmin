@@ -16,6 +16,7 @@ struct LocationView: View {
 	
 	@State var locationName: String
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	
 	@Environment(RefDataVM.self) var refDataVM: RefDataVM
 	@Environment(LocationMgmtVM.self) var locationMgmtVM: LocationMgmtVM

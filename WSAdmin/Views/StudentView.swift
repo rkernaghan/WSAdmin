@@ -28,6 +28,7 @@ struct StudentView: View {
 	@State var location: String
 	
 	@State private var showAlert: Bool = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var showNewLocationField: Bool = false
 	@State private var newLocationName: String = ""
 	@State private var isSavingLocation: Bool = false

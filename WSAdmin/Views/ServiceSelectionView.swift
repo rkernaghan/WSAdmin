@@ -16,6 +16,7 @@ struct ServiceSelectionView: View {
 	@State private var selectedServices = Set<Service.ID>()
 	@State private var sortOrder = [KeyPathComparator(\Service.serviceTimesheetName)]
 	@State private var showAlert = false
+	@State private var buttonErrorMsg: String = " "
 	@State private var viewChange: Bool = false
 	
 	var body: some View {

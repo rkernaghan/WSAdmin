@@ -68,12 +68,12 @@ actor AppLogger {
 		Task { await self.startAutoSync() }
 	}
 	
-	/// Starts a background loop that syncs to Google Drive every 60 seconds.
+	/// Starts a background loop that syncs to Google Drive every 30 seconds.
 	/// Runs indefinitely for the app's lifetime — no need to call this yourself.
 	private func startAutoSync() {
 		autoSyncTask = Task { [weak self] in
 			while !Task.isCancelled {
-				try? await Task.sleep(nanoseconds: 60_000_000_000) // 60 seconds
+				try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
 				guard let self else { break }
 				await self.syncToGoogleDrive()
 			}
@@ -146,10 +146,10 @@ extension AppLogger {
 //		logMessage = "INFO: Synching to Google Drive"
 //		await AppLogger.shared.log(logMessage, level: .info)
 		
-		let tokenFound = await getAccessToken()
-		guard tokenFound, let accessToken = oauth2Token.accessToken else {
-			logMessage = "ERROR: AppLogger - couldn't sync to Drive, no access token"
-			await AppLogger.shared.log(logMessage, level: .error)
+		// No token means not signed in (or a refresh just failed).  Leave hasUnsyncedChanges set so the next cycle
+		// uploads the log, and don't log an error: it would itself be an unsynced change and trigger an error alert
+		guard let accessToken = await TokenStore.shared.validAccessToken() else {
+			print("AppLogger.syncToGoogleDrive - no access token, will retry next cycle")
 			return
 		}
 		
@@ -391,8 +391,7 @@ extension AppLogger {
 			return // suppress — an alert already went out too recently
 		}
 		
-		let tokenFound = await getAccessToken()
-		guard tokenFound, let accessToken = oauth2Token.accessToken else {
+		guard let accessToken = await TokenStore.shared.validAccessToken() else {
 			print("AppLogger.sendErrorAlert - couldn't send, no access token")
 			return
 		}

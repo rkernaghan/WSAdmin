@@ -93,12 +93,12 @@ import Foundation
 			let newServiceBillingType: BillingTypeOption = BillingTypeOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceBillingTypePosition]) ?? .Fixed
 			let newServiceStatus: ServiceStatusOption = ServiceStatusOption(rawValue: sheetCells[rowNumber][PgmConstants.serviceStatusPosition]) ?? .ServiceAssigned
 			let newServiceCount = Int(sheetCells[rowNumber][PgmConstants.serviceCountPosition]) ?? 0
-			let newServiceCost1 = Double(sheetCells[rowNumber][PgmConstants.serviceCost1Position]) ?? 0.0
-			let newServiceCost2 = Double(sheetCells[rowNumber][PgmConstants.serviceCost2Position]) ?? 0.0
-			let newServiceCost3 = Double(sheetCells[rowNumber][PgmConstants.serviceCost3Position]) ?? 0.0
-			let newServicePrice1 = Double(sheetCells[rowNumber][PgmConstants.servicePrice1Position]) ?? 0.0
-			let newServicePrice2 = Double(sheetCells[rowNumber][PgmConstants.servicePrice2Position]) ?? 0.0
-			let newServicePrice3 = Double(sheetCells[rowNumber][PgmConstants.servicePrice3Position]) ?? 0.0
+			let newServiceCost1 = sheetDouble(sheetCells[rowNumber][PgmConstants.serviceCost1Position])
+			let newServiceCost2 = sheetDouble(sheetCells[rowNumber][PgmConstants.serviceCost2Position])
+			let newServiceCost3 = sheetDouble(sheetCells[rowNumber][PgmConstants.serviceCost3Position])
+			let newServicePrice1 = sheetDouble(sheetCells[rowNumber][PgmConstants.servicePrice1Position])
+			let newServicePrice2 = sheetDouble(sheetCells[rowNumber][PgmConstants.servicePrice2Position])
+			let newServicePrice3 = sheetDouble(sheetCells[rowNumber][PgmConstants.servicePrice3Position])
 			// Create a new Service object using the Service attributes from the 2D array
 			let newService = Service(serviceKey: newServiceKey, serviceCode: newServiceCode, serviceTimesheetName: newServiceTimesheetName, serviceInvoiceName: newServiceInvoiceName, serviceType: newServiceType, serviceBillingType: newServiceBillingType, serviceStatus: newServiceStatus, serviceCount: newServiceCount, serviceCost1: newServiceCost1, serviceCost2: newServiceCost2, serviceCost3: newServiceCost3, servicePrice1: newServicePrice1, servicePrice2: newServicePrice2, servicePrice3: newServicePrice3)
 			// Add the new Service object to the Services List object array
@@ -156,12 +156,12 @@ import Foundation
 			let serviceBillingType = String(describing: servicesList[serviceNum].serviceBillingType.rawValue)
 			let serviceStatus = String(describing: servicesList[serviceNum].serviceStatus.rawValue)
 			let serviceCount = String(servicesList[serviceNum].serviceCount)
-			let serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.precision(.fractionLength(2))))
-			let serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.precision(.fractionLength(2))))
-			let serviceCost3 = String(servicesList[serviceNum].serviceCost3.formatted(.number.precision(.fractionLength(2))))
-			let servicePrice1 = String(servicesList[serviceNum].servicePrice1.formatted(.number.precision(.fractionLength(2))))
-			let servicePrice2 = String(servicesList[serviceNum].servicePrice2.formatted(.number.precision(.fractionLength(2))))
-			let servicePrice3 = String(servicesList[serviceNum].servicePrice3.formatted(.number.precision(.fractionLength(2))))
+			let serviceCost1 = String(servicesList[serviceNum].serviceCost1.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let serviceCost2 = String(servicesList[serviceNum].serviceCost2.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let serviceCost3 = String(servicesList[serviceNum].serviceCost3.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let servicePrice1 = String(servicesList[serviceNum].servicePrice1.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let servicePrice2 = String(servicesList[serviceNum].servicePrice2.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let servicePrice3 = String(servicesList[serviceNum].servicePrice3.formatted(.number.grouping(.never).precision(.fractionLength(2))))
 			// Add the Service object attributes as a row in the 2D array of Services data
 			updateValues.insert([serviceKey, serviceCode, serviceTimesheetName, serviceInvoiceName, serviceType, serviceBillingType, serviceStatus, serviceCount, serviceCost1, serviceCost2, serviceCost3, servicePrice1, servicePrice2, servicePrice3], at: serviceNum)
 			serviceNum += 1

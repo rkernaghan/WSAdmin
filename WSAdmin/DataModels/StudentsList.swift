@@ -152,9 +152,9 @@ import Foundation
 			let newStudentPreviousTutorName = sheetCells[rowNumber][PgmConstants.studentPreviousTutorNamePosition]
 			let newStudentLocation = sheetCells[rowNumber][PgmConstants.studentLocationPosition]
 			let newStudentTotalSessions = Int(sheetCells[rowNumber][PgmConstants.studentSessionsPosition]) ?? 0
-			let newStudentCost = Double(sheetCells[rowNumber][PgmConstants.studentTotalCostPosition]) ?? 0.0
-			let newStudentRevenue = Double(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition]) ?? 0.0
-			let newStudentProfit = Double(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition]) ?? 0.0
+			let newStudentCost = sheetDouble(sheetCells[rowNumber][PgmConstants.studentTotalCostPosition])
+			let newStudentRevenue = sheetDouble(sheetCells[rowNumber][PgmConstants.studentTotalRevenuePosition])
+			let newStudentProfit = sheetDouble(sheetCells[rowNumber][PgmConstants.studentTotalProfitPosition])
 			
 			// Create the new Student object
 			let newStudent = Student(studentKey: newStudentKey, studentName: newStudentName, studentContactFirstName: newContactFirstName, studentContactLastName: newContactLastName, studentContactPhone: newContactPhone, studentContactEmail: newContactEmail, studentContactAddress1: newContactAddress1, studentContactAddress2: newContactAddress2, studentContactCity: newContactCity, studentContactState: newContactState, studentContactZipCode: newContactZipCode, studentStartDate: newStudentStartDateString, studentAssignedUnassignedDate: newStudentAssignedUnassignedDateString, studentLastBilledDate: newStudentLastBilledDateString, studentEndDate: newStudentEndDateString, studentStatus: newStudentStatus, studentCurrentTutorKey: newStudentCurrentTutorKey, studentCurrentTutorName: newStudentCurrentTutorName, studentPreviousTutorKey: newStudentPreviousTutorKey, studentPreviousTutorName: newStudentPreviousTutorName, studentLocation: newStudentLocation, studentSessions: newStudentTotalSessions, studentTotalCost: newStudentCost, studentTotalRevenue: newStudentRevenue, studentTotalProfit: newStudentProfit)
@@ -200,9 +200,9 @@ import Foundation
 			let studentPreviousTutorName = studentsList[studentNum].studentPreviousTutorName
 			let studentLocation = studentsList[studentNum].studentLocation
 			let studentSessions = String(studentsList[studentNum].studentSessions)
-			let studentTotalCost = String(studentsList[studentNum].studentTotalCost.formatted(.number.precision(.fractionLength(2))))
-			let studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.precision(.fractionLength(2))))
-			let studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.precision(.fractionLength(2))))
+			let studentTotalCost = String(studentsList[studentNum].studentTotalCost.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let studentTotalRevenue = String(studentsList[studentNum].studentTotalRevenue.formatted(.number.grouping(.never).precision(.fractionLength(2))))
+			let studentTotalProfit = String(studentsList[studentNum].studentTotalProfit.formatted(.number.grouping(.never).precision(.fractionLength(2))))
 			
 			// Add the Student object data to the 2D array
 			updateValues.insert([studentKey, studentName, studentContactFirstName, studentContactLastName, studentContactPhone, studentContactEmail, studentContactAddress1, studentContactAddress2, studentContactCity, studentContactState, studentContactZipCode, studentStartDate, studentAssignedUnassignedDate, studentLastBilledDate, studentEndDate, studentStatus, studentCurrentTutorKey, studentCurrentTutorName,studentPreviousTutorKey, studentPreviousTutorName, studentLocation, studentSessions, studentTotalCost, studentTotalRevenue, studentTotalProfit], at: studentNum)
