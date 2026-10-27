@@ -150,7 +150,7 @@ import Foundation
 		
 		do {
 			let range1 = tutorName + PgmConstants.tutorDataCountsRange
-			let sheetData1 = try await readSheetCells(fileID: tutorDetailsFileID, range: range1, logNote: "Tutor Details Student/Service counts \(tutorName)")
+			let sheetData1 = try await readSheetCells(fileID: tutorDetailsFileID, range: range1, logNote: "Tutor Details Student/Service counts \(tutorName)", trackVersion: true)
 			
 			if let sheetData1 = sheetData1 {
 				sheetCells = sheetData1.values
@@ -174,7 +174,7 @@ import Foundation
 		
 		do {
 			let range2 = tutorName + PgmConstants.tutorDataTimesheetFileIDRange
-			let sheetData2 = try await readSheetCells(fileID: tutorDetailsFileID, range: range2, logNote: "Tutor Details Timesheet FileID for: \(tutorName)")
+			let sheetData2 = try await readSheetCells(fileID: tutorDetailsFileID, range: range2, logNote: "Tutor Details Timesheet FileID for: \(tutorName)", trackVersion: true)
 			
 			if let sheetData2 = sheetData2 {
 				sheetCells = sheetData2.values
@@ -206,7 +206,7 @@ import Foundation
 		updateValues = [[String(tutorStudentCount)], [String(tutorServiceCount)]]
 		
 		do {
-			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Details STudent/Service Counts")
+			completionFlag = try await writeSheetCells(fileID: tutorDetailsFileID, range: range, values: updateValues, logNote: "Tutor Details Student/Service Counts")
 		} catch {
 			logMessage = "ERROR: Saving Tutor Data Counts failed"
 			print(logMessage)
@@ -288,7 +288,7 @@ import Foundation
 		if tutorStudentCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Student rows")
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Student rows", trackVersion: true)
 				// Build the Tutor Students list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -454,7 +454,7 @@ import Foundation
 		if tutorServiceCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Service rows")
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Service rows", trackVersion: true)
 				// Build the Tutor Services list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values

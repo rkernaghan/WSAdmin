@@ -6,7 +6,7 @@
 //
 import Foundation
 
-// StudentBillingMonth holds an array os StudentBillingRow instances.  Each array represents the STudent Billing data for one month.
+// StudentBillingMonth holds an array os StudentBillingRow instances.  Each array represents the Student Billing data for one month.
 class StudentBillingMonth {
 	var studentBillingRows = [StudentBillingRow]()
 	var monthName: String
@@ -172,14 +172,14 @@ class StudentBillingMonth {
 		
 		do {
 			// Get the count of Students in the Billed Student spreadsheet
-			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange, logNote: "Student Billing Count")
+			studentCountData = try await readSheetCells(fileID: studentBillingFileID, range: monthName + PgmConstants.studentBillingCountRange, logNote: "Student Billing Count", trackVersion: true)
 			if let studentCountData = studentCountData {
 				studentBillingCount = Int(studentCountData.values.first?.first ?? "") ?? 0
 				// Read in the Billed Students from the Billed Student spreadsheet based on count
 				if studentBillingCount > 0 {
 					do {
 						let cellRange = monthName + PgmConstants.studentBillingRange + String(PgmConstants.studentBillingStartRow + studentBillingCount - 1)
-						sheetData = try await readSheetCells(fileID: studentBillingFileID, range: cellRange, logNote: "Student Billing Rows")
+						sheetData = try await readSheetCells(fileID: studentBillingFileID, range: cellRange, logNote: "Student Billing Rows", trackVersion: true)
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							// Build the Billed Students list for the month from the data read in

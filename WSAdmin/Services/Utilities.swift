@@ -69,7 +69,7 @@ func getFileID(fileName: String) async throws -> (Bool, String) {
 //		sheetData: an optional SheetData struct containing the retrieved cells in sheetdata.values
 //	Throws:
 //
-func readSheetCells(fileID: String, range: String, logNote: String) async throws -> SheetData? {
+func readSheetCells(fileID: String, range: String, logNote: String, trackVersion: Bool) async throws -> SheetData? {
 	var sheetData: SheetData?
 	var logMessage: String
 	
@@ -109,7 +109,12 @@ func readSheetCells(fileID: String, range: String, logNote: String) async throws
 		await AppLogger.shared.log(logMessage, level: .error)
 		throw error
 	}
-	
+
+	// Optimistic locking: remember what was loaded so writeSheetCells can detect outside changes
+	if trackVersion, let sheetData {
+		await SheetVersionStore.shared.recordSnapshot(fileID: fileID, range: range, values: sheetData.values, label: logNote)
+	}
+
 	return sheetData
 }
 
@@ -130,7 +135,7 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 		return false
 	}
 	
-	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED"
+	let urlString = "https://sheets.googleapis.com/v4/spreadsheets/\(fileID)/values/\(range)?valueInputOption=USER_ENTERED&includeValuesInResponse=true"
 	guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
 		logMessage = "ERROR: Invalid URL for Google Sheets API \(urlString)"
 		await AppLogger.shared.log(logMessage, level: .error)
@@ -154,7 +159,11 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 	
 	logMessage = "                    INFO: writeSheetCells - \(logNote), Range: \(range), FileID \(fileID)"
 	await AppLogger.shared.log(logMessage, level: .info)
-	
+
+	// Optimistic locking: throws SheetError if the cells that were loaded have changed since.
+	// Ranges that were not read with trackVersion: true (untracked) pass through.
+	try await SheetVersionStore.shared.assertUnchanged(fileID: fileID, range: range)
+
 	// Perform the network request, retrying on transient errors and
 	// 429/500/502/503/504 responses; throws on a final non-200 status.
 	let (data, _) = try await performRequestWithRetry(
@@ -162,7 +171,10 @@ func writeSheetCells(fileID: String, range: String, values: [[String]], logNote:
 		maxAttempts: PgmConstants.maxWriteAttempts,
 		context: "Utilities.writeSheetCells - Range: \(range), FileID: \(fileID)"
 	)
-	
+
+	// Replace the lock snapshot with what Google reports it wrote (no-op for untracked ranges)
+	await SheetVersionStore.shared.recordWrite(fileID: fileID, range: range, responseData: data)
+
 	return completionFlag
 }
 
@@ -1130,7 +1142,7 @@ func performRequestWithRetry(
 			
 			let logMessage = "WARNING: \(context) - HTTP \(statusCode), retrying in \(delaySeconds) seconds (attempt \(attempt))"
 			print(logMessage)
-			await AppLogger.shared.log(logMessage, level: .error)
+			await AppLogger.shared.log(logMessage, level: .warning)
 			try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
 			continue
 		}
@@ -1378,7 +1390,7 @@ func buildTutorAvailabilityRow(tutorName: String, timesheetFileID: String, tutor
 	let range = PgmConstants.timesheetAvailabilityDataRange
 	// read in the cells containing the Tutor's Availability data from the Timesheet Availability sheet
 	do {
-		sheetData = try await readSheetCells(fileID: timesheetFileID, range: range, logNote: "Reading Timesheet Availability for \(tutorName)")
+		sheetData = try await readSheetCells(fileID: timesheetFileID, range: range, logNote: "Reading Timesheet Availability for \(tutorName)", trackVersion: false)
 		// Load the sheet cells into this Timesheet
 		if let sheetData = sheetData {
 			if sheetData.values.count > 0 {

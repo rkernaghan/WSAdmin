@@ -11,6 +11,12 @@ import Foundation
 @Observable class LocationMgmtVM  {
     
 	func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var saveResult: Bool = true
 		var logMessage: String
 		
@@ -44,6 +50,12 @@ import Foundation
 	}
 	
 	func updateLocation(locationNum: Int, referenceData: ReferenceData, newLocationName: String, originalLocationName: String) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var updateResult: Bool = true
 		var logMessage: String = ""
 		
@@ -123,6 +135,12 @@ import Foundation
     
 
 	func deleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var deleteResult: Bool = true
 		var logMessage: String = " "
 
@@ -161,6 +179,12 @@ import Foundation
 	}
     
 	func undeleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var unDeleteResult: Bool = true
 		var logMessage: String = " "
 		

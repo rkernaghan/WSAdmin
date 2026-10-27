@@ -11,6 +11,12 @@ import Foundation
 @Observable class StudentMgmtVM  {
     
 	func addNewStudent(referenceData: ReferenceData, studentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var completionFlag: Bool = true
 		var logMessage: String = ""
 		
@@ -118,6 +124,12 @@ import Foundation
 	}
     
 	func updateStudent(referenceData: ReferenceData, studentKey: String, studentName: String, originalStudentName: String, contactFirstName: String, contactLastName: String, contactEmail: String, contactPhone: String, contactAddress1: String, contactAddress2: String, contactCity: String, contactState: String, contactZipCode: String, location: String) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 
 		var completionFlag: Bool = true
 		var logMessage: String = ""
@@ -493,6 +505,15 @@ import Foundation
 			if let index = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
 				logMessage = "INFO: Deleting Student: \(referenceData.students.studentsList[index].studentName)"
 				await AppLogger.shared.log(logMessage, newLine: true)
+				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+					deleteResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
 				print(logMessage)
 				// Check that the Student is not assigned to a Tutor and is not already deleted
 				if referenceData.students.studentsList[index].studentStatus != .StudentAssigned && referenceData.students.studentsList[index].studentStatus != .StudentDeleted {
@@ -612,6 +633,15 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+					unDeleteResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
+				
 				if referenceData.students.studentsList[index].studentStatus == .StudentDeleted {
 					let studentNum = index
 					// Change the Student's Status to "Active" and save the Student List data
@@ -672,8 +702,14 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightLockCheck(tutorID: objectID) {
+					assignResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
 				// Check that the Student Status is "Unassigned"
-				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
+				} else if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 //					let tutorKey = referenceData.students.studentsList[studentNum].studentTutorKey
 					
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
@@ -741,6 +777,15 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightLockCheck(tutorID: objectID) {
+					reassignResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
+				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
 					let (originalTutorFoud, originalTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentCurrentTutorKey)
 					if newTutorNum != originalTutorNum {
@@ -758,7 +803,7 @@ import Foundation
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .info)
 							
-							// Ensure Tutor STudent data loaded for the Tutor receiving reassigned Student
+							// Ensure Tutor Student data loaded for the Tutor receiving reassigned Student
 							guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
 								logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutorName) when reassigning Student: \(studentName)"
 								print(logMessage)
@@ -824,7 +869,21 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
-				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
+				// Pre-flight optimistic lock check before anything is changed or saved
+				var conflictMessage: String? = nil
+				if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned {
+					let (preFound, preTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentCurrentTutorKey)
+					if preFound, let preTutorNum {
+						conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[preTutorNum].id)
+					}
+				}
+				
+				if let conflictMessage {
+					unassignResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+				} else if referenceData.students.studentsList[studentNum].studentStatus == .StudentAssigned  {
 					let tutorKey = referenceData.students.studentsList[studentNum].studentCurrentTutorKey
 					let tutorName = referenceData.students.studentsList[studentNum].studentCurrentTutorName
 
@@ -896,6 +955,16 @@ import Foundation
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				let (preFound, preTutorNum) = referenceData.tutors.findTutorByKey(tutorKey: referenceData.students.studentsList[studentNum].studentPreviousTutorKey)
+				if preFound, let preTutorNum, let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[preTutorNum].id) {
+					unreassignResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
+				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentReassigned  {
 					// Get the Tutor key and name of the Tutor originally assigned to Student before the Reassignment
 					let tutorKey = referenceData.students.studentsList[studentNum].studentPreviousTutorKey
@@ -953,55 +1022,85 @@ import Foundation
 	}
 	
 	
-	func unassignTutorStudent(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+	func unassignTutorStudentSet(tutorStudentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
 		var unassignResult: Bool = true
 		var logMessage: String = " "
 		
 		for objectID in tutorStudentIndex {
 			if let tutorStudentNum = referenceData.tutors.tutorsList[tutorNum].tutorStudents.firstIndex(where: {$0.id == objectID} ) {
 				
-				let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+				let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
+				
 				let studentName = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentName
-				
-				logMessage = "INFO: Unassigning Tutor Student: \(studentName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, newLine: true)
-				
-				let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
-
-				guard studentFoundFlag, let studentNum else {
-					unassignResult = false
-					logMessage = "ERROR: Could not find Student: \(studentName) with key \(studentKey) in Reference Data when unassigning from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					print(logMessage)
-					await AppLogger.shared.log(logMessage, level: .error)
-					continue
-				}
-				
-				referenceData.students.studentsList[studentNum].unassignTutor()
-				unassignResult = await referenceData.students.saveStudentData()
-				if unassignResult {
-					
-					unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
-					if unassignResult {
-						unassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-						if !unassignResult {
-							logMessage = "ERROR: Could not save Tutor data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+				let (studentFound, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+				if let studentNum {
+					let studentStatus = referenceData.students.studentsList[studentNum].studentStatus
+					if studentStatus == .StudentAssigned {
+						let studentKey = referenceData.tutors.tutorsList[tutorNum].tutorStudents[tutorStudentNum].studentKey
+						
+						
+						logMessage = "INFO: Unassigning Tutor Student: \(studentName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, newLine: true)
+						
+						let (studentFoundFlag, studentNum) = referenceData.students.findStudentByKey(studentKey: studentKey)
+						
+						guard studentFoundFlag, let studentNum else {
+							unassignResult = false
+							logMessage = "ERROR: Could not find Student: \(studentName) with key \(studentKey) in Reference Data when unassigning from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
-						} else {
-							logMessage = "INFO: \(studentName) unassigned from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName); Tutor data saved."
+							continue
+						}
+						
+						// Pre-flight optimistic lock check before anything is changed or saved
+						if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+							unassignResult = false
+							logMessage = conflictMessage
 							print(logMessage)
-							await AppLogger.shared.log(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							continue
+						}
+
+						referenceData.students.studentsList[studentNum].unassignTutor()
+						unassignResult = await referenceData.students.saveStudentData()
+						if unassignResult {
+							
+							unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorStudent(studentKey: studentKey)
+							if unassignResult {
+								unassignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+								if !unassignResult {
+									logMessage = "ERROR: Could not save Tutor data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								} else {
+									logMessage = "INFO: \(studentName) unassigned from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName); Tutor data saved."
+									print(logMessage)
+									await AppLogger.shared.log(logMessage)
+								}
+							} else {
+								logMessage = "ERROR: Could not remove Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Tutor Details sheet"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							}
+						} else {
+							logMessage = "ERROR: Could not save Student data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
-						logMessage = "ERROR: Could not remove Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) Tutor Details sheet"
+						logMessage += "WARNING: Could not Unassign Student: \(studentName) from Tutor \(tutorName) as Status not Assigned"
 						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .error)
+						unassignResult = false
+						await AppLogger.shared.log(logMessage, level: .warning)
 					}
 				} else {
-					logMessage = "ERROR: Could not save Student data when unassigning Student \(studentName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-					print(logMessage)
+				
+					logMessage = "ERROR: Student: \(studentName) not found in Tutor Students for Tutor \(tutorName) when unassigning Student from Tutor"
 					await AppLogger.shared.log(logMessage, level: .error)
+					unassignResult = false
+					continue
 				}
 			}
 			
@@ -1020,6 +1119,15 @@ import Foundation
 				logMessage = "INFO: Suspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
+				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+					suspendResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 					referenceData.students.studentsList[studentNum].suspendStudent()
@@ -1053,6 +1161,15 @@ import Foundation
 				logMessage = "INFO: Unsuspending Student: \(referenceData.students.studentsList[studentNum].studentName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
+				
+				// Pre-flight optimistic lock check before anything is changed or saved
+				if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+					unsuspendResult = false
+					logMessage = conflictMessage
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .error)
+					continue
+				}
 				
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentSuspended {
 					referenceData.students.studentsList[studentNum].unsuspendStudent()

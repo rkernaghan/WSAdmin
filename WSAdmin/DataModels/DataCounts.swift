@@ -99,7 +99,7 @@ import Foundation
 		// Read in the Data Counts from the Reference Data spreadsheet
 		
 		do {
-			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange, logNote: "Data Counts from Ref data" )
+			sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.dataCountRange, logNote: "Data Counts from Ref data", trackVersion: true )
 			if let sheetData = sheetData {
 				sheetCells = sheetData.values
 				// Build the Billed Tutors list for the month from the data read in

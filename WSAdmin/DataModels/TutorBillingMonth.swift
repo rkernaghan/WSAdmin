@@ -50,14 +50,14 @@ class TutorBillingMonth {
 		
 		// Get the count of Tutors in the Billed Tutor spreadsheet
 		do {
-			tutorCountData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange, logNote: "Tutor Billing Count")
+			tutorCountData = try await readSheetCells(fileID: tutorBillingFileID, range: monthName + PgmConstants.tutorBillingCountRange, logNote: "Tutor Billing Count", trackVersion: true)
 			if let tutorCountData = tutorCountData {
 				tutorBillingCount = Int(tutorCountData.values.first?.first ?? "") ?? 0
 				// Read in the Billed Tutors from the Billed Tutor spreadsheet
 				if tutorBillingCount > 0 {			// Could be zero if loading a Billed Tutor month not yet billed
 					do {
 						let cellRange = monthName + PgmConstants.tutorBillingRange + String(PgmConstants.tutorBillingStartRow + tutorBillingCount - 1)
-						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: cellRange, logNote: "Tutor Billing Rows")
+						sheetData = try await readSheetCells(fileID: tutorBillingFileID, range: cellRange, logNote: "Tutor Billing Rows", trackVersion: true)
 						if let sheetData = sheetData {
 							sheetCells = sheetData.values
 							

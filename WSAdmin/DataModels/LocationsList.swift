@@ -57,7 +57,7 @@ import GoogleSignIn
 		// Read the Location data into a 2D array from the Reference Data spreadsheet
 		if locationCount > 0 {
 			do {
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + locationCount - 1), logNote: "Location rows from Ref data" )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.locationRange + String(PgmConstants.locationStartingRowNumber + locationCount - 1), logNote: "Location rows from Ref data", trackVersion: true)
 				// Build the Locations List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values

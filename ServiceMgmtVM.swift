@@ -22,6 +22,12 @@ import Foundation
 	// - create the new Service object and save Services
 	// - add the new Service to the "Regular" Tutors (not the Specialists
 	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var addResult: Bool = true
 		var logMessage: String = ""
 		var newServiceKey: String = ""
@@ -152,6 +158,12 @@ import Foundation
 	}
     
 	func updateService(serviceNum: Int, referenceData: ReferenceData, serviceCode: String, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var updateResult: Bool = true
 		var logMessage: String = ""
 		
@@ -211,6 +223,12 @@ import Foundation
     
 
 	func deleteService(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var deleteResult: Bool = true
 		var logMessage: String = " "
 		
@@ -256,6 +274,12 @@ import Foundation
 	}
 	
 	func unDeleteService(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var unDeleteResult: Bool = true
 		var logMessage: String = " "
 		

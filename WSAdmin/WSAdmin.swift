@@ -683,7 +683,7 @@ let yearNumbersArray = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
 
 
 
-let runMode: RunMode = .prod			 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+let runMode: RunMode = .test		 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
 
 @main
 struct WSAdmin: App {

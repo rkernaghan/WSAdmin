@@ -357,7 +357,7 @@ import Foundation
 								validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 							}
 							do {
-								let sheetData = try await readSheetCells(fileID: timesheetActualFileID, range: PgmConstants.timesheetDetailsFileIDCell, logNote: "Timesheet Tutor Details FileID pointer")
+								let sheetData = try await readSheetCells(fileID: timesheetActualFileID, range: PgmConstants.timesheetDetailsFileIDCell, logNote: "Timesheet Tutor Details FileID pointer", trackVersion: false)
 								
 								// The read returns nil if there is no access token and no rows if the cell is empty, so guard before indexing
 								if let timesheetTutorDetailsFileID = sheetData?.values.first?.first, !timesheetTutorDetailsFileID.isEmpty {
@@ -1321,7 +1321,7 @@ import Foundation
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
-	// Reset the Test Timesheets and write the Tutor Details File ID into each one
+	// Reset the Test Timesheets and write the Tutor Details File ID into each one -- current year Timesheets must be done last
 		var timesheetResult: Bool
 		
 		(timesheetResult, logMessage) = await resetTestTimesheet(deleteFileName: PgmConstants.timesheetTestFileName1A, sourceFileName: PgmConstants.initializationTestTimesheetFileName1A, tutorDetailsFileID: testTutorDetailsFileID)
@@ -1430,20 +1430,43 @@ import Foundation
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
 					
-					// Write the Timesheet FileID into the Tutor Details sheet for the tutor
-					let updateValues2 = [[copyFileID]]
-					let range2 = PgmConstants.tutorDataTimesheetFileIDRange
-					let note2 = "Tutor Details Timesheet FileID"
-					if try await writeSheetCells(fileID: tutorDetailsFileID, range: range2, values: updateValues2 as! [[String]], logNote: note2) {
-						logMessage = "INFO: Added new Timesheet FileID to Tutor Details sheet for Tutor"
-						print(logMessage)
-						await AppLogger.shared.log(logMessage, level: .info)
-					} else {
-						resetResult = false
-						logMessage = "ERROR: Could not add new Timesheet FileID to Tutor Details sheet for Tutor"
+					// Get the Tutor Name from the new Timesheet and update the Tutor Details sheet for the Tutor
+					var headerData: SheetData?
+					var tutorName: String
+					let range2 = PgmConstants.timesheetTutorNameCell
+					do {
+						headerData = try await readSheetCells(fileID: newTimesheetFileID, range: range2, logNote: "Tutor Name from new Timesheet", trackVersion: false)
+						if let headerData {
+							tutorName = headerData.values[0][0]
+							
+							// Write the Timesheet FileID into the Tutor Details sheet for the tutor
+							let updateValues3 = [[newTimesheetFileID]]
+							let range3 = tutorName + PgmConstants.tutorDataTimesheetFileIDRange
+							let note3 = "Tutor Details Timesheet FileID"
+							do {
+								if try await writeSheetCells(fileID: tutorDetailsFileID, range: range3, values: updateValues3, logNote: note3) {
+									logMessage = "INFO: Added new Timesheet FileID to Tutor Details sheet for Tutor"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .info)
+								} else {
+									resetResult = false
+									logMessage = "ERROR: Could not add new Timesheet FileID to Tutor Details sheet for Tutor"
+									print(logMessage)
+									await AppLogger.shared.log(logMessage, level: .error)
+								}
+							} catch {
+								logMessage = "ERROR: Could not update Tutor Details sheet for Tutor: \(tutorName) with Timesheet FileID"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							}
+						}
+					}
+					catch {
+						logMessage = "ERROR: Could not read tutorName from Timesheet with File ID \(newTimesheetFileID)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
+					
 				} else {
 					resetResult = false
 					logMessage = "ERROR: Timesheet: \(sourceFileName) not reset"

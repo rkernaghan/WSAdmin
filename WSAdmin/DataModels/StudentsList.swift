@@ -66,7 +66,7 @@ import Foundation
 		if studentCount > 0 {
 			do {
 				// Read in the Student data from the Reference Data spreadsheet to a temporary 2D array
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1), logNote: "Student Rows from Ref data" )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.studentRange + String(PgmConstants.studentStartingRowNumber + studentCount - 1), logNote: "Student Rows from Ref data", trackVersion: true )
 				// Build the Students List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values

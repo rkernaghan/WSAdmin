@@ -56,7 +56,7 @@ import Foundation
 		if tutorCount > 0 {
 			do {
 				// Read the Tutor data from the Reference Data spreadsheet into a 2D array of data (one row per Tutor)
-				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + tutorCount - 1), logNote: "Tutor rows from Ref data" )
+				sheetData = try await readSheetCells(fileID: referenceDataFileID, range: PgmConstants.tutorRange + String(PgmConstants.tutorStartingRowNumber + tutorCount - 1), logNote: "Tutor rows from Ref data", trackVersion: true)
 				// Build the Tutors List object array from the cells read into the 2D array
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values

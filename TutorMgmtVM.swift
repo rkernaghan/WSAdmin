@@ -22,6 +22,12 @@ import GoogleSignIn
 	// - add the Base Services to the Tutor (except for specialists)
 	//
 	func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async throws -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var addResult: Bool = true
 		var logMessage: String = ""
 		var newTimesheetFileID: String?
@@ -176,6 +182,12 @@ import GoogleSignIn
 	//	- update the Tutor name in the Student Billing sheet for Students assigned to the Tutor
 	//	- update the Timesheet name for the Tutor
 	func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, originalTutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var updateResult: Bool = true
 		var logMessage: String = ""
 		
@@ -503,6 +515,12 @@ import GoogleSignIn
 	}
     
 	func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorIDs: indexes) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var deleteResult = true
 		var logMessage = " "
 		var tutorBillingFileID: String = ""
@@ -650,6 +668,12 @@ import GoogleSignIn
         
     
 	func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var assignResult: Bool = true
 		var logMessage: String = ""
 		let dateFormatter = DateFormatter()
@@ -719,6 +743,12 @@ import GoogleSignIn
 	
 	// Assigns a specific Tutor a set of one or more Services
 	func assignService(serviceIndex: Set<Service.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var assignResult: Bool = true
 		var logMessage: String = ""
 		
@@ -778,6 +808,12 @@ import GoogleSignIn
 	
 	// Assigns a specific Service to a set of one or more Tutors
 	func assignTutorServiceSet(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorIDs: tutorIndex) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var assignResult: Bool = true
 		var logMessage: String = ""
 		
@@ -787,8 +823,9 @@ import GoogleSignIn
  
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-				print(referenceData.tutors.tutorsList[tutorNum].tutorName)
-				await AppLogger.shared.log("INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+				logMessage = "INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				print(logMessage)
+				await AppLogger.shared.log(logMessage, level: .info)
 
 				// Must load before findTutorServiceByKey below, not just before
 				// addNewTutorService: an unloaded tutorServices array would make
@@ -839,6 +876,12 @@ import GoogleSignIn
 	}
     
 	func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var unassignResult: Bool = true
 		var logMessage: String = " "
 		
@@ -881,6 +924,12 @@ import GoogleSignIn
 	}
     
 	func unassignTutorServiceSet(tutorNum: Int, tutorServiceIndex: Set<TutorService.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var unassignResult: Bool = true
 		var logMessage: String = " "
 		
@@ -928,6 +977,12 @@ import GoogleSignIn
 	
 	
 	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		
 		var updateResult: Bool = true
 		var logMessage: String = ""
@@ -944,6 +999,12 @@ import GoogleSignIn
 	}
 	
 	func suspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var suspendResult: Bool = true
 		var logMessage: String = ""
 		
@@ -969,6 +1030,12 @@ import GoogleSignIn
 	}
 	
 	func unsuspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+
 		var unsuspendResult: Bool = true
 		var logMessage: String = ""
 		

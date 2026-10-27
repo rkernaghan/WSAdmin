@@ -50,7 +50,7 @@ struct TutorStudentsView: View {
                         
 						Button {
 							Task {
-								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudentSet(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 								if !unassignResult {
 									showAlert = true
 									buttonErrorMsg = unassignMessage
@@ -66,7 +66,7 @@ struct TutorStudentsView: View {
 				} else {
 					Button {
 						Task {
-							let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudent(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							let (unassignResult, unassignMessage) = await studentMgmtVM.unassignTutorStudentSet(tutorStudentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 							if !unassignResult {
 								showAlert = true
 								buttonErrorMsg = unassignMessage
