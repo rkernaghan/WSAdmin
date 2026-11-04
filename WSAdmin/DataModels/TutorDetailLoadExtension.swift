@@ -18,6 +18,8 @@ extension ReferenceData {
 	///   `false` if the load was attempted and failed.
 	@discardableResult
 	func ensureTutorDetailsLoaded(tutorID: Tutor.ID) async -> Bool {
+		var success: Bool = true
+		
 		guard let idx = tutors.tutorsList.firstIndex(where: { $0.id == tutorID }) else {
 			return false
 		}
@@ -27,11 +29,14 @@ extension ReferenceData {
 		if tutor.tutorDetailsLoaded {
 			return true
 		}
-
-		let success = await tutor.loadTutorDetails()
-
-		if success {
-			tutor.tutorDetailsLoaded = true
+		
+		// Don't try to load the Tutor details for a deleted Tutor
+		if tutor.tutorStatus != .TutorDeleted {
+			success = await tutor.loadTutorDetails()
+			
+			if success {
+				tutor.tutorDetailsLoaded = true
+			}
 		}
 
 		return success
@@ -48,7 +53,7 @@ extension ReferenceData {
 		let tutorName = tutors.tutorsList[idx].tutorName
 		
 		guard await ensureTutorDetailsLoaded(tutorID: tutorID) else {
-			return "ERROR: could not load Tutor Details for Tutor \(tutorName)"
+			return "ERROR: could not load Tutor Details for Tutor: \(tutorName)"
 		}
 		do {
 			try await SheetVersionStore.shared.verifyUnchanged(fileID: referenceDataFileID)

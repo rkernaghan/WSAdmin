@@ -22,6 +22,7 @@ import GoogleSignIn
 	// - add the Base Services to the Tutor (except for specialists)
 	//
 	func addNewTutor(referenceData: ReferenceData, tutorName: String, tutorEmail: String, tutorPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async throws -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -38,7 +39,7 @@ import GoogleSignIn
 		referenceData.dataCounts.increaseTotalTutorCount()
 		addResult = await referenceData.dataCounts.saveDataCounts()
 		if !addResult {
-			logMessage = "ERROR: could not save Data Counts when adding new Tutor \(tutorName)"
+			logMessage = "ERROR: could not save Data Counts when adding new Tutor: \(tutorName)"
 			await AppLogger.shared.log(logMessage, level: .error)
 		} else {
 			let newTutorKey = PgmConstants.tutorKeyPrefix + String(format: "%04d", referenceData.dataCounts.highestTutorKey)
@@ -77,7 +78,7 @@ import GoogleSignIn
 					// Create a new Tutor Details sheet for the new Tutor
 					addResult = await createNewDetailsSheet(tutorName: tutorName, tutorKey: newTutorKey, newTimesheetFileID: newTimesheetFileID)
 					if !addResult {
-						logMessage = "ERROR: could not create Tutor Details sheet for new Tutor \(tutorName)"
+						logMessage = "ERROR: could not create Tutor Details sheet for new Tutor: \(tutorName)"
 						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
 						
@@ -85,7 +86,7 @@ import GoogleSignIn
 						let (prevMonthName, prevMonthYear) = getPrevMonthYear()
 						addResult = await self.addTutorToBilledTutorMonth(tutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
 						if !addResult {
-							logMessage = "ERROR: Could not add Tutor \(tutorName) to Billed Tutor spreadsheet for \(prevMonthName)"
+							logMessage = "ERROR: Could not add Tutor: \(tutorName) to Billed Tutor spreadsheet for \(prevMonthName)"
 							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
 							
@@ -99,7 +100,7 @@ import GoogleSignIn
 										let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName,  billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1, cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
 										addResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
 										if !addResult {
-											logMessage = "ERROR: Could not save Tutor Details sheet adding Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(tutorName)"
+											logMessage = "ERROR: Could not save Tutor Details sheet adding Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(tutorName)"
 											await AppLogger.shared.log(logMessage, level: .error)
 										} else {
 											logMessage = "INFO: Added Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(tutorName)"
@@ -113,15 +114,15 @@ import GoogleSignIn
 							}
 							addResult = await referenceData.tutors.saveTutorData()
 							if !addResult {
-								logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName)"
+								logMessage = "ERROR: Could not save Tutor data for Tutor: \(tutorName)"
 								await AppLogger.shared.log(logMessage, level: .error)
 							} else {
 								addResult = await referenceData.services.saveServiceData()
 								if !addResult {
-									logMessage = "ERROR: Could not save Services data for Tutor \(tutorName)"
+									logMessage = "ERROR: Could not save Services data for Tutor: \(tutorName)"
 									await AppLogger.shared.log(logMessage, level: .error)
 								} else {
-									logMessage = "INFO: Saved Services data for Tutor \(tutorName)"
+									logMessage = "INFO: Saved Services data for Tutor: \(tutorName)"
 									await AppLogger.shared.log(logMessage, level: .info)
 								}
 							}
@@ -160,7 +161,7 @@ import GoogleSignIn
 				    // Save the updated Billed Tutor list for the month
 				    addResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: false)
 			    } else {
-				    let message = "ERROR: Tutor \(tutorName) already exists in Billed Tutor month \(monthName)"
+				    let message = "ERROR: Tutor: \(tutorName) already exists in Billed Tutor month \(monthName)"
 				    print(message)
 				    await AppLogger.shared.log(message, level: .error)
 				    addResult = false
@@ -182,6 +183,7 @@ import GoogleSignIn
 	//	- update the Tutor name in the Student Billing sheet for Students assigned to the Tutor
 	//	- update the Timesheet name for the Tutor
 	func updateTutor(tutorNum: Int, referenceData: ReferenceData, tutorName: String, originalTutorName: String, contactEmail: String, contactPhone: String, maxStudents: Int, tutorType: TutorTypeOption) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -203,7 +205,7 @@ import GoogleSignIn
 			let (prevMonthName, prevMonthYear) = getPrevMonthYear()
 			updateResult = await self.renameTutorInBilledTutorMonth(originalTutorName: originalTutorName, newTutorName: tutorName, monthName: prevMonthName, yearName: prevMonthYear)
 			if !updateResult {
-				logMessage = "ERROR: Could not rename Tutor \(originalTutorName) in Billed Tutor data for \(prevMonthName)"
+				logMessage = "ERROR: Could not rename Tutor: \(originalTutorName) in Billed Tutor data for \(prevMonthName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			} else {
@@ -238,7 +240,7 @@ import GoogleSignIn
 										print(logMessage)
 										await AppLogger.shared.log(logMessage, level: .error)
 									} else {
-										logMessage = "INFO: Tutor Details sheet renamed successfully for Tutor \(tutorName)"
+										logMessage = "INFO: Tutor Details sheet renamed successfully for Tutor: \(tutorName)"
 										print(logMessage)
 										await AppLogger.shared.log(logMessage)
 										
@@ -262,11 +264,11 @@ import GoogleSignIn
 												} else {
 													updateResult = try await renameGoogleDriveFile(fileID: tutorTimesheetFileID, newName: newTutorTimesheetName)
 													if !updateResult {
-														logMessage = "ERROR: Could not rename Tutor Timesheet for Tutor \(tutorName)"
+														logMessage = "ERROR: Could not rename Tutor Timesheet for Tutor: \(tutorName)"
 														print(logMessage)
 														await AppLogger.shared.log(logMessage, level: .error)
 													} else {
-														logMessage = "INFO: Timesheet renamed successfully for Tutor \(tutorName)"
+														logMessage = "INFO: Timesheet renamed successfully for Tutor: \(tutorName)"
 														print(logMessage)
 														await AppLogger.shared.log(logMessage)
 														
@@ -285,7 +287,7 @@ import GoogleSignIn
 														if tutorFound {
 															updateResult = await referenceData.students.saveStudentData()
 															if !updateResult {
-																logMessage = "ERROR: Could not save Student data renaming Tutor \(tutorName)"
+																logMessage = "ERROR: Could not save Student data renaming Tutor: \(tutorName)"
 																print(logMessage)
 																await AppLogger.shared.log(logMessage, level: .error)
 															}
@@ -295,7 +297,7 @@ import GoogleSignIn
 															referenceData.tutors.tutorsList[tutorNum].updateTutor(tutorName: tutorName, contactEmail: contactEmail, contactPhone: contactPhone, maxStudents: maxStudents)
 															updateResult = await referenceData.tutors.saveTutorData()
 															if !updateResult {
-																logMessage = "ERROR: Could not save Tutor data when updaing Tutor \(tutorName)"
+																logMessage = "ERROR: Could not save Tutor data when updaing Tutor: \(tutorName)"
 																print(logMessage)
 																await AppLogger.shared.log(logMessage, level: .error)
 															}
@@ -313,7 +315,7 @@ import GoogleSignIn
 								} catch {
 									
 									updateResult = false
-									logMessage = "ERROR: Could not rename Tutor Details sheet for Tutor \(tutorName)"
+									logMessage = "ERROR: Could not rename Tutor Details sheet for Tutor: \(tutorName)"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								}
@@ -344,7 +346,7 @@ import GoogleSignIn
 			referenceData.tutors.tutorsList[tutorNum].tutorType = tutorType
 			updateResult = await referenceData.tutors.saveTutorData()
 			if !updateResult {
-				logMessage = "ERROR: Could not save Tutor data when updaing Tutor \(tutorName)"
+				logMessage = "ERROR: Could not save Tutor data when updaing Tutor: \(tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			}
@@ -377,7 +379,7 @@ import GoogleSignIn
 						// Save the updated Billed Tutor list for the month
 						renameResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: monthName, saveValidatedTutorData: false)
 					} else {
-						logMessage = "WARNING: Billed Tutor \(originalTutorName) not found in Billed Tutor sheet for \(monthName) \(yearName)"
+						logMessage = "WARNING: Billed Tutor: \(originalTutorName) not found in Billed Tutor sheet for \(monthName) \(yearName)"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .warning)
 						renameResult = false
@@ -440,6 +442,7 @@ import GoogleSignIn
 		return(renameResult)
 	}
 	
+	// This function validates the data entered for a new Tutor
 	func validateNewTutor(tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData)->(Bool, String) {
 		var validationResult = true
 		var validationMessage = " "
@@ -471,6 +474,7 @@ import GoogleSignIn
 		return(validationResult, validationMessage)
         }
 
+	// This function validates the data updated for an existing Tutor
 	func validateUpdatedTutor(originalTutorName: String, tutorName: String, tutorEmail: String, tutorPhone: String, tutorMaxStudents: Int, referenceData: ReferenceData) -> (Bool, String) {
 		var validationResult = true
 		var validationMessage = " "
@@ -514,7 +518,9 @@ import GoogleSignIn
 		return phonePredicate.evaluate(with: phone)
 	}
     
-	func deleteTutor(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function deletes (marks deleted) a set of one or more Tutors
+	func deleteTutorSet(indexes: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorIDs: indexes) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -522,7 +528,8 @@ import GoogleSignIn
 		}
 
 		var deleteResult = true
-		var logMessage = " "
+		var logMessage = ""
+		var errorMessage = ""
 		var tutorBillingFileID: String = ""
 		var result: Bool = true
 		var tutorSheetID: Int
@@ -530,14 +537,16 @@ import GoogleSignIn
 		for objectID in indexes {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.tutors.tutorsList[tutorNum].tutorStudentCount == 0 {
-					logMessage = "INFO: Deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					logMessage = "INFO: Deleting Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .info, newLine: true)
 					
 					referenceData.tutors.tutorsList[tutorNum].markDeleted()
-					deleteResult = await referenceData.tutors.saveTutorData()
-					if !deleteResult {
+					let saveTutorResult = await referenceData.tutors.saveTutorData()
+					if !saveTutorResult {
 						logMessage = "ERROR: Could not save Tutor data deleting Tutor"
+						errorMessage += logMessage + "\n"
+						deleteResult = false
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
@@ -546,7 +555,8 @@ import GoogleSignIn
 						// Ensure the Tutor Services are loaded for the Tutor
 						guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
 							deleteResult = false
-							logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before unassigning Services"
+							logMessage = "ERROR: could not load Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) before unassigning Services"
+							errorMessage += logMessage + "\n"
 							await AppLogger.shared.log(logMessage, level: .error)
 							continue
 						}
@@ -563,13 +573,24 @@ import GoogleSignIn
 						}
 						referenceData.tutors.tutorsList[tutorNum].tutorServiceCount = 0
 						
-						deleteResult = await referenceData.services.saveServiceData()
-						if !deleteResult {
-							logMessage = "ERROR: Could not save Services Data when deleting Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						let saveServiceResult = await referenceData.services.saveServiceData()
+						if !saveServiceResult {
+							logMessage = "ERROR: Could not save Services Data when deleting Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							errorMessage += logMessage + "\n"
+							deleteResult = false
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
 							referenceData.dataCounts.decreaseActiveTutorCount()
+							let saveCountResult = await referenceData.dataCounts.saveDataCounts()
+							if !saveCountResult {
+								logMessage = "ERROR: Could not save Data Counts deleting Tutor "
+								errorMessage += logMessage + "\n"
+								deleteResult = false
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .error)
+							}
+							
 							// Remove Tutor from Billed Tutor list for the previous month
 							let (prevMonthName, billingYear) = getPrevMonthYear()
 							let tutorBillingFileName = tutorBillingFileNamePrefix + billingYear
@@ -582,13 +603,16 @@ import GoogleSignIn
 								if !result {
 									deleteResult = false
 									logMessage = "ERROR: Could not get File ID for Tutor Billing File \(tutorBillingFileName)"
+									errorMessage += logMessage + "\n"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								} else {
 									// Read in the Billed Tutors for the previous month
-									deleteResult = await tutorBillingMonth.getTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
-									if !deleteResult {
+									let getTutorMonthResult = await tutorBillingMonth.getTutorBillingMonth(monthName: prevMonthName, tutorBillingFileID: tutorBillingFileID, loadValidatedData: false)
+									if !getTutorMonthResult {
 										logMessage = "ERROR: Could not load Tutor Billing data for \(prevMonthName)"
+										errorMessage += logMessage + "\n"
+										deleteResult = false
 										print(logMessage)
 										await AppLogger.shared.log(logMessage, level: .error)
 									} else {
@@ -597,15 +621,18 @@ import GoogleSignIn
 										let (billedTutorFound, billedTutorNum) = tutorBillingMonth.findBilledTutorByName(billedTutorName: tutorName)
 										if billedTutorFound == false {
 											deleteResult = false
-											logMessage = "ERROR: Could not find Tutor \(tutorName) in Billed Tutor list for month \(prevMonthName)"
+											logMessage = "ERROR: Could not find Tutor: \(tutorName) in Billed Tutor list for month \(prevMonthName)"
+											errorMessage += logMessage + "\n"
 											print(logMessage)
 											await AppLogger.shared.log(logMessage, level: .error)
 										} else {
 											// Save the updated Billed Tutor list for the month
 											tutorBillingMonth.deleteBilledTutor(billedTutorNum: billedTutorNum)
-											deleteResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName, saveValidatedTutorData: false)
-											if !deleteResult {
+											let saveTutorMonthResult = await tutorBillingMonth.saveTutorBillingData(tutorBillingFileID: tutorBillingFileID, billingMonth: prevMonthName, saveValidatedTutorData: false)
+											if !saveTutorMonthResult {
 												logMessage = "ERROR: Could not save Tutor Billing data for \(prevMonthName)"
+												errorMessage += logMessage + "\n"
+												deleteResult = false
 												print(logMessage)
 												await AppLogger.shared.log(logMessage, level: .error)
 											} else {
@@ -617,6 +644,8 @@ import GoogleSignIn
 														let deleteFileData = try await deleteSheet(spreadsheetID: tutorDetailsFileID, sheetID: tutorSheetID)
 														if deleteFileData == nil {
 															logMessage = "ERROR: Could not delete Tutor Details sheet for \(tutorName)"
+															errorMessage += logMessage + "\n"
+															deleteResult = false
 															print(logMessage)
 															await AppLogger.shared.log(logMessage, level: .error)
 														} else {
@@ -624,13 +653,15 @@ import GoogleSignIn
 														}
 													} else {
 														deleteResult = false
-														logMessage = "ERROR: Could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet"
+														logMessage = "ERROR: Could not get Sheet ID for Tutor: \(tutorName) in Tutor Details spreadsheet"
+														errorMessage += logMessage + "\n"
 														print(logMessage)
 														await AppLogger.shared.log(logMessage, level: .error)
 													}
 												} catch {
 													deleteResult = false
-													logMessage = "ERROR: could not get Sheet ID for Tutor \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
+													logMessage = "ERROR: could not get Sheet ID for Tutor: \(tutorName) in Tutor Details spreadsheet to delete Tutors details sheet"
+													errorMessage += logMessage + "\n"
 													print(logMessage)
 													await AppLogger.shared.log(logMessage, level: .error)
 												}
@@ -641,33 +672,29 @@ import GoogleSignIn
 							} catch {
 								deleteResult = false
 								logMessage = "ERROR: Could not get File ID for Billed Tutor File: \(tutorBillingFileName)"
+								errorMessage += logMessage + "\n"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 							}
 						}
 					}
 				} else {
-					logMessage = "WARNING: \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned to \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					logMessage = "WARNING: Cannot delete Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) with \(referenceData.tutors.tutorsList[tutorNum].tutorStudentCount) Students still assigned\n"
+					errorMessage += logMessage + "\n"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .warning)
 					deleteResult = false
 				}
 			}
 		}
-		if deleteResult {
-			deleteResult = await referenceData.dataCounts.saveDataCounts()
-			if !deleteResult {
-				logMessage = "ERROR: Could not save Data Counts deleting Tutor "
-				print(logMessage)
-				await AppLogger.shared.log(logMessage, level: .error)
-			}
-		}
 		
-		return(deleteResult, logMessage)
+		return(deleteResult, errorMessage)
 	}
         
     
-	func assignStudent(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function assigns a set of one or more Students to a specific Tutor
+	func assignStudentSetToTutor(studentIndex: Set<Student.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -676,6 +703,7 @@ import GoogleSignIn
 
 		var assignResult: Bool = true
 		var logMessage: String = ""
+		var errorMessage: String = ""
 		let dateFormatter = DateFormatter()
 		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"
@@ -686,7 +714,7 @@ import GoogleSignIn
 		// out the Tutor's other assigned Students. tutorNum is fixed for the
 		// whole loop, so this only needs to happen once, up front.
 		guard await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) else {
-			logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Students"
+			logMessage = "ERROR: could not load Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Students"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 			return (false, logMessage)
@@ -694,7 +722,7 @@ import GoogleSignIn
 
 		for objectID in studentIndex {
 			if let studentNum = referenceData.students.studentsList.firstIndex(where: {$0.id == objectID} ) {
-				logMessage = "INFO: Assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				logMessage = "INFO: Assigning Student: \(referenceData.students.studentsList[studentNum].studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				await AppLogger.shared.log(logMessage)
 				print(logMessage)
 				
@@ -702,47 +730,55 @@ import GoogleSignIn
 				if referenceData.students.studentsList[studentNum].studentStatus == .StudentUnassigned {
 					referenceData.students.studentsList[studentNum].assignTutor(tutorNum: tutorNum, referenceData: referenceData)
 					
-					assignResult = await referenceData.students.saveStudentData()
-					if assignResult {
+					let saveStudentResult = await referenceData.students.saveStudentData()
+					if saveStudentResult {
 
 						let assignedDate = dateFormatter.string(from: Date())
 						let client = referenceData.students.studentsList[studentNum].studentContactFirstName + " " + referenceData.students.studentsList[studentNum].studentContactLastName
 						
 						let newTutorStudent = TutorStudent(studentKey: referenceData.students.studentsList[studentNum].studentKey, studentName: referenceData.students.studentsList[studentNum].studentName, clientName: client, clientEmail: referenceData.students.studentsList[studentNum].studentContactEmail, clientPhone: referenceData.students.studentsList[studentNum].studentContactPhone, assignedDate: assignedDate)
-						assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
-						if assignResult {
-							assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-							if !assignResult {
-								logMessage = "ERROR: could not save Tutor data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						let addTutorStudentResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorStudent(newTutorStudent: newTutorStudent)
+						if addTutorStudentResult {
+							let saveTutorResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+							if !saveTutorResult {
+								logMessage = "ERROR: could not save Tutor data assigning Student: \(referenceData.students.studentsList[studentNum].studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								errorMessage += logMessage + "\n"
+								assignResult = false
 								await AppLogger.shared.log(logMessage,level: .error)
 								print(logMessage)
 							} else {
-								await AppLogger.shared.log("INFO: Student \(referenceData.students.studentsList[studentNum].studentName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+								await AppLogger.shared.log("INFO: Student: \(referenceData.students.studentsList[studentNum].studentName) assigned to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 								print(logMessage)
 							}
 						} else {
-							logMessage = "ERROR: could not save Tutor Details assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							logMessage = "ERROR: could not save Tutor Details assigning Student: \(referenceData.students.studentsList[studentNum].studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							errorMessage += logMessage + "\n"
+							assignResult = false
 							await AppLogger.shared.log(logMessage,level: .error)
 							print(logMessage)
 						}
 					} else {
-						logMessage = "ERROR: could not save Student data assigning Student \(referenceData.students.studentsList[studentNum].studentName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						logMessage = "ERROR: could not save Student data assigning Student: \(referenceData.students.studentsList[studentNum].studentName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						errorMessage += logMessage + "\n"
+						assignResult = false
 						await AppLogger.shared.log(logMessage,level: .error)
 						print(logMessage)
 					}
 				} else {
 					assignResult = false
-					logMessage = "WARNING: Student \(referenceData.students.studentsList[studentNum].studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					logMessage = "WARNING: Student: \(referenceData.students.studentsList[studentNum].studentName) can not be assigned when status is \(referenceData.students.studentsList[studentNum].studentStatus)\n"
+					errorMessage += logMessage + "\n"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
-		return(assignResult, logMessage)
+		return(assignResult, errorMessage)
 	}
 	
-	// Assigns a specific Tutor a set of one or more Services
-	func assignService(serviceIndex: Set<Service.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function assigns a set of one or more Services to a specific Tutor
+	func assignServiceSetToTutor(serviceIndex: Set<Service.ID>, tutorNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -751,6 +787,7 @@ import GoogleSignIn
 
 		var assignResult: Bool = true
 		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		// Must have the Tutor's existing Students/Services loaded before assigning Service
 		// processing below, otherwise it would save an in-memory
@@ -758,7 +795,7 @@ import GoogleSignIn
 		// out the Tutor's other assigned Services. tutorNum is fixed for the
 		// whole loop, so this only needs to happen once, up front.
 		guard await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id) else {
-			logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service"
+			logMessage = "ERROR: could not load Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 			return (false, logMessage)
@@ -766,48 +803,65 @@ import GoogleSignIn
 		
 		for objectID in serviceIndex {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-			print(referenceData.services.servicesList[serviceNum].serviceTimesheetName)
-		
-				logMessage = "INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-				await AppLogger.shared.log(logMessage)
-				
-				let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: referenceData.services.servicesList[serviceNum].serviceTimesheetName)
-				if !tutorServiceFound {
-					let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-					assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-					if assignResult {
-						assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-						if assignResult {
-							referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-							assignResult = await referenceData.services.saveServiceData()
-							if !assignResult {
-								logMessage = "ERROR: Could not save Services data assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+//			print(referenceData.services.servicesList[serviceNum].serviceTimesheetName)
+				if referenceData.services.servicesList[serviceNum].serviceStatus != .ServiceDeleted {
+					logMessage = "INFO: Assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					await AppLogger.shared.log(logMessage)
+					
+					let (tutorServiceFound, tutorServiceNum) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByName(serviceName: referenceData.services.servicesList[serviceNum].serviceTimesheetName)
+					if !tutorServiceFound {
+						let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+						let addTutorResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+						if addTutorResult {
+							let saveTutorResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+							if saveTutorResult {
+								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+								let saveServiceResult = await referenceData.services.saveServiceData()
+								if !saveServiceResult {
+									logMessage = "ERROR: Could not save Services data assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									errorMessage += logMessage
+									await AppLogger.shared.log(logMessage, level: .error)
+									assignResult = false
+								} else {
+									await AppLogger.shared.log("INFO: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+									print(logMessage)
+								}
 							} else {
-								await AppLogger.shared.log("INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+								logMessage = "ERROR: Could not save Tutors data assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								await AppLogger.shared.log(logMessage,level: .error)
 								print(logMessage)
+								errorMessage += logMessage
+								assignResult = false
 							}
 						} else {
-							logMessage = "ERROR: Could not save Tutors data assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							logMessage = "ERROR: Could not save Tutor Details data when adding  Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							errorMessage += logMessage
+							assignResult = false
 							await AppLogger.shared.log(logMessage,level: .error)
 							print(logMessage)
 						}
 					} else {
-						logMessage = "ERROR: Could not save Tutor Details data when adding  Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-						await AppLogger.shared.log(logMessage,level: .error)
+						logMessage = "WARNING: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) already assigned to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)\n\n"
 						print(logMessage)
+						errorMessage += logMessage
+						assignResult = false
+						await AppLogger.shared.log(logMessage,level: .warning)
 					}
 				} else {
-					logMessage = "WARNING: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) already assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					logMessage = "WARNING: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) status is \(referenceData.services.servicesList[serviceNum].serviceStatus) and cannot be assigned\n\n"
 					print(logMessage)
+					errorMessage += logMessage
+					assignResult = false
 					await AppLogger.shared.log(logMessage,level: .warning)
 				}
 			}
 		}
-		return(assignResult, logMessage)
+		return(assignResult, errorMessage)
 	}
 	
-	// Assigns a specific Service to a set of one or more Tutors
-	func assignTutorServiceSet(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function assigns a specific Service to a set of one or more Tutors
+	func assignServiceToTutorSet(serviceNum: Int, tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorIDs: tutorIndex) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -816,66 +870,83 @@ import GoogleSignIn
 
 		var assignResult: Bool = true
 		var logMessage: String = ""
+		var errorMessage: String = ""
 		
-		logMessage = "INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to one or more Tutors"
+		logMessage = "INFO: Assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to one or more Tutors"
 		await AppLogger.shared.log(logMessage)
 		print(logMessage)
  
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
-				logMessage = "INFO: Assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				logMessage = "INFO: Assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .info)
-
-				// Must load before findTutorServiceByKey below, not just before
-				// addNewTutorService: an unloaded tutorServices array would make
-				// the "already assigned" check below report a false negative,
-				// and addNewTutorService would then save an in-memory
-				// tutorServices array missing everyone loaded from the sheet.
-				guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
-					assignResult = false
-					logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
-					await AppLogger.shared.log(logMessage, level: .error)
-					continue
-				}
-
-				let (tutorServiceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
-				if !tutorServiceFound {
+				
+				if referenceData.tutors.tutorsList[tutorNum].tutorStatus != .TutorDeleted {
+					// Must load before findTutorServiceByKey below, not just before
+					// addNewTutorService: an unloaded tutorServices array would make
+					// the "already assigned" check below report a false negative,
+					// and addNewTutorService would then save an in-memory
+					// tutorServices array missing everyone loaded from the sheet.
+					guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
+						assignResult = false
+						logMessage = "ERROR: could not load Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) before assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						await AppLogger.shared.log(logMessage, level: .error)
+						continue
+					}
 					
-					let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
-					assignResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
-					if assignResult {
-						assignResult = await referenceData.tutors.saveTutorData()                    // increased Student count
-						if assignResult {
-							referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
-							assignResult = await referenceData.services.saveServiceData()
-							if !assignResult {
-								logMessage = "ERROR: Could not save Service data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-								await AppLogger.shared.log(logMessage,level: .error)
-							} else {
-								logMessage = "INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-								await AppLogger.shared.log(logMessage)
-							}
+					let (tutorServiceFound, _) = referenceData.tutors.tutorsList[tutorNum].findTutorServiceByKey(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey)
+					if !tutorServiceFound {
+						
+						let newTutorService = TutorService(serviceKey: referenceData.services.servicesList[serviceNum].serviceKey, timesheetName: referenceData.services.servicesList[serviceNum].serviceTimesheetName, invoiceName: referenceData.services.servicesList[serviceNum].serviceInvoiceName, billingType: referenceData.services.servicesList[serviceNum].serviceBillingType, cost1: referenceData.services.servicesList[serviceNum].serviceCost1,  cost2: referenceData.services.servicesList[serviceNum].serviceCost2, cost3: referenceData.services.servicesList[serviceNum].serviceCost3, price1: referenceData.services.servicesList[serviceNum].servicePrice1, price2: referenceData.services.servicesList[serviceNum].servicePrice2, price3: referenceData.services.servicesList[serviceNum].servicePrice3)
+						let addTutorResult = await referenceData.tutors.tutorsList[tutorNum].addNewTutorService(newTutorService: newTutorService)
+						if addTutorResult {
+							let saveTutorResult = await referenceData.tutors.saveTutorData()                    // increased Student count
+							if saveTutorResult {
+								referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
+								let saveServiceResult = await referenceData.services.saveServiceData()
+								if !saveServiceResult {
+									logMessage = "ERROR: Could not save Service data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									errorMessage += logMessage
+									assignResult = false
+									await AppLogger.shared.log(logMessage,level: .error)
+								} else {
+									logMessage = "INFO: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+									await AppLogger.shared.log(logMessage)
+								}
 								
+							} else {
+								logMessage = "ERROR: Could not save Tutor data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								errorMessage += logMessage
+								assignResult = false
+								await AppLogger.shared.log(logMessage,level: .error)
+							}
 						} else {
-							logMessage = "ERROR: Could not save Tutor data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							logMessage = "ERROR: Could not save Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							errorMessage += logMessage
+							assignResult = false
 							await AppLogger.shared.log(logMessage,level: .error)
 						}
 					} else {
-						logMessage = "ERROR: Could not save Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
-						await AppLogger.shared.log(logMessage,level: .error)
+						logMessage = "WARNING: Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) already assigned Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)\n"
+						errorMessage += logMessage + "\n"
+						assignResult = false
+						await AppLogger.shared.log(logMessage,level: .warning)
 					}
 				} else {
+					logMessage = "WARNING: Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) status \(referenceData.tutors.tutorsList[tutorNum].tutorStatus)\n"
+					errorMessage += logMessage + "\n"
 					assignResult = false
-					logMessage = "WARNING: Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) already assigned Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 					await AppLogger.shared.log(logMessage,level: .warning)
 				}
 			}
 		}
-		return(assignResult, logMessage)
+		return(assignResult, errorMessage)
 	}
     
-	func unassignTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function unassigns a Specific service from a specific Tutor
+	func unAssignServiceFromTutor(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -883,47 +954,57 @@ import GoogleSignIn
 		}
 
 		var unassignResult: Bool = true
-		var logMessage: String = " "
+		var logMessage: String = ""
+		var errorMessage: String = ""
 		
-		logMessage = "INFO: Unssigning one or more Services from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+		logMessage = "INFO: Unssigning one or more Services from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 		print(logMessage)
 		await AppLogger.shared.log(logMessage)
 		
 		let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
 		let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
 		if serviceFound, let serviceNum {
-			logMessage = "INFO: Unssigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+			logMessage = "INFO: Unssigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 			await AppLogger.shared.log(logMessage)
 			
 			referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
-			unassignResult = await referenceData.services.saveServiceData()
-			if unassignResult {
-				unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
-				if !unassignResult {
-					logMessage = "ERROR: could not save Tutor data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+			let saveServiceResult = await referenceData.services.saveServiceData()
+			if saveServiceResult {
+				let removeTutorResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
+				if !removeTutorResult {
+					logMessage = "ERROR: could not save Tutor data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					errorMessage += logMessage
+					unassignResult = false
 					await AppLogger.shared.log(logMessage,level: .error)
 				} else {
-					unassignResult = await referenceData.tutors.saveTutorData()      // decreased Service count for Tutor
-					if !unassignResult {
-						logMessage = "ERROR could not save Tutor data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					let saveTutorResult = await referenceData.tutors.saveTutorData()      // decreased Service count for Tutor
+					if !saveTutorResult {
+						logMessage = "ERROR could not save Tutor data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						errorMessage += logMessage
+						unassignResult = false
 						await AppLogger.shared.log(logMessage,level: .error)
 					} else {
-						await AppLogger.shared.log("INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) unassigned from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+						await AppLogger.shared.log("INFO: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) unassigned from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 					}
 				}
 			} else {
-				logMessage = "ERROR: could not save Service data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				logMessage = "ERROR: could not save Service data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				errorMessage += logMessage
+				unassignResult = false
 				await AppLogger.shared.log(logMessage,level: .error)
 			}
 		} else {
+			logMessage = "ERROR: Tutor Service: \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+			errorMessage += logMessage
 			unassignResult = false
-			logMessage = "ERROR: Tutor Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 			await AppLogger.shared.log(logMessage,level: .error)
 		}
-		return(unassignResult, logMessage)
+		return(unassignResult, errorMessage)
 	}
     
-	func unassignTutorServiceSet(tutorNum: Int, tutorServiceIndex: Set<TutorService.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function assigns a set of one or more Services to a specific Tutor
+	func unAssignServiceSetFromTutor(tutorNum: Int, tutorServiceIndex: Set<TutorService.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -931,7 +1012,8 @@ import GoogleSignIn
 		}
 
 		var unassignResult: Bool = true
-		var logMessage: String = " "
+		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		for objectID in tutorServiceIndex {
 			if let tutorServiceNum = referenceData.tutors.tutorsList[tutorNum].tutorServices.firstIndex(where: {$0.id == objectID} ) {
@@ -940,65 +1022,74 @@ import GoogleSignIn
 				let serviceKey = referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].serviceKey
 				let (serviceFound, serviceNum) = referenceData.services.findServiceByKey(serviceKey: serviceKey )
 				
-				logMessage = "INFO: Unassigning Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+				logMessage = "INFO: Unassigning Service: \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage)
 				
 				if serviceFound, let serviceNum {
 					referenceData.services.servicesList[serviceNum].decreaseServiceUseCount()
-					unassignResult = await referenceData.services.saveServiceData()
-					if unassignResult {
-						unassignResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
-						if !unassignResult {
-							logMessage = "ERROR: could not save Tutor data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					let saveServiceResult = await referenceData.services.saveServiceData()
+					if saveServiceResult {
+						let removeTutorResult = await referenceData.tutors.tutorsList[tutorNum].removeTutorService(serviceKey: serviceKey)
+						if !removeTutorResult {
+							logMessage = "ERROR: could not save Tutor data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							errorMessage += logMessage
+							unassignResult = false
 							await AppLogger.shared.log(logMessage,level: .error)
 						} else {
-							unassignResult = await referenceData.tutors.saveTutorData()      // decreased Service count for Tutor
-							if !unassignResult {
-								logMessage = "ERROR: could not save Tutor data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+							let saveTutorResult = await referenceData.tutors.saveTutorData()      // decreased Service count for Tutor
+							if !saveTutorResult {
+								logMessage = "ERROR: could not save Tutor data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+								errorMessage += logMessage
+								unassignResult = false
 								await AppLogger.shared.log(logMessage,level: .error)
 							} else {
-								await AppLogger.shared.log("INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+								await AppLogger.shared.log("INFO: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) assigned to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 							}
 						}
 					} else {
-						logMessage = "ERROR: could not save Service data when assigning Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						logMessage = "ERROR: could not save Service data when assigning Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) to Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						errorMessage += logMessage
+						unassignResult = false
 						await AppLogger.shared.log(logMessage,level: .error)
 					}
 				} else {
+					logMessage = "ERROR: Tutor Service: \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					errorMessage += logMessage
 					unassignResult = false
-					logMessage = "ERROR: Tutor Service \(referenceData.tutors.tutorsList[tutorNum].tutorServices[tutorServiceNum].timesheetServiceName) not Found for tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
 					await AppLogger.shared.log(logMessage,level: .error)
 				}
 			}
 		}
-		return(unassignResult, logMessage)
+		return(unassignResult, errorMessage)
 	}
 	
-	
+	// This function updates a specific Service assigned to a specific Tutor
 	func updateTutorService(tutorNum: Int, tutorServiceNum: Int, referenceData: ReferenceData, timesheetName: String, invoiceName: String, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightLockCheck(tutorID: referenceData.tutors.tutorsList[tutorNum].id) {
 			await AppLogger.shared.log(conflictMessage, level: .error)
 			return (false, conflictMessage)
 		}
 
-		
 		var updateResult: Bool = true
 		var logMessage: String = ""
 		
 		updateResult = await referenceData.tutors.tutorsList[tutorNum].updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 		if !updateResult {
-			logMessage = "ERROR: Could not save Tutor Service \(timesheetName) for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) "
+			logMessage = "ERROR: Could not save Tutor Service: \(timesheetName) for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) "
 			await AppLogger.shared.log(logMessage,level: .error)
 		} else {
-			await AppLogger.shared.log("INFO: Tutor Service \(timesheetName) updated for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName), timesheetName: \(timesheetName), invoiceName: \(invoiceName), billingType: \(String(describing: billingType)), cost1: \(cost1), cost2: \(cost2), cost3: \(cost3), price1: \(price1), price2: \(price2), price3: \(price3) ")
+			await AppLogger.shared.log("INFO: Tutor Service: \(timesheetName) updated for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName), timesheetName: \(timesheetName), invoiceName: \(invoiceName), billingType: \(String(describing: billingType)), cost1: \(cost1), cost2: \(cost2), cost3: \(cost3), price1: \(price1), price2: \(price2), price3: \(price3) ")
 		}
 		
 		return(updateResult, logMessage)
 	}
 	
-	func suspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// Thjis function suspends a set of one or more Tutors
+	func suspendTutorSet(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -1007,29 +1098,36 @@ import GoogleSignIn
 
 		var suspendResult: Bool = true
 		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorUnassigned {
 					referenceData.tutors.tutorsList[tutorNum].suspendTutor()
-					suspendResult = await referenceData.tutors.saveTutorData()
-					if !suspendResult {
-						logMessage = "ERROR: Cannot save Tutors Data when suspending Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					let saveTutorResult = await referenceData.tutors.saveTutorData()
+					if !saveTutorResult {
+						logMessage = "ERROR: Cannot save Tutors Data when suspending Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						errorMessage += logMessage + "\n"
+						suspendResult = false
 						await AppLogger.shared.log(logMessage,level: .error)
 					} else {
-						await AppLogger.shared.log("INFO: Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) suspended")
+						await AppLogger.shared.log("INFO: Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) suspended")
 					}
 				} else {
 					suspendResult = false
-					logMessage += "WARNING: Cannot Suspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus) \n"
+					logMessage = "WARNING: Cannot Suspend Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is \(referenceData.tutors.tutorsList[tutorNum].tutorStatus) \n"
+					errorMessage += logMessage + "\n"
+					suspendResult = false
 					await AppLogger.shared.log(logMessage,level: .warning)
 				}
 			}
 		}
-		return(suspendResult, logMessage)
+		return(suspendResult, errorMessage)
 	}
 	
-	func unsuspendTutor(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// This function Unsuspends a set of one or more Tutors
+	func unsuspendTutorSet(tutorIndex: Set<Tutor.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -1038,26 +1136,31 @@ import GoogleSignIn
 
 		var unsuspendResult: Bool = true
 		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		for objectID in tutorIndex {
 			if let tutorNum = referenceData.tutors.tutorsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.tutors.tutorsList[tutorNum].tutorStatus == .TutorSuspended {
 					referenceData.tutors.tutorsList[tutorNum].unsuspendTutor()
-					unsuspendResult = await referenceData.tutors.saveTutorData()
-					if !unsuspendResult {
-						logMessage = "ERROR: could not save Tutor Data when unsuspending Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+					let saveTutorResult = await referenceData.tutors.saveTutorData()
+					if !saveTutorResult {
+						logMessage = "ERROR: could not save Tutor Data when unsuspending Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)"
+						errorMessage += logMessage + "\n"
+						unsuspendResult = false
 						await AppLogger.shared.log(logMessage,level: .error)
 					} else {
-						await AppLogger.shared.log("INFO: Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) unsuspended")
+						await AppLogger.shared.log("INFO: Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) unsuspended")
 					}
 				} else {
 					unsuspendResult = false
-					logMessage += "WARNING: Cannot Unsuspend Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is not Suspended \n"
+					logMessage = "WARNING: Cannot Unsuspend Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) because Status is not Suspended \n"
+					errorMessage += logMessage + "\n"
+					unsuspendResult = false
 					await AppLogger.shared.log(logMessage,level: .warning)
 				}
 			}
 		}
-		return(unsuspendResult, logMessage)
+		return(unsuspendResult, errorMessage)
 	}
     
    
@@ -1094,25 +1197,25 @@ import GoogleSignIn
 									createResult = false
 								}
 							} else {
-								createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor \(tutorName)"
+								createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor: \(tutorName)"
 								print(createMsg)
 								await AppLogger.shared.log(createMsg, level: .error)
 								createResult = false
 							}
 						} catch {
-							createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor \(tutorName):\(error.localizedDescription)"
+							createMsg = "ERROR: Failed to save Tutor Details Header 2 data for Tutor: \(tutorName):\(error.localizedDescription)"
 							print(createMsg)
 							await AppLogger.shared.log(createMsg, level: .error)
 							createResult = false
 						}
 					} else {
-						createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor \(tutorName)"
+						createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor: \(tutorName)"
 						print(createMsg)
 						await AppLogger.shared.log(createMsg, level: .error)
 						createResult = false
 					}
 				} catch {
-					createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor \(tutorName):\(error.localizedDescription)"
+					createMsg = "ERROR: Failed to save Tutor Details Header 1 data for Tutor: \(tutorName):\(error.localizedDescription)"
 					print(createMsg)
 					await AppLogger.shared.log(createMsg, level: .error)
 					createResult = false
@@ -1164,7 +1267,7 @@ import GoogleSignIn
 		for tutor in referenceData.tutors.tutorsList {
 			if tutor.tutorStatus != .TutorDeleted {
 				if await !referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) {
-					logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) - validation results for this Tutor will be unreliable"
+					logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutor.tutorName) - validation results for this Tutor will be unreliable"
 					await AppLogger.shared.log(logMessage, level: .error)
 				}
 				
@@ -1188,6 +1291,7 @@ import GoogleSignIn
 		return(tutorServiceCostList)
 	}
 	
+	// This function creates an array of Tutor Availability data; one entry for each active Tutor
 	func buildTutorAvailabilityArray(referenceData: ReferenceData) async -> [TutorAvailabilityRow] {
 		
 		var tutorAvailabilityArray = [TutorAvailabilityRow]()

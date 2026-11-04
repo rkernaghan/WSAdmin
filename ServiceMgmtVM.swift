@@ -22,6 +22,7 @@ import Foundation
 	// - create the new Service object and save Services
 	// - add the new Service to the "Regular" Tutors (not the Specialists
 	func addNewService(referenceData: ReferenceData, serviceCode: String, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -39,7 +40,7 @@ import Foundation
 		referenceData.dataCounts.increaseTotalServiceCount()
 		addResult = await referenceData.dataCounts.saveDataCounts()
 		if !addResult {
-			logMessage = "ERROR: Could not save Data Counts when adding new Service \(timesheetName)"
+			logMessage = "ERROR: Could not save Data Counts when adding new Service: \(timesheetName)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 		} else {
@@ -55,7 +56,7 @@ import Foundation
 			
 			addResult = await referenceData.services.saveServiceData()
 			if !addResult {
-				logMessage = "ERROR: Could not save Services data when adding new Service \(timesheetName)"
+				logMessage = "ERROR: Could not save Services data when adding new Service: \(timesheetName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			} else {
@@ -74,7 +75,7 @@ import Foundation
 								
 								let tutorDetailsLoaded = await referenceData.ensureTutorDetailsLoaded(tutorID: referenceData.tutors.tutorsList[tutorNum].id)
 								if !tutorDetailsLoaded {
-									logMessage = "ERROR: could not load Tutor Details for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName) when adding new Service \(timesheetName)"
+									logMessage = "ERROR: could not load Tutor Details for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName) when adding new Service: \(timesheetName)"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								}
@@ -94,7 +95,7 @@ import Foundation
 									referenceData.services.servicesList[serviceNum].increaseServiceUseCount()
 									referenceData.services.servicesList[serviceNum].serviceStatus = .ServiceAssigned
 								} else {
-									logMessage = "ERROR: Could not find new Service \(timesheetName) with key \(newServiceKey) to increase its use count"
+									logMessage = "ERROR: Could not find new Service: \(timesheetName) with key \(newServiceKey) to increase its use count"
 									print(logMessage)
 									await AppLogger.shared.log(logMessage, level: .error)
 								}
@@ -103,11 +104,11 @@ import Foundation
 						}
 						addResult = await referenceData.tutors.saveTutorData()
 						if !addResult {
-							logMessage = "ERROR: Could not save Tutors data when adding new Base Service \(timesheetName)"
+							logMessage = "ERROR: Could not save Tutors data when adding new Base Service: \(timesheetName)"
 						} else {
 							addResult = await referenceData.services.saveServiceData()
 							if !addResult {
-								logMessage = "ERROR: Could not save Services data when adding new Base Service \(timesheetName)"
+								logMessage = "ERROR: Could not save Services data when adding new Base Service: \(timesheetName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 							}
@@ -118,7 +119,8 @@ import Foundation
 		}
 		return(addResult, logMessage)
 	}
-    
+	
+	// This function validates the data entered when creating a new Service
 	func validateNewService(referenceData: ReferenceData, timesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
@@ -126,7 +128,7 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag {
 			validationResult = false
-			validationMessage = "WARNING: Service \(timesheetName) Already Exists\n"
+			validationMessage = "WARNING: Service: \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
@@ -138,6 +140,7 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
 
+	// This function validates the data entered when updating and existing Service
 	func validateUpdatedService(referenceData: ReferenceData, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) -> (Bool, String) {
 		var validationResult: Bool = true
 		var validationMessage: String = " "
@@ -145,7 +148,7 @@ import Foundation
 		let (serviceFoundFlag, serviceNum) = referenceData.services.findServiceByName(timesheetName: timesheetName)
 		if serviceFoundFlag && originalTimesheetName != timesheetName {
 			validationResult = false
-			validationMessage = "Validation Error: Service \(timesheetName) Already Exists\n"
+			validationMessage = "Validation Error: Service: \(timesheetName) Already Exists\n"
 		}
 		
 		let commaFlag = invoiceName.contains(",")
@@ -157,7 +160,9 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
+	// This function updates the data for a specific Service
 	func updateService(serviceNum: Int, referenceData: ReferenceData, serviceCode: String, timesheetName: String, originalTimesheetName: String, invoiceName: String, serviceType: ServiceTypeOption, billingType: BillingTypeOption, serviceCount: Int, cost1: Double, cost2: Double, cost3: Double, price1: Double, price2: Double, price3: Double) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -181,7 +186,7 @@ import Foundation
         
 		updateResult = await referenceData.services.saveServiceData()
 		if !updateResult {
-			logMessage = "ERROR: Could not save Service data when updating Service \(originalTimesheetName)"
+			logMessage = "ERROR: Could not save Service data when updating Service: \(originalTimesheetName)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 		} else {
@@ -194,7 +199,7 @@ import Foundation
 					
 					if tutor.tutorStatus != .TutorDeleted {
 						guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
-							logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) when updating Service \(timesheetName)"
+							logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutor.tutorName) when updating Service: \(timesheetName)"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
 							continue
@@ -204,7 +209,7 @@ import Foundation
 						if serviceFound, let tutorServiceNum {
 							updateResult = await tutor.updateTutorService(tutorServiceNum: tutorServiceNum, timesheetName: timesheetName, invoiceName: invoiceName, billingType: billingType, cost1: cost1, cost2: cost2, cost3: cost3, price1: price1, price2: price2, price3: price3)
 							if !updateResult {
-								logMessage = "ERROR: Could not save Tutor Details data when updating Service \(originalTimesheetName) for Tutor: \(tutor.tutorName)"
+								logMessage = "ERROR: Could not save Tutor Details data when updating Service: \(originalTimesheetName) for Tutor: \(tutor.tutorName)"
 								print(logMessage)
 								await AppLogger.shared.log(logMessage, level: .error)
 							} else {
@@ -214,15 +219,16 @@ import Foundation
 							}
 						}
 					}
-
 				}
 			}
 		}
 		return(updateResult, logMessage)
 	}
     
-
-	func deleteService(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	
+	// This function deletes (marks deleted) a set of one or more Services
+	func deleteServiceSet(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -231,18 +237,21 @@ import Foundation
 
 		var deleteResult: Bool = true
 		var logMessage: String = " "
+		var errorMessage: String = ""
 		
 		for objectID in serviceIndex {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-				logMessage = "INFO: Deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				logMessage = "INFO: Deleting Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceUnassigned {
 					referenceData.services.servicesList[serviceNum].markDeleted()
-					deleteResult = await referenceData.services.saveServiceData()
-					if !deleteResult {
+					let saveServiceResult = await referenceData.services.saveServiceData()
+					if !saveServiceResult {
 						logMessage = "ERROR: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						errorMessage += logMessage
+						deleteResult = false
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 					} else {
@@ -251,29 +260,34 @@ import Foundation
 						await AppLogger.shared.log(logMessage, level: .info)
 						
 						referenceData.dataCounts.decreaseActiveServiceCount()
-						deleteResult = await referenceData.dataCounts.saveDataCounts()
-						if !deleteResult {
-							logMessage = "ERROR: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						let saveDataResult = await referenceData.dataCounts.saveDataCounts()
+						if !saveDataResult {
+							logMessage = "ERROR: Could not update Data Counts deleting Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							errorMessage += logMessage
+							deleteResult = false
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
 						} else {
-							logMessage = "INFO: Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) is deleted"
+							logMessage = "INFO: Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) is deleted"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .info)
 						}
 					}
 				} else {
-					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) can not be deleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
+					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName) can not be deleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)\n\n"
+					errorMessage += logMessage
 					deleteResult = false
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .warning)
 				}
 			}
 		}
-		return(deleteResult, logMessage)
+		return(deleteResult, errorMessage)
 	}
 	
-	func unDeleteService(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	//This function Undeletes a set of one or more Services that were previously marked as Deleted
+	func unDeleteServiceSet(serviceIndex: Set<Service.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -281,41 +295,112 @@ import Foundation
 		}
 
 		var unDeleteResult: Bool = true
-		var logMessage: String = " "
+		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		for objectID in serviceIndex {
 			if let serviceNum = referenceData.services.servicesList.firstIndex(where: {$0.id == objectID} ) {
-				logMessage = "Undeleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+				logMessage = "Undeleting Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 
 				if referenceData.services.servicesList[serviceNum].serviceStatus == .ServiceDeleted {
 					referenceData.services.servicesList[serviceNum].markUnDeleted()
-					unDeleteResult = await referenceData.services.saveServiceData()
-					if !unDeleteResult {
+					let saveServiceResult = await referenceData.services.saveServiceData()
+					if !saveServiceResult {
 						logMessage = "ERROR: Could not save Services deleting \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						errorMessage += logMessage
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
+						unDeleteResult = false
 					} else {
 						referenceData.dataCounts.increaseActiveServiceCount()
-						unDeleteResult = await referenceData.dataCounts.saveDataCounts()
-						if !unDeleteResult {
-							logMessage = "ERROR: Could not update Data Counts deleting Service \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+						let saveDataResult = await referenceData.dataCounts.saveDataCounts()
+						if !saveDataResult {
+							logMessage = "ERROR: Could not update Data Counts deleting Service: \(referenceData.services.servicesList[serviceNum].serviceTimesheetName)"
+							errorMessage += logMessage
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
+							unDeleteResult = false
+						} else {
+							logMessage = "INFO: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) undeleted"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
 						}
 					}
 				} else {
-					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)"
+					logMessage = "WARNING: \(referenceData.services.servicesList[serviceNum].serviceInvoiceName) Can not be undeleted as its Status is \(referenceData.services.servicesList[serviceNum].serviceStatus)\n\n"
+					errorMessage += logMessage
 					unDeleteResult = false
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .warning)
-
 				}
 			}
 		}
 		
-	return(unDeleteResult, logMessage)
+	return(unDeleteResult, errorMessage)
 	}
-    
+	
+	// This function unassigns a specific Service from all active Tutors
+	func unAssignServiceFromAllTutors(serviceNum: Int, referenceData: ReferenceData, tutorMgmtVM: TutorMgmtVM) async -> (Bool, String) {
+		
+		// Pre-flight optimistic lock check before anything is changed or saved
+		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
+			await AppLogger.shared.log(conflictMessage, level: .error)
+			return (false, conflictMessage)
+		}
+		
+		var unAssignResult: Bool = true
+		var logMessage: String = ""
+		var errorMessage: String = ""
+		
+		let serviceKey = referenceData.services.servicesList[serviceNum].serviceKey
+		let timesheetName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
+		logMessage = "INFO: Unassigning Service: \(timesheetName) from all Tutors"
+		print(logMessage)
+		await AppLogger.shared.log(logMessage, newLine: true)
+				
+		if referenceData.services.servicesList[serviceNum].serviceCount > 0 {
+			// Go through each Tutor and check if the updated Services is assigned to that Tutor and if so, update the Service Name
+			if referenceData.tutors.tutorsList.count > 0 {                             //ensure there are Tutors to assign new Base service to
+				
+				for (tutorNum, tutor) in referenceData.tutors.tutorsList.enumerated() {
+					if tutor.tutorStatus != .TutorDeleted {
+						
+						guard await referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) else {
+							logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutor.tutorName) when unAssigning Service: \(timesheetName)"
+							errorMessage += logMessage + "\n"
+							unAssignResult = false
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							continue
+						}
+						
+						let (serviceFound, tutorServiceNum) = tutor.findTutorServiceByKey(serviceKey: serviceKey)
+						if serviceFound, let tutorServiceNum {
+							let (tutorUnassignResult, tutorUnassignMessage) = await tutorMgmtVM.unAssignServiceFromTutor(tutorNum: tutorNum, tutorServiceNum: tutorServiceNum, referenceData: referenceData)
+							if !tutorUnassignResult {
+								logMessage = "ERROR: Could not Unassign Service: \(timesheetName) from Tutor: \(tutor.tutorName) - \(tutorUnassignMessage)"
+								errorMessage += logMessage + "\n"
+								print(logMessage)
+								unAssignResult = false
+								await AppLogger.shared.log(logMessage, level: .error)
+							} else {
+								logMessage = "INFO: Tutor Service: \(timesheetName) unAssigned from Tutor: \(tutor.tutorName)"
+								print(logMessage)
+								await AppLogger.shared.log(logMessage, level: .info)
+							}
+						}
+					}
+				}
+			}
+		} else {
+			logMessage = "WARNING: Service: \(timesheetName) not assigned to any Tutors\n"
+			errorMessage += logMessage + "\n"
+			print(logMessage)
+			unAssignResult = false
+			await AppLogger.shared.log(logMessage, level: .warning)
+		}
+		return(unAssignResult, errorMessage)
+	}
 }

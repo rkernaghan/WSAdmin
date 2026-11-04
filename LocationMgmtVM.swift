@@ -11,6 +11,7 @@ import Foundation
 @Observable class LocationMgmtVM  {
     
 	func addNewLocation(referenceData: ReferenceData, locationName: String, locationMonthRevenue: Double, locationTotalRevenue: Double) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -49,7 +50,9 @@ import Foundation
 		return(saveResult, logMessage)
 	}
 	
+	// Updates data on a single Location
 	func updateLocation(locationNum: Int, referenceData: ReferenceData, newLocationName: String, originalLocationName: String) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -98,7 +101,7 @@ import Foundation
 			validationMessage += "Validation Error: Location Name is Blank"
 		} else {
 			
-			let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: locationName)
+			let (locationFoundFlag, _) = referenceData.locations.findLocationByName(locationName: locationName)
 			if locationFoundFlag {
 				validationResult = false
 				validationMessage += "Validation Error: Location: \(locationName) already exists\n"
@@ -121,7 +124,7 @@ import Foundation
 //       let (locationFoundFlag, locationNum) = referenceData.locations.findLocationByName(locationName: locationName)
 //       if locationFoundFlag {
 //           validationResult = false
-//           validationMessage += "Error: Location \(locationName) already exists"
+//           validationMessage += "Error: Location: \(locationName) already exists"
 //       }
 		
 		let commaFlag = locationName.contains(",")
@@ -133,8 +136,9 @@ import Foundation
 		return(validationResult, validationMessage)
 	}
     
-
-	func deleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// Mark a set of one or more Locations as Deleted
+	func deleteLocationSet(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -142,11 +146,12 @@ import Foundation
 		}
 
 		var deleteResult: Bool = true
-		var logMessage: String = " "
+		var logMessage: String = ""
+		var errorMessage: String = ""
 
 		for objectID in locationIndex {
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
-				logMessage = "INFO: Deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+				logMessage = "INFO: Deleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, newLine: true)
 				
@@ -154,31 +159,43 @@ import Foundation
 					referenceData.locations.locationsList[locationNum].markDeleted()
 					referenceData.dataCounts.decreaseActiveLocationCount()
 				
-					deleteResult = await referenceData.locations.saveLocationData()
-					if !deleteResult {
-						logMessage = "ERROR: Could not save Location data deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+					let saveLocationResult = await referenceData.locations.saveLocationData()
+					if !saveLocationResult {
+						logMessage = "ERROR: Could not save Location data deleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
+						errorMessage += logMessage + "\n"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
+						deleteResult = false
 					} else {
-						deleteResult = await referenceData.dataCounts.saveDataCounts()
-						if !deleteResult {
-							logMessage = "ERROR: Could not save Data Counts deleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+						let saveDataResult = await referenceData.dataCounts.saveDataCounts()
+						if !saveDataResult {
+							logMessage = "ERROR: Could not save Data Counts deleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
+							errorMessage += logMessage  + "\n"
 							print(logMessage)
 							await AppLogger.shared.log(logMessage, level: .error)
+							deleteResult = false
+						} else {
+							logMessage = "INFO: Location: \(referenceData.locations.locationsList[locationNum].locationName) deleted and Data Counts saved"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
 						}
 					}
 				} else {
-					logMessage = "WARNING: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned"
+					logMessage = "WARNING: \(referenceData.locations.locationsList[locationNum].locationName) can not be deleted, Students assigned\n\n"
+					errorMessage += logMessage + "\n"
 					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .warning)
 					deleteResult = false
 				}
 			}
 		}
         
-		return(deleteResult, logMessage)
+		return(deleteResult, errorMessage)
 	}
     
-	func undeleteLocation(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+	// Undelete a set of one or more Locations
+	func unDeleteLocationSet(locationIndex: Set<Location.ID>, referenceData: ReferenceData) async -> (Bool, String) {
+		
 		// Pre-flight optimistic lock check before anything is changed or saved
 		if let conflictMessage = await referenceData.preflightReferenceDataLockCheck() {
 			await AppLogger.shared.log(conflictMessage, level: .error)
@@ -186,32 +203,50 @@ import Foundation
 		}
 
 		var unDeleteResult: Bool = true
-		var logMessage: String = " "
+		var logMessage: String = ""
+		var errorMessage: String = ""
 		
 		for objectID in locationIndex {
 			if let locationNum = referenceData.locations.locationsList.firstIndex(where: {$0.id == objectID} ) {
 				if referenceData.locations.locationsList[locationNum].locationStatus == .LocationDeleted {
-					print("Undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)")
+					logMessage = "INFO: Undeleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
+					print(logMessage)
+					await AppLogger.shared.log(logMessage, level: .info)
+					
 					referenceData.locations.locationsList[locationNum].markUndeleted()
 					referenceData.dataCounts.increaseActiveLocationCount()
-					unDeleteResult = await referenceData.locations.saveLocationData()
-					if !unDeleteResult {
-						logMessage = "ERROR: Could not save Location data when undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+					let saveLocationResult = await referenceData.locations.saveLocationData()
+					if !saveLocationResult {
+						logMessage = "ERROR: Could not save Location data when undeleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
+						errorMessage += logMessage + "\n"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .error)
+						unDeleteResult = false
 					} else {
-						unDeleteResult = await referenceData.dataCounts.saveDataCounts()
-						if !unDeleteResult {
-							logMessage = "ERROR: Could not save Data Counts data when undeleting Location \(referenceData.locations.locationsList[locationNum].locationName)"
+						let saveDataResult = await referenceData.dataCounts.saveDataCounts()
+						if !saveDataResult {
+							logMessage = "ERROR: Could not save Data Counts data when undeleting Location: \(referenceData.locations.locationsList[locationNum].locationName)"
+							errorMessage += logMessage + "\n"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
+							unDeleteResult = false
+						} else {
+							logMessage = "INFO: Location: \(referenceData.locations.locationsList[locationNum].locationName) undeleted and Data Counts saved"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
 						}
 					}
 				} else {
-					logMessage = "Error: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted"
-					print("rror: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted")
+					logMessage = "WARNING: \(referenceData.locations.locationsList[locationNum].locationName) can not be undeleted when status is \(referenceData.locations.locationsList[locationNum].locationStatus)\n\n"
+					print(logMessage)
+					errorMessage += logMessage + "\n"
+					await AppLogger.shared.log(logMessage, level: .warning)
 					unDeleteResult = false
 				}
 			}
 		}
 
-		return(unDeleteResult, logMessage)
+		return(unDeleteResult, errorMessage)
 	}
     
 }

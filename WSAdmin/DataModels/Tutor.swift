@@ -123,7 +123,7 @@ import Foundation
 		if completionFlag {
 			self.tutorDetailsLoaded = true
 		} else {
-			let logMessage = "ERROR: Unable to load Tutor details for Tutor \(self.tutorName)"
+			let logMessage = "ERROR: Unable to load Tutor details for Tutor: \(self.tutorName)"
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
 		
@@ -157,7 +157,7 @@ import Foundation
 				studentCount = Int( sheetCells.first?.first ?? "" ) ?? 0
 				serviceCount = Int( sheetCells.dropFirst().first?.first ?? "" ) ?? 0
 			} else {
-				logMessage = "ERROR: could not read Tutor Data Counts for Tutor \(tutorName)"
+				logMessage = "ERROR: could not read Tutor Data Counts for Tutor: \(tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				studentCount = 0
@@ -165,7 +165,7 @@ import Foundation
 			}
 			
 		} catch {
-			logMessage = "ERROR: could not read Tutor Data Counts for Tutor \(tutorName)"
+			logMessage = "ERROR: could not read Tutor Data Counts for Tutor: \(tutorName)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 			studentCount = 0
@@ -180,12 +180,12 @@ import Foundation
 				sheetCells = sheetData2.values
 				timesheetFileID = sheetCells.first?.first ?? timesheetFileID
 			} else {
-				logMessage = "ERROR: could not read Timesheet FileID for Tutor \(tutorName)"
+				logMessage = "ERROR: could not read Timesheet FileID for Tutor: \(tutorName)"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 			}
 		} catch {
-			logMessage = "ERROR: could not read Timesheet FileID for Tutor \(tutorName)"
+			logMessage = "ERROR: could not read Timesheet FileID for Tutor: \(tutorName)"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 		}
@@ -288,7 +288,7 @@ import Foundation
 		if tutorStudentCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorStudentsRange + String(PgmConstants.tutorDataStudentsStartingRowNumber + tutorStudentCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Student rows", trackVersion: true)
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor: \(tutorName) Student rows", trackVersion: true)
 				// Build the Tutor Students list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -321,7 +321,7 @@ import Foundation
 		}
 
 		tutorStudents.append(contentsOf: newTutorStudents)
-		//       print("Loaded \(studentCount) Students for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+		//       print("Loaded \(studentCount) Students for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
 	
 	// This function adds a TutorStudent object to a Tutor
@@ -454,7 +454,7 @@ import Foundation
 		if tutorServiceCount > 0 {
 			do {
 				let range = tutorName + PgmConstants.tutorServicesRange + String(PgmConstants.tutorDataServicesStartingRowNumber + tutorServiceCount - 1)
-				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor \(tutorName) Service rows", trackVersion: true)
+				sheetData = try await readSheetCells(fileID: tutorDetailsFileID, range: range, logNote: "Tutor: \(tutorName) Service rows", trackVersion: true)
 				// Build the Tutor Services list from the cells read in
 				if let sheetData = sheetData {
 					sheetCells = sheetData.values
@@ -492,7 +492,7 @@ import Foundation
 		}
 
 		tutorServices.append(contentsOf: newTutorServices)
-		//       print("Loaded \(serviceCount) Services for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
+		//       print("Loaded \(serviceCount) Services for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)")
 	}
 		
 	// This function adds a TutorService object to a Tutor

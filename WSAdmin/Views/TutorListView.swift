@@ -228,7 +228,7 @@ struct TutorListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutor(tutorIndex: items, referenceData: referenceData)
+									let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutorSet(tutorIndex: items, referenceData: referenceData)
 									if suspendResult == false {
 										showAlert = true
 										buttonErrorMsg = suspendMessage
@@ -240,7 +240,7 @@ struct TutorListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unsuspendResult, unsuspendMessage) = await tutorMgmtVM.unsuspendTutor(tutorIndex: items, referenceData: referenceData)
+									let (unsuspendResult, unsuspendMessage) = await tutorMgmtVM.unsuspendTutorSet(tutorIndex: items, referenceData: referenceData)
 									if unsuspendResult == false {
 										showAlert = true
 										buttonErrorMsg = unsuspendMessage
@@ -252,7 +252,7 @@ struct TutorListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutorSet(indexes: items, referenceData: referenceData)
 									
 									if deleteResult == false {
 										showAlert = true
@@ -265,18 +265,29 @@ struct TutorListView: View {
 						}
 						
 					} else {
-						Button {
-							
+						Button(role: .destructive) {
+							Task {
+								let (suspendResult, suspendMessage) = await tutorMgmtVM.suspendTutorSet(tutorIndex: items, referenceData: referenceData)
+								if suspendResult == false {
+									showAlert = true
+									buttonErrorMsg = suspendMessage
+								}
+							}
 						} label: {
-							Label("Edit Tutors", systemImage: "heart")
+							Label("Suspend Multiple Tutors", systemImage: "trash")
 						}
 						
 						Button(role: .destructive) {
 							Task {
-								let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutor(indexes: items, referenceData: referenceData)
+								let (deleteResult, deleteMessage) = await tutorMgmtVM.deleteTutorSet(indexes: items, referenceData: referenceData)
+								
+								if deleteResult == false {
+									showAlert = true
+									buttonErrorMsg = deleteMessage
+								}
 							}
 						} label: {
-							Label("Delete Tutors", systemImage: "trash")
+							Label("Delete Multiple Tutors", systemImage: "trash")
 						}
 					}
 				} primaryAction: { items in

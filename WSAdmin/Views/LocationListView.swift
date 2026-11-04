@@ -49,11 +49,11 @@ struct LocationListView: View {
 					}
 					.width(min: 40, ideal: 50, max: 60)
 					
-					TableColumn("Location\nMonth Revenue") { data in
-						Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(0)))))
-							.frame(maxWidth: . infinity, alignment: .trailing)
-					}
-					.width(min: 50, ideal: 60, max: 80)
+//					TableColumn("Location\nMonth Revenue") { data in
+//						Text(String(data.locationMonthRevenue.formatted(.number.precision(.fractionLength(0)))))
+//							.frame(maxWidth: . infinity, alignment: .trailing)
+//					}
+//					.width(min: 50, ideal: 60, max: 80)
 					
 					TableColumn("Location\nTotal Revenue") { data in
 						Text(String(data.locationTotalRevenue.formatted(.number.precision(.fractionLength(0)))))
@@ -90,7 +90,7 @@ struct LocationListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocation(locationIndex: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocationSet(locationIndex: items, referenceData: referenceData)
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
@@ -102,7 +102,7 @@ struct LocationListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.undeleteLocation(locationIndex: items, referenceData: referenceData)
+									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.unDeleteLocationSet(locationIndex: items, referenceData: referenceData)
 									if unDeleteResult == false {
 										showAlert = true
 										buttonErrorMsg = unDeleteMessage
@@ -115,15 +115,28 @@ struct LocationListView: View {
 						
 					} else {
 						VStack {
-							Button {
-								
-							} label: {
-								Label("Edit Locations", systemImage: "heart")
-							}
 							Button(role: .destructive) {
-								
+								Task {
+									let (deleteResult, deleteMessage) = await locationMgmtVM.deleteLocationSet(locationIndex: items, referenceData: referenceData)
+									if deleteResult == false {
+										showAlert = true
+										buttonErrorMsg = deleteMessage
+									}
+								}
 							} label: {
 								Label("Delete Selected Locations", systemImage: "trash")
+							}
+							
+							Button(role: .destructive) {
+								Task {
+									let (unDeleteResult, unDeleteMessage) = await locationMgmtVM.unDeleteLocationSet(locationIndex: items, referenceData: referenceData)
+									if unDeleteResult == false {
+										showAlert = true
+										buttonErrorMsg = unDeleteMessage
+									}
+								}
+							} label: {
+								Label("UnDelete Selected Locations", systemImage: "heart")
 							}
 						}
 					}

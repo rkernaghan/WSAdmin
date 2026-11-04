@@ -71,7 +71,7 @@ import Foundation
 		for tutor in referenceData.tutors.tutorsList {
 			if tutor.tutorStatus != .TutorDeleted {
 				if await !referenceData.ensureTutorDetailsLoaded(tutorID: tutor.id) {
-					logMessage = "ERROR: could not load Tutor Details for Tutor \(tutor.tutorName) - validation results for this Tutor will be unreliable"
+					logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutor.tutorName) - validation results for this Tutor will be unreliable"
 					await AppLogger.shared.log(logMessage, level: .error)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -186,7 +186,7 @@ import Foundation
 						let refStudentRevenue = student.studentTotalRevenue
 						let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 						if !studentFoundFlag {
-							logMessage = "INFO: *** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student revenue differences"
+							logMessage = "INFO: *** Validation Error: could not find Student: \(studentName) in Billed Student month comparing Student revenue differences"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						} else {
@@ -210,7 +210,7 @@ import Foundation
 						let refTutorRevenue = tutor.tutorTotalRevenue
 						let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 						if !tutorFoundFlag {
-							logMessage = "INFO: *** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor revenue differences"
+							logMessage = "INFO: *** Validation Error: could not find Tutor: \(tutorName) in Billed Tutor month comparing Tutor revenue differences"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						} else {
@@ -240,7 +240,7 @@ import Foundation
 						let refStudentCost = student.studentTotalCost
 						let (studentFoundFlag, billedStudentNum) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 						if !studentFoundFlag {
-							logMessage = "INFO: *** Validation Error: could not find Student \(studentName) in Billed Student month comparing Student cost differences"
+							logMessage = "INFO: *** Validation Error: could not find Student: \(studentName) in Billed Student month comparing Student cost differences"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 						} else {
@@ -254,7 +254,7 @@ import Foundation
 						}
 						
 						if (abs(student.studentTotalRevenue - student.studentTotalCost - student.studentTotalProfit) > 1.0) {
-							logMessage = "INFO: *** Validation Error: Reference Data Student profit \(student.studentTotalProfit) does not match Revenue - Cost \(student.studentTotalRevenue - student.studentTotalCost) for Student \(studentName)  "
+							logMessage = "INFO: *** Validation Error: Reference Data Student profit \(student.studentTotalProfit) does not match Revenue - Cost \(student.studentTotalRevenue - student.studentTotalCost) for Student: \(studentName)  "
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
@@ -270,7 +270,7 @@ import Foundation
 						let refTutorCost = tutor.tutorTotalCost
 						let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 						if !tutorFoundFlag {
-							logMessage = "INFO: *** Validation Error: could not find Tutor \(tutorName) in Billed Tutor month comparing Tutor cost differences"
+							logMessage = "INFO: *** Validation Error: could not find Tutor: \(tutorName) in Billed Tutor month comparing Tutor cost differences"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						} else {
@@ -317,7 +317,7 @@ import Foundation
 					let studentName = billedStudentRow.studentName
 					let (studentFoundFlag, billedStudentNum) = referenceData.students.findStudentByName(studentName: studentName)
 					if !studentFoundFlag {
-						logMessage = "INFO: Student \(studentName) is in Billed Student list but not Reference Data Students"
+						logMessage = "INFO: Student: \(studentName) is in Billed Student list but not Reference Data Students"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
@@ -423,7 +423,7 @@ import Foundation
 						let studentName = referenceData.students.studentsList[studentNum].studentName
 						
 						if studentName != tutorStudentName {
-							logMessage = "INFO: *** Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor \(tutorName)"
+							logMessage = "INFO: *** Validation Error: \(tutorStudentKey) associated with \(studentName) in Reference Data and \(tutorStudentName) in Tutor Details for Tutor: \(tutorName)"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
@@ -444,7 +444,7 @@ import Foundation
 						let serviceName = referenceData.services.servicesList[serviceNum].serviceTimesheetName
 						
 						if serviceName != tutorServiceName {
-							logMessage = "INFO: *** Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor \(tutorName)"
+							logMessage = "INFO: *** Validation Error: \(tutorServiceKey) associated with \(serviceName) in Reference Data and \(tutorServiceName) in Tutor Details for Tutor: \(tutorName)"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
@@ -486,7 +486,7 @@ import Foundation
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					default:
-						logMessage = "INFO: *** Validation Error: Invalid Tutor Status for Tutor \(tutorName)"
+						logMessage = "INFO: *** Validation Error: Invalid Tutor Status for Tutor: \(tutorName)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -497,12 +497,12 @@ import Foundation
 					do {
 						let sheetNum = try await getSheetIdByName(spreadsheetID: tutorDetailsFileID, sheetName: tutorName )
 						if sheetNum == nil {
-							logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName)"
+							logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor: \(tutorName)"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					} catch {
-						logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor \(tutorName), error: \(error.localizedDescription)"
+						logMessage = "INFO: *** Validation Error: could not get Tutor Details sheet ID for Tutor: \(tutorName), error: \(error.localizedDescription)"
 						await AppLogger.shared.log(logMessage, level: .error)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
@@ -511,7 +511,7 @@ import Foundation
 					// Check if Tutor found in Billed Tutor List for previous month
 					let (tutorFoundFlag, billedTutorNum) = billedTutorMonth.findBilledTutorByName(billedTutorName: tutorName)
 					if !tutorFoundFlag {
-						logMessage = "INFO: *** Validation Error: Tutor \(tutorName) not found in Billed Tutor Month for \(billedMonthName)"
+						logMessage = "INFO: *** Validation Error: Tutor: \(tutorName) not found in Billed Tutor Month for \(billedMonthName)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
@@ -519,13 +519,13 @@ import Foundation
 					// Check if Student and Service counts in the Tutor Details sheet match the Tutor's counts in the Reference Data entry for the Tutor
 					let (studentCount, serviceCount, timesheetFileID) = await tutor.fetchTutorDataCounts(tutorName: tutorName)
 					if studentCount != tutor.tutorStudentCount {
-						logMessage = "INFO: *** Validation Error: Reference Data Student count for Tutor \(tutorName) is \(tutor.tutorStudentCount) but Tutor Details count is \(studentCount)"
+						logMessage = "INFO: *** Validation Error: Reference Data Student count for Tutor: \(tutorName) is \(tutor.tutorStudentCount) but Tutor Details count is \(studentCount)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
 					
 					if serviceCount != tutor.tutorServiceCount {
-						logMessage = "INFO: *** Validation Error: Reference Data Service count for Tutor \(tutorName) is \(tutor.tutorServiceCount) but Tutor Details count is \(serviceCount)"
+						logMessage = "INFO: *** Validation Error: Reference Data Service count for Tutor: \(tutorName) is \(tutor.tutorServiceCount) but Tutor Details count is \(serviceCount)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
@@ -608,7 +608,7 @@ import Foundation
 				if student.studentStatus != .StudentDeleted {
 					let (studentFoundFlag, _) = billedStudentMonth.findBilledStudentByStudentName(billedStudentName: studentName)
 					if !studentFoundFlag {
-						logMessage = "INFO: *** Validation Error: Student \(studentName) not found in Billed Student Month for \(billedMonthName)"
+						logMessage = "INFO: *** Validation Error: Student: \(studentName) not found in Billed Student Month for \(billedMonthName)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText:logMessage))
 					}
@@ -616,7 +616,7 @@ import Foundation
 					// Validate the Location Name for the Student
 					let (findResult, _) = referenceData.locations.findLocationByName(locationName: student.studentLocation)
 					if !findResult {
-						logMessage = "INFO: *** Validation Error: Location \(student.studentLocation) for Student \(studentName) not found in Locations List"
+						logMessage = "INFO: *** Validation Error: Location: \(student.studentLocation) for Student: \(studentName) not found in Locations List"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					}
@@ -661,26 +661,26 @@ import Foundation
 						assignedTutors += tutor.tutorName + "; "
 						
 						if student.studentStatus == .StudentUnassigned {
-							logMessage = "INFO: *** Validation Error - Unassigned Student \(studentName) assigned to Tutor \(tutor.tutorName)"
+							logMessage = "INFO: *** Validation Error - Unassigned Student: \(studentName) assigned to Tutor: \(tutor.tutorName)"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 						}
 					}
 				}
 				if assignedCount > 1 && student.studentStatus != .StudentReassigned {
-					logMessage = "INFO:     Validation Warning: Assigned Student \(studentName) assigned to Tutors \(assignedTutors)"
+					logMessage = "INFO:     Validation Warning: Assigned Student: \(studentName) assigned to Tutors \(assignedTutors)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				if assignedCount == 1 && student.studentStatus == .StudentReassigned {
-					logMessage = "INFO: *** Validation Error - Reassigned Student \(studentName) assigned to only one Tutor \(assignedTutors)"
+					logMessage = "INFO: *** Validation Error - Reassigned Student: \(studentName) assigned to only one Tutor: \(assignedTutors)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				if assignedCount == 0 && student.studentStatus == .StudentAssigned {
-					logMessage = "INFO: *** Validation Error - Assigned Student \(studentName) assigned to no Tutor"
+					logMessage = "INFO: *** Validation Error - Assigned Student: \(studentName) assigned to no Tutor"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -758,7 +758,7 @@ import Foundation
 							tutorName = tutorName + tutor.tutorName + "; "
 							tutorServiceCount += 1
 						} else if serviceType == .Base && service.serviceStatus != .ServiceDeleted && tutor.tutorType != .SpecialistTutor {
-							logMessage = "INFO: *** Validation Error - Base Service \(serviceName) not assigned to Tutor \(tutor.tutorName)"
+							logMessage = "INFO: *** Validation Error - Base Service: \(serviceName) not assigned to Tutor: \(tutor.tutorName)"
 							await AppLogger.shared.log(logMessage)
 							validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 							
@@ -767,18 +767,18 @@ import Foundation
 				}
 				
 				if service.serviceCount != tutorServiceCount {
-					logMessage = "INFO: *** Validation Error - Service \(serviceName) Use Count \(service.serviceCount) does not match assigned Tutor Count \(tutorServiceCount)"
+					logMessage = "INFO: *** Validation Error - Service: \(serviceName) Use Count \(service.serviceCount) does not match assigned Tutor Count \(tutorServiceCount)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				if service.serviceStatus == .ServiceAssigned && tutorServiceCount == 0 {
-					logMessage = "INFO: *** Validation Error - Assigned Service \(serviceName) assigned to no Tutor"
+					logMessage = "INFO: *** Validation Error - Assigned Service: \(serviceName) assigned to no Tutor"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				if service.serviceStatus == .ServiceUnassigned && tutorServiceCount > 0 {
-					logMessage = "INFO: *** Validation Error - Unassigned Service \(serviceName) assigned to Tutor \(tutorName)"
+					logMessage = "INFO: *** Validation Error - Unassigned Service: \(serviceName) assigned to Tutor: \(tutorName)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -802,7 +802,7 @@ import Foundation
 					case .ServiceDeleted, .ServiceSuspended:
 						deletedServices += 1
 					default:
-						logMessage = "INFO: *** Validation Error - Invalid Status for Service \(service.serviceTimesheetName)"
+						logMessage = "INFO: *** Validation Error - Invalid Status for Service: \(service.serviceTimesheetName)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -871,13 +871,13 @@ import Foundation
 			// Validate that no Location with a status of Assigned has a Student Count == 0
 			for location in referenceData.locations.locationsList {
 				if location.locationStatus == .LocationDeleted && location.locationStudentCount > 0 {
-					logMessage = "INFO: *** Validation Error - Unassigned Location \(location.locationName) has a Student Count of \(location.locationStudentCount)"
+					logMessage = "INFO: *** Validation Error - Unassigned Location: \(location.locationName) has a Student Count of \(location.locationStudentCount)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
 				
 				if location.locationStatus == .LocationActive && location.locationStudentCount == 0 {
-					logMessage = "INFO: *** Validation Error - Active Location \(location.locationName) has a Student Count of \(location.locationStudentCount)"
+					logMessage = "INFO: *** Validation Error - Active Location: \(location.locationName) has a Student Count of \(location.locationStudentCount)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -890,7 +890,7 @@ import Foundation
 				}
 				
 				if location.locationStudentCount != studentLocationCount {
-					logMessage = "INFO: *** Validation Error - Location \(location.locationName) assigned Student Count \(location.locationStudentCount) does not match actual Student Count \(studentLocationCount)"
+					logMessage = "INFO: *** Validation Error - Location: \(location.locationName) assigned Student Count \(location.locationStudentCount) does not match actual Student Count \(studentLocationCount)"
 					await AppLogger.shared.log(logMessage)
 					validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -908,7 +908,7 @@ import Foundation
 					case .LocationDeleted:
 						deletedLocations += 1
 					default:
-						logMessage = "INFO: *** Validation Error: Invalid Location Status for Location \(location.locationName)"
+						logMessage = "INFO: *** Validation Error: Invalid Location Status for Location: \(location.locationName)"
 						await AppLogger.shared.log(logMessage)
 						validationMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 				}
@@ -1714,6 +1714,7 @@ import Foundation
 	
 	@MainActor func createTimesheetFile(templateFileName: String, timesheetYear: String, tutorName: String, tutorEmail: String, referenceData: ReferenceData) async throws -> (Bool, String?, String) {
 		var logMessage = ""
+		var errorMessage = ""
 		var newTimesheetFileID: String?
 		var timesheetSuccess: Bool = true
 		var googleDriveFolder: String
@@ -1724,7 +1725,8 @@ import Foundation
 			// // Get the FileID of the Timesheet template file
 			let (fileFound, _) = try await getFileID(fileName: newTimesheetFileName)
 			if fileFound {
-				let logMessage = "ERROR: \(newTimesheetFileName) already exists\n"
+				logMessage = "ERROR: \(newTimesheetFileName) already exists\n"
+				errorMessage += logMessage + "\n"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				return (false, nil, logMessage)
@@ -1733,7 +1735,8 @@ import Foundation
 			// Ensure the template file exists and get its FileID
 			let (templateFound, templateFileID) = try await getFileID(fileName: templateFileName)
 			guard templateFound else {
-				let logMessage = "ERROR: Could not get File ID for Template File: \(templateFileName)\n"
+				logMessage = "ERROR: Could not get File ID for Template File: \(templateFileName)\n"
+				errorMessage += logMessage + "\n"
 				print(logMessage)
 				await AppLogger.shared.log(logMessage, level: .error)
 				return (false, nil, logMessage)
@@ -1755,17 +1758,25 @@ import Foundation
 				
 				// Write the Tutor Name in the new Timesheet
 				do {
-					try await writeSheetCells(
+					let writeResult = try await writeSheetCells(
 						fileID: newTimesheetFileID,
 						range: PgmConstants.timesheetTutorNameCell,
 						values: [[tutorName]],
 						logNote: "Tutor Name in new Timesheet")
 						
-					logMessage = "INFO: Tutor name: \(tutorName) written into Timesheet"
-					await AppLogger.shared.log(logMessage, level: .info)
+					if writeResult {
+						logMessage = "INFO: Tutor name: \(tutorName) written into Timesheet"
+						print(logMessage)
+						await AppLogger.shared.log(logMessage, level: .info)
+					} else {
+						logMessage = "ERROR: Could not write Tutor Name into new Tutor Timesheet for Tutor \(tutorName)"
+						errorMessage += logMessage + "\n"
+						await AppLogger.shared.log(logMessage, level: .error)
+					}
 					
 				} catch {
 					logMessage += "ERROR: can not write Tutor Name into new Tutor Timesheet\n"
+					errorMessage += logMessage + "\n"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .error)
 					return(false, newTimesheetFileID, logMessage)
@@ -1779,17 +1790,20 @@ import Foundation
 					print("INFO: Updating Tutor Details File ID in new Timesheet for \(tutorName)")
 					if !writeResult {
 						logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+						errorMessage += logMessage + "\n"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .error)
 						return(false, newTimesheetFileID, logMessage)
 					} else {
 						logMessage = "INFO: Added Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+						errorMessage += logMessage + "\n"
 						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .info)
 						timesheetSuccess = true
 					}
 				} catch {
 					logMessage = "ERROR: Adding Tutor Details File ID to Timesheet RefData for \(tutorName)\n"
+					errorMessage += logMessage + "\n"
 					print(logMessage)
 					await AppLogger.shared.log(logMessage, level: .error)
 					return(false, newTimesheetFileID, logMessage)
@@ -1801,28 +1815,34 @@ import Foundation
 					referenceData.tutors.tutorsList[tutorNum].timesheetFileID = newTimesheetFileID
 					let saveResult = await referenceData.tutors.saveTutorData()
 					if !saveResult {
-						logMessage = "ERROR: Could not save Tutor data for Tutor \(tutorName) after updating Timesheet FileID"
+						logMessage = "ERROR: Could not save Tutor data for Tutor: \(tutorName) after updating Timesheet FileID"
+						errorMessage += logMessage + "\n"
 						await AppLogger.shared.log(logMessage, level: .error)
+						print(logMessage)
 					} else {
 						logMessage = "INFO: Tutor: \(tutorName) Timesheet FileID updated in Tutor Details File"
+						print(logMessage)
 						await AppLogger.shared.log(logMessage, level: .info)
 					}
 				} else {
 					logMessage = "ERROR: Tutor: \(tutorName) not found updating Timesheet FileID in Tutor Details File"
+					errorMessage += logMessage + "\n"
 					await AppLogger.shared.log(logMessage, level: .error)
 				}
 			} catch {
 				logMessage = "ERROR: Could not create new Timesheet or assign permissions for Tutor: \(tutorName)"
+				errorMessage += logMessage + "\n"
 				await AppLogger.shared.log(logMessage, level: .error)
 			}
 			
 		} catch {
 			let logMessage = "ERROR: could not get FileID generating: \(newTimesheetFileName)\n"
+			errorMessage += logMessage + "\n"
 			print(logMessage)
 			await AppLogger.shared.log(logMessage, level: .error)
 			return (false, nil, logMessage)
 		}
-		return(timesheetSuccess, newTimesheetFileID, logMessage)
+		return(timesheetSuccess, newTimesheetFileID, errorMessage)
 	}
 	
 	// MARK: - Main function
@@ -1887,12 +1907,18 @@ import Foundation
 		
 		for tutor in referenceData.tutors.tutorsList
 		where tutor.tutorStatus == .TutorUnassigned || tutor.tutorStatus == .TutorAssigned {
-			let (addResult, newTimesheetFileID, logMessage) = try await createTimesheetFile(templateFileName: runMode.timesheetTemplateFileName, timesheetYear: currentYear, tutorName: tutor.tutorName, tutorEmail: tutor.tutorEmail, referenceData: referenceData)
+			let (createResult, newTimesheetFileID, createMessage) = try await createTimesheetFile(templateFileName: runMode.timesheetTemplateFileName, timesheetYear: currentYear, tutorName: tutor.tutorName, tutorEmail: tutor.tutorEmail, referenceData: referenceData)
+			if !createResult {
+				generateResult = false
+				logMessage += createMessage
+			}
 			
 		}
 		
 		return (generateResult, logMessage)
 	}
+	
+	
 	// This function updates the Tutor Details FileIDs in the RefData sheet for each Tutor's Timesheet
 	@MainActor func updateTimesheetFileIDs(referenceData: ReferenceData) async -> (Bool, String) {
 		var updateResult: Bool = true

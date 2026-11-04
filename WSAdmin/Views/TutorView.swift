@@ -128,7 +128,7 @@ struct TutorView: View {
 				} else {
 			
 					if updateTutorFlag {
-						Text("Update Tutor \(originalTutorName)")
+						Text("Update Tutor: \(originalTutorName)")
 					} else {
 						Text("Add New Tutor")
 					}

@@ -37,7 +37,7 @@ struct TutorServiceListSelectionView: View {
 					VStack {
 						Button {
 							Task {
-								let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorServiceSet(tutorNum: tutorNum, tutorServiceIndex: items, referenceData: referenceData)
+								let (unassignResult, unassignMessage) = await tutorMgmtVM.unAssignServiceSetFromTutor(tutorNum: tutorNum, tutorServiceIndex: items, referenceData: referenceData)
 								if !unassignResult {
 									showAlert.toggle()
 									buttonErrorMsg = unassignMessage
@@ -55,7 +55,7 @@ struct TutorServiceListSelectionView: View {
 				} else {
 					Button {
 						Task {
-							let (unassignResult, unassignMessage) = await tutorMgmtVM.unassignTutorServiceSet(tutorNum: tutorNum, tutorServiceIndex: items, referenceData: referenceData)
+							let (unassignResult, unassignMessage) = await tutorMgmtVM.unAssignServiceSetFromTutor(tutorNum: tutorNum, tutorServiceIndex: items, referenceData: referenceData)
 							if !unassignResult {
 								showAlert.toggle()
 								buttonErrorMsg = unassignMessage

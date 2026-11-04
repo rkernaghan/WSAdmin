@@ -45,7 +45,7 @@ struct StudentSelectionView: View {
 						
 						Button {
 							Task {
-								let (assignResult, assignMessage) = await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								let (assignResult, assignMessage) = await tutorMgmtVM.assignStudentSetToTutor(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 								if !assignResult {
 									showAlert = true
 									buttonErrorMsg = assignMessage
@@ -61,7 +61,7 @@ struct StudentSelectionView: View {
 				} else {
 					Button {
 						Task {
-							let (assignResult, assignMessage) = await tutorMgmtVM.assignStudent(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							let (assignResult, assignMessage) = await tutorMgmtVM.assignStudentSetToTutor(studentIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 							if !assignResult {
 								showAlert = true
 								buttonErrorMsg = assignMessage

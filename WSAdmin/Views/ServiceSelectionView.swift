@@ -38,7 +38,7 @@ struct ServiceSelectionView: View {
 						
 						Button {
 							Task {
-								let (assignResult, assignMessage) = await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+								let (assignResult, assignMessage) = await tutorMgmtVM.assignServiceSetToTutor(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 								if !assignResult {
 									showAlert = true
 									buttonErrorMsg = assignMessage
@@ -55,7 +55,7 @@ struct ServiceSelectionView: View {
 				} else {
 					Button {
 						Task {
-							let (assignResult, assignMessage) = await tutorMgmtVM.assignService(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
+							let (assignResult, assignMessage) = await tutorMgmtVM.assignServiceSetToTutor(serviceIndex: items, tutorNum: tutorNum, referenceData: referenceData)
 							if !assignResult {
 								showAlert = true
 								buttonErrorMsg = assignMessage

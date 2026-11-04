@@ -84,7 +84,7 @@ struct TutorServicesView: View {
 								}
 							}
 						} label: {
-							Label("Edit Tutor Service for Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
+							Label("Edit Tutor Service for Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
 						}
 						
 						//						Button {
@@ -104,7 +104,7 @@ struct TutorServicesView: View {
 						//								}
 						//							}
 						//						} label: {
-						//							Label("Unassign Service from Tutor \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
+						//							Label("Unassign Service from Tutor: \(referenceData.tutors.tutorsList[tutorNum].tutorName)", systemImage: "square.and.arrow.up")
 						//						}
 					}
 					

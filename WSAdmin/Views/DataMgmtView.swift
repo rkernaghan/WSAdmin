@@ -211,7 +211,6 @@ struct SideView: View {
 				AppFolders.revealLogFilesFolder()
 			}
 			
-			
 			Button(action: {
 				Task {
 					statusMessage = " "
@@ -229,41 +228,6 @@ struct SideView: View {
 				}
 			}
 			.disabled(isAvailabilitySummaryProcessing)
-			
-			
-			
-			Button("Generate Client List CSV File") {
-				Task {
-					statusMessage = " "
-					let (generationFlag, generationMessage)  = await billingVM.generateClientList(referenceData: referenceData)
-					if generationFlag {
-						statusMessage = "Client List CSV Generation Successful"
-					} else {
-						statusMessage = generationMessage
-					}
-				}
-			}
-			
-			Button(action: {
-				Task {
-					statusMessage = " "
-					isSystemResetting = true
-					let (generationFlag, generationMessage)  = await systemVM.resetTestFiles()
-					isSystemResetting = false
-					if generationFlag {
-						statusMessage = "Test File Initialization Successful"
-					} else {
-						statusMessage = generationMessage
-					}
-				}
-			} ) {
-				if isSystemResetting {
-					ProgressView()
-				} else {
-					Text("Reset & Initialize Test Files")
-				}
-			}
-			.disabled(isSystemBackingUp)
 			
 			Button(action: {
 				Task {
@@ -301,7 +265,6 @@ struct SideView: View {
 			}
 			.disabled(isSystemValidating)
 	
-			
 			Button(action: {
 				Task {
 					statusMessage = " "
@@ -323,37 +286,7 @@ struct SideView: View {
 			}
 			.disabled(isSystemBackingUp)
 			
-			
-			NavigationLink {
-				ValidationMonthSelectionView(referenceData: referenceData)
-			} label: {
-				Label("Validate Month", systemImage: "person")
-			
-			}
-			
-			Button(action: {
-				Task {
-					statusMessage = " "
-					updatingTimesheetFileIDs = true
-					let (generateResult, generateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
-					updatingTimesheetFileIDs = false
-					
-					if !generateResult {
-						showAlert.toggle()
-						buttonErrorMsg = generateMessage
-					} else {
-						statusMessage = "Tutor Details FileIDs updated in Timesheets"
-					}
-				}
-			} ) {
-				if updatingTimesheetFileIDs {
-					ProgressView()
-				} else {
-					Text("Update Tutor Details FileIDs in Timesheets")
-				}
-			}
-			.disabled(updatingTimesheetFileIDs)
-			
+			Spacer()
 			
 			Button(action: {
 				Task {
@@ -380,11 +313,31 @@ struct SideView: View {
 				if creatingNewYearsFiles {
 					ProgressView()
 				} else {
-					Text("Create New Years Files (in early January")
+					Text("Create New Years Files (in early January)")
 				}
 			}
 			.disabled(creatingNewYearsFiles)
 			
+			Button(action: {
+				Task {
+					statusMessage = " "
+					isSystemResetting = true
+					let (generationFlag, generationMessage)  = await systemVM.resetTestFiles()
+					isSystemResetting = false
+					if generationFlag {
+						statusMessage = "Test File Initialization Successful"
+					} else {
+						statusMessage = generationMessage
+					}
+				}
+			} ) {
+				if isSystemResetting {
+					ProgressView()
+				} else {
+					Text("Reset & Initialize Test Files")
+				}
+			}
+			.disabled(isSystemBackingUp)
 			
 			Button("Update Tutor Details Timesheet File IDs") {
 				Task {
@@ -399,6 +352,29 @@ struct SideView: View {
 				}
 			}
 			
+			Button(action: {
+				Task {
+					statusMessage = " "
+					updatingTimesheetFileIDs = true
+					let (generateResult, generateMessage) = await systemVM.updateTimesheetFileIDs(referenceData: referenceData)
+					updatingTimesheetFileIDs = false
+					
+					if !generateResult {
+						showAlert.toggle()
+						buttonErrorMsg = generateMessage
+					} else {
+						statusMessage = "Tutor Details FileIDs updated in Timesheets"
+					}
+				}
+			} ) {
+				if updatingTimesheetFileIDs {
+					ProgressView()
+				} else {
+					Text("Update Tutor Details FileIDs in Timesheets")
+				}
+			}
+			.disabled(updatingTimesheetFileIDs)
+			
 			Button("Update Student Last Billed Dates") {
 				Task {
 					statusMessage = " "
@@ -410,6 +386,25 @@ struct SideView: View {
 						statusMessage = "Student Last Billed Dates Updated Successful"
 					}
 				}
+			}
+			
+			Button("Generate Client List CSV File") {
+				Task {
+					statusMessage = " "
+					let (generationFlag, generationMessage)  = await billingVM.generateClientList(referenceData: referenceData)
+					if generationFlag {
+						statusMessage = "Client List CSV Generation Successful"
+					} else {
+						statusMessage = generationMessage
+					}
+				}
+			}
+			
+			NavigationLink {
+				ValidationMonthSelectionView(referenceData: referenceData)
+			} label: {
+				Label("Validate Month", systemImage: "person")
+				
 			}
 			
 			Button(action: {

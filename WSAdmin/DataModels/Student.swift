@@ -100,13 +100,42 @@ import Foundation
 		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
 	}
 	
-	// This function updates a Student to unassigns a Tutor and set the Assigned/Unassigned Date
-	func unassignTutor() {
+	// This function updates an Assigned Student to Unassign the Tutor and set the Assigned/Unassigned Date
+	func unAssignTutor() {
 		self.studentStatus = .StudentUnassigned
 		self.studentPreviousTutorKey = self.studentCurrentTutorKey
 		self.studentPreviousTutorName = self.studentCurrentTutorName
 		self.studentCurrentTutorKey = " "
 		self.studentCurrentTutorName = " "
+		let dateFormatter = DateFormatter()
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+		dateFormatter.dateFormat = "yyyy/MM/dd"
+		self.studentAssignedUnassignedDate = dateFormatter.string(from: Date())
+	}
+	
+	// This function handles a situation where a Student with a Status of Reassigned needs to be Unassigned from one of the two assigned Tutors
+	// This function:
+	// - changes the Student Status to Assigned
+	// - determines whether to leave the Student Assigned to the first or second assigned Tutor
+	// - changes the Student to only be assigned to that one Tutor
+	// - set the Assigned/Unassigned Date
+	func unReassignTutor(tutorName: String) async {
+		self.studentStatus = .StudentAssigned
+		
+		// If Unassigning from first assigned Tutor, set first assigned Tutor to second assigned Tutor
+		if self.studentCurrentTutorName == tutorName {
+			let logMessage = "INFO: Student: \(self.studentName) is \(self.studentStatus).  Reassigning from Tutor: \(tutorName) to Tutor: \(self.studentPreviousTutorName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .info)
+			
+			self.studentCurrentTutorKey = self.studentPreviousTutorKey
+			self.studentCurrentTutorName = self.studentPreviousTutorName
+		} else {
+			let logMessage = "INFO: Student: \(self.studentName) is \(self.studentStatus).  Reassigning from Tutor: \(tutorName) to Tutor: \(self.studentCurrentTutorName)"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .info)
+		}
+		
 		let dateFormatter = DateFormatter()
 		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 		dateFormatter.dateFormat = "yyyy/MM/dd"

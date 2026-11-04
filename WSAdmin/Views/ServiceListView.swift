@@ -179,7 +179,7 @@ struct ServiceListView: View {
 									}
 								}
 							} label: {
-								Label("Assign Service to Tutor", systemImage: "square.and.arrow.up")
+								Label("Assign Service to Tutor(s)", systemImage: "square.and.arrow.up")
 							}
 							
 							Button {
@@ -195,7 +195,7 @@ struct ServiceListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteService(serviceIndex: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteServiceSet(serviceIndex: items, referenceData: referenceData)
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
@@ -207,7 +207,7 @@ struct ServiceListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteService(serviceIndex: items, referenceData: referenceData)
+									let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteServiceSet(serviceIndex: items, referenceData: referenceData)
 									if unDeleteResult == false {
 										showAlert = true
 										buttonErrorMsg = unDeleteMessage
@@ -230,18 +230,55 @@ struct ServiceListView: View {
 							} label: {
 								Label("List Individual Tutor Costs", systemImage: "trash")
 							}
+							
+							Button {
+								// Resolve indexes first, synchronously, so they can't shift while the task runs
+								let serviceNums = items.compactMap { objectID in
+									referenceData.services.servicesList.firstIndex(where: { $0.id == objectID })
+								}
+								Task {
+									var errors = ""
+									for serviceNum in serviceNums {
+										let (result, message) = await serviceMgmtVM.unAssignServiceFromAllTutors(
+											serviceNum: serviceNum, referenceData: referenceData, tutorMgmtVM: tutorMgmtVM)
+										if !result { errors += message + "\n" }
+									}
+									if !errors.isEmpty {
+										buttonErrorMsg = errors
+										showAlert = true
+									}
+								}
+							} label: {
+								Label("Unassign Service from All Tutors", systemImage: "square.and.arrow.up")
+							}
+							
 						}
 						
 					} else {
-						Button {
+						
 							
-						} label: {
-							Label("Edit Services", systemImage: "heart")
-						}
 						Button(role: .destructive) {
-							
+							Task {
+								let (deleteResult, deleteMessage) = await serviceMgmtVM.deleteServiceSet(serviceIndex: items, referenceData: referenceData)
+								if deleteResult == false {
+									showAlert = true
+									buttonErrorMsg = deleteMessage
+								}
+							}
 						} label: {
-							Label("Delete Selected", systemImage: "trash")
+							Label("Delete Selected Services", systemImage: "trash")
+						}
+						
+						Button(role: .destructive) {
+							Task {
+								let (unDeleteResult, unDeleteMessage) = await serviceMgmtVM.unDeleteServiceSet(serviceIndex: items, referenceData: referenceData)
+								if unDeleteResult == false {
+									showAlert = true
+									buttonErrorMsg = unDeleteMessage
+								}
+							}
+						} label: {
+							Label("UnDelete Selected Services", systemImage: "heart")
 						}
 					}
 					
@@ -257,6 +294,7 @@ struct ServiceListView: View {
 				.navigationDestination(isPresented: $assignService) {
 					TutorServiceSelectionView(serviceNum: $serviceNumber, referenceData: referenceData)
 				}
+				
 				.navigationDestination(isPresented: $editService) {
 					if referenceData.services.servicesList.count > 0 {
 						ServiceView(updateServiceFlag: true, serviceNum: serviceNumber, originalTimesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName, referenceData: referenceData, serviceKey: referenceData.services.servicesList[serviceNumber].serviceKey, serviceCode: referenceData.services.servicesList[serviceNumber].serviceCode, timesheetName: referenceData.services.servicesList[serviceNumber].serviceTimesheetName,  invoiceName:  referenceData.services.servicesList[serviceNumber].serviceInvoiceName, serviceType:  referenceData.services.servicesList[serviceNumber].serviceType, billingType:  referenceData.services.servicesList[serviceNumber].serviceBillingType, serviceCount:  referenceData.services.servicesList[serviceNumber].serviceCount, cost1:  referenceData.services.servicesList[serviceNumber].serviceCost1, cost2: referenceData.services.servicesList[serviceNumber].serviceCost2, cost3: referenceData.services.servicesList[serviceNumber].serviceCost3, price1: referenceData.services.servicesList[serviceNumber].servicePrice1, price2: referenceData.services.servicesList[serviceNumber].servicePrice2, price3: referenceData.services.servicesList[serviceNumber].servicePrice3)

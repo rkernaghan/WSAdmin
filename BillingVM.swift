@@ -45,7 +45,7 @@ import GoogleSignIn
 				// would make it silently drop every session for this Tutor from the
 				// invoice instead of failing loudly.
 				guard await referenceData.ensureTutorDetailsLoaded(tutorID: objectID) else {
-					logMessage = "ERROR: could not load Tutor Details for Tutor \(tutorName) - excluded from invoice"
+					logMessage = "ERROR: could not load Tutor Details for Tutor: \(tutorName) - excluded from invoice"
 					print(logMessage)
 					billingMessages.addMessageLine(windowLineText: WindowMessageLine(windowLineText: logMessage))
 					await AppLogger.shared.log(logMessage, level: .error)
@@ -310,11 +310,11 @@ import GoogleSignIn
 							referenceData.locations.locationsList[locationNum].locationMonthRevenue += revenue
 							referenceData.locations.locationsList[locationNum].locationTotalRevenue += revenue
 						} else {
-							let logMessage = "ERROR: Billed Student \(studentName) not found updating Billing Stats for \(billingMonth)"
+							let logMessage = "ERROR: Billed Student: \(studentName) not found updating Billing Stats for \(billingMonth)"
 							await AppLogger.shared.log(logMessage, level: .error)
 						}
 					} else {
-						let logMessage = "ERROR: Billed Tutor \(tutorName) not found updating Billing Stats for \(billingMonth)"
+						let logMessage = "ERROR: Billed Tutor: \(tutorName) not found updating Billing Stats for \(billingMonth)"
 						await AppLogger.shared.log(logMessage, level: .error)
 					}
 					
@@ -718,8 +718,9 @@ import GoogleSignIn
 	// This function updates the Last Billed Dates for each Student by reading through all the Timesheets from system start (July 2025)
 	@MainActor func updateStudentLastBilledDates(referenceData: ReferenceData, showBillingDiagnostics: Bool, showEachSession: Bool) async -> (Bool, String) {
 		
-		let updateResult: Bool = true
-		let updateMessage: String = ""
+		var logMessage: String  = ""
+		var errorMessage: String = ""
+		var updateResult: Bool = true 
 		let billingMessages = WindowMessages()
 		
 		// Loop through each Tutor
@@ -727,7 +728,9 @@ import GoogleSignIn
 		var tutorNum = 0
 		while tutorNum < referenceData.tutors.tutorsList.count {
 			let tutorName = referenceData.tutors.tutorsList[tutorNum].tutorName
-			print("\nProcessing Tutor: \(tutorName)")
+			logMessage = "INFO: \nProcessing Tutor: \(tutorName) updating Student Last Billed Date"
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .info)
 			
 			// For each Tutor read in each year's Timesheet (some inactive Tutors will not have a Timesheet each year)
 			var timesheetYearNum = 2024
@@ -751,10 +754,17 @@ import GoogleSignIn
 						
 						let (studentFound, studentNum) = referenceData.students.findStudentByName(studentName: studentName)
 						if studentFound, let studentNum {
-							print ("\t\(studentName), \(serviceDate)")
+							logMessage = "INFO: Updating Last Billed Date for Student: \t\(studentName), Service Date: \(serviceDate)"
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .info)
+							
 							referenceData.students.studentsList[studentNum].updateLastBilledDate(serviceDate: serviceDate, referenceData: referenceData)
 						} else {
-							print ("Could not find Student: \(studentName)")
+							logMessage = "ERROR: Could not find Student: \(studentName) updating Student Last Billed Date"
+							errorMessage += logMessage
+							updateResult = false
+							print(logMessage)
+							await AppLogger.shared.log(logMessage, level: .error)
 						}
 						
 						timesheetNum += 1
@@ -766,17 +776,21 @@ import GoogleSignIn
 				timesheetYearNum += 1
 				timesheetMonthNum = 1
 			}
-			
-			
-			
 			tutorNum += 1
 		}
 		
 		// Save the updated Student List
 		
-		await referenceData.students.saveStudentData()
+		let saveResult = await referenceData.students.saveStudentData()
+		if !saveResult {
+			logMessage = "ERROR: Could not save Student Data when updating Last Billed Data"
+			errorMessage += logMessage
+			updateResult = false
+			print(logMessage)
+			await AppLogger.shared.log(logMessage, level: .error)
+		}
 		
-		return(updateResult, updateMessage)
+		return(updateResult, errorMessage)
 		
 	}
 	

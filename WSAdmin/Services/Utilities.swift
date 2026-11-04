@@ -1224,7 +1224,7 @@ func retryAfterDelay(from response: HTTPURLResponse) -> Int? {
 	
 	// Less common: an HTTP-date giving the exact time to retry at
 	let formatter = DateFormatter()
-	formatter.locale = Locale(identifier: " ")
+	formatter.locale = Locale(identifier: "en_US_POSIX")
 	formatter.timeZone = TimeZone(identifier: "GMT")
 	formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss 'GMT'"
 	

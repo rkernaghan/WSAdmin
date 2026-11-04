@@ -323,7 +323,7 @@ class TutorBillingMonth {
 				let tutorName = prevTutorBillingMonth.tutorBillingRows[prevTutorNum].tutorName
 				let (foundTutorFlag, tutorNum) = referenceData.tutors.findTutorByName(tutorName: tutorName)
 				guard foundTutorFlag, let tutorNum else {
-					logMessage = "Error: could not find Tutor \(tutorName) in Reference Data when copying previous months billing data"
+					logMessage = "Error: could not find Tutor: \(tutorName) in Reference Data when copying previous months billing data"
 					await AppLogger.shared.log(logMessage, level: .error)
 					return(false, logMessage)
 				}

@@ -111,7 +111,7 @@ import Foundation
 			// Add the new Tutor object to the Tutors List object array
 			self.tutorsList.append(newTutor)
 			
-			print("Loaded Tutor \(newTutorName)")
+			print("Loaded Tutor: \(newTutorName)")
 			
 			tutorIndex += 1
 			rowNumber += 1

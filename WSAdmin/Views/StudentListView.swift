@@ -180,7 +180,7 @@ struct StudentListView: View {
 							
 							Button {
 								Task {
-									let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+									let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudentSet(studentIndex: items, referenceData: referenceData)
 									if !unassignResult {
 										showAlert = true
 										buttonErrorMsg = unassignMessage
@@ -218,7 +218,7 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unreassignResult, unreassignMessage) = await studentMgmtVM.unreassignStudent(studentIndex: items, referenceData: referenceData)
+									let (unreassignResult, unreassignMessage) = await studentMgmtVM.unReassignStudentSetFromTutor(studentIndex: items, referenceData: referenceData)
 									if unreassignResult == false {
 										showAlert = true
 										buttonErrorMsg = unreassignMessage
@@ -230,7 +230,7 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+									let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudentSet(studentIndex: items, referenceData: referenceData)
 									if suspendResult == false {
 										showAlert = true
 										buttonErrorMsg = suspendMessage
@@ -242,7 +242,7 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+									let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unSuspendStudentSet(studentIndex: items, referenceData: referenceData)
 									if unsuspendResult == false {
 										showAlert = true
 										buttonErrorMsg = unsuspendMessage
@@ -254,7 +254,7 @@ struct StudentListView: View {
 							
 							Button(role: .destructive) {
 								Task {
-									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(studentIndex: items, referenceData: referenceData)
+									let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudentSet(studentIndex: items, referenceData: referenceData)
 									if deleteResult == false {
 										showAlert = true
 										buttonErrorMsg = deleteMessage
@@ -268,7 +268,7 @@ struct StudentListView: View {
 						
 						Button(role: .destructive) {
 							Task {
-								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudent(studentIndex: items, referenceData: referenceData)
+								let (deleteResult, deleteMessage) = await studentMgmtVM.deleteStudentSet(studentIndex: items, referenceData: referenceData)
 								if deleteResult == false {
 									showAlert = true
 									buttonErrorMsg = deleteMessage
@@ -283,7 +283,7 @@ struct StudentListView: View {
 						
 						Button {
 							Task {
-								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudent(studentIndex: items, referenceData: referenceData)
+								let (unassignResult, unassignMessage) = await studentMgmtVM.unassignStudentSet(studentIndex: items, referenceData: referenceData)
 								if !unassignResult {
 									showAlert = true
 									buttonErrorMsg = unassignMessage
@@ -298,7 +298,7 @@ struct StudentListView: View {
 						
 						Button {
 							Task {
-								let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudent(studentIndex: items, referenceData: referenceData)
+								let (suspendResult, suspendMessage) = await studentMgmtVM.suspendStudentSet(studentIndex: items, referenceData: referenceData)
 								if suspendResult == false {
 									showAlert = true
 									buttonErrorMsg = suspendMessage
@@ -313,7 +313,7 @@ struct StudentListView: View {
 						
 						Button {
 							Task {
-								let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unsuspendStudent(studentIndex: items, referenceData: referenceData)
+								let (unsuspendResult, unsuspendMessage) = await studentMgmtVM.unSuspendStudentSet(studentIndex: items, referenceData: referenceData)
 								if unsuspendResult == false {
 									showAlert = true
 									buttonErrorMsg = unsuspendMessage

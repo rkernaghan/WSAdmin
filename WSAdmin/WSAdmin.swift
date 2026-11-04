@@ -6,6 +6,7 @@
 //
 import Foundation
 import SwiftUI
+import AppKit
 import OSLog
 
 struct PgmConstants {
@@ -683,10 +684,34 @@ let yearNumbersArray = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
 
 
 
-let runMode: RunMode = .test		 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+let runMode: RunMode = .prod		 // "PROD" for production data files, "COPY" for a copy of Prod, anything else (e.g. "TEST") for the test data files
+
+// Writes a final log message and uploads the log to Google Drive before the app quits
+final class WSAdminAppDelegate: NSObject, NSApplicationDelegate {
+	// Closing the last window quits the app, so the shutdown message below is always written
+	func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+		true
+	}
+	
+	func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+		// Hold off terminating until the async log write and Drive sync finish (bounded by a timeout)
+		Task {
+			await AppLogger.shared.log("INFO: WSAdmin shutting down", level: .info, newLine: true)
+			await withTaskGroup(of: Void.self) { group in
+				group.addTask { await AppLogger.shared.syncToGoogleDrive() }
+				group.addTask { try? await Task.sleep(nanoseconds: 5_000_000_000) }	// don't hang the quit if Drive is slow
+				await group.next()
+				group.cancelAll()
+			}
+			NSApp.reply(toApplicationShouldTerminate: true)
+		}
+		return .terminateLater
+	}
+}
 
 @main
 struct WSAdmin: App {
+	@NSApplicationDelegateAdaptor(WSAdminAppDelegate.self) var appDelegate
 	let systemVM = SystemVM()
 	let logger = Logger()
 	
